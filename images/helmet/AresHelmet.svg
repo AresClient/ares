@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+        xmlns:x="adobe:ns:meta/"
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:cc="http://creativecommons.org/ns#"
+        xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+        inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+        sodipodi:docname="AresHelmet.svg"
+        id="svg64"
+        version="1.1"
+        viewBox="0 0 772 772"
+        height="772"
+        width="772">
+  <sodipodi:namedview
+     inkscape:current-layer="svg64"
+     inkscape:window-maximized="1"
+     inkscape:window-y="27"
+     inkscape:window-x="0"
+     inkscape:cy="386"
+     inkscape:cx="222"
+     inkscape:zoom="0.9261658"
+     showgrid="false"
+     id="namedview66"
+     inkscape:window-height="1025"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
+  <metadata
+     id="metadata57">
+<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>    <x:xmpmeta
+       x:xmptk="Adobe XMP Core 5.6-c142 79.160924, 2017/07/13-01:06:39        ">
+      <metadata>
+        <rdf:RDF>
+          <rdf:Description
+             rdf:about="" />
+          <cc:Work
+             rdf:about="">
+            <dc:format>image/svg+xml</dc:format>
+            <dc:type
+               rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+            <dc:title></dc:title>
+          </cc:Work>
+        </rdf:RDF>
+      </metadata>
+    </x:xmpmeta>
+<?xpacket end="w"?>  </metadata>
+  <defs
+     id="defs61">
+    <style
+       id="style59">
+      .cls-1 {
+        fill: #5f0505;
+        fill-rule: evenodd;
+      }
+    </style>
+  </defs>
+  <path
+     d="m 388.099,0 c -0.333,185.981 0.333,372.019 0,558 l 39.983,-44 c -2.193,-18.617 -24.215,-93.977 -8,-122 12.993,-5 26.99,-11 39.983,-16 33.433,-14.648 64.744,-33.742 93.96,-53 h 1 v 71 c -35.981,23 -71.973,47 -107.954,70 4.567,65.819 4.247,139.552 0,207 q -3,50.495 -6,101 c 58.435,-35.993 131.211,-122.832 151.935,-199 4,-14.7 -8.749,-29.934 -11,-44 -7.656,-47.944 -4.875,-85.092 25.989,-107 -1.1,-18.476 -4.489,-21.58 -12.994,-31 1,-11.332 2.105,-21.719 2,-34 2.229,-29.485 1.666,-64.67 2,-97 C 583.52,174.492 564.495,142.85 530.03,100 517.44,84.347 498.519,70.566 481.051,60 453.622,43.4 403.237,31.058 388.099,0 Z m -4.094,0 c 0.333,185.981 -0.333,372.019 0,558 l -40,-44 c 2.193,-18.617 24.225,-93.977 8,-122 -13,-5 -27,-11 -40,-16 -33.447,-14.648 -64.772,-33.742 -94,-53 h -1 v 71 c 36,23 72,47 108,70 -4.569,65.819 -4.249,139.552 0,207 q 3,50.495 6,101 c -58.46,-35.993 -131.266,-122.832 -152,-199 -4,-14.7 8.753,-29.934 11,-44 7.659,-47.944 4.877,-85.092 -26,-107 1.1,-18.476 4.491,-21.58 13,-31 -1,-11.332 -2.106,-21.719 -2,-34 -2.23,-29.485 -1.667,-64.67 -2,-97 15.487,-85.508 34.52,-117.15 69,-160 12.6,-15.653 31.525,-29.434 49,-40 27.449,-16.6 77.855,-28.942 93,-60 z"
+     class="cls-1"
+     data-name="形状 1"
+     id="形状_1" />
+</svg>

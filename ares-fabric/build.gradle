@@ -1,0 +1,76 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+        maven {
+            name = "Jitpack"
+            url = "https://jitpack.io/"
+        }
+    }
+    dependencies {
+        classpath "com.github.Chocohead:fabric-loom:${project.chocoLoomVersion}" // Sin² Edition Loom
+        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    }
+}
+apply plugin: "fabric-loom"
+apply plugin: "com.github.johnrengelman.shadow"
+
+version = project.aresFabricVersion
+
+dependencies {
+    //to change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.fabricMinecraftVersion}"
+    mappings "net.fabricmc:yarn:${project.yarnVersion}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
+
+    include "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.3.1+facf3bbf95"
+
+    compile project(":ares-core")
+
+    compile "com.github.Vatuu:discord-rpc:1.6.2"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        include "fabric.mod.json"
+        expand "version": project.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "fabric.mod.json"
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
+
+tasks.remapJar {
+    dependsOn(":ares-fabric:shadowJar")
+    input.set(shadowJar.getArchivePath())
+    setClassifier("release")
+}
+
+shadowJar {
+    dependencies {
+        include(dependency(":ares-core"))
+        include(dependency("org.json:json"))
+        include(dependency("dev.tigr:simpleevents"))
+        include(dependency("com.github.Vatuu:discord-rpc"))
+    }
+    exclude("mappings/**")
+    exclude("LICENSE")
+    setClassifier("all")
+    minimize()
+}
+
+jar {
+    manifest {
+        attributes("Main-Class": "dev.tigr.ares.fabric.Main")
+    }
+}

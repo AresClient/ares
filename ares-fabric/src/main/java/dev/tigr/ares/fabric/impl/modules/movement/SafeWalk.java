@@ -1,0 +1,16 @@
+package dev.tigr.ares.fabric.impl.modules.movement;
+
+import dev.tigr.ares.core.feature.module.Category;
+import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.fabric.event.movement.WalkOffLedgeEvent;
+import dev.tigr.simpleevents.listener.EventHandler;
+import dev.tigr.simpleevents.listener.EventListener;
+
+/**
+ * @author Tigermouthbear
+ */
+@Module.Info(name = "SafeWalk", description = "Keeps you from walking off ledges", category = Category.MOVEMENT)
+public class SafeWalk extends Module {
+    @EventHandler
+    public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> event.isSneaking = true);
+}

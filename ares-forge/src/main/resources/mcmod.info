@@ -1,0 +1,16 @@
+[
+{
+  "modid": "ares",
+  "name": "Ares",
+  "description": "Ares is a minecraft cheat client",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://aresclient.org/",
+  "updateUrl": "",
+  "authorList": ["Tigermouthbear"],
+  "credits": "The Forge and FML guys, for making this example",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

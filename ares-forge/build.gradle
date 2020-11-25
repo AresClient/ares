@@ -1,0 +1,114 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "SpongePowered"
+            url = "http://repo.spongepowered.org/maven"
+        }
+    }
+    dependencies {
+        classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
+        classpath "org.spongepowered:mixingradle:0.6-SNAPSHOT"
+        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    }
+}
+apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "org.spongepowered.mixin"
+apply plugin: "com.github.johnrengelman.shadow"
+
+version = aresForgeVersion
+
+minecraft {
+    version = project.forgeVersion
+    mappings = project.mcpVersion
+    runDir = "run"
+    coreMod = "dev.tigr.ares.forge.mixin.MixinLoader"
+    makeObfSourceJar = false
+}
+
+dependencies {
+    compile project(":ares-core")
+
+    //mixin needs to be distributed with the mod, very important
+    compile("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
+        exclude module: "launchwrapper"
+        exclude module: "guava"
+        exclude module: "gson"
+        exclude module: "commons-io"
+    }
+
+    compile "com.mojang:brigadier:1.0.17"
+    compile "com.github.Vatuu:discord-rpc:1.6.2"
+
+    compile "com.github.cabaletta:baritone:1.2.14"
+    compile "cabaletta:baritone-api:1.2"
+}
+
+processResources {
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include "mcmod.info"
+
+        // replace version and mcversion
+        expand "version": project.version, "mcversion": project.minecraft.version
+    }
+
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude "mcmod.info"
+    }
+}
+
+shadowJar {
+    dependencies {
+        include(dependency(":ares-core"))
+        include(dependency("org.spongepowered:mixin"))
+        include(dependency("net.jodah:typetools"))
+        include(dependency("org.yaml:snakeyaml"))
+        include(dependency("org.javassist:javassist"))
+        include(dependency("com.mojang:brigadier"))
+        include(dependency("dev.tigr:simpleevents"))
+        include(dependency("org.json:json"))
+        include(dependency("com.github.Vatuu:discord-rpc"))
+        include(dependency("cabaletta:baritone-api"))
+    }
+    exclude "dummyThing"
+    exclude "LICENSE.txt"
+    setClassifier("release")
+}
+
+mixin {
+    defaultObfuscationEnv searge
+    add sourceSets.main, "mixins.ares.refmap.json"
+}
+
+reobf {
+    shadowJar {
+        mappingType = "SEARGE"
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+
+jar {
+    manifest {
+        attributes(
+                "MixinConfigs": "mixins.ares.json",
+                "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
+                "TweakOrder": 0,
+                "FMLCorePluginContainsFMLMod": "true",
+                "FMLCorePlugin": "dev.tigr.ares.forge.mixin.MixinLoader",
+                "ForceLoadAsMod": "true",
+                "Main-Class": "dev.tigr.ares.Main"
+        )
+    }
+}
+
+build.dependsOn(shadowJar)

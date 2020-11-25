@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.tigr.ares.fabric.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "client.MixinBlock",
+    "client.MixinClientConnection",
+    "client.MixinClientPlayerEntity",
+    "client.MixinClientPlayerInteractionManager",
+    "client.MixinEntity",
+    "client.MixinFluidBlock",
+    "client.MixinKeyBinding",
+    "client.MixinKeyboardInput",
+    "client.MixinLivingEntity",
+    "client.MixinMinecraftClient",
+    "client.MixinPlayerEntity",
+    "render.MixinAbstractClientPlayerEntity",
+    "render.MixinArmorFeatureRenderer",
+    "render.MixinCamera",
+    "render.MixinCapeFeatureRenderer",
+    "render.MixinElytraFeatureRenderer",
+    "render.MixinGameRenderer",
+    "render.MixinInGameOverlayRenderer",
+    "render.MixinLivingEntityRenderer",
+    "render.MixinPlayerEntityRenderer",
+    "render.MixinPlayerListHud"
+  ]
+}

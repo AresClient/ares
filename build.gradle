@@ -1,0 +1,122 @@
+allprojects {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            name = "spongepowered-repo"
+            url = "http://repo.spongepowered.org/maven/"
+        }
+        maven {
+            name = "swt-repo"
+            url = "http://maven-eclipse.github.io/maven"
+        }
+        maven {
+            name = "jitpack.io"
+            url = "https://jitpack.io"
+        }
+        maven {
+            name = "brigadier"
+            url = "https://libraries.minecraft.net"
+        }
+        maven {
+            name = "tigr.dev"
+            url = "https://maven.tigr.dev"
+        }
+        maven {
+            name = 'impactdevelopment-repo'
+            url = 'https://impactdevelopment.github.io/maven/'
+        }
+    }
+}
+
+subprojects {
+    apply plugin: "java"
+
+    group = project.modGroup
+    archivesBaseName = project.name
+
+    compileJava {
+        sourceCompatibility = targetCompatibility = "1.8"
+    }
+}
+
+task buildAll(type: GradleBuild) {
+    group = "ares"
+    description = "builds all versions of Ares"
+
+    tasks = [":buildForge", ":buildFabric"]
+}
+
+task buildForge(type: GradleBuild) {
+    group = "ares"
+    description = "builds the forge version of Ares"
+
+    tasks = [":ares-forge:clean", ":ares-forge:build"]
+
+    doLast {
+        copy {
+            from "ares-forge/build/libs/ares-forge-${project.aresForgeVersion}-release.jar"
+            into "build"
+        }
+    }
+}
+
+task testForge(type: GradleBuild) {
+    group = "ares"
+    description = "builds the forge version of Ares, then copies the jar into the mods folder"
+
+    tasks = [":buildForge"]
+
+    doLast {
+        copy {
+            from "build/ares-forge-${project.aresForgeVersion}-release.jar"
+            into getModsFolder()
+        }
+    }
+}
+
+task buildFabric(type: GradleBuild) {
+    group = "ares"
+    description = "builds the fabric version of Ares"
+
+    tasks = [":ares-fabric:clean", ":ares-fabric:build"]
+
+    doLast {
+        copy {
+            from "ares-fabric/build/libs/ares-fabric-${project.aresFabricVersion}-release.jar"
+            into "build"
+        }
+    }
+}
+
+task testFabric(type: GradleBuild) {
+    group = "ares"
+    description = "builds the fabric version of Ares, then copies the jar into the mods folder"
+
+    tasks = [":buildFabric"]
+
+    doLast {
+        copy {
+            from "build/ares-fabric-${project.aresFabricVersion}-release.jar"
+            into getModsFolder()
+        }
+    }
+}
+
+task setupWorkspace(type: GradleBuild) {
+    group = "ares"
+    description = "sets up all development environments for all versions of ares"
+
+    tasks = [":ares-forge:setupDecompWorkspace", ":ares-fabric:genSources"]
+}
+
+private static String getModsFolder() {
+    if(System.getProperty("os.name").toLowerCase().contains("nux")) {
+        return System.getProperty("user.home") + "/.minecraft/mods/"
+    } else if(System.getProperty("os.name").toLowerCase().contains("darwin") || System.getProperty("os.name").toLowerCase().contains("mac")) {
+        return System.getProperty("user.home") + "/Library/Application Support/minecraft/mods/"
+    } else if(System.getProperty("os.name").toLowerCase().contains("win")) {
+        return System.getenv("APPDATA") + File.separator + ".minecraft" + File.separator + "mods" + File.separator
+    }
+    throw new RuntimeException("OS NOT FOUND")
+}

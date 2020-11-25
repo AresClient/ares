@@ -1,0 +1,32 @@
+{
+  "required": true,
+  "compatibilityLevel": "JAVA_8",
+  "package": "dev.tigr.ares.forge.mixin",
+  "refmap": "mixins.ares.refmap.json",
+  "mixins": [
+    "client.MixinBlockLiquid",
+    "client.MixinBlockSoulsand",
+    "client.MixinEntity",
+    "client.MixinEntityBoat",
+    "client.MixinEntityLivingBase",
+    "client.MixinEntityPlayerSP",
+    "client.MixinItem",
+    "client.MixinItemEndCrystal",
+    "client.MixinMinecraft",
+    "client.MixinModelBoat",
+    "client.MixinMovementFromInputOptions",
+    "client.MixinNetHandlerPlayClient",
+    "client.MixinNetworkManager",
+    "client.MixinPlayerControllerMP",
+    "client.MixinWorld",
+    "render.MixinAbstractClientPlayer",
+    "render.MixinEntityRenderer",
+    "render.MixinGuiNewChat",
+    "render.MixinGuiPlayerTabOverlay",
+    "render.MixinLayerArmorBase",
+    "render.MixinLayerCape",
+    "render.MixinLayerElytra",
+    "render.MixinModelPlayer",
+    "render.MixinRenderLivingBase"
+  ]
+}
