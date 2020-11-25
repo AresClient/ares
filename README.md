@@ -4,6 +4,7 @@
 [![Discord](https://img.shields.io/discord/650769808547119160?logo=discord)](https://discord.gg/GtBgknj)
 [![License](https://img.shields.io/badge/license-LGPL%20v3-informational)](https://www.gnu.org/licenses/lgpl-3.0.en.html)
 ![](https://img.shields.io/badge/skid%20free-100%25-informational)
+[![HitCount](http://hits.dwyl.com/AresClient/ares.svg)](http://hits.dwyl.com/AresClient/ares)
 
 Ares is a free, open source minecraft utility mod aimed at anarchy servers. Created by Tigermouthbear.
 
