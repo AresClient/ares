@@ -54,6 +54,12 @@ public class CustomGUIManager extends Screen implements IGUIManager {
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double value) {
+        gui.mouseScrolled(mouseX, mouseY, value * 50);
+        return super.mouseScrolled(mouseX, mouseY, value);
+    }
+
+    @Override
     public void onClose() {
         super.onClose();
         gui.onGuiClosed();

@@ -88,9 +88,9 @@ public class CustomFontRenderer implements IFontRenderer {
     @Override
     public int drawStringWithCustomWidth(String text, double x, double y, Color color, double width, boolean shadow) {
         double scale = width / getStringWidth(text);
-        RenderSystem.scaled(scale, scale, 1);
+        RENDER_STACK.scale(scale, scale, 1);
         drawString(text, x / scale, y / scale, color, shadow);
-        RenderSystem.scaled(1 / scale, 1 / scale, 1);
+        RENDER_STACK.scale(1 / scale, 1 / scale, 1);
         return (int) (getFontHeight() * scale);
     }
 
@@ -107,9 +107,9 @@ public class CustomFontRenderer implements IFontRenderer {
     @Override
     public int drawStringWithCustomHeight(String text, double x, double y, Color color, double height, boolean shadow) {
         double scale = height / getFontHeight();
-        RenderSystem.scaled(scale, scale, 1);
+        RENDER_STACK.scale(scale, scale, 1);
         drawString(text, x / scale, y / scale, color, shadow);
-        RenderSystem.scaled(1 / scale, 1 / scale, 1);
+        RENDER_STACK.scale(1 / scale, 1 / scale, 1);
 
         return (int) (getStringWidth(text) * scale);
     }
@@ -124,9 +124,9 @@ public class CustomFontRenderer implements IFontRenderer {
     @Override
     public double drawSplitString(String text, double x, double y, Color color, double width, double height) {
         double scale = height / getFontHeight();
-        RenderSystem.scaled(scale, scale, 1);
+        RENDER_STACK.scale(scale, scale, 1);
         height = drawSplitString(text, x / scale, y / scale, color, width / scale);
-        RenderSystem.scaled(1 / scale, 1 / scale, 1);
+        RENDER_STACK.scale(1 / scale, 1 / scale, 1);
 
         return height * scale;
     }

@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.*;
 
+import static dev.tigr.ares.CoreWrapper.RENDER_STACK;
 import static dev.tigr.ares.Wrapper.FONT_RENDERER;
 import static dev.tigr.ares.Wrapper.MC;
 import static net.minecraft.client.renderer.GlStateManager.glTexParameteri;
@@ -88,9 +89,9 @@ public class CustomFontRenderer implements IFontRenderer {
     @Override
     public int drawStringWithCustomWidth(String text, double x, double y, Color color, double width, boolean shadow) {
         double scale = width / getStringWidth(text);
-        GlStateManager.scale(scale, scale, 1);
+        RENDER_STACK.scale(scale, scale, 1);
         drawString(text, x / scale, y / scale, color, shadow);
-        GlStateManager.scale(1 / scale, 1 / scale, 1);
+        RENDER_STACK.scale(1 / scale, 1 / scale, 1);
         return (int) (getFontHeight() * scale);
     }
 
@@ -106,9 +107,9 @@ public class CustomFontRenderer implements IFontRenderer {
 
     public int drawStringWithCustomHeight(String text, double x, double y, Color color, double height, boolean shadow) {
         double scale = height / getFontHeight();
-        GlStateManager.scale(scale, scale, 1);
+        RENDER_STACK.scale(scale, scale, 1);
         drawString(text, x / scale, y / scale, color, shadow);
-        GlStateManager.scale(1 / scale, 1 / scale, 1);
+        RENDER_STACK.scale(1 / scale, 1 / scale, 1);
 
         return (int) (getStringWidth(text) * scale);
     }
@@ -123,9 +124,9 @@ public class CustomFontRenderer implements IFontRenderer {
     // draws split string with custom font height
     public double drawSplitString(String text, double x, double y, Color color, double width, double height) {
         double scale = height / getFontHeight();
-        GlStateManager.scale(scale, scale, 1);
+        RENDER_STACK.scale(scale, scale, 1);
         height = drawSplitString(text, x / scale, y / scale, color, width / scale);
-        GlStateManager.scale(1 / scale, 1 / scale, 1);
+        RENDER_STACK.scale(1 / scale, 1 / scale, 1);
 
         return height * scale;
     }

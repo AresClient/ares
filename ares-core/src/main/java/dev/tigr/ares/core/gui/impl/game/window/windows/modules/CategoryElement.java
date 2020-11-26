@@ -87,7 +87,7 @@ public class CategoryElement extends Element {
     }
 
     public double getScrollValue(List<ModuleElement> elements, double value, double curr) {
-        int height = getHeight(elements);
+        double height = getHeight(elements);
         if(height > getHeight()) {
             double range = height - getHeight();
             value = curr + value;
@@ -96,8 +96,8 @@ public class CategoryElement extends Element {
         } else return 0;
     }
 
-    public int getHeight(List<ModuleElement> elements) {
-        int height = 0;
+    public double getHeight(List<ModuleElement> elements) {
+        double height = 0;
         for(ModuleElement element: elements) {
             height += element.getHeight();
         }
