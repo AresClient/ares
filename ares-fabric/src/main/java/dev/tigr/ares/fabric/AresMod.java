@@ -147,7 +147,7 @@ public class AresMod extends Ares {
                 MobOwner.class,
                 NameTags.class,
                 NoArmorRender.class,
-                //NoFog.class,
+                NoFog.class,
                 NoHurtShake.class,
                 NoRender.class,
                 NoWeather.class,
