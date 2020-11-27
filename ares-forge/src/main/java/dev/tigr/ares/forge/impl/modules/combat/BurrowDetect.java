@@ -25,14 +25,14 @@ public class BurrowDetect extends Module {
 
         for (EntityPlayer entityPlayer : MC.world.playerEntities.stream().filter(entityPlayer -> entityPlayer != MC.player).collect(Collectors.toList())){
             if (!burrowedPlayers.contains(entityPlayer) && isInBurrow(entityPlayer)){
-                UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.GREEN + " has burrowed!");
+                UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.GREEN + " has burrowed");
                 burrowedPlayers.add(entityPlayer);
             }
         }
 
         for (EntityPlayer entityPlayer : burrowedPlayers){
             if (!isInBurrow(entityPlayer)){
-                UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.RED + " is no longer burrowed!");
+                UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.RED + " is no longer burrowed");
                 burrowedPlayers.remove(entityPlayer);
             }
         }
@@ -48,13 +48,12 @@ public class BurrowDetect extends Module {
 
     //This converts a double position such as 12.9 or 12.13 to a "middle" value of 12.5
     private double getMiddlePosition(double positionIn){
-        double positionFinal = positionIn;
-
+        double positionFinal = Math.round(positionIn);
 
         if (Math.round(positionIn) > positionIn){
             positionFinal -= 0.5;
         }
-        else if (Math.round(positionIn) < positionIn){
+        else if (Math.round(positionIn) <= positionIn){
             positionFinal += 0.5;
         }
 
