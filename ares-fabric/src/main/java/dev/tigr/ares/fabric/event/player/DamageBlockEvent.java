@@ -7,7 +7,6 @@ import net.minecraft.util.math.Direction;
 /**
  * @author Hoosiers on 11/26/20
  */
-
 public class DamageBlockEvent extends Event {
     private final BlockPos blockPos;
     private final Direction direction;
@@ -21,5 +20,7 @@ public class DamageBlockEvent extends Event {
         return blockPos;
     }
 
-    public Direction getDirection(){return direction;}
+    public Direction getDirection() {
+        return direction;
+    }
 }

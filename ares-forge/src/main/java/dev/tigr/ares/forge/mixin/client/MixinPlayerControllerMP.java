@@ -29,9 +29,7 @@ public class MixinPlayerControllerMP {
     }
 
     @Inject(method = "onPlayerDamageBlock", at = @At("HEAD"), cancellable = true)
-    private void damageBlock(BlockPos blockPos, EnumFacing enumFacing, CallbackInfoReturnable<Boolean> cir){
-        if (Ares.EVENT_MANAGER.post(new DamageBlockEvent(blockPos, enumFacing)).isCancelled()){
-            cir.cancel();
-        }
+    private void damageBlock(BlockPos blockPos, EnumFacing enumFacing, CallbackInfoReturnable<Boolean> cir) {
+        if(Ares.EVENT_MANAGER.post(new DamageBlockEvent(blockPos, enumFacing)).isCancelled()) cir.cancel();
     }
 }

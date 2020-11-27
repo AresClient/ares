@@ -20,7 +20,6 @@ import java.util.Optional;
  * @author Tigermouthbear 7/13/20
  * ported to Fabric by Hoosiers 11/26/20
  */
-
 @Module.Info(name = "TotemPopCounter", description = "Counts the amount of totem pops a player has had in chat", category = Category.COMBAT)
 public class TotemPopCounter extends Module {
     // name, count

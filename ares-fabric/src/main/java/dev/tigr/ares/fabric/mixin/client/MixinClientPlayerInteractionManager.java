@@ -25,8 +25,6 @@ public class MixinClientPlayerInteractionManager {
 
     @Inject(method = "updateBlockBreakingProgress", at = @At("HEAD"), cancellable = true)
     private void damageBlock(BlockPos blockPos, Direction direction, CallbackInfoReturnable<Boolean> cir) {
-        if (Ares.EVENT_MANAGER.post(new DamageBlockEvent(blockPos, direction)).isCancelled()){
-            cir.cancel();
-        }
+        if(Ares.EVENT_MANAGER.post(new DamageBlockEvent(blockPos, direction)).isCancelled()) cir.cancel();
     }
 }

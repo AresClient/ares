@@ -7,21 +7,20 @@ import net.minecraft.util.math.BlockPos;
 /**
  * @author Hoosiers on 11/26/2020
  */
-
 public class DamageBlockEvent extends Event {
     private final BlockPos blockPos;
     private final EnumFacing enumFacing;
 
-    public DamageBlockEvent(BlockPos blockPos, EnumFacing enumFacing){
+    public DamageBlockEvent(BlockPos blockPos, EnumFacing enumFacing) {
         this.blockPos = blockPos;
         this.enumFacing = enumFacing;
     }
 
-    public BlockPos getBlockPos(){
+    public BlockPos getBlockPos() {
         return this.blockPos;
     }
 
-    public EnumFacing getEnumFacing(){
+    public EnumFacing getEnumFacing() {
         return this.enumFacing;
     }
 }
