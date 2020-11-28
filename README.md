@@ -1,4 +1,5 @@
 # <img src="https://aresclient.org/resources/icon.svg" alt="drawing" height="50"/> Ares
+[![Build Status](https://travis-ci.com/AresClient/ares.svg?branch=master)](https://travis-ci.com/AresClient/ares)
 [![Version](https://img.shields.io/badge/dynamic/json?color=success&label=1.12.2&prefix=v&query=%24%5B%271.12.2%27%5D%5B%27stable%27%5D%5B%27name%27%5D&url=https%3A%2F%2Faresclient.org%2Fapi%2Fv1%2Fdownloads.json)](https://aresclient.org/download)
 [![Version](https://img.shields.io/badge/dynamic/json?color=success&label=1.16.4&prefix=v&query=%24%5B%271.16.4%27%5D%5B%27stable%27%5D%5B%27name%27%5D&url=https%3A%2F%2Faresclient.org%2Fapi%2Fv1%2Fdownloads.json)](https://aresclient.org/download)
 [![Discord](https://img.shields.io/discord/650769808547119160?logo=discord)](https://discord.gg/GtBgknj)
