@@ -88,7 +88,7 @@ public class AresMod extends Ares {
                 NoBreakDelay.class,
                 NoBreakReset.class,
                 NoSwing.class,
-                //PacketCancel.class,
+                PacketCancel.class,
                 PortalGodMode.class,
                 SecretClose.class,
                 ServerCrasher.class,
