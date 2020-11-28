@@ -1,11 +1,13 @@
 dependencies {
     compile "org.json:json:20190722"
     compile "dev.tigr:simpleevents:1.0"
+
     implementation "org.apache.logging.log4j:log4j-api:2.8.1"
     implementation "com.mojang:brigadier:1.0.17"
     implementation "com.google.guava:guava:30.0-jre"
 }
 
 jar {
+    exclude "dev/tigr/ares/Wrapper.class"
     exclude "com/mojang/**"
 }
