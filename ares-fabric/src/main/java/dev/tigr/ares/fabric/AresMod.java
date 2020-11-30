@@ -63,7 +63,7 @@ public class AresMod extends Ares {
                 //ObbyPlace.class,
                 //Offhand.class,
                 //OffhandGap.class,
-                //Surround.class,
+                Surround.class,
                 TotemPopCounter.class,
 
                 // hud

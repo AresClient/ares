@@ -8,6 +8,7 @@ import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -22,56 +23,69 @@ import static dev.tigr.ares.Wrapper.MC;
  * @author Tigermouthbear
  */
 public class WorldUtils {
-    public static void placeBlockMainHand(BlockPos pos) {
-        placeBlock(EnumHand.MAIN_HAND, pos);
+    public static boolean placeBlockMainHand(BlockPos pos) {
+        return placeBlock(EnumHand.MAIN_HAND, pos);
     }
 
-    public static void placeBlock(EnumHand hand, BlockPos pos) {
+    public static boolean placeBlock(EnumHand hand, BlockPos pos) {
+        if(
+                !MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
+                !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos))
+                .stream().noneMatch(Entity::canBeCollidedWith)
+        ) return false;
+
         Vec3d eyesPos = new Vec3d(MC.player.posX,
                 MC.player.posY + MC.player.getEyeHeight(),
                 MC.player.posZ);
 
+        Vec3d hitVec = null;
+        BlockPos neighbor = null;
+        EnumFacing side2 = null;
         for(EnumFacing side: EnumFacing.values()) {
-            BlockPos neighbor = pos.offset(side);
-            EnumFacing side2 = side.getOpposite();
+            neighbor = pos.offset(side);
+            side2 = side.getOpposite();
 
             // check if neighbor can be right clicked
-            if(!MC.world.getBlockState(neighbor).getBlock().canCollideCheck(MC.world.getBlockState(neighbor), false))
+            if(!MC.world.getBlockState(neighbor).getBlock().canCollideCheck(MC.world.getBlockState(neighbor), false)) {
+                neighbor = null;
+                side2 = null;
                 continue;
+            }
 
-            Vec3d hitVec = new Vec3d(neighbor).add(0.5, 0.5, 0.5)
-                    .add(new Vec3d(side2.getDirectionVec()).scale(0.5));
-
-            // check if hitVec is within range (4.25 blocks)
-            if(eyesPos.squareDistanceTo(hitVec) > 18.0625)
-                continue;
-
-            // place block
-            double diffX = hitVec.x - eyesPos.x;
-            double diffY = hitVec.y - eyesPos.y;
-            double diffZ = hitVec.z - eyesPos.z;
-
-            double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-            float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
-            float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
-
-            float[] rotations = {
-                    MC.player.rotationYaw
-                            + MathHelper.wrapDegrees(yaw - MC.player.rotationYaw),
-                    MC.player.rotationPitch + MathHelper
-                            .wrapDegrees(pitch - MC.player.rotationPitch)};
-
-            MC.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0],
-                    rotations[1], MC.player.onGround));
-            MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
-            MC.playerController.processRightClickBlock(MC.player,
-                    MC.world, neighbor, side2, hitVec, hand);
-            MC.player.swingArm(hand);
-            MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.STOP_SNEAKING));
-
-            return;
+            hitVec = new Vec3d(neighbor).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getDirectionVec()).scale(0.5));
+            break;
         }
+
+        // Air place if no neighbour was found
+        if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+        if(neighbor == null) neighbor = pos;
+        if(side2 == null) side2 = EnumFacing.UP;
+
+        // place block
+        double diffX = hitVec.x - eyesPos.x;
+        double diffY = hitVec.y - eyesPos.y;
+        double diffZ = hitVec.z - eyesPos.z;
+
+        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+        float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
+        float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
+
+        float[] rotations = {
+                MC.player.rotationYaw
+                        + MathHelper.wrapDegrees(yaw - MC.player.rotationYaw),
+                MC.player.rotationPitch + MathHelper
+                        .wrapDegrees(pitch - MC.player.rotationPitch)};
+
+        MC.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0],
+                rotations[1], MC.player.onGround));
+        MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
+        MC.playerController.processRightClickBlock(MC.player,
+                MC.world, neighbor, side2, hitVec, hand);
+        MC.player.swingArm(hand);
+        MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.STOP_SNEAKING));
+
+        return true;
     }
 
     //Credit to KAMI for code below

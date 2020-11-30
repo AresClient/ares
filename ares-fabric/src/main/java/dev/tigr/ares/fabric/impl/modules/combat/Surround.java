@@ -1,16 +1,17 @@
-package dev.tigr.ares.forge.impl.modules.combat;
+package dev.tigr.ares.fabric.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
-import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.WorldUtils;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.util.math.BlockPos;
+import dev.tigr.ares.fabric.impl.modules.player.Freecam;
+import dev.tigr.ares.fabric.utils.InventoryUtils;
+
+import dev.tigr.ares.fabric.utils.WorldUtils;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.util.math.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -33,27 +34,27 @@ public class Surround extends Module {
 
     @Override
     public void onTick() {
-        if(!MC.player.onGround) return;
+        if(!MC.player.isOnGround()) return;
 
         // make sure player is in the same place
-        AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
-        if(!lastPos.equals(new BlockPos(loc.getPositionVector()))) {
+        AbstractClientPlayerEntity loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
+        if(!loc.getBlockPos().equals(lastPos)) {
             setEnabled(false);
             return;
         }
 
         // find obby
-        int obbyIndex = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
+        int obbyIndex = findBlock();
         if(obbyIndex == -1) return;
-        int prevSlot = MC.player.inventory.currentItem;
+        int prevSlot = MC.player.inventory.selectedSlot;
 
         if(needsToPlace()) {
             for(BlockPos pos: getPositions()) {
-                MC.player.inventory.currentItem = obbyIndex;
+                MC.player.inventory.selectedSlot = obbyIndex;
                 WorldUtils.placeBlockMainHand(pos);
             }
 
-            MC.player.inventory.currentItem = prevSlot;
+            MC.player.inventory.selectedSlot = prevSlot;
         }
     }
 
@@ -74,7 +75,7 @@ public class Surround extends Module {
     // adds block to list and structure block if needed to place
     private void add(List<BlockPos> list, BlockPos pos) {
         if(
-                MC.world.getBlockState(pos).getBlock() == Blocks.AIR &&
+                MC.world.getBlockState(pos).isAir() &&
                 allAir(pos.north(), pos.east(), pos.south(), pos.west(), pos.up(), pos.down()) &&
                 !air.getValue()
         ) list.add(pos.down());
@@ -82,34 +83,39 @@ public class Surround extends Module {
     }
 
     private boolean allAir(BlockPos... pos) {
-        return Arrays.stream(pos).allMatch(blockPos -> MC.world.getBlockState(blockPos).getBlock() == Blocks.AIR);
+        return Arrays.stream(pos).allMatch(blockPos -> MC.world.getBlockState(blockPos).isAir());
     }
 
     private boolean anyAir(BlockPos... pos) {
-        return Arrays.stream(pos).anyMatch(blockPos -> MC.world.getBlockState(blockPos).getBlock() == Blocks.AIR);
+        return Arrays.stream(pos).anyMatch(blockPos -> MC.world.getBlockState(blockPos).isAir());
+    }
+
+    private int findBlock() {
+        int index = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
+        return index == -1 ? InventoryUtils.findBlockInHotbar(Blocks.CRYING_OBSIDIAN) : index;
     }
 
     @Override
     public void onEnable() {
-        BlockPos pos = lastPos = new BlockPos(MC.player.getPositionVector());
+        lastPos = MC.player.getBlockPos();
 
         if(snap.getValue()) {
-            double xPos = MC.player.getPositionVector().x;
-            double zPos = MC.player.getPositionVector().z;
+            double xPos = MC.player.getPos().x;
+            double zPos = MC.player.getPos().z;
 
-            if(Math.abs((pos.getX() + 0.5) - MC.player.getPositionVector().x) >= 0.2) {
-                int xDir = (pos.getX() + 0.5) - MC.player.getPositionVector().x > 0 ? 1 : -1;
+            if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPos().x) >= 0.2) {
+                int xDir = (lastPos.getX() + 0.5) - MC.player.getPos().x > 0 ? 1 : -1;
                 xPos += 0.3 * xDir;
             }
 
-            if(Math.abs((pos.getZ() + 0.5) - MC.player.getPositionVector().z) >= 0.2) {
-                int zDir = (pos.getZ() + 0.5) - MC.player.getPositionVector().z > 0 ? 1 : -1;
+            if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPos().z) >= 0.2) {
+                int zDir = (lastPos.getZ() + 0.5) - MC.player.getPos().z > 0 ? 1 : -1;
                 zPos += 0.3 * zDir;
             }
 
-            MC.player.motionX = MC.player.motionY = MC.player.motionZ = 0;
-            MC.player.setPosition(xPos, pos.getY(), zPos);
-            MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, pos.getY(), zPos, MC.player.onGround));
+            MC.player.setVelocity(0, 0, 0);
+            MC.player.setPos(xPos, lastPos.getY(), zPos);
+            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(xPos, lastPos.getY(), zPos, MC.player.isOnGround()));
         }
     }
 }

@@ -4,6 +4,7 @@ import dev.tigr.ares.Wrapper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemPlacementContext;
@@ -22,58 +23,65 @@ import java.util.stream.Collectors;
  * @author Tigermouthbear 9/26/20
  */
 public class WorldUtils implements Wrapper {
-    public static void placeBlockMainHand(BlockPos pos) {
-        placeBlock(Hand.MAIN_HAND, pos);
+    public static boolean placeBlockMainHand(BlockPos pos) {
+        return placeBlock(Hand.MAIN_HAND, pos);
     }
 
-    public static void placeBlock(Hand hand, BlockPos pos) {
+    public static boolean placeBlock(Hand hand, BlockPos pos) {
+        // make sure place is empty
+        if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
+            return false;
+
         Vec3d eyesPos = new Vec3d(MC.player.getX(),
                 MC.player.getY() + MC.player.getEyeHeight(MC.player.getPose()),
                 MC.player.getZ());
 
+        Vec3d hitVec = null;
+        BlockPos neighbor = null;
+        Direction side2 = null;
         for(Direction side: Direction.values()) {
-            BlockPos neighbor = pos.offset(side);
-            Direction side2 = side.getOpposite();
+            neighbor = pos.offset(side);
+            side2 = side.getOpposite();
 
-            // check if neighbor can be right clicked
-            if(!MC.player.canPlaceOn(pos, side, MC.player.getStackInHand(hand)))
+            // check if neighbor can be right clicked aka it isnt air
+            if(MC.world.getBlockState(neighbor).isAir()) {
+                neighbor = null;
+                side2 = null;
                 continue;
+            }
 
-            Vec3d hitVec = new Vec3d(neighbor.getX(), neighbor.getY(), neighbor.getZ()).add(0.5, 0.5, 0.5)
-                    .add(new Vec3d(side2.getUnitVector()).multiply(0.5));
-
-            // check if hitVec is within range (4.25 blocks)
-            if(eyesPos.squaredDistanceTo(hitVec) > 18.0625)
-                continue;
-
-            // place block
-            double diffX = hitVec.x - eyesPos.x;
-            double diffY = hitVec.y - eyesPos.y;
-            double diffZ = hitVec.z - eyesPos.z;
-
-            double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-            float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
-            float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
-
-            float[] rotations = {
-                    MC.player.yaw
-                            + MathHelper.wrapDegrees(yaw - MC.player.yaw),
-                    MC.player.pitch + MathHelper
-                            .wrapDegrees(pitch - MC.player.pitch)};
-
-            // make sure can place there
-            BlockHitResult blockHitResult = new BlockHitResult(hitVec, side, neighbor, false);
-            if(!MC.world.getBlockState(pos).canReplace(new ItemPlacementContext(MC.player, hand, MC.player.getStackInHand(hand), blockHitResult))) return;
-
-            MC.getNetworkHandler().sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
-            MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
-            MC.interactionManager.interactBlock(MC.player, MC.world, hand, blockHitResult);
-            MC.player.swingHand(hand);
-            MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
-
-            return;
+            hitVec = new Vec3d(neighbor.getX(), neighbor.getY(), neighbor.getZ()).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getUnitVector()).multiply(0.5));
+            break;
         }
+
+        // Air place if no neighbour was found
+        if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+        if(neighbor == null) neighbor = pos;
+        if(side2 == null) side2 = Direction.UP;
+
+        // place block
+        double diffX = hitVec.x - eyesPos.x;
+        double diffY = hitVec.y - eyesPos.y;
+        double diffZ = hitVec.z - eyesPos.z;
+
+        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
+
+        float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
+        float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
+
+        float[] rotations = {
+                MC.player.yaw
+                        + MathHelper.wrapDegrees(yaw - MC.player.yaw),
+                MC.player.pitch + MathHelper
+                        .wrapDegrees(pitch - MC.player.pitch)};
+
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
+        MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+        MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
+        MC.player.swingHand(hand);
+        MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+
+        return true;
     }
 
     public static final List<Block> NONSOLID_BLOCKS = Arrays.asList(
