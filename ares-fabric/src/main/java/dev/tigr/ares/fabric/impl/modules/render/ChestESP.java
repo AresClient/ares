@@ -21,14 +21,17 @@ public class ChestESP extends Module {
     @Override
     public void onRender3d() {
         RenderUtils.glBegin();
-        MC.world.blockEntities.forEach(tileEntity -> {
+
+        for(BlockEntity tileEntity: MC.world.blockEntities) {
             Box bb = RenderUtils.getBoundingBox(tileEntity.getPos());
+            if(bb == null) continue;
             if(tileEntity instanceof ChestBlockEntity || tileEntity instanceof BarrelBlockEntity) drawBox(bb, CHEST);
             else if(tileEntity instanceof EnderChestBlockEntity) drawBox(bb, ENDER_CHEST);
             else if(tileEntity instanceof DispenserBlockEntity || tileEntity instanceof FurnaceBlockEntity || tileEntity instanceof HopperBlockEntity || tileEntity instanceof BlastFurnaceBlockEntity)
                 drawBox(bb, DISPENSER);
             else if(tileEntity instanceof ShulkerBoxBlockEntity) drawBox(bb, SHULKER);
-        });
+        }
+
         RenderUtils.glEnd();
     }
 

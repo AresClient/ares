@@ -88,7 +88,7 @@ public class ForgeEvents implements Wrapper {
 
     @SubscribeEvent
     public void tickEvent(TickEvent.ClientTickEvent event) {
-        Module.tick();
+        if(MC.player != null && MC.world != null) Module.tick();
     }
 
     @SubscribeEvent

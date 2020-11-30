@@ -46,7 +46,7 @@ public class MixinMinecraftClient {
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;pop()V", ordinal = 0, shift = At.Shift.AFTER))
     public void tick(CallbackInfo ci) {
         profiler.push("aresTick");
-        Module.tick();
+        if(MC.player != null && MC.world != null) Module.tick();
         profiler.pop();
     }
 

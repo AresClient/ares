@@ -147,28 +147,32 @@ public class Module implements Wrapper {
         try {
             TICKS++;
             Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onTick);
-        } catch(Throwable ignored) {
+        } catch(Throwable e) {
+            e.printStackTrace();
         }
     }
 
     public static void render3d() {
         try {
             Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onRender3d);
-        } catch(Throwable ignored) {
+        } catch(Throwable e) {
+            e.printStackTrace();
         }
     }
 
     public static void render2d() {
         try {
             Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onRender2d);
-        } catch(Throwable ignored) {
+        } catch(Throwable e) {
+            e.printStackTrace();
         }
     }
 
     public static void motion() {
         try {
             Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onMotion);
-        } catch(Throwable ignored) {
+        } catch(Throwable e) {
+            e.printStackTrace();
         }
     }
 }

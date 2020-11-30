@@ -60,7 +60,12 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static Box getBoundingBox(BlockPos pos) {
-        return MC.world.getBlockState(pos).getOutlineShape(MC.world, pos).getBoundingBox().offset(pos);
+        try {
+            assert MC.world != null;
+            return MC.world.getBlockState(pos).getOutlineShape(MC.world, pos).getBoundingBox().offset(pos);
+        } catch(Exception e) {
+            return null;
+        }
     }
 
     public static void renderSelectionBoundingBox(Box box, Color color) {
