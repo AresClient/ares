@@ -17,6 +17,7 @@
     "client.MixinPlayerEntity",
     "render.MixinAbstractClientPlayerEntity",
     "render.MixinArmorFeatureRenderer",
+    "render.MixinBackgroundRenderer",
     "render.MixinCamera",
     "render.MixinCapeFeatureRenderer",
     "render.MixinElytraFeatureRenderer",
