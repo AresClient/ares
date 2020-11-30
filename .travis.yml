@@ -5,10 +5,10 @@ os: linux
 dist: trusty
 
 install:
-  - ./gradlew setupWorkspace
+  - ./gradlew setupDecompWorkspace
 
 script:
-  - ./gradlew buildAll
+  - ./gradlew check
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
