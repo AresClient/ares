@@ -8,10 +8,7 @@ import dev.tigr.ares.fabric.impl.commands.*;
 import dev.tigr.ares.fabric.impl.modules.combat.*;
 import dev.tigr.ares.fabric.impl.modules.exploit.*;
 import dev.tigr.ares.fabric.impl.modules.hud.elements.*;
-import dev.tigr.ares.fabric.impl.modules.misc.ChatSuffix;
-import dev.tigr.ares.fabric.impl.modules.misc.DiscordPresence;
-import dev.tigr.ares.fabric.impl.modules.misc.MsgOnToggle;
-import dev.tigr.ares.fabric.impl.modules.misc.PortalChat;
+import dev.tigr.ares.fabric.impl.modules.misc.*;
 import dev.tigr.ares.fabric.impl.modules.movement.*;
 import dev.tigr.ares.fabric.impl.modules.player.*;
 import dev.tigr.ares.fabric.impl.modules.render.*;
@@ -99,6 +96,7 @@ public class AresMod extends Ares {
                 DiscordPresence.class,
                 MsgOnToggle.class,
                 PortalChat.class,
+                VisualRange.class,
 
                 // movement
                 AutoSprint.class,
