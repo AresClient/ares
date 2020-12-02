@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.event.events.client;
+package dev.tigr.ares.fabric.event.client;
 
 import net.minecraft.entity.Entity;
 

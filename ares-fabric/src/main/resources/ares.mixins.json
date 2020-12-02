@@ -8,6 +8,7 @@
     "client.MixinClientConnection",
     "client.MixinClientPlayerEntity",
     "client.MixinClientPlayerInteractionManager",
+    "client.MixinClientWorld",
     "client.MixinEntity",
     "client.MixinFluidBlock",
     "client.MixinKeyBinding",

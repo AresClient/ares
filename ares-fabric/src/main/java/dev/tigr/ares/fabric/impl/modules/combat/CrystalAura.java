@@ -11,7 +11,7 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
-import dev.tigr.ares.fabric.event.client.DestroyBlockEvent;
+import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.event.client.EntityEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
