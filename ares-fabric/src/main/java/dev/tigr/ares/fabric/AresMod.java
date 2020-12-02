@@ -128,7 +128,7 @@ public class AresMod extends Ares {
                 Freecam.class,
                 //NoForceLook.class,
                 RotationLock.class,
-                //Scaffold.class,
+                Scaffold.class,
 
                 // render
                 AntiOverlay.class,
