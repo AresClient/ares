@@ -48,7 +48,7 @@ public class AresMod extends Ares {
                 AutoArmor.class,
                 //AutoCrystal.class,
                 AutoEz.class,
-                //AutoSurround.class,
+                AutoSurround.class,
                 AutoTotem.class,
                 //AutoTrap.class,
                 BowRelease.class,
@@ -128,7 +128,7 @@ public class AresMod extends Ares {
                 Freecam.class,
                 //NoForceLook.class,
                 RotationLock.class,
-                //Scaffold.class,
+                Scaffold.class,
 
                 // render
                 AntiOverlay.class,
