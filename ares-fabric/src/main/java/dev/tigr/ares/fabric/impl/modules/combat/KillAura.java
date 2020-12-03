@@ -12,30 +12,34 @@ import dev.tigr.ares.fabric.utils.Comparators;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.AxeItem;
+import net.minecraft.item.SwordItem;
 import net.minecraft.util.Hand;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 /**
- * @authors Tigermouthbear
+ * @author Tigermouthbear
+ * Updated by Sigha
  */
 @Module.Info(name = "KillAura", description = "Automatically hit nearby players", category = Category.COMBAT)
 public class KillAura extends Module {
-    private static final UUID ATTACK_SPEED_MODIFIER = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
-
     private final Setting<Double> range = register(new DoubleSetting("Range", 5.0D, 1.0D, 15.0D));
-    private final Setting<Boolean> superOnly = register(new BooleanSetting("32k Only", false));
     private final Setting<Boolean> playersOnly = register(new BooleanSetting("Players only", true));
     private final Setting<Boolean> autoDelay = register(new BooleanSetting("Auto Delay", true));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay in ticks", 40, 0, 50)).setVisibility(() -> !autoDelay.getValue());
+    private final Setting<Boolean> weaponOnly = register(new BooleanSetting("Weapon Only", true));
 
     private int hasWaited = 0;
 
+    private boolean itemInHand() {
+        return !weaponOnly.getValue() || (MC.player.getMainHandStack().getItem() instanceof AxeItem || MC.player.getMainHandStack().getItem() instanceof SwordItem);
+    }
+
     @Override
     public void onTick() {
-        if(MC.player.isDead() || MC.world == null) return;
+        if(MC.player.isDead() || MC.world == null || !itemInHand()) return;
 
         if(autoDelay.getValue()) {
             if((int) (MC.player.getAttackCooldownProgress(0.0F) * 17.0F) < 16) return;

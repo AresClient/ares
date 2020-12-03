@@ -11,12 +11,14 @@ import dev.tigr.ares.forge.utils.Comparators;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemAxe;
+import net.minecraft.item.ItemSword;
 import net.minecraft.util.EnumHand;
 
 import java.util.List;
 
 /**
- * @authors Tigermouthbear
+ * @author Tigermouthbear
  */
 @Module.Info(name = "KillAura", description = "Automatically hit nearby players", category = Category.COMBAT)
 public class KillAura extends Module {
@@ -25,12 +27,17 @@ public class KillAura extends Module {
     private final Setting<Boolean> playersOnly = register(new BooleanSetting("Players only", true));
     private final Setting<Boolean> autoDelay = register(new BooleanSetting("Auto Delay", true));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay in ticks", 40, 0, 50)).setVisibility(() -> !autoDelay.getValue());
+    private final Setting<Boolean> weaponOnly = register(new BooleanSetting("Weapon Only", true));
 
     private int hasWaited = 0;
 
+    private boolean itemInHand() {
+        return !weaponOnly.getValue() || (MC.player.getHeldItemMainhand().getItem() instanceof ItemAxe || MC.player.getHeldItemMainhand().getItem() instanceof ItemSword);
+    }
+
     @Override
     public void onTick() {
-        if(MC.player.isDead || MC.world == null) return;
+        if(MC.player.isDead || MC.world == null || !itemInHand()) return;
 
         if(autoDelay.getValue()) {
             if((int) (MC.player.getCooledAttackStrength(0.0F) * 17.0F) < 16) return;
