@@ -54,7 +54,7 @@ public class AresMod extends Ares {
                 BurrowDetect.class,
                 Criticals.class,
                 CrystalAura.class,
-                //HoleFiller.class,
+                HoleFiller.class,
                 //HopperAura.class,
                 KillAura.class,
                 //ObbyPlace.class,
@@ -126,7 +126,7 @@ public class AresMod extends Ares {
                 //DebugCrosshair.class,
                 FakeRotation.class,
                 Freecam.class,
-                //NoForceLook.class,
+                NoForceLook.class,
                 RotationLock.class,
                 Scaffold.class,
 
