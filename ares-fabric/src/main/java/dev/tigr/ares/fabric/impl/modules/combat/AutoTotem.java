@@ -14,7 +14,7 @@ import net.minecraft.screen.slot.SlotActionType;
  */
 @Module.Info(name = "AutoTotem", description = "Automatically equips a totem when you pop one", category = Category.COMBAT)
 public class AutoTotem extends Module {
-    private final Setting<Boolean> soft = register(new BooleanSetting("Soft", false));
+    public final Setting<Boolean> soft = register(new BooleanSetting("Soft", false));
 
     public static AutoTotem INSTANCE;
 

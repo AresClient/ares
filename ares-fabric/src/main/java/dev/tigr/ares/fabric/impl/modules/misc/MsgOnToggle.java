@@ -1,9 +1,9 @@
 package dev.tigr.ares.fabric.impl.modules.misc;
 
+import dev.tigr.ares.core.event.client.ToggleEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.fabric.event.client.ToggleEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 

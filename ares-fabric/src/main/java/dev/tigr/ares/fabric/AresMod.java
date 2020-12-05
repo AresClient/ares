@@ -58,7 +58,7 @@ public class AresMod extends Ares {
                 //HopperAura.class,
                 KillAura.class,
                 //ObbyPlace.class,
-                //Offhand.class,
+                Offhand.class,
                 //OffhandGap.class,
                 Surround.class,
                 TotemPopCounter.class,

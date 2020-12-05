@@ -1,12 +1,12 @@
 package dev.tigr.ares.fabric.impl.commands;
 
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.event.client.PostInitializationEvent;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BindSetting;
 import dev.tigr.ares.core.setting.settings.ListSetting;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.fabric.event.client.PostInitializationEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 
