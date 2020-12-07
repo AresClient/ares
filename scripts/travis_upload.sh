@@ -6,6 +6,6 @@ if [ "$TRAVIS_BRANCH" != "master" ] || [ "$TRAVIS_PULL_REQUEST" = "true" ]; then
 fi
 
 for filename in $TRAVIS_BUILD_DIR/build/*.jar; do
-    res=$(curl -F token=$UPLOAD_TOKEN -F file=@$filename https://aresclient.org/beta)
+    res=$(curl -F token=$UPLOAD_TOKEN -F message=$TRAVIS_COMMIT_MESSAGE -F file=@$filename https://aresclient.org/beta)
     echo $res
 done
