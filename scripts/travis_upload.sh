@@ -5,15 +5,15 @@ if [ "$TRAVIS_BRANCH" != "master" ] || [ "$TRAVIS_PULL_REQUEST" = "true" ]; then
   exit 0
 fi
 
-FORGE_PATH = ""
-FABRIC_PATH = ""
+FORGE_PATH=""
+FABRIC_PATH=""
 
 for filename in $TRAVIS_BUILD_DIR/build/*.jar; do
   if [ filename == *"forge" ]; then
-    FORGE_PATH = filename
+    FORGE_PATH=$filename
   fi
   if [ filename == *"fabric" ]; then
-    FABRIC_PATH = filename
+    FABRIC_PATH=$filename
   fi
 done
 
