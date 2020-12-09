@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.event.events.player;
+package dev.tigr.ares.fabric.event.player;
 
 import dev.tigr.simpleevents.event.Event;
 

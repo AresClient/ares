@@ -117,7 +117,7 @@ public class AresMod extends Ares {
                 Velocity.class,
 
                 // player
-                //AntiHitbox.class,
+                AntiHitbox.class,
                 AntiHunger.class,
                 HotbarReplenish.class,
                 //AutoReconnect.class,

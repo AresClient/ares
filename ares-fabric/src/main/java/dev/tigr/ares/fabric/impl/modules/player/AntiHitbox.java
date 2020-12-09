@@ -1,8 +1,8 @@
-package dev.tigr.ares.forge.impl.modules.player;
+package dev.tigr.ares.fabric.impl.modules.player;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.forge.event.events.player.AntiHitboxEvent;
+import dev.tigr.ares.fabric.event.player.AntiHitboxEvent;
 import dev.tigr.simpleevents.event.Result;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -14,6 +14,6 @@ import dev.tigr.simpleevents.listener.EventListener;
 public class AntiHitbox extends Module {
     @EventHandler
     public EventListener<AntiHitboxEvent> antiHitboxEvent = new EventListener<>(event -> {
-        if(MC.playerController.getIsHittingBlock()) event.setResult(Result.ALLOW);
+        if(MC.interactionManager.isBreakingBlock()) event.setResult(Result.ALLOW);
     });
 }
