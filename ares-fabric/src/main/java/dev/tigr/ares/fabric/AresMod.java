@@ -80,7 +80,7 @@ public class AresMod extends Ares {
                 //CoordTpExploit.class,
                 FastPlace.class,
                 LiquidInteract.class,
-                //MultiTask.class,
+                MultiTask.class,
                 //NewChunks.class,
                 NoBreakDelay.class,
                 NoBreakReset.class,

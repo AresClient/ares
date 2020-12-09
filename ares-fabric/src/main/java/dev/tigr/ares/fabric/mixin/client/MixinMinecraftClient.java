@@ -6,6 +6,7 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.UpdateHelper;
 import dev.tigr.ares.fabric.AresMod;
 import dev.tigr.ares.fabric.event.client.OpenScreenEvent;
+import dev.tigr.ares.fabric.event.player.InteractEvent;
 import dev.tigr.ares.fabric.gui.AresChatGUI;
 import dev.tigr.ares.fabric.gui.AresMainMenu;
 import dev.tigr.ares.fabric.gui.AresUpdateGUI;
@@ -14,11 +15,13 @@ import net.minecraft.client.RunArgs;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.profiler.Profiler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -70,6 +73,13 @@ public class MixinMinecraftClient {
         }
 
         if(Ares.EVENT_MANAGER.post(new OpenScreenEvent(screen)).isCancelled()) ci.cancel();
+    }
+
+    @Redirect(method = "handleInputEvents", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
+    public boolean usingItemWrapper(ClientPlayerEntity clientPlayerEntity) {
+        boolean value = clientPlayerEntity.isUsingItem();
+        if(value && !MC.options.keyUse.isPressed()) MC.interactionManager.stopUsingItem(MC.player);
+        return Ares.EVENT_MANAGER.post(new InteractEvent(value)).usingItem;
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;printCrashReport(Lnet/minecraft/util/crash/CrashReport;)V"))
