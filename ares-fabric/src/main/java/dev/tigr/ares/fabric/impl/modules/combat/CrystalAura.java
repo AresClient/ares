@@ -253,8 +253,10 @@ public class CrystalAura extends Module {
         if(target != null) {
             RenderUtils.glBegin();
             Box bb = RenderUtils.getBoundingBox(target);
-            RenderUtils.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
-            RenderUtils.renderSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
+            if(bb != null) {
+                RenderUtils.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
+                RenderUtils.renderSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
+            }
             RenderUtils.glEnd();
         }
     }
