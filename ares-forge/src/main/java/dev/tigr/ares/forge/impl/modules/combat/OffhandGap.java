@@ -4,7 +4,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
-import dev.tigr.ares.forge.event.events.player.PlaceCrystalEvent;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -19,20 +18,12 @@ import net.minecraftforge.client.event.MouseEvent;
  */
 @Module.Info(name = "OffhandGap", description = "Eats a gapple in your offhand when you right click while holding a tool", category = Category.COMBAT)
 public class OffhandGap extends Module {
-    public static OffhandGap INSTANCE;
-
     private final Setting<Boolean> autoCrystal = register(new BooleanSetting("While AutoCrystal", true));
 
     private boolean clickBlank = false;
     private boolean move = false;
     private boolean gapping = false;
     private int targetIndex = -1;
-
-    @EventHandler
-    public EventListener<PlaceCrystalEvent> placeCrystalEvent = new EventListener<>(event -> {
-        if(CrystalAura.INSTANCE.getEnabled() && MC.player.getHeldItemOffhand().getItem() == Items.GOLDEN_APPLE && event.getPos() != CrystalAura.INSTANCE.target)
-            event.setCancelled(true);
-    });
 
     @EventHandler
     public EventListener<MouseEvent> mouseClickEvent = new EventListener<>(event -> {
@@ -53,10 +44,6 @@ public class OffhandGap extends Module {
             }
         }
     });
-
-    public OffhandGap() {
-        INSTANCE = this;
-    }
 
     @Override
     public void onTick() {
@@ -79,6 +66,6 @@ public class OffhandGap extends Module {
     private boolean shouldOffhand() {
         return InventoryUtils.findItem(Items.GOLDEN_APPLE) != -1
                 && (MC.player.getHeldItemMainhand().getItem() instanceof ItemTool || MC.player.getHeldItemMainhand().getItem() instanceof ItemSword
-                || (CrystalAura.INSTANCE.getEnabled() && MC.player.getHeldItemMainhand().getItem() == Items.END_CRYSTAL));
+                || (autoCrystal.getValue() && CrystalAura.INSTANCE.getEnabled() && MC.player.getHeldItemMainhand().getItem() == Items.END_CRYSTAL));
     }
 }

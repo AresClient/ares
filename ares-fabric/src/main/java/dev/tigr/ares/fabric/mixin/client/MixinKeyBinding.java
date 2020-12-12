@@ -3,6 +3,7 @@ package dev.tigr.ares.fabric.mixin.client;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.setting.settings.BindSetting;
+import dev.tigr.ares.fabric.event.client.SetKeyBindingStateEvent;
 import dev.tigr.ares.fabric.gui.AresChatGUI;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.options.KeyBinding;
@@ -28,5 +29,10 @@ public class MixinKeyBinding {
 
             if(String.valueOf((char)key.getCode()).equalsIgnoreCase(Command.PREFIX.getValue())) MinecraftClient.getInstance().openScreen(new AresChatGUI(""));
         }
+    }
+
+    @Inject(method = "setKeyPressed", at = @At("HEAD"))
+    private static void setKeyPressed(InputUtil.Key key, boolean pressed, CallbackInfo ci) {
+        Ares.EVENT_MANAGER.post(new SetKeyBindingStateEvent(key, pressed));
     }
 }
