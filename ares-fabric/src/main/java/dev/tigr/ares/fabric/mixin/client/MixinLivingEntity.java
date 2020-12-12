@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.mixin.client;
 
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.fabric.event.client.LivingDeathEvent;
+import dev.tigr.ares.fabric.event.client.UpdateLivingEntityEvent;
 import dev.tigr.ares.fabric.event.movement.ElytraMoveEvent;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
@@ -29,5 +30,15 @@ public class MixinLivingEntity {
     public void elytraMove(LivingEntity livingEntity, MovementType movementType, Vec3d vec3d) {
         ElytraMoveEvent elytraMoveEvent = Ares.EVENT_MANAGER.post(new ElytraMoveEvent(vec3d.x, vec3d.y, vec3d.z));
         livingEntity.move(movementType, new Vec3d(elytraMoveEvent.x, elytraMoveEvent.y, elytraMoveEvent.z));
+    }
+
+    @Inject(method = "baseTick", at = @At("HEAD"))
+    public void baseTickHead(CallbackInfo ci) {
+        Ares.EVENT_MANAGER.post(new UpdateLivingEntityEvent.Pre(entity));
+    }
+
+    @Inject(method = "baseTick", at = @At("RETURN"))
+    public void baseTickReturn(CallbackInfo ci) {
+        Ares.EVENT_MANAGER.post(new UpdateLivingEntityEvent.Post(entity));
     }
 }

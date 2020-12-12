@@ -102,7 +102,7 @@ public class AresMod extends Ares {
                 AutoSprint.class,
                 Blink.class,
                 ElytraFly.class,
-                //EntitySpeed.class,
+                EntitySpeed.class,
                 Flight.class,
                 HighJump.class,
                 //IceSpeed.class,

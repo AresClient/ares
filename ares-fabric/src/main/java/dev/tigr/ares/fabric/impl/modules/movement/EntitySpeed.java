@@ -1,14 +1,14 @@
-package dev.tigr.ares.forge.impl.modules.movement;
+package dev.tigr.ares.fabric.impl.modules.movement;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.fabric.event.client.UpdateLivingEntityEvent;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraftforge.event.entity.living.LivingEvent;
 
 /**
  * @author Tigermouthbear
@@ -20,13 +20,14 @@ public class EntitySpeed extends Module {
     private final Setting<Boolean> onGround = register(new BooleanSetting("onGround", false));
 
     @EventHandler
-    public EventListener<LivingEvent.LivingUpdateEvent> livingUpdateEvent = new EventListener<>(event -> {
-        if(MC.player.isRiding() && MC.player.getRidingEntity() != null) {
-            MC.player.getRidingEntity().rotationYaw = MC.player.rotationYaw;
-            MC.player.getRidingEntity().setVelocity(0, fly.getValue() ? 0 : MC.player.getRidingEntity().motionY, 0);
+    public EventListener<UpdateLivingEntityEvent.Post> updateLivingEntityPost = new EventListener<>(event -> {
+        if(MC.player == null) return;
+        if(MC.player.getRootVehicle() != null && event.getEntity() == MC.player.getRootVehicle() && MC.player.isRiding()) {
+            MC.player.getRootVehicle().yaw = MC.player.yaw;
+            MC.player.getRootVehicle().setVelocity(0, fly.getValue() ? 0 : MC.player.getRootVehicle().getVelocity().y, 0);
 
-            if(onGround.getValue()) MC.player.getRidingEntity().distanceWalkedModified = speed.getValue().intValue();
-            WorldUtils.moveEntityWithSpeed(MC.player.getRidingEntity(), speed.getValue(), fly.getValue());
+            if(onGround.getValue()) MC.player.getRootVehicle().distanceTraveled = speed.getValue().intValue();
+            WorldUtils.moveEntityWithSpeed(MC.player.getVehicle(), speed.getValue(), fly.getValue());
         }
     });
 }

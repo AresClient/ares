@@ -46,7 +46,7 @@ public class AutoTotem extends Module {
         }
 
         if(MC.player.getOffHandStack().getItem() != Items.TOTEM_OF_UNDYING) {
-            if(/*(*/soft.getValue() /*|| (OffhandGap.INSTANCE.getEnabled() && MC.player.getOffHandStack().getItem() == Items.GOLDEN_APPLE))*/ && !MC.player.getOffHandStack().isEmpty())
+            if((soft.getValue() || (OffhandGap.INSTANCE.getEnabled() && (MC.player.getOffHandStack().getItem() == Items.GOLDEN_APPLE || MC.player.getOffHandStack().getItem() == Items.ENCHANTED_GOLDEN_APPLE))) && !MC.player.getOffHandStack().isEmpty())
                 return;
 
             if(totemCount == 0) return;

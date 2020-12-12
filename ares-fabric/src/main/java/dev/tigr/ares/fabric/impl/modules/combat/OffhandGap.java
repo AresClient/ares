@@ -19,12 +19,18 @@ import net.minecraft.screen.slot.SlotActionType;
  */
 @Module.Info(name = "OffhandGap", description = "Eats a gapple in your offhand when you right click while holding a tool", category = Category.COMBAT)
 public class OffhandGap extends Module {
+    public static OffhandGap INSTANCE;
+    
     private final Setting<Boolean> autoCrystal = register(new BooleanSetting("While AutoCrystal", true));
 
     private boolean clickBlank = false;
     private boolean move = false;
     private boolean gapping = false;
     private int targetIndex = -1;
+
+    public OffhandGap() {
+        INSTANCE = this;
+    }
 
     @EventHandler
     public EventListener<SetKeyBindingStateEvent> mouseClickEvent = new EventListener<>(event -> {
