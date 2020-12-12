@@ -20,15 +20,18 @@ public class HotbarReplenish extends Module {
     private boolean clickBlank = false;
     private int move = -1;
 
+    private boolean enable = true;
+
     @Override
-    public void onEnable() {
-        for(int i = 0; i < 9; i++) hotbar.put(i, MC.player.inventory.getStackInSlot(i).getItem());
+    public void onDisable() {
+        enable = true;
     }
 
     @Override
     public void onTick() {
-        if(MC.currentScreen instanceof GuiContainer && MC.player != null) {
+        if((MC.currentScreen instanceof GuiContainer && MC.player != null) || enable) {
             for(int i = 0; i < 9; i++) hotbar.put(i, MC.player.inventory.getStackInSlot(i).getItem());
+            enable = false;
         }
 
         if(MC.currentScreen instanceof GuiContainer || MC.player.ticksExisted % 2 != 0) return;
@@ -48,13 +51,14 @@ public class HotbarReplenish extends Module {
         }
 
         for(int stack: hotbar.keySet()) {
-            if(MC.player.inventory.getStackInSlot(stack).getItem() != hotbar.get(stack)) {
+            Item item = hotbar.get(stack);
+            if(MC.player.inventory.getStackInSlot(stack).getItem() != item) {
                 if(MC.player.inventory.getStackInSlot(stack).isEmpty()) {
-                    int count = InventoryUtils.amountInInventory(hotbar.get(stack));
+                    int count = InventoryUtils.amountInInventory(item);
                     if(count == 0) continue;
                     int index = -1;
                     for(int i = 9; i < 45; i++) {
-                        if(MC.player.inventory.getStackInSlot(i).getItem() == hotbar.get(stack)) {
+                        if(MC.player.inventory.getStackInSlot(i).getItem() == item) {
                             index = i;
                             break;
                         }
