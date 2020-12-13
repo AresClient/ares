@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.impl.modules.movement;
+package dev.tigr.ares.fabric.impl.modules.movement;
 
 import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalXZ;
@@ -26,7 +26,7 @@ public class AutoWalk extends Module {
     public void onMotion() {
         if(mode.getValue() == Mode.BASIC) {
             if(pathing) startPathing();
-            MC.player.moveForward = 1;
+            MC.player.forwardSpeed = 1;
         }
 
         if(mode.getValue() == Mode.SMART && !pathing) startPathing();
@@ -41,25 +41,25 @@ public class AutoWalk extends Module {
         GoalXZ goal = null;
         switch(getDirection()) {
             case NORTH:
-                goal = new GoalXZ((int) MC.player.posX, -border);
+                goal = new GoalXZ((int) MC.player.getX(), -border);
                 break;
             case NORTHEAST:
                 goal = new GoalXZ(border, -border);
                 break;
             case EAST:
-                goal = new GoalXZ(border, (int) MC.player.posZ);
+                goal = new GoalXZ(border, (int) MC.player.getZ());
                 break;
             case SOUTHEAST:
                 goal = new GoalXZ(border, border);
                 break;
             case SOUTH:
-                goal = new GoalXZ((int) MC.player.posX, border);
+                goal = new GoalXZ((int) MC.player.getX(), border);
                 break;
             case SOUTHWEST:
                 goal = new GoalXZ(-border, border);
                 break;
             case WEST:
-                goal = new GoalXZ(-border, (int) MC.player.posZ);
+                goal = new GoalXZ(-border, (int) MC.player.getZ());
                 break;
             case NORTHWEST:
                 goal = new GoalXZ(-border, -border);
@@ -76,7 +76,7 @@ public class AutoWalk extends Module {
     }
 
     private Direction getDirection() {
-        int dir = MathHelper.floor((double) (MC.player.rotationYaw * 8.0F / 360.0F) + 0.5D) & 7;
+        int dir = MathHelper.floor((double) (MC.player.yaw * 8.0F / 360.0F) + 0.5D) & 7;
         return Direction.values()[dir];
     }
 

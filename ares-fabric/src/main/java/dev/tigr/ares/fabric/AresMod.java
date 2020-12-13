@@ -45,7 +45,9 @@ public class AresMod extends Ares {
                 // combat
                 //AntiDeathScreen.class,
                 //Auto32k.class,
+                Anchor.class,
                 AutoArmor.class,
+                AutoCity.class,
                 AutoEz.class,
                 AutoSurround.class,
                 AutoTotem.class,
@@ -100,6 +102,8 @@ public class AresMod extends Ares {
 
                 // movement
                 AutoSprint.class,
+                AutoWalk.class,
+                Baritone.class,
                 Blink.class,
                 ElytraFly.class,
                 EntitySpeed.class,

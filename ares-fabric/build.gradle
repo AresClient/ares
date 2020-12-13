@@ -37,6 +37,9 @@ dependencies {
 
     compile "com.github.Vatuu:discord-rpc:1.6.2"
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
+
+    implementation "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
+    include "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
 }
 
 processResources {

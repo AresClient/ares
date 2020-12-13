@@ -7,6 +7,7 @@ import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
+import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
 import net.minecraft.network.MessageType;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -33,7 +34,7 @@ public class CustomUtils implements IUtils {
 
     @Override
     public void executeBaritoneCommand(String string) {
-        printMessage(TextColor.RED + "Baritone is not compatible with " + Ares.MC_VERSION);
+        Baritone.executeCommand(string);
     }
 
     @Override
