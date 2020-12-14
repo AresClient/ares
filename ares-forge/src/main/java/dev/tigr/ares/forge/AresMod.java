@@ -57,9 +57,11 @@ public class AresMod extends Ares {
     protected List<Class<? extends Module>> getModules() {
         return Arrays.asList(
                 // combat
+                Anchor.class,
                 AntiDeathScreen.class,
                 Auto32k.class,
                 AutoArmor.class,
+                AutoCity.class,
                 AutoEz.class,
                 AutoSurround.class,
                 AutoTotem.class,

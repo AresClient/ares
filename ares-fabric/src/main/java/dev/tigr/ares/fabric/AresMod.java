@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * @author Tigermouthbear
  */
-@Ares.Info(minecraftVersion = "1.12.2", version = "2.7.4", branch = Ares.Branches.BETA)
+@Ares.Info(minecraftVersion = "1.12.2", version = "2.8", branch = Ares.Branches.BETA)
 public class AresMod extends Ares {
     public AresMod() {
         UTILS = new CustomUtils();

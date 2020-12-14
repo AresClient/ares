@@ -1,12 +1,12 @@
-package dev.tigr.ares.fabric.impl.modules.combat;
+package dev.tigr.ares.forge.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
-import dev.tigr.ares.fabric.utils.HoleType;
-import dev.tigr.ares.fabric.utils.WorldUtils;
-import net.minecraft.entity.player.PlayerEntity;
+import dev.tigr.ares.forge.utils.HoleType;
+import dev.tigr.ares.forge.utils.WorldUtils;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -18,11 +18,11 @@ public class Anchor extends Module {
 
     @Override
     public void onMotion() {
-        if(MC.player != null && isOverHole(MC.player) && MC.player.getVelocity().y <= 0) MC.player.setVelocity(0, -20, 0);
+        if(MC.player != null && isOverHole(MC.player) && MC.player.motionY <= 0) MC.player.setVelocity(0, -20, 0);
     }
 
-    private boolean isOverHole(PlayerEntity playerEntity) {
-        BlockPos pos = playerEntity.getBlockPos();
+    private boolean isOverHole(EntityPlayer playerEntity) {
+        BlockPos pos = playerEntity.getPosition();
         int num = 0;
 
         while(WorldUtils.isHole(pos) == HoleType.NONE) {
