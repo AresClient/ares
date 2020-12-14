@@ -120,6 +120,7 @@ public class AresMod extends Ares {
                 VisualRange.class,
 
                 // movement
+                AntiLevitation.class,
                 AutoSprint.class,
                 AutoWalk.class,
                 Baritone.class,
