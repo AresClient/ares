@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "client.MixinBlock",
+    "client.MixinBoatEntity",
     "client.MixinClientConnection",
     "client.MixinClientPlayerEntity",
     "client.MixinClientPlayerInteractionManager",

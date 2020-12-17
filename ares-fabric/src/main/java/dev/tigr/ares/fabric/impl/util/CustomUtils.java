@@ -8,7 +8,6 @@ import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
-import net.minecraft.network.MessageType;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
@@ -23,13 +22,8 @@ public class CustomUtils implements IUtils {
     @Override
     public void printMessage(String message) {
         Text textComponentString = new LiteralText(message);
-
         Ares.EVENT_MANAGER.post(new SystemChatMessageEvent(textComponentString.getString()));
-
-        Text text;
-        text = new LiteralText(TextColor.DARK_GRAY + "[" + TextColor.DARK_RED + "Ares" + TextColor.DARK_GRAY + "]" + TextColor.WHITE + " ").append(textComponentString);
-
-        MC.inGameHud.addChatMessage(MessageType.SYSTEM, text, null);
+        MC.inGameHud.getChatHud().addMessage(new LiteralText(TextColor.DARK_GRAY + "[" + TextColor.DARK_RED + "Ares" + TextColor.DARK_GRAY + "]" + TextColor.WHITE + " ").append(textComponentString));
     }
 
     @Override

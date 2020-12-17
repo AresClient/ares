@@ -106,6 +106,7 @@ public class AresMod extends Ares {
                 AutoWalk.class,
                 Baritone.class,
                 Blink.class,
+                BoatFly.class,
                 ElytraFly.class,
                 EntitySpeed.class,
                 Flight.class,
