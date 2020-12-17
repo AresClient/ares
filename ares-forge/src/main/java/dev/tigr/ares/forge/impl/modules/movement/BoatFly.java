@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * @author Tigermouthbear
  */
-@Module.Info(name = "BoatFly", description = "", category = Category.MOVEMENT)
+@Module.Info(name = "BoatFly", description = "Allows you to fly in boats", category = Category.MOVEMENT)
 public class BoatFly extends Module {
     public static BoatFly INSTANCE;
 

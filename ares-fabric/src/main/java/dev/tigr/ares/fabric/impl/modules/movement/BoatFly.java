@@ -5,7 +5,6 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
-import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.BoatMoveEvent;
@@ -28,7 +27,7 @@ import java.util.List;
 /**
  * @author Tigermouthbear
  */
-@Module.Info(name = "BoatFly", description = "", category = Category.MOVEMENT)
+@Module.Info(name = "BoatFly", description = "Allows you to fly in boats", category = Category.MOVEMENT)
 public class BoatFly extends Module {
     public static BoatFly INSTANCE;
 
