@@ -39,10 +39,11 @@ public class AutoCity extends Module {
             BlockPos pos = playerEntity.getPosition();
             if(inCity(pos)) {
                 // find block
-                BlockPos[] blocks = { pos.north(), pos.east(), pos.south(), pos.west() };
+                List<BlockPos> blocks = Arrays.asList(pos.north(), pos.east(), pos.south(), pos.west());
+                blocks.sort(Comparators.blockDistance);
                 BlockPos target = null;
                 for(BlockPos block: blocks) {
-                    if(MC.world.getBlockState(block).getBlock() != Blocks.BEDROCK && MC.player.getDistanceSq(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5) < range.getValue() * range.getValue()) {
+                    if(!inPlayerCity(block) && MC.world.getBlockState(block).getBlock() != Blocks.BEDROCK && MC.player.getDistanceSq(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5) < range.getValue() * range.getValue()) {
                         target = block;
                         break;
                     }
@@ -81,6 +82,11 @@ public class AutoCity extends Module {
     
     private boolean inCity(BlockPos pos) {
         return allBlocks(pos.north(), pos.east(), pos.south(), pos.west());
+    }
+
+    private boolean inPlayerCity(BlockPos pos) {
+        BlockPos current = MC.player.getPosition();
+        return pos.north() == current || pos.east() == current || pos.south() == current || pos.west() == current;
     }
     
     private boolean allBlocks(BlockPos... pos) {

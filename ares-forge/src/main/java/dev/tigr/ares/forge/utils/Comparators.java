@@ -3,6 +3,7 @@ package dev.tigr.ares.forge.utils;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.module.Module;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.Comparator;
 
@@ -11,19 +12,30 @@ import java.util.Comparator;
  */
 public class Comparators {
     public static final EntityDistance entityDistance = new EntityDistance();
+    public static final BlockDistance blockDistance = new BlockDistance();
     public static final ModuleNameLength moduleStrLength = new ModuleNameLength();
     public static final ModuleAlphabetic moduleAlphabetic = new ModuleAlphabetic();
-    public static final StringLength strLength = new StringLength();
 
     private static class EntityDistance implements Comparator<Entity>, Wrapper {
+        @Override
         public int compare(Entity p1, Entity p2) {
-            final int one = (int) Math.sqrt(MC.player.getDistanceSq(p1));
-            final int two = (int) Math.sqrt(MC.player.getDistanceSq(p2));
-            return Integer.compare(one, two);
+            final double one = Math.sqrt(MC.player.getDistanceSq(p1));
+            final double two = Math.sqrt(MC.player.getDistanceSq(p2));
+            return Double.compare(one, two);
+        }
+    }
+
+    private static class BlockDistance implements Comparator<BlockPos>, Wrapper {
+        @Override
+        public int compare(BlockPos pos1, BlockPos pos2) {
+            final double one = Math.sqrt(MC.player.getDistanceSq(pos1));
+            final double two = Math.sqrt(MC.player.getDistanceSq(pos2));
+            return Double.compare(one, two);
         }
     }
 
     private static class ModuleNameLength implements Comparator<Module>, Wrapper {
+        @Override
         public int compare(Module h1, Module h2) {
             final double h1Width = FONT_RENDERER.getStringWidth(h1.getHudName());
             final double h2Width = FONT_RENDERER.getStringWidth(h2.getHudName());
@@ -32,14 +44,9 @@ public class Comparators {
     }
 
     private static class ModuleAlphabetic implements Comparator<Module> {
+        @Override
         public int compare(Module h1, Module h2) {
             return h1.getName().compareTo(h2.getName());
-        }
-    }
-
-    private static class StringLength implements Comparator<String> {
-        public int compare(String o1, String o2) {
-            return Integer.compare(o1.length(), o2.length());
         }
     }
 }
