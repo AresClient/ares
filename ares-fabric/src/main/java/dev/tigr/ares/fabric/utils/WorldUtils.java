@@ -1,13 +1,19 @@
 package dev.tigr.ares.fabric.utils;
 
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.feature.FriendManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.SpawnGroup;
+import net.minecraft.entity.mob.AmbientEntity;
+import net.minecraft.entity.mob.EndermanEntity;
+import net.minecraft.entity.mob.PiglinEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
@@ -18,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * @author Tigermouthbear 9/26/20
@@ -283,5 +291,37 @@ public class WorldUtils implements Wrapper {
         builder.append((int) Math.floor(vector.z));
         builder.append(")");
         return builder.toString();
+    }
+
+    public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
+        Stream<Entity> stream = StreamSupport.stream(MC.world.getEntities().spliterator(), false).filter(entity -> entity != MC.player && entity instanceof LivingEntity);
+
+        if(!players) stream = stream.filter(entity -> !(entity instanceof PlayerEntity));
+        if(!friends) stream = stream.filter(entity -> !(entity instanceof PlayerEntity) || !FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName()));
+        if(!teammates) stream = stream.filter(entity -> entity.getScoreboardTeam() != MC.player.getScoreboardTeam() || MC.player.getScoreboardTeam() == null);
+        if(!passive) stream = stream.filter(entity -> !isPassive(entity));
+        if(!hostile) stream = stream.filter(entity -> !isHostile(entity));
+        if(!nametagged) stream = stream.filter(entity -> !entity.hasCustomName());
+        if(!bots) stream = stream.filter(entity -> !isBot(entity));
+
+        return stream.collect(Collectors.toList());
+    }
+
+    public static boolean isPassive(Entity entity) {
+        if(entity instanceof IronGolemEntity && ((IronGolemEntity) entity).getAngryAt() == null) return true;
+        else if(entity instanceof WolfEntity && (!((WolfEntity) entity).isAttacking() || ((WolfEntity) entity).getOwner() == MC.player)) return true;
+        else return entity instanceof AmbientEntity || entity instanceof PassiveEntity || entity instanceof SquidEntity;
+    }
+
+    public static boolean isHostile(Entity entity) {
+        if(entity instanceof IronGolemEntity) return ((IronGolemEntity) entity).getAngryAt() == MC.player.getUuid() && ((IronGolemEntity) entity).getAngryAt() != null;
+        else if(entity instanceof WolfEntity) return ((WolfEntity) entity).isAttacking() && ((WolfEntity) entity).getOwner() != MC.player;
+        else if(entity instanceof PiglinEntity) return ((PiglinEntity) entity).isAngryAt(MC.player);
+        else if(entity instanceof EndermanEntity) return ((EndermanEntity) entity).isAngry();
+        return entity.getType().getSpawnGroup() == SpawnGroup.MONSTER;
+    }
+
+    public static boolean isBot(Entity entity) {
+        return entity instanceof PlayerEntity && entity.isInvisibleTo(MC.player) && !entity.isOnGround() && !entity.collides();
     }
 }
