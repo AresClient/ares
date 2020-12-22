@@ -12,7 +12,10 @@ import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.mob.AmbientEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.PiglinEntity;
-import net.minecraft.entity.passive.*;
+import net.minecraft.entity.passive.IronGolemEntity;
+import net.minecraft.entity.passive.PassiveEntity;
+import net.minecraft.entity.passive.SquidEntity;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -24,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
@@ -294,17 +296,21 @@ public class WorldUtils implements Wrapper {
     }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
-        Stream<Entity> stream = StreamSupport.stream(MC.world.getEntities().spliterator(), false).filter(entity -> entity != MC.player && entity instanceof LivingEntity);
+        return StreamSupport.stream(MC.world.getEntities().spliterator(), false).filter(entity -> isTarget(entity, players, friends, teammates, passive, hostile, nametagged, bots)).collect(Collectors.toList());
+    }
 
-        if(!players) stream = stream.filter(entity -> !(entity instanceof PlayerEntity));
-        if(!friends) stream = stream.filter(entity -> !(entity instanceof PlayerEntity) || !FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName()));
-        if(!teammates) stream = stream.filter(entity -> entity.getScoreboardTeam() != MC.player.getScoreboardTeam() || MC.player.getScoreboardTeam() == null);
-        if(!passive) stream = stream.filter(entity -> !isPassive(entity));
-        if(!hostile) stream = stream.filter(entity -> !isHostile(entity));
-        if(!nametagged) stream = stream.filter(entity -> !entity.hasCustomName());
-        if(!bots) stream = stream.filter(entity -> !isBot(entity));
+    public static boolean isTarget(Entity entity, boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
+        if(!(entity instanceof LivingEntity) || entity == MC.player) return false;
 
-        return stream.collect(Collectors.toList());
+        if(players && entity instanceof PlayerEntity) return true;
+        if(friends && entity instanceof PlayerEntity && FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName())) return true;
+        if(teammates && entity.getScoreboardTeam() == MC.player.getScoreboardTeam() && MC.player.getScoreboardTeam() != null) return true;
+        if(passive && isPassive(entity)) return true;
+        if(hostile && isHostile(entity)) return true;
+        if(nametagged && entity.hasCustomName()) return true;
+        if(bots && isBot(entity)) return true;
+
+        return false;
     }
 
     public static boolean isPassive(Entity entity) {

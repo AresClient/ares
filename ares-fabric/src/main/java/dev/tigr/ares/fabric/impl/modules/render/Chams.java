@@ -5,10 +5,10 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.fabric.event.render.RenderLivingEvent;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -16,9 +16,13 @@ import org.lwjgl.opengl.GL11;
  */
 @Module.Info(name = "Chams", description = "Render entities though walls", category = Category.RENDER)
 public class Chams extends Module {
-    public Setting<Boolean> players = register(new BooleanSetting("Players", true));
-    public Setting<Boolean> entities = register(new BooleanSetting("Entities", true));
-
+    private final Setting<Boolean> players = register(new BooleanSetting("Players", true));
+    private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true)).setVisibility(players::getValue);
+    private final Setting<Boolean> teammates = register(new BooleanSetting("Teammates", true)).setVisibility(players::getValue);
+    private final Setting<Boolean> passive = register(new BooleanSetting("Passive", true));
+    private final Setting<Boolean> hostile = register(new BooleanSetting("Hostile", true));
+    private final Setting<Boolean> nametagged = register(new BooleanSetting("Nametagged", true));
+    private final Setting<Boolean> bots = register(new BooleanSetting("Bots", false));
     @EventHandler
     public EventListener<RenderLivingEvent.Pre> livingRenderPreEvent = new EventListener<>(event -> {
         if(shouldRender(event.getEntity())) {
@@ -36,6 +40,6 @@ public class Chams extends Module {
     });
 
     private boolean shouldRender(Entity entity) {
-        return entity instanceof PlayerEntity && players.getValue() || entities.getValue();
+        return WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue());
     }
 }

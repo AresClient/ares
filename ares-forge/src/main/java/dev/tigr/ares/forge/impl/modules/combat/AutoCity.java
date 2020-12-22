@@ -9,7 +9,6 @@ import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.entity.player.EntityPlayer;
-
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemPickaxe;
 import net.minecraft.network.play.client.CPacketHeldItemChange;

@@ -9,12 +9,12 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.client.gl.GlUniform;
 import net.minecraft.client.gl.PostProcessShader;
 import net.minecraft.client.gl.ShaderEffect;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 
 import java.util.List;
@@ -25,10 +25,15 @@ import java.util.List;
 @Module.Info(name = "ESP", description = "See outlines of players through walls", category = Category.RENDER)
 public class ESP extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.BOX));
-    private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true));
-    private final Setting<Boolean> others = register(new BooleanSetting("Players", true));
-    private final Setting<Boolean> entities = register(new BooleanSetting("Entities", false));
     private final Setting<Color> color = register(new EnumSetting<>("Color", Color.RED)).setVisibility(() -> mode.getValue() == Mode.BOX);
+
+    private final Setting<Boolean> players = register(new BooleanSetting("Players", true));
+    private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true)).setVisibility(players::getValue);
+    private final Setting<Boolean> teammates = register(new BooleanSetting("Teammates", true)).setVisibility(players::getValue);
+    private final Setting<Boolean> passive = register(new BooleanSetting("Passive", true));
+    private final Setting<Boolean> hostile = register(new BooleanSetting("Hostile", true));
+    private final Setting<Boolean> nametagged = register(new BooleanSetting("Nametagged", true));
+    private final Setting<Boolean> bots = register(new BooleanSetting("Bots", false));
 
     @Override
     public void onRender3d() {
@@ -36,8 +41,9 @@ public class ESP extends Module {
 
         RenderUtils.glBegin();
 
-        if(others.getValue()) renderOthers();
-        if(entities.getValue()) renderEntities();
+        for(Entity entity: WorldUtils.getTargets(players.getValue(), false, teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()))
+            RenderUtils.renderSelectionBoundingBox(entity.getBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
+
         if(friends.getValue()) renderFriends();
 
         RenderUtils.glEnd();
@@ -47,20 +53,6 @@ public class ESP extends Module {
         for(PlayerEntity player: MC.world.getPlayers()) {
             if(FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUuid().equals(MC.player.getUuid()))
                 RenderUtils.renderSelectionBoundingBox(player.getBoundingBox(), IRenderer.rainbow());
-        }
-    }
-
-    private void renderOthers() {
-        for(PlayerEntity player: MC.world.getPlayers()) {
-            if(!FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUuid().equals(MC.player.getUuid()))
-                RenderUtils.renderSelectionBoundingBox(player.getBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
-        }
-    }
-
-    private void renderEntities() {
-        for(Entity entity: MC.world.getEntities()) {
-            if(!(entity instanceof LivingEntity) || MC.world.getPlayers().contains(entity)) continue;
-            RenderUtils.renderSelectionBoundingBox(entity.getBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
         }
     }
 
@@ -76,17 +68,8 @@ public class ESP extends Module {
             if(outlineRadius != null) outlineRadius.set(4 / 5f);
         });
 
-        for(Entity entity: MC.world.getEntities()) {
-            if(entity instanceof PlayerEntity) {
-                if(FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName())) {
-                    entity.setGlowing(friends.getValue());
-                } else {
-                    entity.setGlowing(others.getValue());
-                }
-            } else if(entity instanceof LivingEntity) {
-                entity.setGlowing(entities.getValue());
-            }
-        }
+        for(Entity entity: MC.world.getEntities())
+            entity.setGlowing(WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()));
     }
 
     @Override

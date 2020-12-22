@@ -9,17 +9,15 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.shader.Shader;
 import net.minecraft.client.shader.ShaderGroup;
 import net.minecraft.client.shader.ShaderUniform;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Tigermouthbear
@@ -27,18 +25,25 @@ import java.util.stream.Collectors;
 @Module.Info(name = "ESP", description = "See outlines of players through walls", category = Category.RENDER)
 public class ESP extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.BOX));
-    private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true));
-    private final Setting<Boolean> others = register(new BooleanSetting("Players", true));
-    private final Setting<Boolean> entities = register(new BooleanSetting("Entities", false));
     private final Setting<Color> color = register(new EnumSetting<>("Color", Color.RED)).setVisibility(() -> mode.getValue() == Mode.BOX);
+
+    private final Setting<Boolean> players = register(new BooleanSetting("Players", true));
+    private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true)).setVisibility(players::getValue);
+    private final Setting<Boolean> teammates = register(new BooleanSetting("Teammates", true)).setVisibility(players::getValue);
+    private final Setting<Boolean> passive = register(new BooleanSetting("Passive", true));
+    private final Setting<Boolean> hostile = register(new BooleanSetting("Hostile", true));
+    private final Setting<Boolean> nametagged = register(new BooleanSetting("Nametagged", true));
+    private final Setting<Boolean> bots = register(new BooleanSetting("Bots", false));
 
     @Override
     public void onRender3d() {
         if(MC.world.playerEntities.size() <= 0 || mode.getValue() != Mode.BOX) return;
 
         RenderUtils.prepare3d();
-        if(others.getValue()) renderOthers();
-        if(entities.getValue()) renderEntities();
+
+        for(Entity entity: WorldUtils.getTargets(players.getValue(), false, teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()))
+            RenderGlobal.drawSelectionBoundingBox(entity.getEntityBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
+
         if(friends.getValue()) renderFriends();
 
         RenderUtils.end3d();
@@ -50,21 +55,6 @@ public class ESP extends Module {
             if(FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUniqueID().equals(MC.player.getUniqueID())) {
                 RenderGlobal.drawSelectionBoundingBox(player.getEntityBoundingBox(), color.getRed(), color.getBlue(), color.getGreen(), 1);
             }
-        }
-    }
-
-    private void renderOthers() {
-        for(EntityPlayer player: MC.world.playerEntities) {
-            if(!FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUniqueID().equals(MC.player.getUniqueID())) {
-                RenderGlobal.drawSelectionBoundingBox(player.getEntityBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
-            }
-        }
-    }
-
-    private void renderEntities() {
-        for(Entity entity: MC.world.loadedEntityList.stream().filter(entity -> entity instanceof EntityLiving).collect(Collectors.toList())) {
-            if(MC.world.playerEntities.contains(entity)) continue;
-            RenderGlobal.drawSelectionBoundingBox(entity.getEntityBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
         }
     }
 
@@ -80,24 +70,13 @@ public class ESP extends Module {
             if(outlineRadius != null) outlineRadius.set(4 / 5f);
         });
 
-        for(Entity entity: MC.world.loadedEntityList) {
-            if(entity instanceof EntityPlayer) {
-                if(FriendManager.isFriend(entity.getName())) {
-                    entity.setGlowing(friends.getValue());
-                } else {
-                    entity.setGlowing(others.getValue());
-                }
-            } else if(entity instanceof EntityLivingBase) {
-                entity.setGlowing(entities.getValue());
-            }
-        }
+        for(Entity entity: MC.world.loadedEntityList)
+            entity.setGlowing(WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()));
     }
 
     @Override
     public void onDisable() {
-        for(Entity entity: MC.world.loadedEntityList) {
-            entity.setGlowing(false);
-        }
+        for(Entity entity: MC.world.loadedEntityList) entity.setGlowing(false);
     }
 
     @Override

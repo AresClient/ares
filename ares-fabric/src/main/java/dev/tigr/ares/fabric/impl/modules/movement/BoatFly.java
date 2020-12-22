@@ -11,7 +11,6 @@ import dev.tigr.ares.fabric.event.movement.BoatMoveEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import io.netty.buffer.Unpooled;
-
 import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.*;

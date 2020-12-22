@@ -2,7 +2,10 @@ package dev.tigr.ares.forge.utils;
 
 import dev.tigr.ares.core.feature.FriendManager;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityAgeable;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityIronGolem;
 import net.minecraft.entity.monster.EntityPigZombie;
@@ -23,7 +26,6 @@ import net.minecraft.util.math.Vec3d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static dev.tigr.ares.Wrapper.MC;
 
@@ -276,17 +278,21 @@ public class WorldUtils {
     }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
-        Stream<Entity> stream = MC.world.loadedEntityList.stream().filter(entity -> entity != MC.player && entity instanceof EntityLivingBase);
+        return MC.world.loadedEntityList.stream().filter(entity -> isTarget(entity, players, friends, teammates, passive, hostile, nametagged, bots)).collect(Collectors.toList());
+    }
 
-        if(!players) stream = stream.filter(entity -> !(entity instanceof EntityPlayer));
-        if(!friends) stream = stream.filter(entity -> !(entity instanceof EntityPlayer) || !FriendManager.isFriend(((EntityPlayer) entity).getGameProfile().getName()));
-        if(!teammates) stream = stream.filter(entity -> entity.getTeam() != MC.player.getTeam() || MC.player.getTeam() == null);
-        if(!passive) stream = stream.filter(entity -> !isPassive(entity));
-        if(!hostile) stream = stream.filter(entity -> !isHostile(entity));
-        if(!nametagged) stream = stream.filter(entity -> !entity.hasCustomName());
-        if(!bots) stream = stream.filter(entity -> !isBot(entity));
+    public static boolean isTarget(Entity entity, boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
+        if(!(entity instanceof EntityLivingBase) || entity == MC.player) return false;
 
-        return stream.collect(Collectors.toList());
+        if(players && entity instanceof EntityPlayer) return true;
+        if(friends && entity instanceof EntityPlayer && FriendManager.isFriend(((EntityPlayer) entity).getGameProfile().getName())) return true;
+        if(teammates && entity.getTeam() == MC.player.getTeam() && MC.player.getTeam() != null) return true;
+        if(passive && isPassive(entity)) return true;
+        if(hostile && isHostile(entity)) return true;
+        if(nametagged && entity.hasCustomName()) return true;
+        if(bots && isBot(entity)) return true;
+
+        return false;
     }
 
     public static boolean isPassive(Entity entity) {
