@@ -4,9 +4,6 @@ jdk: openjdk8
 os: linux
 dist: trusty
 
-install:
-  - ./gradlew setupDecompWorkspace
-
 script:
   - ./scripts/travis_script.sh
 

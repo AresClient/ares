@@ -11,26 +11,25 @@ buildscript {
         }
     }
     dependencies {
-        classpath "net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT"
-        classpath "org.spongepowered:mixingradle:0.6-SNAPSHOT"
+        classpath "net.minecraftforge.gradle:ForgeGradle:3+"
+        classpath "org.spongepowered:mixingradle:0.7-SNAPSHOT"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
     }
 }
-apply plugin: "net.minecraftforge.gradle.forge"
+apply plugin: "net.minecraftforge.gradle"
 apply plugin: "org.spongepowered.mixin"
 apply plugin: "com.github.johnrengelman.shadow"
 
 version = aresForgeVersion
 
 minecraft {
-    version = project.forgeVersion
-    mappings = project.mcpVersion
-    runDir = "run"
-    coreMod = "dev.tigr.ares.forge.mixin.MixinLoader"
-    makeObfSourceJar = false
+    mappings channel: "$project.mcpChannel", version: "$project.mcpVersion"
 }
 
 dependencies {
+    // minecraftforge dependency
+    minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2854"
+
     // ares core
     implementation project(":ares-core")
     shadow(project(":ares-core")) {
@@ -50,6 +49,10 @@ dependencies {
         exclude module: "guava"
         exclude module: "gson"
         exclude module: "commons-io"
+        exclude module: "log4j-core"
+    }
+    annotationProcessor("org.spongepowered:mixin:0.8.2:processor") {
+        exclude module: "gson"
     }
 
     // baritone
@@ -61,14 +64,13 @@ dependencies {
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
 
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include "mcmod.info"
 
         // replace version and mcversion
-        expand "version": project.version, "mcversion": project.minecraft.version
+        expand "version": project.version
     }
 
     // copy everything else, thats not the mcmod.info
@@ -85,13 +87,12 @@ shadowJar {
 }
 
 mixin {
-    defaultObfuscationEnv searge
+    defaultObfuscationEnv "searge"
     add sourceSets.main, "mixins.ares.refmap.json"
 }
 
 reobf {
     shadowJar {
-        mappingType = "SEARGE"
         classpath = sourceSets.main.compileClasspath
     }
 }

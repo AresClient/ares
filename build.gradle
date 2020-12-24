@@ -36,7 +36,7 @@ subprojects {
     archivesBaseName = project.name
 
     compileJava {
-        sourceCompatibility = targetCompatibility = "1.8"
+        sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
     }
 }
 
@@ -107,7 +107,7 @@ task setupWorkspace(type: GradleBuild) {
     group = "ares"
     description = "sets up all development environments for all versions of ares"
 
-    tasks = [":ares-forge:setupDecompWorkspace", ":ares-fabric:genSources"]
+    tasks = [":ares-forge:classes", ":ares-fabric:genSources"]
 }
 
 private static String getModsFolder() {

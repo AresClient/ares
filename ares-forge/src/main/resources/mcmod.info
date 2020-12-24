@@ -4,7 +4,7 @@
   "name": "Ares",
   "description": "Ares is a minecraft cheat client",
   "version": "${version}",
-  "mcversion": "${mcversion}",
+  "mcversion": "1.12.2",
   "url": "https://aresclient.org/",
   "updateUrl": "",
   "authorList": ["Tigermouthbear"],

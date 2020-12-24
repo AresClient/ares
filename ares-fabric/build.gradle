@@ -11,7 +11,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath "com.github.Chocohead:fabric-loom:${project.chocoLoomVersion}" // Sin² Edition Loom
+        // use fork with subproject bug fix, waiting for this pr to be accepted
+        classpath "com.github.solonovamax:fabric-loom:ef19233"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
     }
 }
