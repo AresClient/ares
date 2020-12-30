@@ -24,14 +24,15 @@ public class Window extends Element {
     protected static final Color BACKGROUND_COLOR = Color.BLACK;
     protected static final LocationIdentifier CIRCLE = new LocationIdentifier("textures/circle.png");
     protected final DynamicValue<Color> color;
+    protected final SettingCategory settingCategory;
     protected final Setting<Double> x;
     protected final Setting<Double> y;
-    private final OpenCloseTimer openCloseTimer = new OpenCloseTimer(200, true);
-    private final String name;
-    private final Setting<Boolean> open;
-    private boolean dragging = false;
-    private double diffX = 0;
-    private double diffY = 0;
+    protected final Setting<Boolean> open;
+    protected final OpenCloseTimer openCloseTimer = new OpenCloseTimer(200, true);
+    protected final String name;
+    protected boolean dragging = false;
+    protected double diffX = 0;
+    protected double diffY = 0;
 
     public Window(GUI gui, String name, DynamicValue<Color> color, boolean defaultOpen, double defaultX, double defaultY) {
         super(gui);
@@ -41,13 +42,13 @@ public class Window extends Element {
         this.color = color;
 
         // create settings
-        SettingCategory category = new SettingCategory(ClickGUI.SETTING_CATEGORY, name);
-        x = new DoubleSetting(category, "x", defaultX, 0, 1);
-        y = new DoubleSetting(category, "y", defaultY, 0, 1);
+        settingCategory = new SettingCategory(ClickGUI.SETTING_CATEGORY, name);
+        x = new DoubleSetting(settingCategory, "x", defaultX, 0, 1);
+        y = new DoubleSetting(settingCategory, "y", defaultY, 0, 1);
 
         // create open setting and sync animations
-        open = new BooleanSetting(category, "open", defaultOpen);
-        openCloseTimer.setState(open.getValue());
+        open = new BooleanSetting(settingCategory, "open", defaultOpen);
+        openCloseTimer.setStateHard(open.getValue());
 
         // set default position
         setVisibility(openCloseTimer::getState);

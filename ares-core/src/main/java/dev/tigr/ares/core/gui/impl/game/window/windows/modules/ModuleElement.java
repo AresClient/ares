@@ -21,25 +21,26 @@ public class ModuleElement extends Element {
 
     private final Module module;
     private final DynamicValue<Color> color;
+    private final DynamicValue<Double> modHeight;
     private final OpenCloseTimer open = new OpenCloseTimer(200, false);
     private DynamicValue<Double> offset;
 
-    public ModuleElement(GUI gui, Module module, DynamicValue<Color> color) {
+    public ModuleElement(GUI gui, Module module, DynamicValue<Color> color, DynamicValue<Double> modHeight) {
         super(gui);
         this.module = module;
         this.color = color;
+        this.modHeight = modHeight;
 
-        setWidth(() -> getParent().getWidth() / 2d - 1);
-        setHeight(() -> getTopHeight() + open.getAnimationFactor() * (getTopHeight() / 2d * module.getSettings().stream().filter(Setting::isVisible).count()));
+        setHeight(() -> getModHeight() + open.getAnimationFactor() * (getModHeight() / 2d * module.getSettings().stream().filter(Setting::isVisible).count()));
 
         SettingElement<?> prev = null;
         for(Setting<?> setting: module.getSettings()) {
             if(setting instanceof ListSetting) continue;
             SettingElement<?> settingElement = SettingElement.create(getGUI(), setting);
-            settingElement.setHeight(() -> getTopHeight() / 2d);
+            settingElement.setHeight(() -> getModHeight() / 2d);
             settingElement.setWidth(this::getWidth);
             settingElement.setVisibility(() -> open.getState() && setting.isVisible());
-            if(prev == null) settingElement.setY(this::getTopHeight);
+            if(prev == null) settingElement.setY(this::getModHeight);
             else {
                 SettingElement<?> finalPrev = prev;
                 settingElement.setY(() -> finalPrev.getY() + (finalPrev.isVisible() ? finalPrev.getHeight() : 0));
@@ -61,21 +62,21 @@ public class ModuleElement extends Element {
         open.tick();
 
         // set tooltip if hovering
-        if(isMouseOver(mouseX, mouseY) && getRenderY() + offset.getValue() + getTopHeight() > mouseY)
+        if(isMouseOver(mouseX, mouseY) && getRenderY() + offset.getValue() + getModHeight() > mouseY)
             getGUI().setTooltip(module.getDescription());
 
         // draw drop down arrow with rotations based on open status and animation
         RENDER_STACK.push();
-        RENDER_STACK.translate(getRenderX() + getTopHeight() / 2d, getRenderY() + getTopHeight() / 2d, 0);
+        RENDER_STACK.translate(getRenderX() + getModHeight() / 2d, getRenderY() + getModHeight() / 2d, 0);
         RENDER_STACK.rotate(90 * (float) open.getAnimationFactor(), 0, 0, 1);
-        RENDER_STACK.translate(-(getRenderX() + getTopHeight() / 2d), -(getRenderY() + getTopHeight() / 2d), 0);
-        RENDERER.drawImage(getRenderX(), getRenderY(), getTopHeight(), getTopHeight(), DROP_DOWN_ARROW);
+        RENDER_STACK.translate(-(getRenderX() + getModHeight() / 2d), -(getRenderY() + getModHeight() / 2d), 0);
+        RENDERER.drawImage(getRenderX(), getRenderY(), getModHeight(), getModHeight(), DROP_DOWN_ARROW);
         RENDER_STACK.pop();
 
         // draw name
-        double defaultHeight = getTopHeight() / 3d * 2;
-        double height = FONT_RENDERER.getStringWidth(module.getName(), defaultHeight) > getWidth() - getTopHeight() - 2 ? FONT_RENDERER.getFontHeightWithCustomWidth(module.getName(), getWidth() - getTopHeight() - 2) : defaultHeight;
-        FONT_RENDERER.drawStringWithCustomHeight(module.getName(), getRenderX() + getTopHeight(), getRenderY() + getTopHeight() / 3d / 2d, module.getEnabled() ? color.getValue() : Color.WHITE, height);
+        double defaultHeight = getModHeight() / 3d * 2;
+        double height = FONT_RENDERER.getStringWidth(module.getName(), defaultHeight) > getWidth() - getModHeight() - 2 ? FONT_RENDERER.getFontHeightWithCustomWidth(module.getName(), getWidth() - getModHeight() - 2) : defaultHeight;
+        FONT_RENDERER.drawStringWithCustomHeight(module.getName(), getRenderX() + getModHeight(), getRenderY() + getModHeight() / 3d / 2d, module.getEnabled() ? color.getValue() : Color.WHITE, height);
 
         // draw line underneath
         RENDERER.drawLine(getRenderX(), getRenderY() + getHeight(), getRenderX() + getWidth(), getRenderY() + getHeight(), 1, color.getValue());
@@ -83,8 +84,8 @@ public class ModuleElement extends Element {
 
     @Override
     public void click(int mouseX, int mouseY, int mouseButton) {
-        if(isMouseOver(mouseX, mouseY) && getRenderY() + offset.getValue() + getTopHeight() > mouseY) {
-            if(mouseX >= getRenderX() + getTopHeight()) {
+        if(isMouseOver(mouseX, mouseY) && getRenderY() + offset.getValue() + getModHeight() > mouseY) {
+            if(mouseX >= getRenderX() + getModHeight()) {
                 if(mouseButton == 0) module.toggle();
                 else if(mouseButton == 1) toggleSettings();
             } else toggleSettings();
@@ -101,8 +102,8 @@ public class ModuleElement extends Element {
                 && getParent().isMouseOver(mouseX, mouseY);
     }
 
-    public double getTopHeight() {
-        return getParent().getHeight() / 12d;
+    public double getModHeight() {
+        return modHeight.getValue();
     }
 
     // sets animation variables for toggling

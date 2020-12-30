@@ -60,8 +60,7 @@ public class OpenCloseTimer {
      */
     public double getAnimationFactor() {
         if(animation == Animation.OPENING) return (System.currentTimeMillis() - animationStart) / (double) length;
-        if(animation == Animation.CLOSING)
-            return ((long) length - (System.currentTimeMillis() - animationStart)) / (double) length;
+        if(animation == Animation.CLOSING) return ((long) length - (System.currentTimeMillis() - animationStart)) / (double) length;
         return prevAnimation == Animation.OPENING ? 1 : 0;
     }
 
@@ -91,6 +90,21 @@ public class OpenCloseTimer {
     }
 
     /**
+     * Sets animation based on boolean value, without animating closing
+     */
+    public void setStateHard(boolean value) {
+        if(value) {
+            animation = Animation.OPENING;
+            state = true;
+            animationStart = System.currentTimeMillis();
+        } else {
+            prevAnimation = Animation.CLOSING;
+            animation = Animation.NONE;
+            state = false;
+        }
+    }
+
+    /**
      * Toggles the state of the timer
      */
     public void toggle() {
@@ -100,5 +114,5 @@ public class OpenCloseTimer {
     /**
      * Enums for animation state
      */
-    enum Animation {OPENING, CLOSING, NONE}
+    enum Animation { OPENING, CLOSING, NONE }
 }

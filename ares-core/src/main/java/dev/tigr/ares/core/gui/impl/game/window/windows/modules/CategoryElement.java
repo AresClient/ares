@@ -10,79 +10,88 @@ import dev.tigr.ares.core.util.render.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.tigr.ares.core.Ares.RENDERER;
-import static dev.tigr.ares.core.Ares.RENDER_STACK;
+import static dev.tigr.ares.core.Ares.*;
 
 /**
  * @author Tigermouthbear 6/23/20
  */
 public class CategoryElement extends Element {
-    private final List<ModuleElement> left = new ArrayList<>();
-    private final List<ModuleElement> right = new ArrayList<>();
+    private final List<List<ModuleElement>> columnsList = new ArrayList<>();
+    private final int columns;
+    private final double[] offsets;
 
-    private double leftOffset = 0;
-    private double rightOffset = 0;
+    // height of the area to scissor during scroll calculation, used for collapse animation in ExpandedCategoryElement
+    private DynamicValue<Double> scissorHeight;
 
-    public CategoryElement(GUI gui, Category category, DynamicValue<Color> color) {
+    // no scissor height specified
+    public CategoryElement(GUI gui, Category category, DynamicValue<Color> color, DynamicValue<Double> modHeight, int columns) {
+        this(gui, category, color, modHeight, () -> 0d, columns);
+        scissorHeight = this::getHeight;
+    }
+
+    public CategoryElement(GUI gui, Category category, DynamicValue<Color> color, DynamicValue<Double> modHeight, DynamicValue<Double> scissorHeight, int columns) {
         super(gui);
+
+        this.scissorHeight = scissorHeight;
+
+        // setup columns
+        this.columns = columns;
+        this.offsets = new double[columns];
+        for(int i = 0; i < columns; i++) {
+            offsets[i] = 0;
+            columnsList.add(i, new ArrayList<>());
+        }
 
         setVisibility(() -> CategoryButton.getSelectedCategory() == category);
 
         // create module elements
-        ModuleElement prevLeft = null;
-        ModuleElement prevRight = null;
+        ModuleElement[] prev = new ModuleElement[columns];
+        for(int i = 0; i < columns; i++) prev[i] = null;
         for(int i = 0; i < category.getModules().size(); i++) {
-            int finalI = i;
-            ModuleElement moduleElement = new ModuleElement(getGUI(), category.getModules().get(i), color);
-            moduleElement.setX(() -> (finalI % 2) * getWidth() / 2);
-
-            // set y based on which side its on
-            if(i % 2 == 0) {
-                if(prevLeft != null) {
-                    ModuleElement finalPrevLeft = prevLeft;
-                    moduleElement.setY(() -> finalPrevLeft.getY() + finalPrevLeft.getHeight());
-                }
-                moduleElement.setOffset(() -> leftOffset);
-                prevLeft = moduleElement;
-                left.add(moduleElement);
-            } else {
-                if(prevRight != null) {
-                    ModuleElement finalPrevRight = prevRight;
-                    moduleElement.setY(() -> finalPrevRight.getY() + finalPrevRight.getHeight());
-                }
-                moduleElement.setOffset(() -> rightOffset);
-                prevRight = moduleElement;
-                right.add(moduleElement);
+            int column = (i + columns) % columns;
+            ModuleElement moduleElement = new ModuleElement(getGUI(), category.getModules().get(i), color, modHeight);
+            moduleElement.setX(() -> column * getWidth() / columns);
+            moduleElement.setWidth(() -> getWidth() / (double) columns);
+            
+            // set y base on column
+            if(prev[column] != null) {
+                ModuleElement finalPrev = prev[column];
+                moduleElement.setY(() -> finalPrev.getY() + finalPrev.getHeight());
             }
+            prev[column] = moduleElement;
+            columnsList.get(column).add(moduleElement);
+
+            moduleElement.setOffset(() -> offsets[column]);
+
             add(moduleElement);
         }
     }
 
     @Override
     public void draw(int mouseX, int mouseY, float partialTicks) {
-        // draw left column
-        RENDERER.startScissor(getRenderX(), getRenderY(), getWidth() / 2d, getHeight());
-        RENDER_STACK.translate(0, leftOffset, 0);
-        left.stream().filter(Element::isVisible).forEach(element -> element.draw(mouseX, mouseY, partialTicks));
-        RENDER_STACK.translate(0, -leftOffset, 0);
-        RENDERER.stopScissor();
-
-        // draw right column
-        RENDERER.startScissor(getRenderX() + getWidth() / 2d, getRenderY(), getWidth() / 2d, getHeight());
-        RENDER_STACK.translate(0, rightOffset, 0);
-        right.stream().filter(Element::isVisible).forEach(element -> element.draw(mouseX, mouseY, partialTicks));
-        RENDER_STACK.translate(0, -rightOffset, 0);
-        RENDERER.stopScissor();
+        double pos = 0;
+        double width = getWidth() / (double) columns;
+        for(int i = 0; i < columns; i++) {
+            RENDERER.startScissor(getRenderX() + pos, getRenderY(), width, scissorHeight.getValue());
+            RENDER_STACK.translate(0, offsets[i], 0);
+            columnsList.get(i).stream().filter(Element::isVisible).forEach(element -> element.draw(mouseX, mouseY, partialTicks));
+            RENDER_STACK.translate(0, -offsets[i], 0);
+            RENDERER.stopScissor();
+            pos += width;
+        }
     }
 
     @Override
     public void scroll(double mouseX, double mouseY, double value) {
         super.scroll(mouseX, mouseY, value);
 
-        if(value != 0) {
+        if(value != 0 && mouseX > getRenderX() && mouseX < getRenderX() + getWidth()) {
             value /= 10;
-            if(mouseX < getRenderX() + getWidth() / 2) leftOffset = getScrollValue(left, value, leftOffset);
-            else rightOffset = getScrollValue(right, value, rightOffset);
+
+            // find column mouse is over and scroll
+            int col = (int) ((mouseX - getRenderX()) / (getWidth() / columns));
+
+            offsets[col] = getScrollValue(columnsList.get(col), value, offsets[col]);
         }
     }
 

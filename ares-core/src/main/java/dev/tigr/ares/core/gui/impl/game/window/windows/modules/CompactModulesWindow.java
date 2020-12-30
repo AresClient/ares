@@ -6,13 +6,13 @@ import dev.tigr.ares.core.gui.impl.game.window.Window;
 import dev.tigr.ares.core.util.function.DynamicValue;
 import dev.tigr.ares.core.util.render.Color;
 
-import static dev.tigr.ares.core.Ares.RENDERER;
+import static dev.tigr.ares.core.Ares.*;
 
 /**
  * @author Tigermouthbear 6/23/20
  */
-public class ModulesWindow extends Window {
-    public ModulesWindow(GUI gui, DynamicValue<Color> color) {
+public class CompactModulesWindow extends Window {
+    public CompactModulesWindow(GUI gui, DynamicValue<Color> color) {
         super(gui, "Modules", color, false, 0.03, 0.1);
 
         setWidth(() -> getScreenWidth() / 3d);
@@ -34,7 +34,7 @@ public class ModulesWindow extends Window {
             prev = button;
 
             // add category element to window
-            CategoryElement categoryElement = new CategoryElement(getGUI(), category, color);
+            CategoryElement categoryElement = new CategoryElement(getGUI(), category, color, () -> getHeight() / 12d, 2);
             categoryElement.setX(() -> getWidth() / 4 + 1);
             categoryElement.setY(this::getBarHeight);
             categoryElement.setWidth(() -> getWidth() / 4 * 3);

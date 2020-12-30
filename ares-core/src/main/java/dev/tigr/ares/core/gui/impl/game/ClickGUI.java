@@ -7,7 +7,8 @@ import dev.tigr.ares.core.gui.impl.game.nav.NavigationButton;
 import dev.tigr.ares.core.gui.impl.game.window.Window;
 import dev.tigr.ares.core.gui.impl.game.window.windows.ConsoleWindow;
 import dev.tigr.ares.core.gui.impl.game.window.windows.WelcomeWindow;
-import dev.tigr.ares.core.gui.impl.game.window.windows.modules.ModulesWindow;
+import dev.tigr.ares.core.gui.impl.game.window.windows.modules.CompactModulesWindow;
+import dev.tigr.ares.core.gui.impl.game.window.windows.modules.ExpandedModulesWindow;
 import dev.tigr.ares.core.setting.SettingCategory;
 import dev.tigr.ares.core.util.function.DynamicValue;
 import dev.tigr.ares.core.util.render.Color;
@@ -32,16 +33,12 @@ public class ClickGUI extends GUI {
         NavigationBar navigationBar = add(new NavigationBar(this, COLOR));
 
         // create modules window
-        ModulesWindow modules = new ModulesWindow(this, COLOR);
+        ExpandedModulesWindow modules = new ExpandedModulesWindow(this, COLOR);
         navigationBar.addNavigationButton(new NavigationButton(this, new LocationIdentifier("textures/icons/modules.png"), modules::toggleVisibility));
 
         // create console window
         ConsoleWindow console = new ConsoleWindow(this, COLOR);
         navigationBar.addNavigationButton(new NavigationButton(this, new LocationIdentifier("textures/icons/console.png"), console::toggleVisibility));
-
-        // create irc window
-        //IrcWindow irc = new IrcWindow(this, COLOR);
-        //navigationBar.addNavigationButton(new NavigationButton(this, new AresResourceLocation("textures/icons/irc.png"), irc::toggleVisibility));
 
         // create hud editor button
         navigationBar.addNavigationButton(new NavigationButton(this, new LocationIdentifier("textures/icons/hud_editor.png"), UTILS::openHUDEditor));
