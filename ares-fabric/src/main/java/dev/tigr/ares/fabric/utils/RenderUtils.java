@@ -143,12 +143,10 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static Vec3d getRenderPos(Entity entity) {
-        double x = (entity.lastRenderX + (entity.getX() - entity.lastRenderX) * MC.getTickDelta()
-                - MC.getEntityRenderDispatcher().camera.getPos().x);
-        double y = (entity.lastRenderY + (entity.getY() - entity.lastRenderY) * MC.getTickDelta()
-                - MC.getEntityRenderDispatcher().camera.getPos().y);
-        double z = (entity.lastRenderZ + (entity.getZ() - entity.lastRenderZ) * MC.getTickDelta()
-                - MC.getEntityRenderDispatcher().camera.getPos().z);
+        Vec3d cameraPos = MC.gameRenderer.getCamera().getPos();
+        double x = (entity.prevX + (entity.getX() - entity.prevX) * MC.getTickDelta()) - cameraPos.x;
+        double y = (entity.prevY + (entity.getY() - entity.prevY) * MC.getTickDelta()) - cameraPos.y;
+        double z = (entity.prevZ + (entity.getZ() - entity.prevZ) * MC.getTickDelta()) - cameraPos.z;
 
         return new Vec3d(x, y, z);
     }

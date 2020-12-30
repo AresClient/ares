@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.impl.render;
 
 import dev.tigr.ares.core.util.render.IRenderStack;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.Quaternion;
 
 /**
  * @author Tigermouthbear 11/20/20
@@ -31,7 +32,7 @@ public class CustomRenderStack implements IRenderStack {
 
     @Override
     public void rotate(float angle, float x, float y, float z) {
-        // idk
+        matrixStack.multiply(new Quaternion(x * angle, y * angle, z * angle, true));
     }
 
     public MatrixStack getMatrixStack() {
