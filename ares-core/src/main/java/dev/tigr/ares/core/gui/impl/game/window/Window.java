@@ -30,7 +30,7 @@ public class Window extends Element {
     protected final Setting<Boolean> open;
     protected final OpenCloseTimer openCloseTimer = new OpenCloseTimer(200, true);
     protected final String name;
-    protected boolean dragging = false;
+    public boolean dragging = false;
     protected double diffX = 0;
     protected double diffY = 0;
 

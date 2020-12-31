@@ -24,7 +24,7 @@ public class ExpandedCategoryElement extends Element {
     private final Setting<Double> y;
     private final Setting<Boolean> open;
     private final OpenCloseTimer openCloseTimer = new OpenCloseTimer(300, false);
-    private boolean dragging = false;
+    public boolean dragging = false;
     private double diffX = 0;
     private double diffY = 0;
 
@@ -47,16 +47,16 @@ public class ExpandedCategoryElement extends Element {
         setX(() -> x.getValue() * getScreenWidth());
         setY(() -> y.getValue() * getScreenHeight());
 
-        // set size
-        setWidth(() -> getScreenWidth() / 8.4d);
-        setHeight(() -> getTopHeight() + openCloseTimer.getAnimationFactor() * getExpandedHeight());
-
         // add category element
-        CategoryElement categoryElement = new CategoryElement(getGUI(), category, color, () -> getExpandedHeight() / 18d, () -> getHeight() - getTopHeight(), 1);
+        CategoryElement categoryElement = new CategoryElement(getGUI(), category, color, () -> getExpandedHeight() / 18d, () -> Math.max(getHeight() - getTopHeight(), 0), 1);
         categoryElement.setY(this::getTopHeight);
         categoryElement.setWidth(this::getWidth);
         categoryElement.setHeight(this::getExpandedHeight);
         add(categoryElement);
+
+        // set size
+        setWidth(() -> getScreenWidth() / 8.4d);
+        setHeight(() -> Math.min(getTopHeight() + openCloseTimer.getAnimationFactor() * getExpandedHeight(), getTopHeight() + categoryElement.getHeight(categoryElement.getColumn(0))));
     }
 
     @Override
@@ -64,7 +64,7 @@ public class ExpandedCategoryElement extends Element {
         // update position based on drag and clamp to keep in bounds
         if(dragging) {
             x.setValue((Utils.clamp(mouseX - diffX, 0, getScreenWidth() - getWidth())) / getScreenWidth());
-            y.setValue((Utils.clamp(mouseY - diffY, getScreenHeight() / 15, getScreenHeight() - getExpandedHeight())) / getScreenHeight());
+            y.setValue((Utils.clamp(mouseY - diffY, getScreenHeight() / 15, getScreenHeight() - getHeight())) / getScreenHeight());
         }
 
         // tick timer
@@ -87,11 +87,7 @@ public class ExpandedCategoryElement extends Element {
         FONT_RENDERER.drawStringWithCustomHeight(category.name(), getRenderX() + getWidth() / 2 - width / 2, getRenderY(), Color.WHITE, getTopHeight());
 
         // draw child elements if not collapsed
-        if(openCloseTimer.getAnimationFactor() != 0) {
-            RENDER_STACK.push();
-            super.draw(mouseX, mouseY, partialTicks);
-            RENDER_STACK.pop();
-        }
+        if(openCloseTimer.getAnimationFactor() != 0) super.draw(mouseX, mouseY, partialTicks);
     }
 
     @Override

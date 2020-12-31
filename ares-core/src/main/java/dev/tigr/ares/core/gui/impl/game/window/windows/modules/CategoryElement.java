@@ -42,8 +42,6 @@ public class CategoryElement extends Element {
             columnsList.add(i, new ArrayList<>());
         }
 
-        setVisibility(() -> CategoryButton.getSelectedCategory() == category);
-
         // create module elements
         ModuleElement[] prev = new ModuleElement[columns];
         for(int i = 0; i < columns; i++) prev[i] = null;
@@ -111,5 +109,9 @@ public class CategoryElement extends Element {
             height += element.getHeight();
         }
         return height;
+    }
+
+    public List<ModuleElement> getColumn(int i) {
+        return columnsList.get(i);
     }
 }

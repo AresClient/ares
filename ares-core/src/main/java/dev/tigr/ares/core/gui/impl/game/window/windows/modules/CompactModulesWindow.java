@@ -39,6 +39,7 @@ public class CompactModulesWindow extends Window {
             categoryElement.setY(this::getBarHeight);
             categoryElement.setWidth(() -> getWidth() / 4 * 3);
             categoryElement.setHeight(() -> getHeight() - getBarHeight());
+            categoryElement.setVisibility(() -> CategoryButton.getSelectedCategory() == category);
             add(categoryElement);
         }
     }
