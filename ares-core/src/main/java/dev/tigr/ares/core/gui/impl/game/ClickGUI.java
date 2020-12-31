@@ -7,6 +7,7 @@ import dev.tigr.ares.core.gui.impl.game.nav.NavigationButton;
 import dev.tigr.ares.core.gui.impl.game.window.Window;
 import dev.tigr.ares.core.gui.impl.game.window.windows.ConsoleWindow;
 import dev.tigr.ares.core.gui.impl.game.window.windows.WelcomeWindow;
+import dev.tigr.ares.core.gui.impl.game.window.windows.modules.CompactModulesWindow;
 import dev.tigr.ares.core.gui.impl.game.window.windows.modules.ExpandedModulesWindow;
 import dev.tigr.ares.core.setting.SettingCategory;
 import dev.tigr.ares.core.util.function.DynamicValue;
@@ -32,8 +33,12 @@ public class ClickGUI extends GUI {
         NavigationBar navigationBar = add(new NavigationBar(this, COLOR));
 
         // create modules window
-        ExpandedModulesWindow modules = new ExpandedModulesWindow(this, COLOR);
+        CompactModulesWindow modules = new CompactModulesWindow(this, COLOR);
         navigationBar.addNavigationButton(new NavigationButton(this, new LocationIdentifier("textures/icons/modules.png"), () -> toggleWindow(modules)));
+
+        // create expanded modules window
+        ExpandedModulesWindow expanded = new ExpandedModulesWindow(this, COLOR);
+        navigationBar.addNavigationButton(new NavigationButton(this, new LocationIdentifier("textures/icons/expanded.png"), () -> toggleWindow(expanded)));
 
         // create console window
         ConsoleWindow console = new ConsoleWindow(this, COLOR);
