@@ -56,7 +56,7 @@ public class ClickGUI extends GUI {
         navigationBar.add(helpButton);
 
         // add windows
-        windows.addAll(Arrays.asList(modules, console, welcomeWindow));
+        windows.addAll(Arrays.asList(modules, expanded, console, welcomeWindow));
     }
 
     @Override
