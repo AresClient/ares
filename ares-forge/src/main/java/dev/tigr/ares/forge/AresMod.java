@@ -73,7 +73,6 @@ public class AresMod extends Ares {
                 HoleFiller.class,
                 HopperAura.class,
                 KillAura.class,
-                ObbyPlace.class,
                 Offhand.class,
                 OffhandGap.class,
                 Surround.class,

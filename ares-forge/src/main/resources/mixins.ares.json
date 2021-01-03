@@ -10,7 +10,6 @@
     "client.MixinEntityBoat",
     "client.MixinEntityLivingBase",
     "client.MixinEntityPlayerSP",
-    "client.MixinItem",
     "client.MixinMinecraft",
     "client.MixinModelBoat",
     "client.MixinMovementFromInputOptions",
