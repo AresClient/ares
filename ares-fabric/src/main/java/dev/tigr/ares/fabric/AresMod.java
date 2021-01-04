@@ -156,7 +156,8 @@ public class AresMod extends Ares {
                 NoRender.class,
                 NoWeather.class,
                 Search.class,
-                Tracers.class
+                Tracers.class,
+                Trajectories.class
         );
     }
 

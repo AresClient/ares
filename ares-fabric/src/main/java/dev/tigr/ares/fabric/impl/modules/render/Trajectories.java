@@ -1,16 +1,16 @@
-package dev.tigr.ares.forge.impl.modules.render;
+package dev.tigr.ares.fabric.impl.modules.render;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.forge.utils.RenderUtils;
-import dev.tigr.ares.forge.utils.TrajectoryUtils;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.util.math.AxisAlignedBB;
+import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.TrajectoryUtils;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
@@ -33,11 +33,11 @@ public class Trajectories extends Module {
     @Override
     public void onRender3d() {
         if(result != null) {
-            RenderUtils.prepare3d();
-            GL11.glDisable(GL11.GL_BLEND);
-            GL11.glDisable(GL11.GL_LIGHTING);
+            RenderUtils.glBegin();
+            RenderSystem.disableBlend();
+            RenderSystem.disableLighting();
 
-            Color color = result.getType() == RayTraceResult.Type.ENTITY ? Color.RED : Color.WHITE;
+            Color color = result.getType() == HitResult.Type.ENTITY ? Color.RED : Color.WHITE;
             Vec3d prevPoint = null;
             for(Vec3d point: result.getPoints()) {
                 if(prevPoint != null) RENDERER.drawLine(point.x, point.y, point.z, prevPoint.x, prevPoint.y, prevPoint.z, 2, color);
@@ -45,11 +45,11 @@ public class Trajectories extends Module {
             }
 
             if(box.getValue()) {
-                GL11.glEnable(GL11.GL_BLEND);
-                RenderGlobal.drawSelectionBoundingBox(new AxisAlignedBB(new BlockPos(result.getHitVec())), 1, 0, 0, 0.6f);
+                RenderSystem.enableBlend();
+                RenderUtils.renderSelectionBoundingBox(new Box(new BlockPos(result.getHitVec())), 1, 0, 0, 0.6f);
             }
 
-            RenderUtils.end3d();
+            RenderUtils.glEnd();
         }
     }
 }
