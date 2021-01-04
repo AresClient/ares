@@ -24,6 +24,7 @@
     "render.MixinCapeFeatureRenderer",
     "render.MixinElytraFeatureRenderer",
     "render.MixinGameRenderer",
+    "render.MixinInGameHud",
     "render.MixinInGameOverlayRenderer",
     "render.MixinLivingEntityRenderer",
     "render.MixinPlayerEntityRenderer",

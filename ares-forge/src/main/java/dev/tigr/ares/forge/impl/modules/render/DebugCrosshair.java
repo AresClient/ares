@@ -6,6 +6,7 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.forge.event.events.render.CrosshairRenderEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.GlStateManager;
@@ -36,17 +37,11 @@ public class DebugCrosshair extends Module {
         if(gamesettings.thirdPersonView == 0) {
             if(MC.playerController.isSpectator() && MC.pointedEntity == null) {
                 RayTraceResult raytraceresult = MC.objectMouseOver;
-
-                if(raytraceresult == null || raytraceresult.typeOfHit != RayTraceResult.Type.BLOCK) {
-                    return;
-                }
+                if(raytraceresult == null || raytraceresult.typeOfHit != RayTraceResult.Type.BLOCK) return;
 
                 BlockPos blockpos = raytraceresult.getBlockPos();
-
-                net.minecraft.block.state.IBlockState state = MC.world.getBlockState(blockpos);
-                if(!state.getBlock().hasTileEntity(state) || !(MC.world.getTileEntity(blockpos) instanceof IInventory)) {
-                    return;
-                }
+                IBlockState state = MC.world.getBlockState(blockpos);
+                if(!state.getBlock().hasTileEntity(state) || !(MC.world.getTileEntity(blockpos) instanceof IInventory)) return;
             }
 
             if(!gamesettings.hideGUI) {
@@ -63,4 +58,5 @@ public class DebugCrosshair extends Module {
             }
         }
     }
+
 }
