@@ -111,7 +111,7 @@ public class AresMod extends Ares {
                 EntitySpeed.class,
                 Flight.class,
                 HighJump.class,
-                //IceSpeed.class,
+                IceSpeed.class,
                 InventoryMove.class,
                 Jesus.class,
                 NoClip.class,
