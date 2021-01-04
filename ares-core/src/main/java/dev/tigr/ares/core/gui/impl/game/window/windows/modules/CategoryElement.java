@@ -10,7 +10,8 @@ import dev.tigr.ares.core.util.render.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.tigr.ares.core.Ares.*;
+import static dev.tigr.ares.core.Ares.RENDERER;
+import static dev.tigr.ares.core.Ares.RENDER_STACK;
 
 /**
  * @author Tigermouthbear 6/23/20

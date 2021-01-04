@@ -6,7 +6,7 @@ import dev.tigr.ares.core.gui.impl.game.window.Window;
 import dev.tigr.ares.core.util.function.DynamicValue;
 import dev.tigr.ares.core.util.render.Color;
 
-import static dev.tigr.ares.core.Ares.*;
+import static dev.tigr.ares.core.Ares.RENDERER;
 
 /**
  * @author Tigermouthbear 6/23/20

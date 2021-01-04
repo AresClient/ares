@@ -21,13 +21,14 @@ import net.minecraftforge.client.event.GuiOpenEvent;
  */
 @Module.Info(name = "AutoReconnect", description = "Automatically reconnect at a specific interval", category = Category.PLAYER, alwaysListening = true)
 public class AutoReconnect extends Module {
-    private final Setting<Double> delay = register(new DoubleSetting("Delay", 1, 0, 5));
+    private final Setting<Double> delay = register(new DoubleSetting("Delay", 1, 0, 30));
+    private ServerData serverData = null;
+
     @EventHandler
     public EventListener<GuiOpenEvent> openGuiEvent = new EventListener<>(Priority.HIGHEST, event -> {
         if(getEnabled() && event.getGui() instanceof GuiDisconnected)
             event.setGui(new Gui((GuiDisconnected) event.getGui()));
     });
-    private ServerData serverData = null;
 
     @Override
     public void onTick() {

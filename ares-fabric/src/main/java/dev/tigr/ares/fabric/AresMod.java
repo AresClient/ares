@@ -126,7 +126,7 @@ public class AresMod extends Ares {
                 AntiHitbox.class,
                 AntiHunger.class,
                 HotbarReplenish.class,
-                //AutoReconnect.class,
+                AutoReconnect.class,
                 AutoSign.class,
                 ClickGUIMod.class,
                 FakeRotation.class,
