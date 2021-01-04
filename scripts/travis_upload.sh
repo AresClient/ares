@@ -17,7 +17,7 @@ for filename in $TRAVIS_BUILD_DIR/build/*.jar; do
   fi
 done
 
-COMMITS=$(git log $TRAVIS_COMMIT_RANGE --oneline | tail)
+COMMITS=$(git log $TRAVIS_COMMIT_RANGE --oneline | tac)
 if [ $FORGE_PATH != "" ] && [ $FABRIC_PATH  != "" ]; then
   echo $(curl -F token=$UPLOAD_TOKEN -F message="$COMMITS" -F forge=@$FORGE_PATH -F fabric=@$FABRIC_PATH https://aresclient.org/beta)
 else
