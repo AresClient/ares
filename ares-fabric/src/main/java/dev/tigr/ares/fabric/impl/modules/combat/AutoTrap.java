@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.impl.modules.combat;
+package dev.tigr.ares.fabric.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Category;
@@ -7,13 +7,12 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
-import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.WorldUtils;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.Item;
-import net.minecraft.util.math.AxisAlignedBB;
+import dev.tigr.ares.fabric.utils.InventoryUtils;
+import dev.tigr.ares.fabric.utils.WorldUtils;
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 
 /**
  * @author Tigermouthbear
@@ -26,27 +25,27 @@ public class AutoTrap extends Module {
 
     @Override
     public void onTick() {
-        if(MC.player.ticksExisted % delay.getValue() != 0) return;
+        if(TICKS % delay.getValue() != 0) return;
 
-        for(EntityPlayer player: MC.world.playerEntities) {
+        for(PlayerEntity player: MC.world.getPlayers()) {
             if(FriendManager.isFriend(player.getGameProfile().getName()) || MC.player == player) continue;
 
-            if(MC.player.getDistance(player) <= range.getValue()) {
+            if(MC.player.distanceTo(player) <= range.getValue()) {
                 for(BlockPos pos: getPos(player)) {
                     if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
                         if(
-                                MC.world.getEntitiesWithinAABBExcludingEntity(
+                                MC.world.getOtherEntities(
                                         null,
-                                        new AxisAlignedBB(pos)
+                                        new Box(pos)
                                 ).isEmpty()
                         ) {
                             //place block
-                            int oldSlot = MC.player.inventory.currentItem;
+                            int oldSlot = MC.player.inventory.selectedSlot;
                             int newSlot = InventoryUtils.findBlock(Blocks.OBSIDIAN);
                             if(newSlot == -1) return;
-                            else MC.player.inventory.currentItem = newSlot;
+                            else MC.player.inventory.selectedSlot = newSlot;
                             WorldUtils.placeBlockMainHand(pos);
-                            MC.player.inventory.currentItem = oldSlot;
+                            MC.player.inventory.selectedSlot = oldSlot;
                             return;
                         }
                     }
@@ -55,8 +54,8 @@ public class AutoTrap extends Module {
         }
     }
 
-    private BlockPos[] getPos(EntityPlayer player) {
-        BlockPos playerPos = new BlockPos(player.getPositionVector());
+    private BlockPos[] getPos(PlayerEntity player) {
+        BlockPos playerPos = new BlockPos(player.getPos());
         BlockPos[] blocks;
 
         if(mode.getValue() == Mode.FULL) {

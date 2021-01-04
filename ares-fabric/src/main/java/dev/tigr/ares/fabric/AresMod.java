@@ -43,23 +43,19 @@ public class AresMod extends Ares {
         // commented means that it still needs to be added
         return Arrays.asList(
                 // combat
-                //AntiDeathScreen.class,
-                //Auto32k.class,
                 Anchor.class,
                 AutoArmor.class,
                 AutoCity.class,
                 AutoEz.class,
                 AutoSurround.class,
                 AutoTotem.class,
-                //AutoTrap.class,
+                AutoTrap.class,
                 BowRelease.class,
                 BurrowDetect.class,
                 Criticals.class,
                 CrystalAura.class,
                 HoleFiller.class,
-                //HopperAura.class,
                 KillAura.class,
-                //ObbyPlace.class,
                 Offhand.class,
                 OffhandGap.class,
                 Surround.class,
@@ -79,11 +75,9 @@ public class AresMod extends Ares {
                 TextShadow.class,
 
                 // exploit
-                //CoordTpExploit.class,
                 FastPlace.class,
                 LiquidInteract.class,
                 MultiTask.class,
-                //NewChunks.class,
                 NoBreakDelay.class,
                 NoBreakReset.class,
                 NoSwing.class,
