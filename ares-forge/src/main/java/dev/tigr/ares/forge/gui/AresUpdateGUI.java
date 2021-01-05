@@ -31,6 +31,7 @@ public class AresUpdateGUI extends GuiScreen {
         drawDefaultBackground();
         drawCenteredString(this.fontRenderer, "Ares " + TextColor.BLUE + UpdateHelper.getLatestVersion() + TextColor.WHITE + " has been released. You are still on version " + TextColor.BLUE + Ares.VERSION_FULL, this.width / 2, 110, 16764108);
         drawCenteredString(this.fontRenderer, "Would you like to download it, view the changelog, or skip for now?", this.width / 2, 120, 16764108);
+        super.drawScreen(mouseX, mouseY, partialTicks);
     }
 
     @Override
