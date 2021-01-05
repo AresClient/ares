@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * @author Tigermouthbear
  */
-@Ares.Info(minecraftVersion = "1.12.2", version = "2.8", branch = Ares.Branches.BETA)
+@Ares.Info(minecraftVersion = "1.12.2", version = "2.8", branch = Ares.Branches.STABLE)
 public class AresMod extends Ares {
     @Mod(modid = Ares.MODID, name = Ares.NAME, clientSideOnly = true)
     public static final class Loader {
