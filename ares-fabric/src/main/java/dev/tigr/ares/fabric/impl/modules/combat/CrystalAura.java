@@ -251,13 +251,13 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
-            RenderUtils.glBegin();
+            RenderUtils.prepare3d();
             Box bb = RenderUtils.getBoundingBox(target);
             if(bb != null) {
                 RenderUtils.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
                 RenderUtils.renderSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
             }
-            RenderUtils.glEnd();
+            RenderUtils.end3d();
         }
     }
 

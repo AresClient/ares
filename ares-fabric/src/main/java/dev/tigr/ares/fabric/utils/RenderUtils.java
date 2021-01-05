@@ -29,7 +29,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         return new Color(Color.HSBtoRGB(hue, 1, 1));
     }
 
-    public static void glBegin() {
+    public static void prepare3d() {
         GL11.glPushMatrix();
         RenderSystem.enableBlend();
         GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
@@ -45,7 +45,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         GL11.glTranslated(-position.x, -position.y, -position.z);
     }
 
-    public static void glEnd() {
+    public static void end3d() {
         RenderSystem.enableDepthTest();
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.enableTexture();

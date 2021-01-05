@@ -27,13 +27,13 @@ public class Tracers extends Module {
 
     @Override
     public void onRender3d() {
-        RenderUtils.glBegin();
+        RenderUtils.prepare3d();
         for(Entity entity: WorldUtils.getTargets(players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue())) {
             if(entity instanceof PlayerEntity && FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName()))
                 RenderUtils.drawTracer(entity, IRenderer.rainbow());
             else
                 RenderUtils.drawTracer(entity, Color.WHITE);
         }
-        RenderUtils.glEnd();
+        RenderUtils.end3d();
     }
 }

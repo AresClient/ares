@@ -35,10 +35,10 @@ public class BlockHighlight extends Module {
 
             if(bb == null) return;
 
-            RenderUtils.glBegin();
+            RenderUtils.prepare3d();
             RenderSystem.lineWidth(width.getValue());
             RenderUtils.renderSelectionBoundingBox(bb, red.getValue(), green.getValue(), blue.getValue(), alpha.getValue());
-            RenderUtils.glEnd();
+            RenderUtils.end3d();
         }
     }
 }

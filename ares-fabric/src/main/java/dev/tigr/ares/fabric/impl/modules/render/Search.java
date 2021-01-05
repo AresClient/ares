@@ -97,7 +97,7 @@ public class Search extends Module {
     @Override
     public void onRender3d() {
         if(blocks != null) {
-            RenderUtils.glBegin();
+            RenderUtils.prepare3d();
 
             Color color;
             if(!rainbow.getValue()) color = new Color(red.getValue(), green.getValue(), blue.getValue(), 0.3f);
@@ -109,12 +109,12 @@ public class Search extends Module {
                 RenderUtils.renderSelectionBoundingBox(bb, color);
             }
 
-            RenderUtils.glEnd();
+            RenderUtils.end3d();
 
             if(tracers.getValue()) {
-                RenderUtils.glBegin();
+                RenderUtils.prepare3d();
                 for(BlockPos pos: new ArrayList<>(blocks)) RenderUtils.drawTracer(new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), Color.WHITE);
-                RenderUtils.glEnd();
+                RenderUtils.end3d();
             }
         }
     }

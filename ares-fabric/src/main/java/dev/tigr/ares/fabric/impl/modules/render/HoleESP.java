@@ -40,7 +40,7 @@ public class HoleESP extends Module {
 
     @Override
     public void onRender3d() {
-        RenderUtils.glBegin();
+        RenderUtils.prepare3d();
 
         for(BlockPos pos: holes.keySet()) {
             Box bb = new Box(pos);
@@ -64,7 +64,7 @@ public class HoleESP extends Module {
             }
         }
 
-        RenderUtils.glEnd();
+        RenderUtils.end3d();
     }
 
     enum Mode {

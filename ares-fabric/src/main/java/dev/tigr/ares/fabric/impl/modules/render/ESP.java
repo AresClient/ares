@@ -39,14 +39,14 @@ public class ESP extends Module {
     public void onRender3d() {
         if(MC.world.getPlayers().size() <= 0 || mode.getValue() != Mode.BOX) return;
 
-        RenderUtils.glBegin();
+        RenderUtils.prepare3d();
 
         for(Entity entity: WorldUtils.getTargets(players.getValue(), false, teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()))
             RenderUtils.renderSelectionBoundingBox(entity.getBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
 
         if(friends.getValue()) renderFriends();
 
-        RenderUtils.glEnd();
+        RenderUtils.end3d();
     }
 
     private void renderFriends() {

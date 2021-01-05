@@ -12,7 +12,6 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
-import org.lwjgl.opengl.GL11;
 
 /**
  * @author Tigermouthbear 10/4/20
@@ -33,7 +32,7 @@ public class Trajectories extends Module {
     @Override
     public void onRender3d() {
         if(result != null) {
-            RenderUtils.glBegin();
+            RenderUtils.prepare3d();
             RenderSystem.disableBlend();
             RenderSystem.disableLighting();
 
@@ -49,7 +48,7 @@ public class Trajectories extends Module {
                 RenderUtils.renderSelectionBoundingBox(new Box(new BlockPos(result.getHitVec())), 1, 0, 0, 0.6f);
             }
 
-            RenderUtils.glEnd();
+            RenderUtils.end3d();
         }
     }
 }

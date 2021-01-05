@@ -20,7 +20,7 @@ public class ChestESP extends Module {
 
     @Override
     public void onRender3d() {
-        RenderUtils.glBegin();
+        RenderUtils.prepare3d();
 
         for(BlockEntity tileEntity: MC.world.blockEntities) {
             Box bb = RenderUtils.getBoundingBox(tileEntity.getPos());
@@ -32,7 +32,7 @@ public class ChestESP extends Module {
             else if(tileEntity instanceof ShulkerBoxBlockEntity) drawBox(bb, SHULKER);
         }
 
-        RenderUtils.glEnd();
+        RenderUtils.end3d();
     }
 
     private void drawBox(Box box, Color color) {
