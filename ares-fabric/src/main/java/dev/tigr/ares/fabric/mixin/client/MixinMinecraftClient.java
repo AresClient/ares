@@ -16,6 +16,7 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.util.profiler.Profiler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -75,11 +76,14 @@ public class MixinMinecraftClient {
         if(Ares.EVENT_MANAGER.post(new OpenScreenEvent(screen)).isCancelled()) ci.cancel();
     }
 
-    @Redirect(method = "handleInputEvents", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
-    public boolean usingItemWrapper(ClientPlayerEntity clientPlayerEntity) {
-        boolean value = clientPlayerEntity.isUsingItem();
-        if(value && !MC.options.keyUse.isPressed()) MC.interactionManager.stopUsingItem(MC.player);
-        return Ares.EVENT_MANAGER.post(new InteractEvent(value)).usingItem;
+    @Redirect(method = "handleBlockBreaking", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
+    public boolean breakBlockCheck(ClientPlayerEntity clientPlayerEntity) {
+        return Ares.EVENT_MANAGER.post(new InteractEvent(clientPlayerEntity.isUsingItem())).usingItem;
+    }
+
+    @Redirect(method = "doItemUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;isBreakingBlock()Z"))
+    public boolean useItemBreakCheck(ClientPlayerInteractionManager clientPlayerInteractionManager) {
+        return Ares.EVENT_MANAGER.post(new InteractEvent(clientPlayerInteractionManager.isBreakingBlock())).usingItem;
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/MinecraftClient;printCrashReport(Lnet/minecraft/util/crash/CrashReport;)V"))
