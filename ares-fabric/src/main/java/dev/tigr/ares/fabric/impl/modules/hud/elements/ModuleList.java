@@ -1,12 +1,14 @@
 package dev.tigr.ares.fabric.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
+import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
+import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
 import dev.tigr.ares.fabric.utils.Comparators;
 import net.minecraft.util.math.Vec3d;
@@ -39,6 +41,7 @@ public class ModuleList extends HudElement {
 
         // points for line looping in fancy background
         List<Vec3d> points = new ArrayList<>();
+        boolean shouldRenderFancy = (background.getValue() == Background.FANCY || background.getValue() == Background.RAINBOW) && !(MC.currentScreen instanceof EditHudGui);
 
         List<Module> modules = Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() && module.isVisible()).collect(Collectors.toList());
         modules.sort(mode.getValue().comparator);
@@ -58,7 +61,7 @@ public class ModuleList extends HudElement {
                 pos += FONT_RENDERER.getFontHeight() + 1;
             }
 
-            if(background.getValue() == Background.FANCY) {
+            if(shouldRenderFancy) {
                 points.add(new Vec3d(getX() - 1, getY() + pos - 1, 0));
                 points.add(new Vec3d(getX() - 1, getY() - 1, 0));
             }
@@ -72,7 +75,7 @@ public class ModuleList extends HudElement {
                 double width = FONT_RENDERER.getStringWidth(module.getHudName());
                 drawModule(module, getX() + biggestWidth.get() - width, getY() + pos);
 
-                if(background.getValue() == Background.FANCY) {
+                if(shouldRenderFancy) {
                     points.add(new Vec3d(getX() + biggestWidth.get() - width - 1, getY() + pos - 1, 0));
                     points.add(new Vec3d(getX() + biggestWidth.get() - width - 1, getY() + pos + FONT_RENDERER.getFontHeight(), 0));
                 }
@@ -80,14 +83,14 @@ public class ModuleList extends HudElement {
                 pos += FONT_RENDERER.getFontHeight() + 1;
             }
 
-            if(background.getValue() == Background.FANCY) {
+            if(shouldRenderFancy) {
                 points.add(new Vec3d(getX() + getWidth() + 1, getY() + pos - 1, 0));
                 points.add(new Vec3d(getX() + getWidth() + 1, getY() - 1, 0));
             }
         }
 
-        if(background.getValue() == Background.FANCY) {
-            Color color = IRenderer.rainbow();
+        if(shouldRenderFancy) {
+            Color color = background.getValue() == Background.RAINBOW ? IRenderer.rainbow() : ClickGUIMod.getColor();
             Vec3d last = null;
             for(Vec3d vec3d: points) {
                 if(last != null) RENDERER.drawLine(last.x, last.y, vec3d.x, vec3d.y, 1, color);

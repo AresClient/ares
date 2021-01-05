@@ -16,8 +16,6 @@ import org.lwjgl.opengl.GL11;
  */
 @Module.Info(name = "InvPreview", description = "Displays a preview of your inventory on the hud", category = Category.HUD)
 public class InvPreview extends HudElement {
-
-
     private static final int WIDTH = 168;
     private static final int HEIGHT = 56;
 

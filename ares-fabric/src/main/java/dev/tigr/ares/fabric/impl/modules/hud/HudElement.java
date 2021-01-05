@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.impl.modules.hud;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.SettingCategory;
@@ -69,11 +70,11 @@ public abstract class HudElement extends Module {
 
     protected void drawBackground() {
         if(background.getValue() != Background.NONE) RENDERER.drawRect(getX(), getY(), getWidth(), getHeight(), Color.BLACK);
-        if(background.getValue() == Background.FANCY) RENDERER.drawLineLoop(1, IRenderer.rainbow(),
-                        getX(), getY(),
-                        getX() + getWidth(), getY(),
-                        getX() + getWidth(), getY() + getHeight(),
-                        getX(), getY() + getHeight()
+        if(background.getValue() == Background.FANCY || background.getValue() == Background.RAINBOW) RENDERER.drawLineLoop(1, background.getValue() == Background.RAINBOW ? IRenderer.rainbow() : ClickGUIMod.getColor(),
+                getX(), getY(),
+                getX() + getWidth(), getY(),
+                getX() + getWidth(), getY() + getHeight(),
+                getX(), getY() + getHeight()
         );
     }
 
@@ -122,5 +123,5 @@ public abstract class HudElement extends Module {
         FONT_RENDERER.drawString(text, x, y, color, TextShadow.INSTANCE.getEnabled());
     }
 
-    public enum Background { NONE, FANCY, SIMPLE }
+    public enum Background { NONE, RAINBOW, FANCY, SIMPLE }
 }

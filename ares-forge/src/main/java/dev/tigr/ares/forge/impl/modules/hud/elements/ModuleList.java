@@ -1,6 +1,7 @@
 package dev.tigr.ares.forge.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
+import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
@@ -40,7 +41,7 @@ public class ModuleList extends HudElement {
 
         // points for line looping in fancy background
         List<Vec3d> points = new ArrayList<>();
-        boolean shouldRenderFancy = background.getValue() == Background.FANCY && !(MC.currentScreen instanceof EditHudGui);
+        boolean shouldRenderFancy = (background.getValue() == Background.FANCY || background.getValue() == Background.RAINBOW) && !(MC.currentScreen instanceof EditHudGui);
 
         List<Module> modules = Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() && module.isVisible()).collect(Collectors.toList());
         modules.sort(mode.getValue().comparator);
@@ -91,7 +92,7 @@ public class ModuleList extends HudElement {
         }
 
         if(shouldRenderFancy) {
-            Color color = IRenderer.rainbow();
+            Color color = background.getValue() == Background.RAINBOW ? IRenderer.rainbow() : ClickGUIMod.getColor();
             Vec3d last = null;
             for(Vec3d vec3d: points) {
                 if(last != null) RENDERER.drawLine(last.x, last.y, vec3d.x, vec3d.y, 1, color);
