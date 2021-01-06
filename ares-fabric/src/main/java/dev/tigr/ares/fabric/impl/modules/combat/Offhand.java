@@ -84,7 +84,20 @@ public class Offhand extends Module {
         }
     }
 
+    private Item getCurrGapple(){
+        int gappleIndex = 0;
+        Item gappleType = null;
+        gappleIndex = InventoryUtils.amountInInventory(Items.ENCHANTED_GOLDEN_APPLE);
+        if (gappleIndex > 0) gappleType = Items.ENCHANTED_GOLDEN_APPLE;
+        else if (gappleIndex < 1)
+        {
+            gappleIndex = InventoryUtils.amountInInventory(Items.GOLDEN_APPLE);
+            if (gappleIndex > 0) gappleType = Items.GOLDEN_APPLE;
+        }
+        return gappleType;
+    }
+
     private Item getCurrItem() {
-        return item.getValue() == SItem.CRYSTAL ? Items.END_CRYSTAL : (item.getValue() == SItem.GAPPLE ? Items.GOLDEN_APPLE : Items.BOW);
+        return item.getValue() == SItem.CRYSTAL ? Items.END_CRYSTAL : (item.getValue() == SItem.GAPPLE ? getCurrGapple() : Items.BOW);
     }
 }
