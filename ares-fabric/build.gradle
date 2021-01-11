@@ -73,7 +73,7 @@ task customShadowJar(type: ShadowJar) {
 
 jar {
     manifest {
-        attributes("Main-Class": "dev.tigr.ares.fabric.Main")
+        attributes("Main-Class": "dev.tigr.ares.installer.Main")
     }
 }
 

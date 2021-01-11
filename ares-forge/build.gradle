@@ -104,7 +104,7 @@ jar {
                 "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
                 "TweakOrder": 0,
                 "FMLCorePluginContainsFMLMod": "true",
-                "FMLCorePlugin": "dev.tigr.ares.forge.mixin.MixinLoader",
+                "FMLCorePlugin": "dev.tigr.ares.installer.Main",
                 "ForceLoadAsMod": "true",
                 "Main-Class": "dev.tigr.ares.Main"
         )
