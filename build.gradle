@@ -110,6 +110,20 @@ task setupWorkspace(type: GradleBuild) {
     tasks = [":ares-forge:classes", ":ares-fabric:genSources"]
 }
 
+task buildInstaller(type: GradleBuild) {
+    group = "ares"
+    description = "builds the ares installer as a seperate jar"
+
+    tasks = [":ares-installer:build"]
+
+    doLast {
+        copy {
+            from "ares-installer/build/libs/ares-installer-${project.installerVersion}.jar"
+            into "build"
+        }
+    }
+}
+
 private static String getModsFolder() {
     if(System.getProperty("os.name").toLowerCase().contains("nux")) {
         return System.getProperty("user.home") + "/.minecraft/mods/"

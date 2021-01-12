@@ -1,0 +1,7 @@
+version = project.installerVersion
+
+jar {
+    manifest {
+        attributes("Main-Class": "dev.tigr.ares.installer.Installer")
+    }
+}
