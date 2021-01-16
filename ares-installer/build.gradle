@@ -1,5 +1,9 @@
 version = project.installerVersion
 
+dependencies {
+    compile "org.json:json:20190722"
+}
+
 jar {
     manifest {
         attributes("Main-Class": "dev.tigr.ares.installer.Installer")

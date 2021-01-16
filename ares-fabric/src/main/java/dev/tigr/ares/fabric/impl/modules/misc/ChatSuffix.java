@@ -21,9 +21,7 @@ public class ChatSuffix extends Module {
                 return;
 
             ChatMessageC2SPacket chatPacket = (ChatMessageC2SPacket) event.getPacket();
-            String plus = Ares.BRANCH == Ares.Branches.PLUS ? " \u1d18\u029f\u1d1c\ua731" : "";
-            String msg = chatPacket.getChatMessage().concat(" \u00bb \u028c\u0433\u1d07\u0455" + plus);
-
+            String msg = chatPacket.getChatMessage().concat(" \u00bb \u028c\u0433\u1d07\u0455");
             ReflectionHelper.setPrivateValue(ChatMessageC2SPacket.class, chatPacket, msg, "chatMessage", "field_12764");
         }
     });

@@ -12,20 +12,23 @@ public class UpdateHelper {
     private static String latestVersion = null;
 
     public static boolean shouldUpdate() {
+        if(Ares.BRANCH == Ares.Branches.BETA) return false;
+
         try {
             JSONObject jsonObject = new JSONObject(new JSONTokener(Utils.openURLStream(URL)));
 
-            if(jsonObject.has(Ares.MC_VERSION)) {
-                JSONObject versionObject = jsonObject.getJSONObject(Ares.MC_VERSION);
-                if(versionObject.has(Ares.BRANCH.name().toLowerCase())) {
-                    JSONObject branchObject = versionObject.getJSONObject(Ares.BRANCH.name().toLowerCase());
-                    if(branchObject.has("name")) {
-                        latestVersion = branchObject.getString("name");
+            if(jsonObject.has("versions")) {
+                JSONObject versions = jsonObject.getJSONObject("versions");
+                if(versions.has(Ares.MC_VERSION)) {
+                    JSONObject version = versions.getJSONObject(Ares.MC_VERSION);
+                    if(version.has("name")) {
+                        latestVersion = version.getString("name");
+                        return !latestVersion.equals(Ares.VERSION);
                     }
                 }
             }
 
-            return !latestVersion.equals(Ares.VERSION);
+            return false;
         } catch(Exception ignored) {
             latestVersion = Ares.VERSION;
             Ares.LOGGER.info("Failed to query latest version!");
@@ -34,6 +37,6 @@ public class UpdateHelper {
     }
 
     public static String getLatestVersion() {
-        return Ares.BRANCH == Ares.Branches.STABLE ? latestVersion : (Ares.BRANCH == Ares.Branches.PLUS ? latestVersion.concat("+") : latestVersion.concat(" BETA"));
+        return latestVersion != null ? latestVersion : Ares.VERSION;
     }
 }
