@@ -15,7 +15,7 @@ public class SelectVersionPanel extends JPanel {
     private final JButton fabric;
 
     SelectVersionPanel() {
-        setBackground(new Color(0.54f, 0.03f, 0.03f, 1)); // just in case
+        setBackground(new Color(0.098f, 0.098f, 0.098f, 1)); // just in case
         setLayout(null);
 
         // calculate button positions

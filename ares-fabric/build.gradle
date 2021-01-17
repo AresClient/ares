@@ -5,14 +5,9 @@ buildscript {
             name = "Fabric"
             url = "https://maven.fabricmc.net/"
         }
-        maven {
-            name = "Jitpack"
-            url = "https://jitpack.io/"
-        }
     }
     dependencies {
-        // use fork with subproject bug fix, waiting for this pr to be accepted
-        classpath "com.github.solonovamax:fabric-loom:ef19233"
+        classpath "net.fabricmc:fabric-loom:0.6-SNAPSHOT"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
     }
 }

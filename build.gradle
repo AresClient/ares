@@ -118,7 +118,7 @@ task buildInstaller(type: GradleBuild) {
 
     doLast {
         copy {
-            from "ares-installer/build/libs/ares-installer-${project.installerVersion}.jar"
+            from "ares-installer/build/libs/ares-installer-${project.installerVersion}-release.jar"
             into "build"
         }
     }
