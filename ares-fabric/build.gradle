@@ -7,7 +7,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath "net.fabricmc:fabric-loom:0.6-SNAPSHOT"
+        classpath "net.fabricmc:fabric-loom:0.6.25"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
     }
 }

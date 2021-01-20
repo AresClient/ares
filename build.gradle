@@ -44,7 +44,7 @@ task buildAll(type: GradleBuild) {
     group = "ares"
     description = "builds all versions of Ares"
 
-    tasks = [":buildForge", ":buildFabric"]
+    tasks = [":buildForge", ":buildFabric", ":buildInstaller"]
 }
 
 task buildForge(type: GradleBuild) {
