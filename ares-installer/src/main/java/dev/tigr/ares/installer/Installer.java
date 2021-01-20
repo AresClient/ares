@@ -13,6 +13,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.function.Function;
 
 /**
@@ -71,27 +72,36 @@ public class Installer extends JFrame {
     }
 
     public static String install(Version version, File folder) {
-        try {
-            // lambda for checking if file is loader for forge or fabric
-            Function<String, Boolean> tester = version == Version.FABRIC
-                    ? file -> file.startsWith("fabric-loader-") && file.endsWith(FABRIC_MCVERSION)
-                    : file -> file.startsWith(FORGE_MCVERSION + "-forge-14.23.5.");
+        // lambda for checking if file is loader for forge or fabric
+        Function<String, Boolean> tester = version == Version.FABRIC
+                ? file -> file.startsWith("fabric-loader-") && file.endsWith(FABRIC_MCVERSION)
+                : file -> file.startsWith(FORGE_MCVERSION + "-forge-14.23.5.");
 
-            if(Files.walk(folder.toPath()).noneMatch(file -> tester.apply(file.toFile().getName()))) {
-                // TODO: AUTOMATIC FORGE/FABRIC INSTALLER?
-                // tell user to install forge or fabric loader if missing
-                return version == Version.FABRIC ? "Please install minecraft fabric for " + FABRIC_MCVERSION + " at https://fabricmc.net" : "Please install minecraft forge for " + FORGE_MCVERSION + " at https://files.minecraftforge.net/";
-            }
-        } catch(IOException e) {
-            e.printStackTrace();
-            return "Error installing Ares client! Visit our website for the faq and link to discord for support";
+        // find versions folder
+        File versions = new File(folder, "versions");
+        if(!versions.exists()) return "Looks like there's something wrong with your minecraft folder! Make sure you selected the correct location";
+
+        // check if forge or fabric is installed
+        if(Arrays.stream(versions.listFiles()).noneMatch(file -> file.isDirectory() && tester.apply(file.getName()))) {
+            // TODO: AUTOMATIC FORGE/FABRIC INSTALLER?
+            // tell user to install forge or fabric loader if missing
+            return version == Version.FABRIC ? "Please install minecraft fabric for " + FABRIC_MCVERSION + " at https://fabricmc.net" : "Please install minecraft forge for " + FORGE_MCVERSION + " at https://files.minecraftforge.net/";
         }
 
         // create\check mods folder
         File mods = new File(folder, "mods");
         if(!mods.exists() || !mods.isDirectory()) mods.mkdir();
 
-        // TODO: REMOVE OLDER VERSIONS FROM MODS FOLDER
+        // remove old versions from mods folder
+        Arrays.stream(mods.listFiles()).filter(file -> {
+            String name = file.getName();
+            if(version == Version.FABRIC) return (name.startsWith("Ares-") && name.endsWith(".jar") && !name.contains("1.12.2")) || // stable
+                    name.startsWith("ares-fabric-"); // beta
+            if(version == Version.FORGE) return name.startsWith("Ares-") && name.endsWith("-1.12.2.jar") || // stable
+                    name.startsWith("ares-forge-"); // beta
+
+            return false;
+        }).forEach(File::delete);
 
         // create file
         File file = new File(mods, "Ares-" + getVersion(version) + "-" + getMinecraftVersion(version) + ".jar");
