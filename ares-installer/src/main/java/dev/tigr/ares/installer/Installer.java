@@ -9,6 +9,9 @@ import java.awt.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.util.function.Function;
 
@@ -106,12 +109,8 @@ public class Installer extends JFrame {
             HttpURLConnection connection = (HttpURLConnection) new URL(getURL(version)).openConnection();
             connection.addRequestProperty("User-Agent", "Mozilla/4.76");
 
-            InputStream is = connection.getInputStream();
-            byte[] bytes = new byte[connection.getContentLength()];
-            is.read(bytes);
-            is.close();
             FileOutputStream fos = new FileOutputStream(file);
-            fos.write(bytes);
+            fos.getChannel().transferFrom(Channels.newChannel(connection.getInputStream()), 0, Long.MAX_VALUE);
             fos.close();
         } catch(Exception e) {
             e.printStackTrace();
