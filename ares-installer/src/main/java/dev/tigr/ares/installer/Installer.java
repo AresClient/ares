@@ -10,9 +10,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -71,6 +68,13 @@ public class Installer extends JFrame {
         revalidate();
     }
 
+    void home() {
+        remove(panel);
+        panel = new SelectVersionPanel();
+        add(panel);
+        revalidate();
+    }
+
     public static String install(Version version, File folder) {
         // lambda for checking if file is loader for forge or fabric
         Function<String, Boolean> tester = version == Version.FABRIC
@@ -83,7 +87,7 @@ public class Installer extends JFrame {
 
         // check if forge or fabric is installed
         if(Arrays.stream(versions.listFiles()).noneMatch(file -> file.isDirectory() && tester.apply(file.getName()))) {
-            // TODO: AUTOMATIC FORGE/FABRIC INSTALLER?
+            // TODO: AUTOMATIC FORGE/FABRIC INSTALLER? AND FIX MULTIMC COMPAT
             // tell user to install forge or fabric loader if missing
             return version == Version.FABRIC ? "Please install minecraft fabric for " + FABRIC_MCVERSION + " at https://fabricmc.net" : "Please install minecraft forge for " + FORGE_MCVERSION + " at https://files.minecraftforge.net/";
         }
@@ -92,9 +96,21 @@ public class Installer extends JFrame {
         File mods = new File(folder, "mods");
         if(!mods.exists() || !mods.isDirectory()) mods.mkdir();
 
+        // create file
+        File out = new File(mods, "Ares-" + getVersion(version) + "-" + getMinecraftVersion(version) + ".jar");
+        if(!out.exists()) {
+            try {
+                out.createNewFile();
+            } catch(IOException e) {
+                e.printStackTrace();
+                return "Error installing Ares client! Visit our website for the faq and link to discord for support";
+            }
+        } else return "Ares " + getVersion(version) + " " + getMinecraftVersion(version) +" is already installed!";
+
         // remove old versions from mods folder
         Arrays.stream(mods.listFiles()).filter(file -> {
             String name = file.getName();
+            if(name.equals(out.getName())) return false;
             if(version == Version.FABRIC) return (name.startsWith("Ares-") && name.endsWith(".jar") && !name.contains("1.12.2")) || // stable
                     name.startsWith("ares-fabric-"); // beta
             if(version == Version.FORGE) return name.startsWith("Ares-") && name.endsWith("-1.12.2.jar") || // stable
@@ -103,23 +119,12 @@ public class Installer extends JFrame {
             return false;
         }).forEach(File::delete);
 
-        // create file
-        File file = new File(mods, "Ares-" + getVersion(version) + "-" + getMinecraftVersion(version) + ".jar");
-        if(!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch(IOException e) {
-                e.printStackTrace();
-                return "Error installing Ares client! Visit our website for the faq and link to discord for support";
-            }
-        } else return "Ares " + getVersion(version) + " " + getMinecraftVersion(version) +" is already installed!";
-
         // download file
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(getURL(version)).openConnection();
             connection.addRequestProperty("User-Agent", "Mozilla/4.76");
 
-            FileOutputStream fos = new FileOutputStream(file);
+            FileOutputStream fos = new FileOutputStream(out);
             fos.getChannel().transferFrom(Channels.newChannel(connection.getInputStream()), 0, Long.MAX_VALUE);
             fos.close();
         } catch(Exception e) {

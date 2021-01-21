@@ -34,6 +34,7 @@ public class InstallOptionsPanel extends JPanel {
         JButton folderButton = new JButton("Select minecraft folder");
         JLabel folderLabel = new JLabel(minecraftFolder != null ? minecraftFolder.getPath() : "unknown");
         JButton installButton = new JButton("Install Latest");
+        JButton backButton = new JButton("Back");
 
         // add label
         c.gridx = 0;
@@ -81,5 +82,11 @@ public class InstallOptionsPanel extends JPanel {
             JOptionPane.showMessageDialog(null, Installer.install(version, minecraftFolder), "Ares Client", JOptionPane.INFORMATION_MESSAGE);
         });
         add(installButton, c);
+
+        // add back button
+        c.gridy = 3;
+        backButton.setFont(backButton.getFont().deriveFont(15f));
+        backButton.addActionListener(actionEvent -> INSTANCE.home());
+        add(backButton, c);
     }
 }
