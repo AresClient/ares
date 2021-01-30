@@ -1,0 +1,32 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+    }
+}
+apply plugin: "com.github.johnrengelman.shadow"
+
+version = project.installerVersion
+
+dependencies {
+    compile "org.json:json:20190722"
+    shadow "org.json:json:20190722"
+    compile "li.flor:native-j-file-chooser:1.6.4"
+    shadow "li.flor:native-j-file-chooser:1.6.4"
+    compile "com.github.FabricMC:fabric-installer:master-SNAPSHOT"
+}
+
+shadowJar {
+    configurations = [project.configurations.shadow]
+    setClassifier("release")
+}
+
+jar {
+    manifest {
+        attributes("Main-Class": "dev.tigr.ares.installer.Installer")
+    }
+}
+
+build.dependsOn(shadowJar)

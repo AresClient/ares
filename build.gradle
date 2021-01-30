@@ -44,7 +44,7 @@ task buildAll(type: GradleBuild) {
     group = "ares"
     description = "builds all versions of Ares"
 
-    tasks = [":buildForge", ":buildFabric"]
+    tasks = [":buildForge", ":buildFabric", ":buildInstaller"]
 }
 
 task buildForge(type: GradleBuild) {
@@ -108,6 +108,20 @@ task setupWorkspace(type: GradleBuild) {
     description = "sets up all development environments for all versions of ares"
 
     tasks = [":ares-forge:classes", ":ares-fabric:genSources"]
+}
+
+task buildInstaller(type: GradleBuild) {
+    group = "ares"
+    description = "builds the ares installer as a seperate jar"
+
+    tasks = [":ares-installer:build"]
+
+    doLast {
+        copy {
+            from "ares-installer/build/libs/ares-installer-${project.installerVersion}-release.jar"
+            into "build"
+        }
+    }
 }
 
 private static String getModsFolder() {

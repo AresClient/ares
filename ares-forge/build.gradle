@@ -38,6 +38,10 @@ dependencies {
         exclude group: "com.google.guava", module: "guava"
     }
 
+    // ares installer
+    implementation project(":ares-installer")
+    shadow(project(":ares-installer"))
+
     // shadow ares core deps
     shadow "com.mojang:brigadier:1.0.17"
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
@@ -106,7 +110,7 @@ jar {
                 "FMLCorePluginContainsFMLMod": "true",
                 "FMLCorePlugin": "dev.tigr.ares.forge.mixin.MixinLoader",
                 "ForceLoadAsMod": "true",
-                "Main-Class": "dev.tigr.ares.Main"
+                "Main-Class": "dev.tigr.ares.installer.Installer"
         )
     }
 }

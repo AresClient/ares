@@ -1,6 +1,5 @@
 package dev.tigr.ares.forge.impl.modules.misc;
 
-import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
@@ -21,9 +20,7 @@ public class ChatSuffix extends Module {
                 return;
 
             CPacketChatMessage chatPacket = (CPacketChatMessage) event.getPacket();
-            String plus = Ares.BRANCH == Ares.Branches.PLUS ? " \u1d18\u029f\u1d1c\ua731" : "";
-            String msg = chatPacket.getMessage().concat(" \u00bb \u028c\u0433\u1d07\u0455" + plus);
-
+            String msg = chatPacket.getMessage().concat(" \u00bb \u028c\u0433\u1d07\u0455");
             ReflectionHelper.setPrivateValue(CPacketChatMessage.class, chatPacket, msg, "message", "field_149440_a");
         }
     });

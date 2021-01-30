@@ -33,7 +33,7 @@ public abstract class Ares {
     public static final String MODID = "ares";
     public static final String NAME = "Ares";
 
-    public enum Branches { BETA, PLUS, STABLE }
+    public enum Branches { BETA, STABLE }
     public static String MC_VERSION;
     public static String VERSION;
     public static Branches BRANCH;
@@ -67,7 +67,7 @@ public abstract class Ares {
             MC_VERSION = info.minecraftVersion();
             VERSION = info.version();
             BRANCH = info.branch();
-            VERSION_FULL = BRANCH == Branches.STABLE ? VERSION : (BRANCH == Branches.PLUS ? VERSION.concat("+") : VERSION.concat(" BETA"));
+            VERSION_FULL = BRANCH == Branches.STABLE ? VERSION : VERSION.concat(" BETA");
 
             // make sure required implementations are present
             if(UTILS == null) error("Missing Utils! Shutting down...");
