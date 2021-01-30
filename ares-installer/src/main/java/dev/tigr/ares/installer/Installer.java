@@ -76,20 +76,30 @@ public class Installer extends JFrame {
     }
 
     public static String install(Version version, File folder) {
-        // lambda for checking if file is loader for forge or fabric
-        Function<String, Boolean> tester = version == Version.FABRIC
-                ? file -> file.startsWith("fabric-loader-") && file.endsWith(FABRIC_MCVERSION)
-                : file -> file.startsWith(FORGE_MCVERSION + "-forge-14.23.5.");
+        String minecraftVersion = getMinecraftVersion(version);
+        String aresVersion = getVersion(version);
 
-        // find versions folder
-        File versions = new File(folder, "versions");
-        if(!versions.exists()) return "Looks like there's something wrong with your minecraft folder! Make sure you selected the correct location";
+        // only check for loader if not multimc
+        if(!folder.getPath().contains("multimc")) {
+            // lambda for checking if file is loader for forge or fabric
+            Function<String, Boolean> tester = version == Version.FABRIC
+                    ? file -> file.startsWith("fabric-loader-") && file.endsWith(FABRIC_MCVERSION)
+                    : file -> file.startsWith(FORGE_MCVERSION + "-forge-14.23.5.");
 
-        // check if forge or fabric is installed
-        if(Arrays.stream(versions.listFiles()).noneMatch(file -> file.isDirectory() && tester.apply(file.getName()))) {
-            // TODO: AUTOMATIC FORGE/FABRIC INSTALLER? AND FIX MULTIMC COMPAT
-            // tell user to install forge or fabric loader if missing
-            return version == Version.FABRIC ? "Please install minecraft fabric for " + FABRIC_MCVERSION + " at https://fabricmc.net" : "Please install minecraft forge for " + FORGE_MCVERSION + " at https://files.minecraftforge.net/";
+            // find versions folder
+            File versions = new File(folder, "versions");
+            if(!versions.exists()) return "Looks like there's something wrong with your minecraft folder! Make sure you selected the correct location";
+
+            // install minecraft forge or fabric if not installed
+            if(Arrays.stream(versions.listFiles()).noneMatch(file -> file.isDirectory() && tester.apply(file.getName()))) {
+                String err = version == Version.FABRIC ? "Please install minecraft fabric for " + FABRIC_MCVERSION + " at https://fabricmc.net" : "Please install minecraft forge for " + FORGE_MCVERSION + " at https://files.minecraftforge.net/";
+                try {
+                    if(!LoaderInstaller.install(minecraftVersion, folder)) return err;
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    return err + "test";
+                }
+            }
         }
 
         // create\check mods folder
@@ -97,15 +107,16 @@ public class Installer extends JFrame {
         if(!mods.exists() || !mods.isDirectory()) mods.mkdir();
 
         // create file
-        File out = new File(mods, "Ares-" + getVersion(version) + "-" + getMinecraftVersion(version) + ".jar");
+        File out = new File(mods, "Ares-" + aresVersion + "-" + minecraftVersion + ".jar");
         if(!out.exists()) {
+            String err = "Error installing Ares client! Visit our website for the faq and link to discord for support";
             try {
-                out.createNewFile();
+                if(!out.createNewFile()) return err;
             } catch(IOException e) {
                 e.printStackTrace();
-                return "Error installing Ares client! Visit our website for the faq and link to discord for support";
+                return err;
             }
-        } else return "Ares " + getVersion(version) + " " + getMinecraftVersion(version) +" is already installed!";
+        } else return "Ares " + aresVersion + " " + minecraftVersion +" is already installed!";
 
         // remove old versions from mods folder
         Arrays.stream(mods.listFiles()).filter(file -> {
@@ -119,7 +130,7 @@ public class Installer extends JFrame {
             return false;
         }).forEach(File::delete);
 
-        // download file
+        // download file to mods folder
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(getURL(version)).openConnection();
             connection.addRequestProperty("User-Agent", "Mozilla/4.76");

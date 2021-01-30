@@ -15,6 +15,7 @@ dependencies {
     shadow "org.json:json:20190722"
     compile "li.flor:native-j-file-chooser:1.6.4"
     shadow "li.flor:native-j-file-chooser:1.6.4"
+    compile "com.github.FabricMC:fabric-installer:master-SNAPSHOT"
 }
 
 shadowJar {
