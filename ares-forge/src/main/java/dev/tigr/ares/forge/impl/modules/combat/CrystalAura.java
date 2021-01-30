@@ -30,16 +30,15 @@ import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemAppleGold;
 import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.client.CPacketUseEntity;
+import net.minecraft.network.play.server.SPacketSoundEffect;
 import net.minecraft.potion.Potion;
-import net.minecraft.util.CombatRules;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.*;
 import net.minecraft.util.math.*;
 import net.minecraft.world.Explosion;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -72,11 +71,13 @@ public class CrystalAura extends Module {
     private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true));
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anit Surround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
+    private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Canceller", Canceller.NO_DESYNC));
 
     enum Mode { DAMAGE, DISTANCE }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
-    enum Rotations { PACKET, REAL }
+    enum Rotations { PACKET, REAL, NONE }
+    enum Canceller { NO_DESYNC, ON_HIT, SOUND_PACKET }
 
     private long renderTimer = -1;
     private long placeTimer = -1;
@@ -260,6 +261,23 @@ public class CrystalAura extends Module {
         }
     });
 
+    //Cancel Crystals if on SOUND_PACKET
+    @EventHandler
+    private EventListener<PacketEvent.Receive> packetReceiveListener = new EventListener<>(event -> {
+        if (event.getPacket() instanceof SPacketSoundEffect && cancelMode.getValue() == Canceller.SOUND_PACKET) {
+            final SPacketSoundEffect packet = (SPacketSoundEffect) event.getPacket();
+            if (packet.getCategory() == SoundCategory.BLOCKS && packet.getSound() == SoundEvents.ENTITY_GENERIC_EXPLODE) {
+                for (Entity e : MC.world.loadedEntityList) {
+                    if (e instanceof EntityEnderCrystal) {
+                        if (e.getDistance(packet.getX(), packet.getY(), packet.getZ()) <= 6.0f) {
+                            e.setDead();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
     private boolean isPartOfHole(BlockPos pos) {
         List<Entity> entities = new ArrayList<>();
         entities.addAll(MC.world.getEntitiesWithinAABBExcludingEntity(MC.player, new AxisAlignedBB(pos.add(1, 0, 0))));
@@ -293,6 +311,9 @@ public class CrystalAura extends Module {
 
         //spoof rotations
         rotations = WorldUtils.calculateLookAt(crystal.posX + 0.5, crystal.posY + 0.5, crystal.posZ + 0.5, MC.player);
+
+        //cancel crystal if ON_HIT
+        if(cancelMode.getValue() == Canceller.ON_HIT) MC.world.removeEntityFromWorld(crystal.getEntityId());
 
         // reset timer
         breakTimer = System.nanoTime() / 1000000;

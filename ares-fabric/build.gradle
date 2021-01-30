@@ -40,8 +40,15 @@ dependencies {
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 
     // fabritone
-    implementation "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
-    include "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
+    implementation("com.gitlab.CDAGaming:fabritone:fabric~1.16.3-SNAPSHOT") {
+        exclude(group: "org.lwjgl.lwjgl", module: "lwjgl-platform")
+        exclude(group: "org.lwjgl.lwjgl", module: "lwjgl")
+        exclude(group: "net.java.jinput", module: "jinput-platform")
+        exclude(group: "net.java.jinput", module: "jinput")
+        exclude(group: "net.sf.jopt-simple", module: "jopt-simple")
+        exclude(group: "org.ow2.asm", module: "asm-debug-all")
+    }
+    include "com.gitlab.CDAGaming:fabritone:fabric~1.16.3-SNAPSHOT"
 }
 
 processResources {
