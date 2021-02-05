@@ -373,20 +373,26 @@ public class CrystalAura extends Module {
         List<PlayerEntity> targets = new ArrayList<>();
 
         if(targetSetting.getValue() == Target.CLOSEST) {
-            targets.addAll(MC.world.getPlayers().stream().filter(entityPlayer -> !FriendManager.isFriend(entityPlayer.getGameProfile().getName()) && entityPlayer != MC.player).collect(Collectors.toList()));
+            targets.addAll(MC.world.getPlayers().stream().filter(this::isValidTarget).collect(Collectors.toList()));
             targets.sort(Comparators.entityDistance);
         } else if(targetSetting.getValue() == Target.MOST_DAMAGE) {
             for(PlayerEntity entityPlayer: MC.world.getPlayers()) {
-                if(FriendManager.isFriend(entityPlayer.getGameProfile().getName())
-                        || entityPlayer.getHealth() == 0
-                        || MC.player.distanceTo(entityPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8
-                        || entityPlayer == MC.player)
+                if(!isValidTarget(entityPlayer))
                     continue;
                 targets.add(entityPlayer);
             }
         }
 
         return targets;
+    }
+
+    private boolean isValidTarget(PlayerEntity player) {
+
+        return !FriendManager.isFriend(player.getGameProfile().getName())
+                && !player.isDead()
+                && !(player.getHealth() <= 0)
+                && !(MC.player.distanceTo(player) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)
+                && player != MC.player;
     }
 
     private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
