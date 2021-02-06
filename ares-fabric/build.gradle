@@ -67,10 +67,11 @@ task customShadowJar(type: ShadowJar) {
     exclude("mappings/**")
     exclude("LICENSE")
     setClassifier("release")
+    minimize()
 
     manifest {
         attributes("Main-Class": "dev.tigr.ares.installer.Installer")
     }
 }
 
-build.dependsOn(":ares-fabric:customShadowJar")
+build.dependsOn(customShadowJar)
