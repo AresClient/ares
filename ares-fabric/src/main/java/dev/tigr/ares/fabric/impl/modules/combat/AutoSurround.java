@@ -33,5 +33,6 @@ public class AutoSurround extends Module {
     public void onTick() {
         if(WorldUtils.isHole(MC.player.getBlockPos()) != HoleType.NONE && !Surround.INSTANCE.getEnabled() && hole.getValue())
             Surround.INSTANCE.setEnabled(true);
+            Surround.toggleCenter(false);
     }
 }

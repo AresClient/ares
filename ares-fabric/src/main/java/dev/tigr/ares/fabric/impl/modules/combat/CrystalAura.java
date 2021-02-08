@@ -75,7 +75,7 @@ public class CrystalAura extends Module {
     private final Setting<Integer> maxBreakTries = register(new IntegerSetting("Break Attempts", 2, 1, 5));
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
     private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true));
-    private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anit Surround", true));
+    private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
     private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Canceller", Canceller.NO_DESYNC));
 

@@ -23,6 +23,20 @@ public class InventoryUtils implements Wrapper {
         return quantity;
     }
 
+    public static int amountInHotbar(Item item) {
+        int quantity = 0;
+
+        for(int i = 0; i <= 9; i++) {
+            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            if(stackInSlot.getItem() == item) quantity += stackInSlot.getCount();
+        }
+        if(MC.player.getOffHandStack().getItem() == item) quantity += MC.player.getOffHandStack().getCount();
+
+        return quantity;
+    }
+
+    public static int amountBlockInHotbar(Block block) {return amountInHotbar(new ItemStack(block).getItem());}
+
     public static int findItem(Item item) {
         int index = -1;
         for(int i = 0; i < 45; i++) {
