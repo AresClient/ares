@@ -31,6 +31,10 @@ public class Surround extends Module {
         INSTANCE = this;
     }
 
+    // this is to allow turning off Center when toggling surround from another module without the player having to disable Center in Surround itself
+    boolean doSnap = true;
+    public static void toggleCenter(boolean doSnap) {}
+
     @Override
     public void onTick() {
         if(!MC.player.isOnGround()) return;
@@ -98,7 +102,7 @@ public class Surround extends Module {
     public void onEnable() {
         lastPos = MC.player.getBlockPos();
 
-        if(snap.getValue()) {
+        if(snap.getValue() && doSnap == true) {
             double xPos = MC.player.getPos().x;
             double zPos = MC.player.getPos().z;
 
