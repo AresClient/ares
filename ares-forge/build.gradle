@@ -9,18 +9,34 @@ buildscript {
             name = "SpongePowered"
             url = "https://repo.spongepowered.org/repository/maven-public/"
         }
+        maven {
+            name = "tigr.dev"
+            url = "https://maven.tigr.dev"
+        }
     }
     dependencies {
         classpath "net.minecraftforge.gradle:ForgeGradle:3+"
         classpath "org.spongepowered:mixingradle:0.7-SNAPSHOT"
         classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+        classpath "dev.tigr.asmp:asmp-plugin:0.1-SNAPSHOT"
     }
 }
 apply plugin: "net.minecraftforge.gradle"
 apply plugin: "org.spongepowered.mixin"
 apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "dev.tigr.asmp"
 
 version = aresForgeVersion
+
+asmp {
+    input = "${buildDir.path}/extractSrg/output.srg"
+    inputFormat = "TSRG"
+    intermediaryInput = "${buildDir.path}/createMcpToSrg/output.tsrg"
+    intermediaryInputFormat = "TSRG"
+    mappingsName = "asmp.ares.notch.srg"
+    intermediaryMappingsName = "asmp.ares.searge.srg"
+    tasks = ["shadowJar"]
+}
 
 minecraft {
     mappings channel: "$project.mcpChannel", version: "$project.mcpVersion"
@@ -38,17 +54,16 @@ dependencies {
         exclude group: "com.google.guava", module: "guava"
     }
 
-    // ares installer
-    implementation project(":ares-installer")
-    shadow(project(":ares-installer"))
-
-    // shadow ares core deps
-    shadow "com.mojang:brigadier:1.0.17"
-    shadow "com.github.Vatuu:discord-rpc:1.6.2"
+    // asmp
+    implementation "dev.tigr.asmp:asmp-core:0.1-SNAPSHOT"
+    shadow "dev.tigr.asmp:asmp-core:0.1-SNAPSHOT"
+    implementation "dev.tigr.asmp:asmp-forge:0.1-SNAPSHOT"
+    shadow "dev.tigr.asmp:asmp-forge:0.1-SNAPSHOT"
+    annotationProcessor "dev.tigr.asmp:asmp-ap:0.1-SNAPSHOT"
 
     // mixins
-    implementation "org.spongepowered:mixin:0.8.2"
-    shadow("org.spongepowered:mixin:0.8.2") {
+    implementation "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    shadow("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
         exclude module: "launchwrapper"
         exclude module: "guava"
         exclude module: "gson"
@@ -59,10 +74,25 @@ dependencies {
         exclude module: "gson"
     }
 
+    // ares installer
+    implementation project(":ares-installer")
+    shadow(project(":ares-installer"))
+
+    // shadow ares core deps
+    shadow "com.mojang:brigadier:1.0.17"
+    shadow "com.github.Vatuu:discord-rpc:1.6.2"
+
+    // mixins
+    implementation "org.spongepowered:mixin:0.8.2"
+
     // baritone
     implementation "com.github.cabaletta:baritone:1.2.14"
     implementation "cabaletta:baritone-api:1.2"
-    shadow "cabaletta:baritone-api:1.2"
+    shadow ("cabaletta:baritone-api:1.2") {
+        exclude group: "org.apache.logging.log4j", module: "log4j-api"
+        exclude group: "com.mojang", module: "brigadier"
+        exclude group: "com.google.guava", module: "guava"
+    }
 }
 
 processResources {
@@ -100,7 +130,6 @@ reobf {
         classpath = sourceSets.main.compileClasspath
     }
 }
-
 jar {
     manifest {
         attributes(
@@ -108,7 +137,7 @@ jar {
                 "TweakClass": "org.spongepowered.asm.launch.MixinTweaker",
                 "TweakOrder": 0,
                 "FMLCorePluginContainsFMLMod": "true",
-                "FMLCorePlugin": "dev.tigr.ares.forge.mixin.MixinLoader",
+                "FMLCorePlugin": "dev.tigr.ares.forge.asmp.ASMPLoader",
                 "ForceLoadAsMod": "true",
                 "Main-Class": "dev.tigr.ares.installer.Installer"
         )

@@ -23,8 +23,8 @@ allprojects {
             url = "https://maven.tigr.dev"
         }
         maven {
-            name = 'impactdevelopment-repo'
-            url = 'https://impactdevelopment.github.io/maven/'
+            name = "impactdevelopment-repo"
+            url = "https://impactdevelopment.github.io/maven/"
         }
     }
 }
@@ -51,7 +51,7 @@ task buildForge(type: GradleBuild) {
     group = "ares"
     description = "builds the forge version of Ares"
 
-    tasks = [":ares-forge:clean", ":ares-forge:build"]
+    tasks = [":ares-forge:build"]
 
     doLast {
         copy {
@@ -79,7 +79,7 @@ task buildFabric(type: GradleBuild) {
     group = "ares"
     description = "builds the fabric version of Ares"
 
-    tasks = [":ares-fabric:clean", ":ares-fabric:build"]
+    tasks = [":ares-fabric:build"]
 
     doLast {
         copy {
@@ -112,7 +112,7 @@ task setupWorkspace(type: GradleBuild) {
 
 task buildInstaller(type: GradleBuild) {
     group = "ares"
-    description = "builds the ares installer as a seperate jar"
+    description = "builds the ares installer as a separate jar"
 
     tasks = [":ares-installer:build"]
 
