@@ -44,12 +44,15 @@ public class AresMod extends Ares {
         return Arrays.asList(
                 // combat
                 Anchor.class,
+                AnchorAura.class,
+                AntiBedAura.class,
                 AutoArmor.class,
                 AutoCity.class,
                 AutoEz.class,
                 AutoSurround.class,
                 AutoTotem.class,
                 AutoTrap.class,
+                BedAura.class,
                 BowRelease.class,
                 BurrowDetect.class,
                 Criticals.class,

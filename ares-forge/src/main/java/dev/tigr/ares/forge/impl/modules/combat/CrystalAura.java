@@ -384,7 +384,6 @@ public class CrystalAura extends Module {
     }
 
     private boolean isValidTarget(EntityPlayer player) {
-
         return !FriendManager.isFriend(player.getGameProfile().getName())
                 && !player.isDead
                 && !(player.getHealth() <= 0)

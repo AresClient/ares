@@ -387,7 +387,6 @@ public class CrystalAura extends Module {
     }
 
     private boolean isValidTarget(PlayerEntity player) {
-
         return !FriendManager.isFriend(player.getGameProfile().getName())
                 && !player.isDead()
                 && !(player.getHealth() <= 0)
@@ -421,7 +420,7 @@ public class CrystalAura extends Module {
     }
 
     // damage calculations
-    private static float getDamage(Vec3d vec3d, PlayerEntity entity) {
+    public static float getDamage(Vec3d vec3d, PlayerEntity entity) {
         float f2 = 12.0f;
         double d7 = MathHelper.sqrt(entity.squaredDistanceTo(vec3d)) / f2;
         if(d7 <= 1.0D) {
@@ -479,7 +478,7 @@ public class CrystalAura extends Module {
     }
 
     // raytracing
-    private static HitResult.Type rayTrace(Vec3d start, Vec3d end) {
+    public static HitResult.Type rayTrace(Vec3d start, Vec3d end) {
         double minX = Math.min(start.x, end.x);
         double minY = Math.min(start.y, end.y);
         double minZ = Math.min(start.z, end.z);

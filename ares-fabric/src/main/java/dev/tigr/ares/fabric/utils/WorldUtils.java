@@ -37,6 +37,42 @@ public class WorldUtils implements Wrapper {
         return placeBlock(Hand.MAIN_HAND, pos);
     }
 
+    public static boolean placeBlockNoRotate(Hand hand, BlockPos pos) {
+        // make sure place is empty
+        if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
+            return false;
+
+        Vec3d hitVec = null;
+        BlockPos neighbor = null;
+        Direction side2 = null;
+        for(Direction side: Direction.values()) {
+            neighbor = pos.offset(side);
+            side2 = side.getOpposite();
+
+            // check if neighbor can be right clicked aka it isnt air
+            if(MC.world.getBlockState(neighbor).isAir()) {
+                neighbor = null;
+                side2 = null;
+                continue;
+            }
+
+            hitVec = new Vec3d(neighbor.getX(), neighbor.getY(), neighbor.getZ()).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getUnitVector()).multiply(0.5));
+            break;
+        }
+
+        // Air place if no neighbour was found
+        if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+        if(neighbor == null) neighbor = pos;
+        if(side2 == null) side2 = Direction.UP;
+
+        MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+        MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
+        MC.player.swingHand(hand);
+        MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+
+        return true;
+    }
+
     public static boolean placeBlock(Hand hand, BlockPos pos) {
         // make sure place is empty
         if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))

@@ -41,8 +41,8 @@ public class LoaderInstaller {
         }
         if(loaderVersion == null) return false;
 
-        String profileName = ClientInstaller.install(minecraftFolder, gameVersion, loaderVersion, InstallerProgress.CONSOLE);
-        ProfileInstaller.setupProfile(minecraftFolder, profileName, gameVersion);
+        String profileName = ClientInstaller.install(minecraftFolder.toPath(), gameVersion, loaderVersion, InstallerProgress.CONSOLE);
+        ProfileInstaller.setupProfile(minecraftFolder.toPath(), profileName, gameVersion);
         return true;
     }
 }
