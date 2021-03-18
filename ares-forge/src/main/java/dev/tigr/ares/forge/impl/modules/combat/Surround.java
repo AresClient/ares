@@ -4,6 +4,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
+import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
@@ -24,8 +25,10 @@ public class Surround extends Module {
     public static Surround INSTANCE;
 
     private final Setting<Boolean> snap = register(new BooleanSetting("Center", true));
+    private final Setting<Integer> delay = register(new IntegerSetting("Delay", 0, 0, 10));
     private final Setting<Boolean> air = register(new BooleanSetting("Air-place", false));
     private BlockPos lastPos = new BlockPos(0, -100, 0);
+    private int ticks = 0;
 
     public Surround() {
         INSTANCE = this;
@@ -33,11 +36,13 @@ public class Surround extends Module {
 
     // this is to allow turning off Center when toggling surround from another module without the player having to disable Center in Surround itself
     boolean doSnap = true;
-    public static void toggleCenter(boolean doSnap) {}
+    public static void toggleCenter(boolean doSnap) {
+        INSTANCE.doSnap = doSnap;
+    }
 
     @Override
     public void onTick() {
-        if(!MC.player.onGround) return;
+        if(!MC.player.onGround || (delay.getValue() != 0 && ticks++ % delay.getValue() != 0)) return;
 
         // make sure player is in the same place
         AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
@@ -54,7 +59,7 @@ public class Surround extends Module {
         if(needsToPlace()) {
             for(BlockPos pos: getPositions()) {
                 MC.player.inventory.currentItem = obbyIndex;
-                WorldUtils.placeBlockMainHand(pos);
+                if(WorldUtils.placeBlockMainHand(pos) && delay.getValue() != 0) return;
             }
 
             MC.player.inventory.currentItem = prevSlot;
@@ -115,5 +120,10 @@ public class Surround extends Module {
             MC.player.setPosition(xPos, pos.getY(), zPos);
             MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, pos.getY(), zPos, MC.player.onGround));
         }
+    }
+
+    @Override
+    public void onDisable() {
+        ticks = 0;
     }
 }
