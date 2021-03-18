@@ -25,6 +25,7 @@ public class EnumSettingElement<T extends Enum<?>> extends SettingElement<EnumSe
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void click(int mouseX, int mouseY, int mouseButton) {
         // if clicked, shift value
         if(isMouseOver(mouseX, mouseY) && mouseButton == 0) {

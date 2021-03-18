@@ -54,7 +54,7 @@ public class ModuleElement extends Element {
     @Override
     public void draw(int mouseX, int mouseY, float partialTicks) {
         double diff = getRenderY() + getHeight() - getParent().getRenderY() - getParent().getHeight();
-        RENDERER.startScissor(getRenderX(), Math.max(getRenderY() + offset.getValue(), getParent().getRenderY()), getWidth(), diff < 0 ? getHeight() : getParent().getRenderY() + getParent().getHeight() - (getRenderY() + offset.getValue()));
+        RENDERER.startScissor(getRenderX(), Math.max(getRenderY() + offset.getValue(), getParent().getRenderY()), getWidth(), diff < 0 ? getHeight() : Math.max(0, getParent().getRenderY() + getParent().getHeight() - (getRenderY() + offset.getValue())));
         super.draw(mouseX, mouseY, partialTicks);
         RENDERER.stopScissor();
 
