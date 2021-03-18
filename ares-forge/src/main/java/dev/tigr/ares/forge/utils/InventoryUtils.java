@@ -23,6 +23,20 @@ public class InventoryUtils {
         return quantity;
     }
 
+    public static int amountInHotbar(Item item) {
+        int quantity = 0;
+
+        for(int i = 44; i > 35; i--) {
+            ItemStack stackInSlot = MC.player.inventoryContainer.getSlot(i).getStack();
+            if(stackInSlot.getItem() == item) quantity += stackInSlot.getCount();
+        }
+        if(MC.player.getHeldItemOffhand().getItem() == item) quantity += MC.player.getHeldItemOffhand().getCount();
+
+        return quantity;
+    }
+
+    public static int amountBlockInHotbar(Block block) {return amountInHotbar(new ItemStack(block).getItem());}
+
     public static int findItem(Item item) {
         int index = -1;
         for(int i = 44; i > -1; i--) {
