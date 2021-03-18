@@ -10,6 +10,7 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.dimension.DimensionType;
 
 /**
  * @author Tigermouthbear
@@ -29,9 +30,7 @@ public class Coordinates extends HudElement {
         String nether;
         String direction = enumfacing.name() + " " + getDirection(enumfacing) + " (" + Utils.roundDouble(MC.player.yaw, 1) + ", " + Utils.roundDouble(MC.player.pitch, 1) + ")";
 
-        CompoundTag compoundTag = new CompoundTag();
-        MC.player.writeCustomDataToTag(compoundTag);
-        if(compoundTag.getInt("Dimension") == -1) {
+        if(MC.world.getDimension().hasCeiling() && !MC.world.getDimension().isBedWorking()) {
             overworld = "x" + Utils.roundDouble(MC.player.getX() * 8, 1) + ", y" + Utils.roundDouble(MC.player.getY(), 1) + ", z" + Utils.roundDouble(MC.player.getZ() * 8, 1);
             nether = "(x" + Utils.roundDouble(MC.player.getX(), 1) + ", y" + Utils.roundDouble(MC.player.getY(), 1) + ", z" + Utils.roundDouble(MC.player.getZ(), 1) + ")";
         } else {
