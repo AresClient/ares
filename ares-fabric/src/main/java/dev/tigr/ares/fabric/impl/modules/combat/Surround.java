@@ -29,6 +29,7 @@ public class Surround extends Module {
 
     private final Setting<Boolean> snap = register(new BooleanSetting("Center", true));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 0, 0, 10));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> air = register(new BooleanSetting("Air-place", false));
     private final Setting<Primary> primary = register(new EnumSetting<>("Main", Primary.Obsidian));
     private final Setting<Boolean> allBlocks = register(new BooleanSetting("All BP Blocks", true));
@@ -75,7 +76,7 @@ public class Surround extends Module {
             if (needsToPlace()) {
                 for (BlockPos pos : getPositions()) {
                     MC.player.inventory.selectedSlot = obbyIndex;
-                    if (WorldUtils.placeBlockMainHand(pos) && delay.getValue() != 0) return;
+                    if (WorldUtils.placeBlockMainHand(pos, rotate.getValue()) && delay.getValue() != 0) return;
                 }
 
                 MC.player.inventory.selectedSlot = prevSlot;

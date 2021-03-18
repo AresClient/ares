@@ -4,6 +4,7 @@ import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.utils.Comparators;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 @Module.Info(name = "AutoCity", description = "Automatically mines closest players surround", category = Category.COMBAT)
 public class AutoCity extends Module {
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     
     @Override
     public void onEnable() {
@@ -64,8 +66,10 @@ public class AutoCity extends Module {
                     MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(index));
 
                     // rotate
-                    double[] rotations = WorldUtils.calculateLookAt(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
-                    MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
+                    if (rotate.getValue()) {
+                        double[] rotations = WorldUtils.calculateLookAt(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
+                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
+                    }
 
                     // break
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, target, Direction.UP));

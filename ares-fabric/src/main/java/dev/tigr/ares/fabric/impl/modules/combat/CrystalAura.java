@@ -11,6 +11,7 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
+import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.event.client.EntityEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
@@ -37,10 +38,8 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -65,10 +64,10 @@ public class CrystalAura extends Module {
     private final Setting<Order> order = register(new EnumSetting<>("Order", Order.PLACE_BREAK));
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
-    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 7, 0, 15));
-    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 5, 0, 15));
-    private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 3, 0, 15));
-    private final Setting<Integer> breakOffhandDelay = register(new IntegerSetting("Offh. Break Delay", 3, 0, 15));
+    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 2, 0, 15));
+    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 2, 0, 15));
+    private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 2, 0, 15));
+    private final Setting<Integer> breakOffhandDelay = register(new IntegerSetting("Offh. Break Delay", 2, 0, 15));
     private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
@@ -77,13 +76,13 @@ public class CrystalAura extends Module {
     private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true));
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
-    private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Canceller", Canceller.NO_DESYNC));
+    private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Cancel", Canceller.NO_DESYNC));
 
     enum Mode { DAMAGE, DISTANCE }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
     enum Rotations { PACKET, REAL, NONE }
-    enum Canceller { NO_DESYNC, ON_HIT, SOUND_PACKET }
+    enum Canceller { NO_DESYNC, ON_HIT, ON_PACKET }
 
     private long renderTimer = -1;
     private long placeTimer = -1;
@@ -94,9 +93,21 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<Vec3d, Long> placedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EndCrystalEntity, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
     private final List<EndCrystalEntity> lostCrystals = new ArrayList<>();
+    private PlayerEntity targetPlayer;
 
     public CrystalAura() {
         INSTANCE = this;
+    }
+
+    @Override
+    public String getInfo() {
+        if (targetPlayer != null
+                && !targetPlayer.isDead()
+                && !(targetPlayer.getHealth() <= 0)
+                && !(MC.player.distanceTo(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)) {
+            return targetPlayer.getGameProfile().getName();
+        }
+        else return "null";
     }
 
     @Override
@@ -252,17 +263,15 @@ public class CrystalAura extends Module {
         }
     });
 
-    //Cancel Crystals if on SOUND_PACKET
+    //Cancel Crystals on Explosion packet received
     @EventHandler
     private EventListener<PacketEvent.Receive> packetReceiveListener = new EventListener<>(event -> {
-        if (event.getPacket() instanceof PlaySoundS2CPacket && cancelMode.getValue() == Canceller.SOUND_PACKET) {
-            final PlaySoundS2CPacket packet = (PlaySoundS2CPacket) event.getPacket();
-            if (packet.getCategory() == SoundCategory.BLOCKS && packet.getSound() == SoundEvents.ENTITY_GENERIC_EXPLODE) {
-                for (Entity e : MC.world.getEntities()) {
-                    if (e instanceof EndCrystalEntity) {
-                        if (e.squaredDistanceTo(packet.getX(), packet.getY(), packet.getZ()) <= 6.0f) {
-                            MC.world.removeEntity(e.getEntityId());
-                        }
+        if (event.getPacket() instanceof ExplosionS2CPacket && cancelMode.getValue() != Canceller.NO_DESYNC ) {
+            final ExplosionS2CPacket packet = (ExplosionS2CPacket) event.getPacket();
+            for (Entity e : MC.world.getEntities()) {
+                if (e instanceof EndCrystalEntity) {
+                    if (MathHelper.sqrt(e.squaredDistanceTo(packet.getX(), packet.getY(), packet.getZ())) <= Math.max(breakRange.getValue(), placeRange.getValue()) + 2) {
+                        e.remove();
                     }
                 }
             }
@@ -302,7 +311,7 @@ public class CrystalAura extends Module {
 
     private boolean canBreakCrystal(EndCrystalEntity crystal) {
         return MC.player.distanceTo(crystal) <= breakRange.getValue() // check range
-        && !(MC.player.getHealth() - getDamage(crystal.getPos(), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
+                && !(MC.player.getHealth() - getDamage(crystal.getPos(), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
     }
 
     private void breakCrystal(EndCrystalEntity crystal, boolean offhand) {
@@ -318,7 +327,10 @@ public class CrystalAura extends Module {
         rotations = WorldUtils.calculateLookAt(crystal.getX() + 0.5, crystal.getY() + 0.5, crystal.getZ() + 0.5, MC.player);
 
         //cancel crystal if ON_HIT
-        if(cancelMode.getValue() == Canceller.ON_HIT) MC.world.removeEntity(crystal.getEntityId());
+        if(cancelMode.getValue() == Canceller.ON_HIT) {
+            crystal.remove();
+            MC.world.getEntities();
+        }
 
         // reset timer
         breakTimer = System.nanoTime() / 1000000;
@@ -337,6 +349,9 @@ public class CrystalAura extends Module {
                     continue;
 
                 double score = getScore(pos, targetedPlayer);
+                if (target != null) {
+                    targetPlayer = targetedPlayer;
+                } else targetPlayer = null;
 
                 if(target == null || (score < bestScore && score != -1)) {
                     target = pos;

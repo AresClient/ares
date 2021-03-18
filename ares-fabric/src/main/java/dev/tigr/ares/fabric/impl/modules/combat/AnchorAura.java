@@ -123,7 +123,7 @@ public class AnchorAura extends Module {
         }
 
         // place
-        WorldUtils.placeBlockMainHand(pos);
+        WorldUtils.placeBlockMainHand(pos, shouldRotate());
         placed.add(pos);
 
         // set render pos
@@ -297,5 +297,11 @@ public class AnchorAura extends Module {
 
     private boolean canAnchorBePlacedHere(BlockPos pos) {
         return MC.world.getBlockState(pos).isAir();
+    }
+
+    private boolean shouldRotate() {
+        if (rotateMode.getValue() == Rotations.NONE)
+            return false;
+        else return true;
     }
 }
