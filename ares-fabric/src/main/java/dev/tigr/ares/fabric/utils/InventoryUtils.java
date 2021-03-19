@@ -18,7 +18,6 @@ public class InventoryUtils implements Wrapper {
             ItemStack stackInSlot = MC.player.inventory.getStack(i);
             if(stackInSlot.getItem() == item) quantity += stackInSlot.getCount();
         }
-        if(MC.player.getOffHandStack().getItem() == item) quantity += MC.player.getOffHandStack().getCount();
 
         return quantity;
     }

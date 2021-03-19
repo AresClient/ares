@@ -20,5 +20,9 @@ public interface IGUIManager {
 
     boolean isBackKey(int keycode);
 
+    boolean isPasteKey(int keycode);
+
+    String getClipboardText();
+
     boolean isChatAllowed(char chr);
 }

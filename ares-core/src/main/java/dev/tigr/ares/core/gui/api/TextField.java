@@ -140,7 +140,9 @@ public class TextField extends Element {
             if(GUI_MANAGER.isEnterKey(keyCode)) onEnter.invoke();
             else if(GUI_MANAGER.isBackKey(keyCode)) {
                 if(getText().length() != 0) setText(getText().substring(0, getText().length() - 1));
-            } else if(typedChar != null && GUI_MANAGER.isChatAllowed(typedChar)) setText(getText() + typedChar);
+            } else if(GUI_MANAGER.isPasteKey(keyCode)) {
+                setText(getText() + GUI_MANAGER.getClipboardText());
+            } if(typedChar != null && GUI_MANAGER.isChatAllowed(typedChar)) setText(getText() + typedChar);
         }
     }
 

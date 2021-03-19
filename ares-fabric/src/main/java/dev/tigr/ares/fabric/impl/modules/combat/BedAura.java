@@ -45,6 +45,7 @@ import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
  */
 @Module.Info(name = "BedAura", description = "Automatically places and explodes beds in the nether or end for combat", category = Category.COMBAT)
 public class BedAura extends Module {
+    // TODO: add auto bed in hotbar and fix render bug
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
     private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));

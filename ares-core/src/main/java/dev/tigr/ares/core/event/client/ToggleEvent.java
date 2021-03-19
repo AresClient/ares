@@ -5,24 +5,18 @@ import dev.tigr.simpleevents.event.Event;
 
 public class ToggleEvent extends Event {
     private final Module module;
+    private final boolean enabled;
 
-    public ToggleEvent(Module module) {
+    public ToggleEvent(Module module, boolean enabled) {
         this.module = module;
+        this.enabled = enabled;
     }
 
     public Module getModule() {
         return module;
     }
 
-    public static class Enabled extends ToggleEvent {
-        public Enabled(Module module) {
-            super(module);
-        }
-    }
-
-    public static class Disabled extends ToggleEvent {
-        public Disabled(Module module) {
-            super(module);
-        }
+    public boolean isEnabled() {
+        return enabled;
     }
 }

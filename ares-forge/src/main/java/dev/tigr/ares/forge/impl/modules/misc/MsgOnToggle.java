@@ -12,19 +12,10 @@ import dev.tigr.simpleevents.listener.EventListener;
  */
 @Module.Info(name = "MsgOnToggle", description = "Sends a chat message when a module is toggled", category = Category.MISC)
 public class MsgOnToggle extends Module {
-    public static MsgOnToggle INSTANCE;
     @EventHandler
-    public EventListener<ToggleEvent.Enabled> enabledEvent = new EventListener<>(event -> {
+    public EventListener<ToggleEvent> toggleEvent = new EventListener<>(event -> {
         if(event.getModule().getName().equalsIgnoreCase("clickgui")) return;
-        UTILS.printMessage(TextColor.GREEN + "Enabled " + TextColor.BLUE + event.getModule().getName());
+        String text = event.isEnabled() ? TextColor.GREEN + "Enabled " : TextColor.RED + "Disabled ";
+        UTILS.printMessage(text + TextColor.BLUE + event.getModule().getName());
     });
-    @EventHandler
-    public EventListener<ToggleEvent.Disabled> disabledEvent = new EventListener<>(event -> {
-        if(event.getModule().getName().equalsIgnoreCase("clickgui")) return;
-        UTILS.printMessage(TextColor.RED + "Disabled " + TextColor.BLUE + event.getModule().getName());
-    });
-
-    public MsgOnToggle() {
-        INSTANCE = this;
-    }
 }
