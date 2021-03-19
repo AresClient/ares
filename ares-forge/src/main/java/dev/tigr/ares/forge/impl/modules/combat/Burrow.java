@@ -14,6 +14,7 @@ import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
+import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.BlockPos;
 
@@ -25,18 +26,20 @@ import net.minecraft.util.math.BlockPos;
 public class Burrow extends Module {
     private final Setting<Boolean> holeOnly = register(new BooleanSetting("Hole Only", false));
     private final Setting<Boolean> toggleSurround = register(new BooleanSetting("Toggle Surround On", false));
-    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", false));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> preventBlockPush = register(new BooleanSetting("Prevent Block Push", true));
 
-    private final Setting<Mode> setMode = register(new EnumSetting<>("Mode", Mode.Instant));
-    private final Setting<Integer> timerModeTimer = register(new IntegerSetting("FastMode-Timer", 2500, 1, 30000)).setVisibility(() -> setMode.getValue() == Mode.NormalTimer || setMode.getValue() == Mode.SemiInstantTimer);
-    private final Setting<Double> height = register(new DoubleSetting("Trigger Height", 1.12, 1.0, 1.3)).setVisibility(() -> setMode.getValue() != Mode.Instant);
-    private final Setting<Float> fakeClipHeight = register(new FloatSetting("Rubberband Height", 12, -60, 60)).setVisibility(() -> setMode.getValue() != Mode.NormalTimer || setMode.getValue() != Mode.Normal);;
+    private final Setting<Boolean> fakeJump = register(new BooleanSetting("FakeJump", true));
+    private final Setting<Double> height = register(new DoubleSetting("Trigger Height", 1.12, 1.0, 1.3)).setVisibility(() -> !fakeJump.getValue());
+    private final Setting<Boolean> useTimer = register(new BooleanSetting("Use Timer", true)).setVisibility(() -> !fakeJump.getValue());
+    private final Setting<Integer> timerTPS = register(new IntegerSetting("TPS", 2500, 1, 12000)).setVisibility(() -> useTimer.getValue() && !fakeJump.getValue());
+    private final Setting<RubberbandMode> rubberband = register(new EnumSetting<>("Rubberband", RubberbandMode.Packet)).setVisibility(() -> !fakeJump.getValue());
+    private final Setting<Float> fakeClipHeight = register(new FloatSetting("Rubberband Height", 12, -60, 60)).setVisibility(() -> rubberband.getValue() == RubberbandMode.Packet);
 
     private final Setting<CurrBlock> blockToUse = register(new EnumSetting<>("Block", CurrBlock.Obsidian));
     private final Setting<CurrBlock> backupBlock = register(new EnumSetting<>("Backup", CurrBlock.EnderChest));
 
-    enum Mode {Normal, NormalTimer, SemiInstant, SemiInstantTimer, Instant}
+    enum RubberbandMode { Jump, Packet }
     enum CurrBlock {Obsidian, EnderChest, EnchantingTable, Anvil}
 
     private BlockPos playerPos;
@@ -65,16 +68,13 @@ public class Burrow extends Module {
     }
 
     private void switchToBlock() {
+        oldSelection = MC.player.inventory.currentItem;
         //main block
-        if (!(InventoryUtils.amountBlockInHotbar(getCurrBlock()) <= 0)) {
-            oldSelection = MC.player.inventory.currentItem;
-            MC.player.inventory.currentItem = InventoryUtils.findBlockInHotbar(getCurrBlock());
-        }
+        int newSelection = InventoryUtils.findBlockInHotbar(getCurrBlock());
         //backup block to use when either is unavailable
-        else if (!(InventoryUtils.amountBlockInHotbar(getBackBlock()) <= 0)) {
-            oldSelection = MC.player.inventory.currentItem;
-            MC.player.inventory.currentItem = InventoryUtils.findBlockInHotbar(getBackBlock());
-        }
+        if (newSelection == -1) newSelection = InventoryUtils.findBlockInHotbar(getBackBlock());
+        if (newSelection != -1) MC.player.connection.sendPacket(new CPacketHeldItemChange(newSelection));
+        else toggle();
     }
 
     @Override
@@ -114,12 +114,12 @@ public class Burrow extends Module {
         }
 
         //turns on Timer if Fast Mode is set to Timer
-        if (setMode.getValue() == Mode.SemiInstantTimer || setMode.getValue() == Mode.NormalTimer) {
-            ReflectionHelper.setPrivateValue(net.minecraft.util.Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), 1000.0F / timerModeTimer.getValue(), "tickLength", "field_194149_e");
+        if (!fakeJump.getValue() && useTimer.getValue()) {
+            ReflectionHelper.setPrivateValue(net.minecraft.util.Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), 1000.0F / timerTPS.getValue(), "tickLength", "field_194149_e");
         }
 
         //jump if not Instant mode
-        if (setMode.getValue() != Mode.Instant) {
+        if (!fakeJump.getValue()) {
             MC.player.jump();
         }
     }
@@ -129,7 +129,7 @@ public class Burrow extends Module {
     }
     public void onDisable() {
         //turns off Timer
-        if(setMode.getValue() == Mode.SemiInstantTimer || setMode.getValue() == Mode.NormalTimer) {
+        if(!fakeJump.getValue() && useTimer.getValue()) {
             ReflectionHelper.setPrivateValue(net.minecraft.util.Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), 1000.0F / 20.0F, "tickLength", "field_194149_e");
         }
         if (rotate.getValue()) {
@@ -144,12 +144,12 @@ public class Burrow extends Module {
 
         switchToBlock();
 
-        if (setMode.getValue() == Mode.Instant) {
+        if (fakeJump.getValue()) {
             WorldUtils.fakeJump();
             runSequence();
         }
 
-        if (setMode.getValue() != Mode.Instant) {
+        if (!fakeJump.getValue()) {
             if (MC.player.posY >= playerPos.getY() + height.getValue()) {
                 runSequence();
             }
@@ -158,16 +158,12 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        if (MC.player.inventory.currentItem == -1) {
-            setEnabled(false);
-        } else WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true);
+        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true, true);
 
-
-        //switches back to initial item held if both Auto Switch and Auto Switch Return are true
-        MC.player.inventory.currentItem = oldSelection;
+        MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
 
         //tries to produce a rubberband
-        if (setMode.getValue() == Mode.Instant || setMode.getValue() == Mode.SemiInstant || setMode.getValue() == Mode.SemiInstantTimer) {
+        if (rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
             MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + fakeClipHeight.getValue(), MC.player.posZ, false));
         } else MC.player.jump();
 

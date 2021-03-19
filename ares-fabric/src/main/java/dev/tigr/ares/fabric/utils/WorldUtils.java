@@ -110,9 +110,8 @@ public class WorldUtils implements Wrapper {
                 MC.player.pitch + MathHelper
                         .wrapDegrees(pitch - MC.player.pitch)};
 
-        if (rotate) {
-            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
-        }
+        if (rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
+
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
         MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
         MC.player.swingHand(hand);

@@ -25,18 +25,20 @@ import net.minecraft.util.math.BlockPos;
 public class Burrow extends Module {
     private final Setting<Boolean> holeOnly = register(new BooleanSetting("Hole Only", false));
     private final Setting<Boolean> toggleSurround = register(new BooleanSetting("Toggle Surround On", false));
-    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", false));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> preventBlockPush = register(new BooleanSetting("Prevent Block Push", true));
 
-    private final Setting<Mode> setMode = register(new EnumSetting<>("Mode", Mode.Instant));
-    private final Setting<Integer> timerModeTimer = register(new IntegerSetting("FastMode-Timer", 2500, 1, 30000)).setVisibility(() -> setMode.getValue() == Mode.NormalTimer || setMode.getValue() == Mode.SemiInstantTimer);
-    private final Setting<Double> height = register(new DoubleSetting("Trigger Height", 1.12, 1.0, 1.3)).setVisibility(() -> setMode.getValue() != Mode.Instant);
-    private final Setting<Float> fakeClipHeight = register(new FloatSetting("Rubberband Height", 12, -60, 60)).setVisibility(() -> setMode.getValue() != Mode.NormalTimer || setMode.getValue() != Mode.Normal);;
+    private final Setting<Boolean> fakeJump = register(new BooleanSetting("FakeJump", true));
+    private final Setting<Double> height = register(new DoubleSetting("Trigger Height", 1.12, 1.0, 1.3)).setVisibility(() -> !fakeJump.getValue());
+    private final Setting<Boolean> useTimer = register(new BooleanSetting("Use Timer", true)).setVisibility(() -> !fakeJump.getValue());
+    private final Setting<Integer> timerTPS = register(new IntegerSetting("TPS", 2500, 1, 12000)).setVisibility(() -> useTimer.getValue() && !fakeJump.getValue());
+    private final Setting<RubberbandMode> rubberband = register(new EnumSetting<>("Rubberband", RubberbandMode.Packet)).setVisibility(() -> !fakeJump.getValue());
+    private final Setting<Float> fakeClipHeight = register(new FloatSetting("Rubberband Height", 12, -60, 60)).setVisibility(() -> rubberband.getValue() == RubberbandMode.Packet);
 
     private final Setting<CurrBlock> blockToUse = register(new EnumSetting<>("Block", CurrBlock.Obsidian));
     private final Setting<CurrBlock> backupBlock = register(new EnumSetting<>("Backup", CurrBlock.EnderChest));
 
-    enum Mode {Normal, NormalTimer, SemiInstant, SemiInstantTimer, Instant}
+    enum RubberbandMode { Jump, Packet }
     enum CurrBlock {Obsidian, EnderChest, CryingObsidian, NetheriteBlock, AncientDebris, EnchantingTable, RespawnAnchor, Anvil}
 
     private BlockPos playerPos;
@@ -73,16 +75,13 @@ public class Burrow extends Module {
     }
 
     private void switchToBlock() {
+        oldSelection = MC.player.inventory.selectedSlot;
         //main block
-        if (!(InventoryUtils.amountBlockInHotbar(getCurrBlock()) <= 0)) {
-            oldSelection = MC.player.inventory.selectedSlot;
-            MC.player.inventory.selectedSlot = InventoryUtils.findBlockInHotbar(getCurrBlock());
-        }
+        int newItem = InventoryUtils.findBlockInHotbar(getCurrBlock());
         //backup block to use when either is unavailable
-        else if (!(InventoryUtils.amountBlockInHotbar(getBackBlock()) <= 0)) {
-            oldSelection = MC.player.inventory.selectedSlot;
-            MC.player.inventory.selectedSlot = InventoryUtils.findBlockInHotbar(getBackBlock());
-        }
+        if (newItem == -1) newItem = InventoryUtils.findBlockInHotbar(getBackBlock());
+        if (newItem != -1) MC.player.inventory.selectedSlot = newItem;
+        else toggle();
     }
 
     @Override
@@ -122,12 +121,12 @@ public class Burrow extends Module {
         }
 
         //turns on Timer if Fast Mode is set to Timer
-        if (setMode.getValue() == Mode.SemiInstantTimer || setMode.getValue() == Mode.NormalTimer) {
-            ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / timerModeTimer.getValue(), "tickTime", "field_1968");
+        if (!fakeJump.getValue() && useTimer.getValue()) {
+            ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / timerTPS.getValue(), "tickTime", "field_1968");
         }
 
         //jump if not Instant mode
-        if (setMode.getValue() != Mode.Instant) {
+        if (!fakeJump.getValue()) {
             MC.player.jump();
         }
     }
@@ -137,7 +136,7 @@ public class Burrow extends Module {
     }
     public void onDisable() {
         //turns off Timer
-        if(setMode.getValue() == Mode.SemiInstantTimer || setMode.getValue() == Mode.NormalTimer) {
+        if(!fakeJump.getValue() && useTimer.getValue()) {
             ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / 20.0F, "tickTime", "field_1968");
         }
         if (rotate.getValue()) {
@@ -152,12 +151,12 @@ public class Burrow extends Module {
 
         switchToBlock();
 
-        if (setMode.getValue() == Mode.Instant) {
+        if (fakeJump.getValue()) {
             WorldUtils.fakeJump();
             runSequence();
         }
 
-        if (setMode.getValue() != Mode.Instant) {
+        if (!fakeJump.getValue()) {
             if (MC.player.getY() >= playerPos.getY() + height.getValue()) {
                 runSequence();
             }
@@ -166,16 +165,12 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        if (MC.player.inventory.selectedSlot == -1) {
-            setEnabled(false);
-        } else WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true);
+        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true);
 
-
-        //switches back to initial item held if both Auto Switch and Auto Switch Return are true
         MC.player.inventory.selectedSlot = oldSelection;
 
         //tries to produce a rubberband
-        if (setMode.getValue() == Mode.Instant || setMode.getValue() == Mode.SemiInstant || setMode.getValue() == Mode.SemiInstantTimer) {
+        if (rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
             MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + fakeClipHeight.getValue(), MC.player.getZ(), false));
         } else MC.player.jump();
 

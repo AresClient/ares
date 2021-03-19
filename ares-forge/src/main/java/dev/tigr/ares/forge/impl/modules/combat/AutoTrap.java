@@ -4,6 +4,7 @@ import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
@@ -22,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 public class AutoTrap extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.FULL));
     private final Setting<Double> range = register(new DoubleSetting("Range", 8.0D, 0.0D, 15.0D));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 2, 0, 10));
 
     @Override
@@ -45,7 +47,7 @@ public class AutoTrap extends Module {
                             int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
                             if(newSlot == -1) return;
                             else MC.player.inventory.currentItem = newSlot;
-                            WorldUtils.placeBlockMainHand(pos);
+                            WorldUtils.placeBlockMainHand(pos, rotate.getValue());
                             MC.player.inventory.currentItem = oldSlot;
                             return;
                         }

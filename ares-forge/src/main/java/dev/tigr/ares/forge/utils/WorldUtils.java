@@ -17,6 +17,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
+import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -36,14 +37,14 @@ import static dev.tigr.ares.Wrapper.MC;
  */
 public class WorldUtils {
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(pos, true, false);
+        return placeBlockMainHand(pos, true, false, false);
     }
 
     public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
-        return placeBlockMainHand(pos, rotate, false);
+        return placeBlockMainHand(pos, rotate, false, false);
     }
 
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity, Boolean packet) {
         return placeBlock(EnumHand.MAIN_HAND, pos, rotate, ignoreEntity);
     }
 
@@ -62,16 +63,11 @@ public class WorldUtils {
     public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
-            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
-                UTILS.printMessage(TextColor.GOLD + "NOT STUCK");
+            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
                 return false;
-            }
         } else if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
-                    !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith)) {
-            UTILS.printMessage(TextColor.GOLD + "STUCK");
+                    !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith))
             return false;
-            }
-
 
         Vec3d eyesPos = new Vec3d(MC.player.posX,
                 MC.player.posY + MC.player.getEyeHeight(),
@@ -116,12 +112,11 @@ public class WorldUtils {
                 MC.player.rotationPitch + MathHelper
                         .wrapDegrees(pitch - MC.player.rotationPitch)};
 
-        if(rotate) {
-            MC.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0], rotations[1], MC.player.onGround));
-        }
+        if (rotate) MC.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0], rotations[1], MC.player.onGround));
+
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
-        MC.playerController.processRightClickBlock(MC.player,
-                MC.world, neighbor, side2, hitVec, hand);
+        if (ignoreEntity) MC.player.connection.sendPacket(new CPacketPlayerTryUseItemOnBlock(pos, side2, hand, (float) hitVec.x, (float) hitVec.y, (float) hitVec.z));
+        else MC.playerController.processRightClickBlock(MC.player, MC.world, neighbor, side2, hitVec, hand);
         MC.player.swingArm(hand);
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.STOP_SNEAKING));
 
@@ -346,12 +341,8 @@ public class WorldUtils {
     // must be done onTick - put this here because there may be other uses for fakeJump elsewhere, but it can just be put right into burrow if not.
     public static void fakeJump() {
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.40, MC.player.posZ, true));
-        UTILS.printMessage(TextColor.GOLD + "ONE");
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.75, MC.player.posZ, true));
-        UTILS.printMessage(TextColor.GOLD + "TWO");
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.00, MC.player.posZ, true));
-        UTILS.printMessage(TextColor.GOLD + "THREE");
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.15, MC.player.posZ, true));
-        UTILS.printMessage(TextColor.GOLD + "FOUR");
     }
 }
