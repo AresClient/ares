@@ -18,9 +18,9 @@ public class CrystalCount extends HudElement {
     }
 
     public void draw() {
-        ItemStack totemStack = new ItemStack(Items.END_CRYSTAL);
-        totemStack.setCount(InventoryUtils.amountInInventory(Items.END_CRYSTAL));
+        ItemStack crystalStack = new ItemStack(Items.END_CRYSTAL);
+        crystalStack.setCount(InventoryUtils.amountInInventory(Items.END_CRYSTAL));
 
-        RenderUtils.renderItem(totemStack, getX(), getY());
+        RenderUtils.renderItem(crystalStack, getX(), getY());
     }
 }
