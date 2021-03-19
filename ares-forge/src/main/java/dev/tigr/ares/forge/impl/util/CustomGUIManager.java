@@ -92,6 +92,16 @@ public class CustomGUIManager extends GuiScreen implements IGUIManager {
     }
 
     @Override
+    public boolean isPasteKey(int keycode) {
+        return isKeyComboCtrlV(keycode);
+    }
+
+    @Override
+    public String getClipboardText() {
+        return getClipboardString();
+    }
+
+    @Override
     public void openGUI(Class<? extends GUI> clazz) {
         set(clazz);
         MC.displayGuiScreen(this);
