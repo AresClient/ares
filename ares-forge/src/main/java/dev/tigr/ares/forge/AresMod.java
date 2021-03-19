@@ -134,6 +134,7 @@ public class AresMod extends Ares {
                 IceSpeed.class,
                 InventoryMove.class,
                 Jesus.class,
+                NoBlockPush.class,
                 NoClip.class,
                 NoSlowDown.class,
                 PacketFly.class,

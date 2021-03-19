@@ -329,6 +329,7 @@ public class CrystalAura extends Module {
         //cancel crystal if ON_HIT
         if(cancelMode.getValue() == Canceller.ON_HIT) {
             crystal.remove();
+            MC.world.finishRemovingEntities();
             MC.world.getEntities();
         }
 

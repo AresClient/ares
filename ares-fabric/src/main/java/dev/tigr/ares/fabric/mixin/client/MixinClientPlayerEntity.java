@@ -5,6 +5,7 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
+import dev.tigr.ares.fabric.event.movement.BlockPushEvent;
 import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
 import dev.tigr.ares.fabric.event.movement.MovePlayerEvent;
 import dev.tigr.ares.fabric.event.movement.SlowDownEvent;
@@ -39,6 +40,12 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity {
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
     public void pushOutOfBlocks(double d, double d1, CallbackInfo ci) {
         if(Ares.EVENT_MANAGER.post(new EntityClipEvent(clientPlayerEntity)).isCancelled()) ci.cancel();
+    }
+
+    @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
+    public void noPushOutOfBlocks(double var1, double var2, CallbackInfo ci) {
+        BlockPushEvent blockPushEvent = Ares.EVENT_MANAGER.post((new BlockPushEvent(var1, var2)));
+        if (Ares.EVENT_MANAGER.post(new BlockPushEvent(var1, var2)).isCancelled()) ci.cancel();
     }
 
     @Inject(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z", ordinal = 0))

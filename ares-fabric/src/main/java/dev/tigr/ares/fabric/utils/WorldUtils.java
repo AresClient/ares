@@ -357,4 +357,12 @@ public class WorldUtils implements Wrapper {
     public static boolean isBot(Entity entity) {
         return entity instanceof PlayerEntity && entity.isInvisibleTo(MC.player) && !entity.isOnGround() && !entity.collides();
     }
+
+    // must be done onTick - put this here because there may be other uses for fakeJump elsewhere, but it can just be put right into burrow if not.
+    public static void fakeJump() {
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.40, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.75, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.00, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ(), true));
+    }
 }

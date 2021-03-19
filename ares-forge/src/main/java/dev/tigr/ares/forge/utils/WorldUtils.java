@@ -1,6 +1,7 @@
 package dev.tigr.ares.forge.utils;
 
 import dev.tigr.ares.core.feature.FriendManager;
+import dev.tigr.ares.core.util.render.TextColor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static dev.tigr.ares.CoreWrapper.UTILS;
 import static dev.tigr.ares.Wrapper.MC;
 
 /**
@@ -45,6 +47,10 @@ public class WorldUtils {
         return placeBlock(EnumHand.MAIN_HAND, pos, rotate, ignoreEntity);
     }
 
+    public static boolean placeBlockNoRotate(EnumHand hand, BlockPos pos) {
+        return placeBlock(hand, pos, false, false);
+    }
+
     public static boolean placeBlock(EnumHand hand, BlockPos pos) {
         placeBlock(hand, pos, true, false);
         return true;
@@ -56,14 +62,16 @@ public class WorldUtils {
     public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
-            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
+            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
+                UTILS.printMessage(TextColor.GOLD + "NOT STUCK");
                 return false;
-        } else {
-            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
-                    !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos))
-                            .stream().noneMatch(Entity::canBeCollidedWith))
-                return false;
-        }
+            }
+        } else if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
+                    !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith)) {
+            UTILS.printMessage(TextColor.GOLD + "STUCK");
+            return false;
+            }
+
 
         Vec3d eyesPos = new Vec3d(MC.player.posX,
                 MC.player.posY + MC.player.getEyeHeight(),
@@ -333,5 +341,17 @@ public class WorldUtils {
 
     public static boolean isBot(Entity entity) {
         return entity instanceof EntityPlayer && entity.isInvisibleToPlayer(MC.player) && !entity.onGround && entity.isAirBorne && !entity.canBeCollidedWith();
+    }
+
+    // must be done onTick - put this here because there may be other uses for fakeJump elsewhere, but it can just be put right into burrow if not.
+    public static void fakeJump() {
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.40, MC.player.posZ, true));
+        UTILS.printMessage(TextColor.GOLD + "ONE");
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.75, MC.player.posZ, true));
+        UTILS.printMessage(TextColor.GOLD + "TWO");
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.00, MC.player.posZ, true));
+        UTILS.printMessage(TextColor.GOLD + "THREE");
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.15, MC.player.posZ, true));
+        UTILS.printMessage(TextColor.GOLD + "FOUR");
     }
 }
