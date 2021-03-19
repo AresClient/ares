@@ -42,7 +42,7 @@ public class AutoTrap extends Module {
                         ) {
                             //place block
                             int oldSlot = MC.player.inventory.currentItem;
-                            int newSlot = InventoryUtils.findBlock(Blocks.OBSIDIAN);
+                            int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
                             if(newSlot == -1) return;
                             else MC.player.inventory.currentItem = newSlot;
                             WorldUtils.placeBlockMainHand(pos);
