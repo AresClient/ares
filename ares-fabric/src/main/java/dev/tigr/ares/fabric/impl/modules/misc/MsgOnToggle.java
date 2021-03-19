@@ -6,6 +6,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
+import dev.tigr.simpleevents.listener.Priority;
 
 /**
  * @author Tigermouthbear
@@ -19,13 +20,9 @@ public class MsgOnToggle extends Module {
     }
 
     @EventHandler
-    public EventListener<ToggleEvent.Enabled> enabledEvent = new EventListener<>(event -> {
+    public EventListener<ToggleEvent> toggleEvent = new EventListener<>(event -> {
         if(event.getModule().getName().equalsIgnoreCase("clickgui")) return;
-        UTILS.printMessage(TextColor.GREEN + "Enabled " + TextColor.BLUE + event.getModule().getName());
-    });
-    @EventHandler
-    public EventListener<ToggleEvent.Disabled> disabledEvent = new EventListener<>(event -> {
-        if(event.getModule().getName().equalsIgnoreCase("clickgui")) return;
-        UTILS.printMessage(TextColor.RED + "Disabled " + TextColor.BLUE + event.getModule().getName());
+        String text = event.isEnabled() ? TextColor.GREEN + "Enabled " : TextColor.RED + "Disabled ";
+        UTILS.printMessage(text + TextColor.BLUE + event.getModule().getName());
     });
 }

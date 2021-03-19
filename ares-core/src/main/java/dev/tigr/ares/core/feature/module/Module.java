@@ -85,12 +85,12 @@ public class Module implements Wrapper {
         if(value) {
             onEnable();
             if(!alwaysListening) Ares.EVENT_MANAGER.register(this);
-            Ares.EVENT_MANAGER.post(new ToggleEvent.Enabled(this));
+            Ares.EVENT_MANAGER.post(new ToggleEvent(this, true));
         }
         if(!value) {
             onDisable();
             if(!alwaysListening) Ares.EVENT_MANAGER.unregister(this);
-            Ares.EVENT_MANAGER.post(new ToggleEvent.Disabled(this));
+            Ares.EVENT_MANAGER.post(new ToggleEvent(this, false));
         }
     }
 

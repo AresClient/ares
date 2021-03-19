@@ -25,12 +25,8 @@ public class Toggle extends Command {
                         if(input.equalsIgnoreCase(module.getName())) {
                             module.toggle();
 
-                            if(!MsgOnToggle.INSTANCE.getEnabled()) {
-                                if(module.getEnabled())
-                                    UTILS.printMessage(TextColor.GREEN + "Enabled " + TextColor.BLUE + module.getName());
-                                else
-                                    UTILS.printMessage(TextColor.RED + "Disabled " + TextColor.BLUE + module.getName());
-                            }
+                            if(module.getEnabled()) UTILS.printMessage(TextColor.GREEN + "Enabled " + TextColor.BLUE + module.getName());
+                            else UTILS.printMessage(TextColor.RED + "Disabled " + TextColor.BLUE + module.getName());
 
                             return 1;
                         }
