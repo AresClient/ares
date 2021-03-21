@@ -288,11 +288,11 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
-            float red = (float)colorRed.getValue() / 255;
-            float green = (float)colorGreen.getValue() / 255;
-            float blue = (float)colorBlue.getValue() / 255;
-            float fAlpha = (float)fillAlpha.getValue() / 100;
-            float bAlpha = (float)boxAlpha.getValue() / 100;
+            float red = (float) colorRed.getValue() / 255;
+            float green = (float) colorGreen.getValue() / 255;
+            float blue = (float) colorBlue.getValue() / 255;
+            float fAlpha = (float) fillAlpha.getValue() / 100;
+            float bAlpha = (float) boxAlpha.getValue() / 100;
             RenderUtils.prepare3d();
             Box bb = RenderUtils.getBoundingBox(target);
             if(bb != null) {
