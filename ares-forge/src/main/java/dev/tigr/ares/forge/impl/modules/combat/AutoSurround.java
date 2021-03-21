@@ -17,13 +17,16 @@ import net.minecraft.network.play.server.SPacketEntityStatus;
 @Module.Info(name = "AutoSurround", description = "Automatically enable surround in certain circumstances", category = Category.COMBAT)
 public class AutoSurround extends Module {
     private final Setting<Boolean> hole = register(new BooleanSetting("When in hole", true));
+    private final Setting<Boolean> holeSnap = register(new BooleanSetting("Hole Center", false)) .setVisibility(hole::getValue);
     private final Setting<Boolean> pop = register(new BooleanSetting("On totem pop", false));
+    private final Setting<Boolean> popSnap = register(new BooleanSetting("Totem Center", true)).setVisibility(pop::getValue);
     @EventHandler
     public EventListener<PacketEvent.Receive> packetReceiveEvent = new EventListener<>(event -> {
         if(MC.player != null && event.getPacket() instanceof SPacketEntityStatus && pop.getValue()) {
             SPacketEntityStatus status = (SPacketEntityStatus) event.getPacket();
             if(status.getOpCode() == 35 && status.getEntity(MC.world) == MC.player) {
                 Surround.INSTANCE.setEnabled(true);
+                Surround.toggleCenter(popSnap.getValue());
             }
         }
     });
@@ -32,6 +35,6 @@ public class AutoSurround extends Module {
     public void onTick() {
         if(WorldUtils.isHole(MC.player.getPosition()) != HoleType.NONE && !Surround.INSTANCE.getEnabled() && hole.getValue())
             Surround.INSTANCE.setEnabled(true);
-            Surround.toggleCenter(false);
+        Surround.toggleCenter(holeSnap.getValue());
     }
 }

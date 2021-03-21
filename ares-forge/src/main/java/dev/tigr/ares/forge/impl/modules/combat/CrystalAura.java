@@ -73,11 +73,18 @@ public class CrystalAura extends Module {
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
     private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Cancel", Canceller.NO_DESYNC));
 
+    private final Setting<Boolean> showColorSettings = register(new BooleanSetting("Color Settings", false));
+    private final Setting<Integer> colorRed = register(new IntegerSetting("Red", 237, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> colorGreen = register(new IntegerSetting("Green", 0, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> colorBlue = register(new IntegerSetting("Blue", 0, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> fillAlpha = register(new IntegerSetting("Fill Alpha", 30, 0, 100)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> boxAlpha = register(new IntegerSetting("Box Alpha", 69, 0, 100)).setVisibility(showColorSettings::getValue);
+
     enum Mode { DAMAGE, DISTANCE }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
     enum Rotations { PACKET, REAL, NONE }
-    enum Canceller { NO_DESYNC, ON_HIT, ON_SOUND }
+    enum Canceller { NO_DESYNC, ON_HIT, ON_PACKET }
 
     private long renderTimer = -1;
     private long placeTimer = -1;
@@ -256,10 +263,17 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
+            float red = (float)colorRed.getValue() / 255;
+            float green = (float)colorGreen.getValue() / 255;
+            float blue = (float)colorBlue.getValue() / 255;
+            float fAlpha = (float)fillAlpha.getValue() / 100;
+            float bAlpha = (float)boxAlpha.getValue() / 100;
             RenderUtils.prepare3d();
             AxisAlignedBB bb = RenderUtils.getBoundingBox(target);
-            RenderGlobal.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
-            RenderGlobal.drawSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
+            if(bb != null) {
+                RenderGlobal.renderFilledBox(bb, red, green, blue, fAlpha);
+                RenderGlobal.drawSelectionBoundingBox(bb, red, green, blue, bAlpha);
+            }
             RenderUtils.end3d();
         }
     }

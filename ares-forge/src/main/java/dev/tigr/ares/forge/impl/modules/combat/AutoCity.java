@@ -31,6 +31,7 @@ public class AutoCity extends Module {
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> instant = register(new BooleanSetting("Instant", true));
+    private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", false));
 
     private boolean toggleInstant = false;
     
@@ -54,8 +55,10 @@ public class AutoCity extends Module {
                 BlockPos target = null;
                 for(BlockPos block: blocks) {
                     if(!inPlayerCity(block) && MC.world.getBlockState(block).getBlock() != Blocks.BEDROCK && MC.player.getDistanceSq(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5) < range.getValue() * range.getValue()) {
-                        target = block;
-                        break;
+                        if (oneDotThirteen.getValue() || MC.world.getBlockState(new BlockPos(block.getX(), block.getY() + 1, block.getZ())).getBlock() == Blocks.AIR) {
+                            target = block;
+                            break;
+                        }
                     }
                 }
                 if(target == null) continue;
@@ -83,7 +86,6 @@ public class AutoCity extends Module {
                     // break
                     MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, target, EnumFacing.UP));
                     MC.player.swingArm(EnumHand.MAIN_HAND);
-                    UTILS.printMessage(TextColor.BLUE + " X " + TextColor.GOLD + playerEntity.getPosition().getX() + TextColor.BLUE + " Y " + TextColor.GOLD + playerEntity.getPosition().getY() + TextColor.BLUE + " Z " + TextColor.GOLD + playerEntity.getPosition().getZ());
                     if (instant.getValue()) MC.playerController.onPlayerDamageBlock(new BlockPos(target.getX(), target.getY(), target.getZ()), EnumFacing.UP);
                     MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, target, EnumFacing.UP));
 

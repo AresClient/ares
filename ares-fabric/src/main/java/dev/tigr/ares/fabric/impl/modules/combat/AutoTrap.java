@@ -21,12 +21,10 @@ import net.minecraft.util.math.Box;
  */
 @Module.Info(name = "AutoTrap", description = "Automatically trap people in holes", category = Category.COMBAT)
 public class AutoTrap extends Module {
-    private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.Full));
+    private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.FULL));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Double> range = register(new DoubleSetting("Range", 8.0D, 0.0D, 15.0D));
-    private final Setting<Integer> delay = register(new IntegerSetting("Delay", 100, 0, 500));
-
-    enum Mode { Full, CrystalAir, CrystalFull, TopOnly, TopOnly3x3 }
+    private final Setting<Integer> delay = register(new IntegerSetting("Delay(ms)", 100, 0, 500));
 
     private final Timer delayTimer = new Timer();
 
@@ -66,7 +64,7 @@ public class AutoTrap extends Module {
         BlockPos playerPos = new BlockPos(player.getPos());
         BlockPos[] blocks;
 
-        if(mode.getValue() == Mode.Full) {
+        if(mode.getValue() == Mode.FULL) {
             blocks = new BlockPos[]{
                     playerPos.add(1, -1, 0),
                     playerPos.add(1, 0, 0),
@@ -87,7 +85,7 @@ public class AutoTrap extends Module {
                     playerPos.add(1, 2, 0),
                     playerPos.add(0, 2, 0)
             };
-        } else if (mode.getValue() == Mode.CrystalAir) {
+        } else if (mode.getValue() == Mode.CRYSTALAIR) {
             blocks = new BlockPos[]{
                     playerPos.add(0, 1, 1),
                     playerPos.add(0, 1, -1),
@@ -97,11 +95,37 @@ public class AutoTrap extends Module {
                     playerPos.add(1, 2, 0),
                     playerPos.add(0, 2, 0)
             };
-        } else if(mode.getValue() == Mode.TopOnly) {
+        } else if(mode.getValue() == Mode.CRYSTALTOP) {
+            blocks = new BlockPos[]{
+                    playerPos.add(1, -1, 0),
+                    playerPos.add(1, 0, 0),
+                    playerPos.add(1, 1, 0),
+                    playerPos.add(1, 2, 0),
+
+                    playerPos.add(0, 2, 0),
+                    playerPos.add(-1, 2, 0),
+                    playerPos.add(0, 2, 1),
+                    playerPos.add(0, 2, -1),
+
+                    playerPos.add(-1, 1, 0),
+                    playerPos.add(0, 1, 1),
+                    playerPos.add(0, 1, -1),
+
+            };
+        } else if(mode.getValue() == Mode.TOPONLY) {
+            blocks = new BlockPos[]{
+                    playerPos.add(1, -1, 0),
+                    playerPos.add(1, 0, 0),
+                    playerPos.add(1, 1, 0),
+                    playerPos.add(1, 2, 0),
+
+                    playerPos.add(0, 2, 0)
+            };
+        } else if(mode.getValue() == Mode.TOPAIR) {
             blocks = new BlockPos[]{
                     playerPos.add(0, 2, 0)
             };
-        } else if (mode.getValue() == Mode.TopOnly3x3) {
+        } else if (mode.getValue() == Mode.TOP3x3) {
             blocks = new BlockPos[]{
                     playerPos.add(0, 2, 0),
 
@@ -145,4 +169,7 @@ public class AutoTrap extends Module {
 
         return blocks;
     }
+
+
+    enum Mode { FULL, CRYSTALAIR, CRYSTALTOP, CRYSTALFULL, TOPONLY, TOPAIR, TOP3x3 }
 }

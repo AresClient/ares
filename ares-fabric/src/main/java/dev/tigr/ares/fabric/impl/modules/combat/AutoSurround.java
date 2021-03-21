@@ -20,7 +20,7 @@ import net.minecraft.network.packet.s2c.play.EntityStatusS2CPacket;
 public class AutoSurround extends Module {
     private final Setting<Boolean> hole = register(new BooleanSetting("When in hole", true));
     private final Setting<Boolean> holeSnap = register(new BooleanSetting("Hole Center", false)) .setVisibility(hole::getValue);
-    private final Setting<Integer> holeDelay = register(new IntegerSetting("Time Before", 250, 0, 1000)).setVisibility(hole::getValue);
+    private final Setting<Integer> holeDelay = register(new IntegerSetting("Hole D.(ms)", 250, 0, 1000)).setVisibility(hole::getValue);
     private final Setting<Boolean> pop = register(new BooleanSetting("On totem pop", false));
     private final Setting<Boolean> popSnap = register(new BooleanSetting("Totem Center", true)).setVisibility(pop::getValue);
 

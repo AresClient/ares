@@ -11,7 +11,6 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
-import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.event.client.EntityEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
@@ -77,6 +76,13 @@ public class CrystalAura extends Module {
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
     private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Cancel", Canceller.NO_DESYNC));
+
+    private final Setting<Boolean> showColorSettings = register(new BooleanSetting("Color Settings", false));
+    private final Setting<Integer> colorRed = register(new IntegerSetting("Red", 237, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> colorGreen = register(new IntegerSetting("Green", 0, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> colorBlue = register(new IntegerSetting("Blue", 0, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> fillAlpha = register(new IntegerSetting("Fill Alpha", 30, 0, 100)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> boxAlpha = register(new IntegerSetting("Box Alpha", 69, 0, 100)).setVisibility(showColorSettings::getValue);
 
     enum Mode { DAMAGE, DISTANCE }
     enum Order { PLACE_BREAK, BREAK_PLACE }
@@ -282,11 +288,16 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
+            float red = (float)colorRed.getValue() / 255;
+            float green = (float)colorGreen.getValue() / 255;
+            float blue = (float)colorBlue.getValue() / 255;
+            float fAlpha = (float)fillAlpha.getValue() / 100;
+            float bAlpha = (float)boxAlpha.getValue() / 100;
             RenderUtils.prepare3d();
             Box bb = RenderUtils.getBoundingBox(target);
             if(bb != null) {
-                RenderUtils.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
-                RenderUtils.renderSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
+                RenderUtils.renderFilledBox(bb, red, green, blue, fAlpha);
+                RenderUtils.renderSelectionBoundingBox(bb, red, green, blue, bAlpha);
             }
             RenderUtils.end3d();
         }

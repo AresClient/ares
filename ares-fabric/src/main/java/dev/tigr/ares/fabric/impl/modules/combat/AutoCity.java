@@ -32,6 +32,7 @@ public class AutoCity extends Module {
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> instant = register(new BooleanSetting("Instant", true));
+    private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", true));
 
     private boolean toggleInstant = false;
 
@@ -54,8 +55,10 @@ public class AutoCity extends Module {
                 BlockPos target = null;
                 for(BlockPos block: blocks) {
                     if(!inPlayerCity(block) && MC.world.getBlockState(block).getBlock() != Blocks.BEDROCK && MC.player.squaredDistanceTo(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5) < range.getValue() * range.getValue()) {
-                        target = block;
-                        break;
+                        if (oneDotThirteen.getValue() || MC.world.getBlockState(new BlockPos(block.getX(), block.getY() + 1, block.getZ())).getBlock() == Blocks.AIR) {
+                            target = block;
+                            break;
+                        }
                     }
                 }
                 if(target == null) continue;
