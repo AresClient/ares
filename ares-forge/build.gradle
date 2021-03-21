@@ -47,8 +47,8 @@ dependencies {
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 
     // mixins
-    implementation "org.spongepowered:mixin:0.8.2"
-    shadow("org.spongepowered:mixin:0.8.2") {
+    implementation "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    shadow("org.spongepowered:mixin:0.7.11-SNAPSHOT") {
         exclude module: "launchwrapper"
         exclude module: "guava"
         exclude module: "gson"
