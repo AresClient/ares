@@ -7,16 +7,17 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.render.TextColor;
+import dev.tigr.ares.forge.impl.modules.exploit.InstantMine;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemPickaxe;
-import net.minecraft.network.play.client.CPacketHeldItemChange;
-import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.network.play.client.*;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,15 +30,23 @@ import java.util.stream.Collectors;
 public class AutoCity extends Module {
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
+    private final Setting<Boolean> instant = register(new BooleanSetting("Instant", true));
+
+    private boolean toggleInstant = false;
     
     @Override
     public void onEnable() {
+        if (instant.getValue() && !InstantMine.INSTANCE.getEnabled()) {
+            toggleInstant = true;
+            InstantMine.INSTANCE.setEnabled(true);
+        }
         // get targets
         List<EntityPlayer> targets = MC.world.playerEntities.stream().filter(entityPlayer -> !FriendManager.isFriend(entityPlayer.getGameProfile().getName()) && entityPlayer != MC.player).collect(Collectors.toList());
         targets.sort(Comparators.entityDistance);
         
         for(EntityPlayer playerEntity: targets) {
-            BlockPos pos = playerEntity.getPosition();
+            Vec3d posVec = playerEntity.getPositionVector();
+            BlockPos pos = new BlockPos(posVec.x, posVec.y, posVec.z);
             if(inCity(pos)) {
                 // find block
                 List<BlockPos> blocks = Arrays.asList(pos.north(), pos.east(), pos.south(), pos.west());
@@ -73,14 +82,26 @@ public class AutoCity extends Module {
 
                     // break
                     MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, target, EnumFacing.UP));
+                    MC.player.swingArm(EnumHand.MAIN_HAND);
+                    UTILS.printMessage(TextColor.BLUE + " X " + TextColor.GOLD + playerEntity.getPosition().getX() + TextColor.BLUE + " Y " + TextColor.GOLD + playerEntity.getPosition().getY() + TextColor.BLUE + " Z " + TextColor.GOLD + playerEntity.getPosition().getZ());
+                    if (instant.getValue()) MC.playerController.onPlayerDamageBlock(new BlockPos(target.getX(), target.getY(), target.getZ()), EnumFacing.UP);
                     MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, target, EnumFacing.UP));
+
                 }
-                setEnabled(false);
+                if(!toggleInstant) setEnabled(false);
                 return;
             }
         }
         UTILS.printMessage(TextColor.RED + "Could not find a target!");
-        setEnabled(false);
+        if(!toggleInstant) setEnabled(false);
+    }
+
+    @Override
+    public void onDisable(){
+        if (toggleInstant) {
+            toggleInstant = false;
+            InstantMine.INSTANCE.setEnabled(false);
+        }
     }
     
     private boolean inCity(BlockPos pos) {

@@ -80,6 +80,7 @@ public class AresMod extends Ares {
 
                 // exploit
                 FastPlace.class,
+                InstantMine.class,
                 LiquidInteract.class,
                 MultiTask.class,
                 NoBreakDelay.class,

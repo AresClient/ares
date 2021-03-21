@@ -126,5 +126,6 @@ public class Surround extends Module {
     @Override
     public void onDisable() {
         ticks = 0;
+        doSnap = true;
     }
 }
