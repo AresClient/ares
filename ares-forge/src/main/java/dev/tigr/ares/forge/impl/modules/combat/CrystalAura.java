@@ -71,13 +71,20 @@ public class CrystalAura extends Module {
     private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true));
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
-    private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Canceller", Canceller.NO_DESYNC));
+    private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Cancel", Canceller.NO_DESYNC));
+
+    private final Setting<Boolean> showColorSettings = register(new BooleanSetting("Color Settings", false));
+    private final Setting<Integer> colorRed = register(new IntegerSetting("Red", 237, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> colorGreen = register(new IntegerSetting("Green", 0, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> colorBlue = register(new IntegerSetting("Blue", 0, 0, 255)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> fillAlpha = register(new IntegerSetting("Fill Alpha", 30, 0, 100)).setVisibility(showColorSettings::getValue);
+    private final Setting<Integer> boxAlpha = register(new IntegerSetting("Box Alpha", 69, 0, 100)).setVisibility(showColorSettings::getValue);
 
     enum Mode { DAMAGE, DISTANCE }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
     enum Rotations { PACKET, REAL, NONE }
-    enum Canceller { NO_DESYNC, ON_HIT, SOUND_PACKET }
+    enum Canceller { NO_DESYNC, ON_HIT, ON_PACKET }
 
     private long renderTimer = -1;
     private long placeTimer = -1;
@@ -88,9 +95,21 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<Vec3d, Long> placedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EntityEnderCrystal, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
     private final List<EntityEnderCrystal> lostCrystals = new ArrayList<>();
+    private EntityPlayer targetPlayer;
 
     public CrystalAura() {
         INSTANCE = this;
+    }
+
+    @Override
+    public String getInfo() {
+        if (targetPlayer != null
+                && !targetPlayer.isDead
+                && !(targetPlayer.getHealth() <= 0)
+                && !(MC.player.getDistance(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)) {
+            return targetPlayer.getGameProfile().getName();
+        }
+        else return "null";
     }
 
     @Override
@@ -244,10 +263,17 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
+            float red = (float)colorRed.getValue() / 255;
+            float green = (float)colorGreen.getValue() / 255;
+            float blue = (float)colorBlue.getValue() / 255;
+            float fAlpha = (float)fillAlpha.getValue() / 100;
+            float bAlpha = (float)boxAlpha.getValue() / 100;
             RenderUtils.prepare3d();
             AxisAlignedBB bb = RenderUtils.getBoundingBox(target);
-            RenderGlobal.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
-            RenderGlobal.drawSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
+            if(bb != null) {
+                RenderGlobal.renderFilledBox(bb, red, green, blue, fAlpha);
+                RenderGlobal.drawSelectionBoundingBox(bb, red, green, blue, bAlpha);
+            }
             RenderUtils.end3d();
         }
     }
@@ -264,12 +290,12 @@ public class CrystalAura extends Module {
     //Cancel Crystals if on SOUND_PACKET
     @EventHandler
     private EventListener<PacketEvent.Receive> packetReceiveListener = new EventListener<>(event -> {
-        if (event.getPacket() instanceof SPacketSoundEffect && cancelMode.getValue() == Canceller.SOUND_PACKET) {
+        if (event.getPacket() instanceof SPacketSoundEffect && cancelMode.getValue() != Canceller.NO_DESYNC) {
             final SPacketSoundEffect packet = (SPacketSoundEffect) event.getPacket();
             if (packet.getCategory() == SoundCategory.BLOCKS && packet.getSound() == SoundEvents.ENTITY_GENERIC_EXPLODE) {
                 for (Entity e : MC.world.loadedEntityList) {
                     if (e instanceof EntityEnderCrystal) {
-                        if (e.getDistance(packet.getX(), packet.getY(), packet.getZ()) <= 6.0f) {
+                        if (e.getDistance(packet.getX(), packet.getY(), packet.getZ()) <= Math.max(breakRange.getValue(), placeRange.getValue()) + 2) {
                             e.setDead();
                         }
                     }
@@ -297,7 +323,7 @@ public class CrystalAura extends Module {
 
     private boolean canBreakCrystal(EntityEnderCrystal crystal) {
         return MC.player.getDistance(crystal) <= breakRange.getValue() // check range
-        && !(MC.player.getHealth() - getDamage(crystal.getPositionVector(), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
+                && !(MC.player.getHealth() - getDamage(crystal.getPositionVector(), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
     }
 
     private void breakCrystal(EntityEnderCrystal crystal, boolean offhand) {
@@ -313,7 +339,11 @@ public class CrystalAura extends Module {
         rotations = WorldUtils.calculateLookAt(crystal.posX + 0.5, crystal.posY + 0.5, crystal.posZ + 0.5, MC.player);
 
         //cancel crystal if ON_HIT
-        if(cancelMode.getValue() == Canceller.ON_HIT) MC.world.removeEntityFromWorld(crystal.getEntityId());
+        if(cancelMode.getValue() == Canceller.ON_HIT) {
+            crystal.setDead();
+            MC.world.removeAllEntities();
+            MC.world.getLoadedEntityList();
+        }
 
         // reset timer
         breakTimer = System.nanoTime() / 1000000;
@@ -332,6 +362,9 @@ public class CrystalAura extends Module {
                     continue;
 
                 double score = getScore(pos, targetedPlayer);
+                if (target != null) {
+                    targetPlayer = targetedPlayer;
+                } else targetPlayer = null;
 
                 if(target == null || (score < bestScore && score != -1)) {
                     target = pos;

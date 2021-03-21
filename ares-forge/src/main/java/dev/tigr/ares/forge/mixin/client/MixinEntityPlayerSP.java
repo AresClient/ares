@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
 import dev.tigr.ares.forge.event.events.movement.MovePlayerEvent;
 import dev.tigr.ares.forge.event.events.player.PlayerDismountEvent;
 import net.minecraft.client.Minecraft;
@@ -20,6 +21,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 /**
@@ -44,6 +46,12 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
     public void movePlayer(AbstractClientPlayer abstractClientPlayer, MoverType type, double x, double y, double z) {
         MovePlayerEvent event = Ares.EVENT_MANAGER.post(new MovePlayerEvent(type, x, y, z));
         if(!event.isCancelled()) super.move(type, event.getX(), event.getY(), event.getZ());
+    }
+
+    @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
+    public void noPushOutOfBlocks(double var1, double var2, double var3, CallbackInfoReturnable ci) {
+        BlockPushEvent blockPushEvent = Ares.EVENT_MANAGER.post((new BlockPushEvent(var1, var2, var3)));
+        if (Ares.EVENT_MANAGER.post(new BlockPushEvent(var1, var2, var3)).isCancelled()) ci.cancel();
     }
 
     @Redirect(method = "onLivingUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/entity/EntityPlayerSP;closeScreen()V"))

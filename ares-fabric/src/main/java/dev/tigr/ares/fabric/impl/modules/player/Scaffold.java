@@ -23,6 +23,7 @@ import java.util.ArrayList;
 @Module.Info(name = "Scaffold", description = "Automatically bridges for you", category = Category.PLAYER)
 public class Scaffold extends Module {
     private final Setting<Integer> radius = register(new IntegerSetting("Radius", 0, 0, 2));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> down = register(new BooleanSetting("Down", false));
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> {
@@ -64,7 +65,7 @@ public class Scaffold extends Module {
 
             BlockPos under = new BlockPos(MC.player.getX(), MC.player.getY() - 2, MC.player.getZ());
 
-            if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under);
+            if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under, rotate.getValue());
 
             MC.player.inventory.selectedSlot = oldSlot;
 
@@ -75,7 +76,7 @@ public class Scaffold extends Module {
         if(radius.getValue() == 0) {
             BlockPos under = new BlockPos(MC.player.getX(), MC.player.getY() - 1, MC.player.getZ());
 
-            if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under);
+            if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under, rotate.getValue());
 
             MC.player.inventory.selectedSlot = oldSlot;
 
@@ -92,7 +93,7 @@ public class Scaffold extends Module {
 
         for(BlockPos x: blocks) {
             if(MC.world.getBlockState(x).getMaterial().isReplaceable()) {
-                WorldUtils.placeBlockMainHand(x);
+                WorldUtils.placeBlockMainHand(x, rotate.getValue());
                 break;
             }
         }

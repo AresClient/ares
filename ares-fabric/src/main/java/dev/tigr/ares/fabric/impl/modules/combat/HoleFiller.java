@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 @Module.Info(name = "HoleFiller", description = "Automatically fills nearby holes", category = Category.COMBAT)
 public class HoleFiller extends Module {
     private final Setting<Boolean> skipNearby = register(new BooleanSetting("Skip closest", true));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
 
     @Override
@@ -59,7 +60,7 @@ public class HoleFiller extends Module {
                 }
                 MC.player.inventory.selectedSlot = slot;
 
-                WorldUtils.placeBlockMainHand(hole);
+                WorldUtils.placeBlockMainHand(hole, rotate.getValue());
                 MC.player.inventory.selectedSlot = first;
                 return;
             }

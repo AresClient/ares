@@ -34,48 +34,37 @@ import java.util.stream.StreamSupport;
  */
 public class WorldUtils implements Wrapper {
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlock(Hand.MAIN_HAND, pos);
+        return placeBlockMainHand(pos, true, false);
+    }
+
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
+        return placeBlockMainHand(pos, rotate, false);
+    }
+
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
+        return placeBlock(Hand.MAIN_HAND, pos, rotate, ignoreEntity);
     }
 
     public static boolean placeBlockNoRotate(Hand hand, BlockPos pos) {
-        // make sure place is empty
-        if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
-            return false;
-
-        Vec3d hitVec = null;
-        BlockPos neighbor = null;
-        Direction side2 = null;
-        for(Direction side: Direction.values()) {
-            neighbor = pos.offset(side);
-            side2 = side.getOpposite();
-
-            // check if neighbor can be right clicked aka it isnt air
-            if(MC.world.getBlockState(neighbor).isAir()) {
-                neighbor = null;
-                side2 = null;
-                continue;
-            }
-
-            hitVec = new Vec3d(neighbor.getX(), neighbor.getY(), neighbor.getZ()).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getUnitVector()).multiply(0.5));
-            break;
-        }
-
-        // Air place if no neighbour was found
-        if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-        if(neighbor == null) neighbor = pos;
-        if(side2 == null) side2 = Direction.UP;
-
-        MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
-        MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
-        MC.player.swingHand(hand);
-        MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
-
-        return true;
+        return placeBlock(hand, pos, false, false);
     }
 
     public static boolean placeBlock(Hand hand, BlockPos pos) {
-        // make sure place is empty
-        if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
+        placeBlock(hand, pos, true, false);
+        return true;
+    }
+
+    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate) {
+        placeBlock(hand, pos, rotate, false);
+        return true;
+    }
+
+    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
+        // make sure place is empty if ignoreEntity is not true
+        if (ignoreEntity) {
+            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
+                return false;
+        } else if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
             return false;
 
         Vec3d eyesPos = new Vec3d(MC.player.getX(),
@@ -121,7 +110,8 @@ public class WorldUtils implements Wrapper {
                 MC.player.pitch + MathHelper
                         .wrapDegrees(pitch - MC.player.pitch)};
 
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
+        if (rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
+
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
         MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
         MC.player.swingHand(hand);
@@ -365,5 +355,13 @@ public class WorldUtils implements Wrapper {
 
     public static boolean isBot(Entity entity) {
         return entity instanceof PlayerEntity && entity.isInvisibleTo(MC.player) && !entity.isOnGround() && !entity.collides();
+    }
+
+    // must be done onTick - put this here because there may be other uses for fakeJump elsewhere, but it can just be put right into burrow if not.
+    public static void fakeJump() {
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.40, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.75, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.00, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ(), true));
     }
 }

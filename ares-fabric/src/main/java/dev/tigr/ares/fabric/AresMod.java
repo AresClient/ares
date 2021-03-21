@@ -58,6 +58,7 @@ public class AresMod extends Ares {
                 BurrowDetect.class,
                 Criticals.class,
                 CrystalAura.class,
+                FireworkAura.class,
                 HoleFiller.class,
                 KillAura.class,
                 Offhand.class,
@@ -80,6 +81,7 @@ public class AresMod extends Ares {
 
                 // exploit
                 FastPlace.class,
+                InstantMine.class,
                 LiquidInteract.class,
                 MultiTask.class,
                 NoBreakDelay.class,
@@ -113,6 +115,7 @@ public class AresMod extends Ares {
                 IceSpeed.class,
                 InventoryMove.class,
                 Jesus.class,
+                NoBlockPush.class,
                 NoClip.class,
                 NoSlowDown.class,
                 PacketFly.class,

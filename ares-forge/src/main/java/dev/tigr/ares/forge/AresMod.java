@@ -82,6 +82,7 @@ public class AresMod extends Ares {
                 // exploit
                 CoordTpExploit.class,
                 FastPlace.class,
+                InstantMine.class,
                 LiquidInteract.class,
                 MultiTask.class,
                 NewChunks.class,
@@ -134,6 +135,7 @@ public class AresMod extends Ares {
                 IceSpeed.class,
                 InventoryMove.class,
                 Jesus.class,
+                NoBlockPush.class,
                 NoClip.class,
                 NoSlowDown.class,
                 PacketFly.class,

@@ -53,7 +53,7 @@ public class HopperAura extends Module {
 
                 if(MC.player.getDistance(hopperPos.getX(), hopperPos.getY(), hopperPos.getZ()) <= distance.getValue()) {
                     for(int x: picks) {
-                        int slot = InventoryUtils.findItem(Item.getItemById(x));
+                        int slot = InventoryUtils.findItemInHotbar(Item.getItemById(x));
                         if(slot != -1) {
                             MC.player.inventory.currentItem = slot;
 
