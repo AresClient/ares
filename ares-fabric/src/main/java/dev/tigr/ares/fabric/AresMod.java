@@ -58,6 +58,7 @@ public class AresMod extends Ares {
                 BurrowDetect.class,
                 Criticals.class,
                 CrystalAura.class,
+                FireworkAura.class,
                 HoleFiller.class,
                 KillAura.class,
                 Offhand.class,
