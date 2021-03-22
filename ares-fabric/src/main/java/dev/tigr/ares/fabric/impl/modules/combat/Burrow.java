@@ -33,7 +33,7 @@ public class Burrow extends Module {
     private final Setting<Boolean> useTimer = register(new BooleanSetting("Use Timer", true)).setVisibility(() -> !fakeJump.getValue());
     private final Setting<Integer> timerTPS = register(new IntegerSetting("TPS", 2500, 1, 12000)).setVisibility(() -> useTimer.getValue() && !fakeJump.getValue());
     private final Setting<RubberbandMode> rubberband = register(new EnumSetting<>("Rubberband", RubberbandMode.Packet)).setVisibility(() -> !fakeJump.getValue());
-    private final Setting<Float> fakeClipHeight = register(new FloatSetting("Rubberband Height", 12, -60, 60)).setVisibility(() -> rubberband.getValue() == RubberbandMode.Packet);
+    private final Setting<Float> fakeClipHeight = register(new FloatSetting("Packet Height", 12, -60, 60)).setVisibility(() -> rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue());
 
     private final Setting<CurrBlock> blockToUse = register(new EnumSetting<>("Block", CurrBlock.Obsidian));
     private final Setting<CurrBlock> backupBlock = register(new EnumSetting<>("Backup", CurrBlock.EnderChest));
@@ -120,17 +120,16 @@ public class Burrow extends Module {
             Surround.toggleCenter(false);
         }
 
-        //turns on Timer if Fast Mode is set to Timer
-        if (!fakeJump.getValue() && useTimer.getValue()) {
-            ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / timerTPS.getValue(), "tickTime", "field_1968");
-        }
-
         //jump if not Instant mode
         if (!fakeJump.getValue()) {
             MC.player.jump();
         }
     }
     public void onTick() {
+        //turns on Timer if Fast Mode is set to Timer
+        if (!fakeJump.getValue() && useTimer.getValue()) {
+            ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / timerTPS.getValue(), "tickTime", "field_1968");
+        }
         //run the main sequence
         run();
     }
