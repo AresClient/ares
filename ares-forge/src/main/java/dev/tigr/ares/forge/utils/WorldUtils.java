@@ -37,14 +37,14 @@ import static dev.tigr.ares.Wrapper.MC;
  */
 public class WorldUtils {
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(pos, true, false, false);
+        return placeBlockMainHand(pos, true, false);
     }
 
     public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
-        return placeBlockMainHand(pos, rotate, false, false);
+        return placeBlockMainHand(pos, rotate, false);
     }
 
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity, Boolean packet) {
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
         return placeBlock(EnumHand.MAIN_HAND, pos, rotate, ignoreEntity);
     }
 
@@ -115,8 +115,7 @@ public class WorldUtils {
         if (rotate) MC.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0], rotations[1], MC.player.onGround));
 
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
-        if (ignoreEntity) MC.player.connection.sendPacket(new CPacketPlayerTryUseItemOnBlock(pos, side2, hand, (float) hitVec.x, (float) hitVec.y, (float) hitVec.z));
-        else MC.playerController.processRightClickBlock(MC.player, MC.world, neighbor, side2, hitVec, hand);
+        MC.playerController.processRightClickBlock(MC.player, MC.world, neighbor, side2, hitVec, hand);
         MC.player.swingArm(hand);
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.STOP_SNEAKING));
 
@@ -342,7 +341,7 @@ public class WorldUtils {
     public static void fakeJump() {
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.40, MC.player.posZ, true));
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.75, MC.player.posZ, true));
-        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.00, MC.player.posZ, true));
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.01, MC.player.posZ, true));
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.15, MC.player.posZ, true));
     }
 }
