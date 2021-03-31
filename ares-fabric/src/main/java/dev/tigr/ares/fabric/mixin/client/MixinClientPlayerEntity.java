@@ -5,10 +5,7 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
-import dev.tigr.ares.fabric.event.movement.BlockPushEvent;
-import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
-import dev.tigr.ares.fabric.event.movement.MovePlayerEvent;
-import dev.tigr.ares.fabric.event.movement.SlowDownEvent;
+import dev.tigr.ares.fabric.event.movement.*;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -73,4 +70,13 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity {
 //        MovePlayerEvent event = Ares.EVENT_MANAGER.post(new MovePlayerEvent(type, movement.x, movement.y, movement.z));
 //        if(!event.isCancelled()) super.move(type, new Vec3d(event.getX(), event.getY(), event.getZ()));
 //    }
+
+    @Override
+    public void jump() {
+        PlayerJumpEvent event = new PlayerJumpEvent();
+        Ares.EVENT_MANAGER.post(event);
+        if(!event.isCancelled()) {
+            super.jump();
+        }
+    }
 }

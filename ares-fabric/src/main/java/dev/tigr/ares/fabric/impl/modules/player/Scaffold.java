@@ -6,11 +6,14 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.TextColor;
+import dev.tigr.ares.fabric.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.fabric.event.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
+import dev.tigr.ares.fabric.utils.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 
@@ -19,16 +22,51 @@ import java.util.ArrayList;
 /**
  * @author Tigermouthbear
  * ported to Fabric by Hoosiers
+ * Tower added by Makrennel 3/31/21
  */
 @Module.Info(name = "Scaffold", description = "Automatically bridges for you", category = Category.PLAYER)
 public class Scaffold extends Module {
     private final Setting<Integer> radius = register(new IntegerSetting("Radius", 0, 0, 2));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> down = register(new BooleanSetting("Down", false));
+    private final Setting<Boolean> tower = register(new BooleanSetting("Tower", true));
+    private final Setting<Integer> towerDelay = register(new IntegerSetting("Clip Delay", 128, 1, 500)).setVisibility(tower::getValue);
+
+    private Timer towerDelayTimer = new Timer();
+
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> {
         if(!down.getValue() && !MC.player.isSprinting()) event.isSneaking = true;
     });
+
+    @EventHandler
+    public EventListener<PlayerJumpEvent> onPlayerJumpEvent = new EventListener<>(event -> {
+        if(tower.getValue()) {
+            event.setCancelled(true);
+        }
+    });
+
+    @Override
+    public void onTick() {
+        if(tower.getValue() && MC.options.keyJump.isPressed()) {
+            if(towerDelayTimer.passedMillis(towerDelay.getValue())) {
+                // Pretend that we are jumping to the server and then update player position to meet where the server thinks the player is instantly.
+                WorldUtils.fakeJump();
+                MC.player.updatePosition(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ());
+                // It may be preferable to make the value configurable for this, but from what I found in my (limited) testing +7 works best generally with NCP, and any higher than +10ish tends not to work at all
+                if(towerDelayTimer.passedMillis(towerDelay.getValue() + 7)) {
+                    // Make sure player is on ground before repeating, clips back down if not to speed up the process
+                    if(!MC.player.isOnGround()) {
+                        if(!MC.world.getBlockState(new BlockPos(MC.player.getX(), MC.player.getY() - 1, MC.player.getZ())).isAir()) {
+                            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ(), true));
+                            MC.player.updatePosition(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ());
+                        }
+                    }
+                    towerDelayTimer.reset();
+                }
+            }
+        }
+    }
 
     @Override
     public void onMotion() {

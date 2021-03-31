@@ -6,6 +6,7 @@ import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
 import dev.tigr.ares.forge.event.events.movement.MovePlayerEvent;
+import dev.tigr.ares.forge.event.events.movement.PlayerJumpEvent;
 import dev.tigr.ares.forge.event.events.player.PlayerDismountEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
@@ -72,5 +73,14 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
     @Inject(method = "dismountRidingEntity", at = @At("RETURN"))
     public void onDismountEnd(CallbackInfo ci) {
         Ares.EVENT_MANAGER.post(new PlayerDismountEvent.End());
+    }
+
+    @Override
+    public void jump() {
+        PlayerJumpEvent event = new PlayerJumpEvent();
+        Ares.EVENT_MANAGER.post(event);
+        if(!event.isCancelled()) {
+            super.jump();
+        }
     }
 }
