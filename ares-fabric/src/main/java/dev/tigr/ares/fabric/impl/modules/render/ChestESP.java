@@ -21,22 +21,18 @@ public class ChestESP extends Module {
     @Override
     public void onRender3d() {
         RenderUtils.prepare3d();
-
         for(BlockEntity tileEntity: MC.world.blockEntities) {
             Box bb = RenderUtils.getBoundingBox(tileEntity.getPos());
             if(bb == null) continue;
-            if(tileEntity instanceof ChestBlockEntity || tileEntity instanceof BarrelBlockEntity) drawBox(bb, CHEST);
-            else if(tileEntity instanceof EnderChestBlockEntity) drawBox(bb, ENDER_CHEST);
+            if(tileEntity instanceof ChestBlockEntity || tileEntity instanceof BarrelBlockEntity)
+                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), CHEST, CHEST);
+            else if(tileEntity instanceof EnderChestBlockEntity)
+                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), ENDER_CHEST, ENDER_CHEST);
             else if(tileEntity instanceof DispenserBlockEntity || tileEntity instanceof FurnaceBlockEntity || tileEntity instanceof HopperBlockEntity || tileEntity instanceof BlastFurnaceBlockEntity)
-                drawBox(bb, DISPENSER);
-            else if(tileEntity instanceof ShulkerBoxBlockEntity) drawBox(bb, SHULKER);
+                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), DISPENSER, DISPENSER);
+            else if(tileEntity instanceof ShulkerBoxBlockEntity)
+                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), SHULKER, SHULKER);
         }
-
         RenderUtils.end3d();
-    }
-
-    private void drawBox(Box box, Color color) {
-        RenderUtils.renderFilledBox(box, color);
-        RenderUtils.renderSelectionBoundingBox(box, color);
     }
 }

@@ -6,6 +6,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.utils.RenderUtils;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -23,22 +24,26 @@ public class BlockHighlight extends Module {
     private final Setting<Float> blue = register(new FloatSetting("Blue", 0, 0, 1));
     private final Setting<Float> alpha = register(new FloatSetting("Alpha", 0.8f, 0, 1));
     private final Setting<Float> width = register(new FloatSetting("Width", 2, 0, 10));
+    private final Setting<Float> expand = register(new FloatSetting("Scale", 0f, -0.12f, 0.06f));
 
     @Override
     public void onRender3d() {
+        Color color = new Color(
+                red.getValue(),
+                green.getValue(),
+                blue.getValue(),
+                alpha.getValue()
+        );
+
         if((onBreak.getValue() && !MC.options.keyAttack.isPressed()) || MC.crosshairTarget == null) return;
 
         BlockPos pos = MC.crosshairTarget.getType() == HitResult.Type.BLOCK ? ((BlockHitResult) MC.crosshairTarget).getBlockPos() : null;
 
         if(pos != null) {
             Box bb = RenderUtils.getBoundingBox(pos);
-
             if(bb == null) return;
 
-            RenderUtils.prepare3d();
-            RenderSystem.lineWidth(width.getValue());
-            RenderUtils.renderSelectionBoundingBox(bb, red.getValue(), green.getValue(), blue.getValue(), alpha.getValue());
-            RenderUtils.end3d();
+            RenderUtils.renderBlock(pos, new Color(0,0,0,0), color, width.getValue(), expand.getValue());
         }
     }
 }

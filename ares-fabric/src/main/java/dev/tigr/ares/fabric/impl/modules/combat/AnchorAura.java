@@ -11,6 +11,7 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.utils.Comparators;
@@ -57,6 +58,13 @@ public class AnchorAura extends Module {
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("AntiSurround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
+
+    private final Setting<Boolean> showColorSettings = register(new BooleanSetting("Color Settings", false));
+    private final Setting<Float> colorRed = register(new FloatSetting("Red", 1, 0, 1)).setVisibility(showColorSettings::getValue);
+    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 1, 0, 1)).setVisibility(showColorSettings::getValue);
+    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0.45f, 0, 1)).setVisibility(showColorSettings::getValue);
+    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showColorSettings::getValue);
+    private final Setting<Float> boxAlpha = register(new FloatSetting("Box Alpha", 0.69f, 0, 1)).setVisibility(showColorSettings::getValue);
 
     enum Mode { DAMAGE, DISTANCE }
     enum Target { CLOSEST, MOST_DAMAGE }
@@ -184,13 +192,25 @@ public class AnchorAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
-            RenderUtils.prepare3d();
-            Box bb = RenderUtils.getBoundingBox(target);
-            if(bb != null) {
-                RenderUtils.renderFilledBox(bb, 0.93f, 0, 0, 0.2f);
-                RenderUtils.renderSelectionBoundingBox(bb, 0.55f, 0, 0, 0.2f);
-            }
-            RenderUtils.end3d();
+            Color fillColor = new Color(
+                    colorRed.getValue(),
+                    colorGreen.getValue(),
+                    colorBlue.getValue(),
+                    fillAlpha.getValue()
+            );
+            Color outlineColor = new Color(
+                    colorRed.getValue(),
+                    colorGreen.getValue(),
+                    colorBlue.getValue(),
+                    boxAlpha.getValue()
+            );
+            RenderUtils.renderBlock(
+                    target,
+                    fillColor,
+                    outlineColor,
+                    2.4f,
+                    0.006f
+            );
         }
     }
 

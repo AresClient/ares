@@ -42,7 +42,13 @@ public class ESP extends Module {
         RenderUtils.prepare3d();
 
         for(Entity entity: WorldUtils.getTargets(players.getValue(), false, teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()))
-            RenderUtils.renderSelectionBoundingBox(entity.getBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
+            RenderUtils.renderEntityBoxNoPrepare(
+                    entity,
+                    new dev.tigr.ares.core.util.render.Color(0,0,0,0),
+                    new dev.tigr.ares.core.util.render.Color(color.getValue().r, color.getValue().g, color.getValue().b, 1f),
+                    2f,
+                    0
+            );
 
         if(friends.getValue()) renderFriends();
 
@@ -52,7 +58,7 @@ public class ESP extends Module {
     private void renderFriends() {
         for(PlayerEntity player: MC.world.getPlayers()) {
             if(FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUuid().equals(MC.player.getUuid()))
-                RenderUtils.renderSelectionBoundingBox(player.getBoundingBox(), IRenderer.rainbow());
+                RenderUtils.renderEntityBoxNoPrepare(player, new dev.tigr.ares.core.util.render.Color(0,0,0,0), IRenderer.rainbow());
         }
     }
 

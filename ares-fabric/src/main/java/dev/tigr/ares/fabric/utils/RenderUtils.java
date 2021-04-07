@@ -5,7 +5,6 @@ import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.render.Color;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.*;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -32,25 +31,87 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     public static void prepare3d() {
         GL11.glPushMatrix();
         RenderSystem.enableBlend();
-        GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        RenderSystem.lineWidth(2F);
-        RenderSystem.disableTexture();
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
         RenderSystem.disableDepthTest();
+        GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+        RenderSystem.disableTexture();
+        RenderSystem.depthMask(false);
+        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
-        Camera camera = BlockEntityRenderDispatcher.INSTANCE.camera;
-        Vec3d position = camera.getPos();
-        GL11.glRotated(MathHelper.wrapDegrees(camera.getPitch()), 1, 0, 0);
-        GL11.glRotated(MathHelper.wrapDegrees(camera.getYaw() + 180.0), 0, 1, 0);
-        GL11.glTranslated(-position.x, -position.y, -position.z);
+        GL11.glRotated(MathHelper.wrapDegrees(MC.gameRenderer.getCamera().getPitch()), 1, 0, 0);
+        GL11.glRotated(MathHelper.wrapDegrees(MC.gameRenderer.getCamera().getYaw() + 180.0), 0, 1, 0);
     }
 
     public static void end3d() {
-        RenderSystem.enableDepthTest();
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
+        RenderSystem.depthMask(true);
         RenderSystem.enableTexture();
+        RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         GL11.glPopMatrix();
+    }
+
+    // Entity Box
+    public static void renderEntityBox(Entity entity, Color fillColor, Color outlineColor) {
+        renderEntityBox(entity, fillColor, outlineColor, 2f, 0);
+    }
+    public static void renderEntityBox(Entity entity, Color fillColor, Color outlineColor, float outlineThickness, float expansion) {
+        prepare3d();
+        renderEntityBoxNoPrepare(entity, fillColor, outlineColor, outlineThickness, expansion);
+        end3d();
+    }
+    public static void renderEntityBoxNoPrepare(Entity entity, Color fillColor, Color outlineColor) {
+        renderEntityBoxNoPrepare(entity, fillColor, outlineColor, 2f, 0);
+    }
+    public static void renderEntityBoxNoPrepare(Entity entity, Color fillColor, Color outlineColor, float outlineThickness, float expansion) {
+        Box renderBox = entity.getBoundingBox()
+                .expand(expansion)
+                .offset(
+                        -MC.gameRenderer.getCamera().getPos().x,
+                        -MC.gameRenderer.getCamera().getPos().y,
+                        -MC.gameRenderer.getCamera().getPos().z
+                );
+        renderBlockNoPrepare(renderBox, fillColor, outlineColor, outlineThickness);
+    }
+
+    // Block by pos
+    public static void renderBlock(BlockPos pos, Color fillColor, Color outlineColor) {
+        renderBlock(pos, fillColor, outlineColor, 2f, 0);
+    }
+    public static void renderBlock(BlockPos pos, Color fillColor, Color outlineColor, float outlineThickness, float expansion) {
+        prepare3d();
+        renderBlockNoPrepare(pos, fillColor, outlineColor, outlineThickness, expansion);
+        end3d();
+    }
+    public static void renderBlockNoPrepare(BlockPos pos, Color fillColor, Color outlineColor) {
+        renderBlockNoPrepare(pos, fillColor, outlineColor, 2f, 0);
+    }
+    public static void renderBlockNoPrepare(BlockPos pos, Color fillColor, Color outlineColor, float outlineThickness, float expansion) {
+        Box renderBox = getBoundingBox(pos)
+                .expand(expansion)
+                .offset(
+                        -MC.gameRenderer.getCamera().getPos().x,
+                        -MC.gameRenderer.getCamera().getPos().y,
+                        -MC.gameRenderer.getCamera().getPos().z
+                );
+        renderBlockNoPrepare(renderBox, fillColor, outlineColor, outlineThickness);
+    }
+
+    // Block by box
+    public static void renderBlock(Box renderBox, Color fillColor, Color outlineColor) {
+        renderBlock(renderBox, fillColor, outlineColor, 2f);
+    }
+    public static void renderBlock(Box renderBox, Color fillColor, Color outlineColor, float outlineThickness) {
+        prepare3d();
+        renderBlockNoPrepare(renderBox, fillColor, outlineColor, outlineThickness);
+        end3d();
+    }
+    public static void renderBlockNoPrepare(Box renderBox, Color fillColor, Color outlineColor) {
+        renderBlockNoPrepare(renderBox, fillColor, outlineColor, 2f);
+    }
+    public static void renderBlockNoPrepare(Box renderBox, Color fillColor, Color outlineColor, float outlineThickness) {
+        if(fillColor.getAlpha() != 0) renderFilledBox(renderBox, fillColor);
+        if(outlineColor.getAlpha() != 0) renderSelectionBoundingBox(renderBox, outlineColor, outlineThickness);
     }
 
     public static void renderItemStack(ItemStack stack, int x, int y) {
@@ -68,37 +129,37 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         }
     }
 
-    public static void renderSelectionBoundingBox(Box box, Color color) {
-        renderSelectionBoundingBox(box, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    public static void renderSelectionBoundingBox(Box box, Color color, float lineThickness) {
+        renderSelectionBoundingBox(box, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha(), lineThickness);
     }
 
-    public static void renderSelectionBoundingBox(Box box, float red, float green, float blue, float alpha) {
-        renderBoundingBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, red, green, blue, alpha);
+    public static void renderSelectionBoundingBox(Box box, float red, float green, float blue, float alpha, float lineThickness) {
+        renderBoundingBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, red, green, blue, alpha, lineThickness);
     }
 
-    public static void renderBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha)  {
+    public static void renderBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha, float lineThickness)  {
+        GL11.glLineWidth(lineThickness);
+
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(3, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(minX, minY, minZ).color(red, green, blue, 0.0F).next();
         buffer.vertex(minX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).next();
         buffer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).next();
         buffer.vertex(minX, minY, minZ).color(red, green, blue, alpha).next();
         buffer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).next();
         buffer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).next();
         buffer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, maxY, maxZ).color(red, green, blue, 0.0F).next();
-        buffer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, maxZ).color(red, green, blue, 0.0F).next();
-        buffer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, minZ).color(red, green, blue, 0.0F).next();
+        buffer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).next();
         buffer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, minZ).color(red, green, blue, 0.0F).next();
+        buffer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).next();
 
         tessellator.draw();
     }
@@ -117,6 +178,22 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         tessellator.draw();
     }
 
+    public static void drawLine(Vec3d point1, Vec3d point2, int weight, Color color) {
+        drawLine(point1.x, point1.y, point1.z, point2.x, point2.y, point2.z, weight, color);
+    }
+    public static void drawLine(double x1, double y1, double z1, double x2, double y2, double z2, int weight, Color color) {
+        RENDERER.drawLine(
+                x1 -MC.gameRenderer.getCamera().getPos().x,
+                y1 -MC.gameRenderer.getCamera().getPos().y,
+                z1 -MC.gameRenderer.getCamera().getPos().z,
+                x2 -MC.gameRenderer.getCamera().getPos().x,
+                y2 -MC.gameRenderer.getCamera().getPos().y,
+                z2 -MC.gameRenderer.getCamera().getPos().z,
+                weight,
+                color
+        );
+    }
+
     public static void drawTracer(Entity entity, Color color) {
         RenderSystem.disableDepthTest();
         Vec3d pos = entity.getPos();
@@ -127,8 +204,8 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
                 .add(MC.cameraEntity.getPos()
                         .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 
-        RENDERER.drawLine(pos.x, pos.y, pos.z, eyeVector.x, eyeVector.y, eyeVector.z, 2, color);
-        RENDERER.drawLine(pos.x, pos.y, pos.z, pos.x, pos.y + entity.getHeight(), pos.z, 2, color);
+        drawLine(pos, eyeVector, 2, color);
+        drawLine(pos.x, pos.y, pos.z, pos.x, pos.y + entity.getHeight(), pos.z, 2, color);
     }
 
     public static void drawTracer(Vec3d pos, Color color) {
@@ -139,7 +216,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
                 .add(MC.cameraEntity.getPos()
                 .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 
-        RENDERER.drawLine(pos.x, pos.y, pos.z, eyeVector.x, eyeVector.y, eyeVector.z, 2, color);
+        drawLine(pos, eyeVector, 2, color);
     }
 
     public static Vec3d getRenderPos(Entity entity) {

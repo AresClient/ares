@@ -33,19 +33,25 @@ public class Trajectories extends Module {
     public void onRender3d() {
         if(result != null) {
             RenderUtils.prepare3d();
-            RenderSystem.disableBlend();
-            RenderSystem.disableLighting();
 
             Color color = result.getType() == HitResult.Type.ENTITY ? Color.RED : Color.WHITE;
             Vec3d prevPoint = null;
             for(Vec3d point: result.getPoints()) {
-                if(prevPoint != null) RENDERER.drawLine(point.x, point.y, point.z, prevPoint.x, prevPoint.y, prevPoint.z, 2, color);
+                if(prevPoint != null)
+                    RenderUtils.drawLine(point, prevPoint, 2, color);
                 prevPoint = point;
             }
 
             if(box.getValue()) {
-                RenderSystem.enableBlend();
-                RenderUtils.renderSelectionBoundingBox(new Box(new BlockPos(result.getHitVec())), 1, 0, 0, 0.6f);
+                RenderUtils.renderBlockNoPrepare(
+                        new Box(new BlockPos(result.getHitVec())).offset(
+                                -MC.gameRenderer.getCamera().getPos().x,
+                                -MC.gameRenderer.getCamera().getPos().y,
+                                -MC.gameRenderer.getCamera().getPos().z
+                        ),
+                        new Color(0,0,0,0),
+                        new Color(1, 0, 0, 0.6f)
+                );
             }
 
             RenderUtils.end3d();
