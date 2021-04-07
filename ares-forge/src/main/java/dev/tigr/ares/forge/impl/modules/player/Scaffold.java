@@ -25,11 +25,11 @@ import java.util.ArrayList;
  */
 @Module.Info(name = "Scaffold", description = "Automatically bridges for you", category = Category.PLAYER)
 public class Scaffold extends Module {
-    private final Setting<Integer> radius = register(new IntegerSetting("Radius", 0, 0, 2));
+    private final Setting<Integer> radius = register(new IntegerSetting("Radius", 0, 0, 6));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> down = register(new BooleanSetting("Down", false));
-    private final Setting<Boolean> tower = register(new BooleanSetting("Tower", true));
-    private final Setting<Integer> towerDelay = register(new IntegerSetting("Clip Delay", 128, 1, 500)).setVisibility(tower::getValue);
+    private final Setting<Boolean> tower = register(new BooleanSetting("Tower", true)).setVisibility(() -> radius.getValue() <= 0);
+    private final Setting<Integer> towerDelay = register(new IntegerSetting("Clip Delay", 128, 1, 500)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0);
 
     private Timer towerDelayTimer = new Timer();
 
@@ -40,14 +40,14 @@ public class Scaffold extends Module {
 
     @EventHandler
     public EventListener<PlayerJumpEvent> onPlayerJumpEvent = new EventListener<>(event -> {
-        if(tower.getValue()) {
+        if(tower.getValue() && radius.getValue() <= 0) {
             event.setCancelled(true);
         }
     });
 
     @Override
     public void onTick() {
-        if(tower.getValue() && MC.gameSettings.keyBindJump.isKeyDown()) {
+        if(tower.getValue() && MC.gameSettings.keyBindJump.isKeyDown() && radius.getValue() <= 0) {
             if(towerDelayTimer.passedMillis(towerDelay.getValue())) {
                 // Pretend that we are jumping to the server and then update player position to meet where the server thinks the player is instantly.
                 WorldUtils.fakeJump();

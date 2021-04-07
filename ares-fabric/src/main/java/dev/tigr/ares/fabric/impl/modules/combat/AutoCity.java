@@ -52,7 +52,7 @@ public class AutoCity extends Module {
                 BlockPos target = null;
                 for(BlockPos block: blocks) {
                     if(!inPlayerCity(block) && MC.world.getBlockState(block).getBlock() != Blocks.BEDROCK && MC.player.squaredDistanceTo(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5) < range.getValue() * range.getValue()) {
-                        if (oneDotThirteen.getValue() || MC.world.getBlockState(new BlockPos(block.getX(), block.getY() + 1, block.getZ())).getBlock() == Blocks.AIR) {
+                        if (shouldBreakCheck(block, pos)) {
                             target = block;
                             break;
                         }
@@ -83,7 +83,7 @@ public class AutoCity extends Module {
                     // break
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, target, Direction.UP));
                     MC.player.swingHand(Hand.MAIN_HAND);
-                    if (instant.getValue()) MC.interactionManager.attackBlock(target, Direction.UP);
+                    if (instant.getValue()) MC.interactionManager.updateBlockBreakingProgress(target, Direction.UP);
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, target, Direction.UP));
                 }
                 if(!toggleInstant) setEnabled(false);
@@ -113,5 +113,35 @@ public class AutoCity extends Module {
     
     private boolean allBlocks(BlockPos... pos) {
         return Arrays.stream(pos).allMatch(blockPos -> !MC.world.getBlockState(blockPos).isAir());
+    }
+
+    private boolean shouldBreakCheck(BlockPos pos, BlockPos target) {
+        if(oneDotThirteen.getValue()) return true;
+        else if(MC.world.getBlockState(pos.up()).isAir()) return true;
+        else if(pos.equals(target.north())) {
+            if(oneTwelveCheck(pos.north())) return true;
+            else if(oneTwelveCheck(pos.east())) return true;
+            else return oneTwelveCheck(pos.west());
+        }
+        else if(pos.equals(target.east())) {
+            if(oneTwelveCheck(pos.east())) return true;
+            else if(oneTwelveCheck(pos.north())) return true;
+            else return oneTwelveCheck(pos.south());
+        }
+        else if(pos.equals(target.south())) {
+            if(oneTwelveCheck(pos.south())) return true;
+            else if(oneTwelveCheck(pos.east())) return true;
+            else return oneTwelveCheck(pos.west());
+        }
+        else if(pos.equals(target.west())) {
+            if(oneTwelveCheck(pos.west())) return true;
+            else if(oneTwelveCheck(pos.south())) return true;
+            else return oneTwelveCheck(pos.north());
+        }
+        else return false;
+    }
+
+    private boolean oneTwelveCheck(BlockPos pos) {
+        return MC.world.getBlockState(pos).isAir() && MC.world.getBlockState(pos.up()).isAir();
     }
 }

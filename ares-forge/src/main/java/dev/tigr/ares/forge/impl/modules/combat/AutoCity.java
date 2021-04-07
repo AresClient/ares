@@ -10,6 +10,7 @@ import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.impl.modules.exploit.InstantMine;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import net.minecraft.block.BlockAir;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemPickaxe;
@@ -47,7 +48,7 @@ public class AutoCity extends Module {
         
         for(EntityPlayer playerEntity: targets) {
             Vec3d posVec = playerEntity.getPositionVector();
-            BlockPos pos = new BlockPos(posVec.x, posVec.y, posVec.z);
+            BlockPos pos = new BlockPos(Math.floor(posVec.x), Math.round(posVec.y), Math.floor(posVec.z));
             if(inCity(pos)) {
                 // find block
                 List<BlockPos> blocks = Arrays.asList(pos.north(), pos.east(), pos.south(), pos.west());
@@ -55,7 +56,7 @@ public class AutoCity extends Module {
                 BlockPos target = null;
                 for(BlockPos block: blocks) {
                     if(!inPlayerCity(block) && MC.world.getBlockState(block).getBlock() != Blocks.BEDROCK && MC.player.getDistanceSq(block.getX() + 0.5, block.getY() + 0.5, block.getZ() + 0.5) < range.getValue() * range.getValue()) {
-                        if (oneDotThirteen.getValue() || MC.world.getBlockState(new BlockPos(block.getX(), block.getY() + 1, block.getZ())).getBlock() == Blocks.AIR) {
+                        if (shouldBreakCheck(block, pos)) {
                             target = block;
                             break;
                         }
@@ -117,5 +118,35 @@ public class AutoCity extends Module {
     
     private boolean allBlocks(BlockPos... pos) {
         return Arrays.stream(pos).allMatch(blockPos -> MC.world.getBlockState(blockPos) != Blocks.AIR);
+    }
+
+    private boolean shouldBreakCheck(BlockPos pos, BlockPos target) {
+        if(oneDotThirteen.getValue()) return true;
+        else if(MC.world.getBlockState(pos.up()).getBlock() instanceof BlockAir) return true;
+        else if(pos.equals(target.north())) {
+            if(oneTwelveCheck(pos.north())) return true;
+            else if(oneTwelveCheck(pos.east())) return true;
+            else return oneTwelveCheck(pos.west());
+        }
+        else if(pos.equals(target.east())) {
+            if(oneTwelveCheck(pos.east())) return true;
+            else if(oneTwelveCheck(pos.north())) return true;
+            else return oneTwelveCheck(pos.south());
+        }
+        else if(pos.equals(target.south())) {
+            if(oneTwelveCheck(pos.south())) return true;
+            else if(oneTwelveCheck(pos.east())) return true;
+            else return oneTwelveCheck(pos.west());
+        }
+        else if(pos.equals(target.west())) {
+            if(oneTwelveCheck(pos.west())) return true;
+            else if(oneTwelveCheck(pos.south())) return true;
+            else return oneTwelveCheck(pos.north());
+        }
+        else return false;
+    }
+
+    private boolean oneTwelveCheck(BlockPos pos) {
+        return MC.world.getBlockState(pos).getBlock() instanceof BlockAir && MC.world.getBlockState(pos.up()).getBlock() instanceof BlockAir;
     }
 }
