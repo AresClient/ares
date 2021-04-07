@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -8,12 +7,11 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -23,9 +21,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Makrennel
@@ -44,10 +39,7 @@ public class FireworkAura extends Module {
     @Override
     public void onTick() {
         // get targets
-        List<PlayerEntity> targets = MC.world.getPlayers().stream().filter(entityPlayer -> !FriendManager.isFriend(entityPlayer.getGameProfile().getName()) && entityPlayer != MC.player).collect(Collectors.toList());
-        targets.sort(Comparators.entityDistance);
-
-        for (PlayerEntity playerEntity : targets) {
+        for (Entity playerEntity : WorldUtils.getPlayerTargets(range.getValue())) {
             BlockPos playerPos = playerEntity.getBlockPos();
             BlockPos trapPos = new BlockPos(playerPos.getX(), playerPos.getY() + 2, playerPos.getZ());
 

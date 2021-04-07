@@ -1,11 +1,13 @@
 package dev.tigr.ares.fabric.utils;
 
+import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnGroup;
@@ -339,6 +341,59 @@ public class WorldUtils implements Wrapper {
         return false;
     }
 
+    public static List<Entity> getPlayerTargets() {
+        return getPlayerTargets(-1, false);
+    }
+    public static List<Entity> getPlayerTargets(double withinDistance) {
+        return getPlayerTargets(withinDistance, true);
+    }
+    public static List<Entity> getPlayerTargets(double withinDistance, boolean doDistance) {
+        List<Entity> targets = new ArrayList<>();
+
+        targets.addAll(Streams.stream(MC.world.getEntities()).filter(entity -> isValidTarget(entity, withinDistance, doDistance)).collect(Collectors.toList()));
+        targets.sort(Comparators.entityDistance);
+
+        return targets;
+    }
+
+    public static boolean isValidTarget(Entity entity) {
+        return isValidTarget(entity, -1, false);
+    }
+    public static boolean isValidTarget(Entity entity, double distance) {
+        return isValidTarget(entity, distance, true);
+    }
+    public static boolean isValidTarget(Entity entity, double distance, boolean doDistance) {
+        return (entity instanceof PlayerEntity || entity instanceof OtherClientPlayerEntity)
+                && !friendCheck(entity)
+                && !entity.removed
+                && !hasZeroHealth(entity)
+                && !shouldDistance(entity, distance, doDistance)
+                && entity != MC.player;
+    }
+
+    private static boolean shouldDistance(Entity entity, double distance, boolean doDistance) {
+        if(doDistance) return MC.player.distanceTo(entity) > distance;
+        else return false;
+    }
+
+    public static boolean hasZeroHealth(PlayerEntity playerEntity) {
+        return hasZeroHealth((Entity) playerEntity);
+    }
+    public static boolean hasZeroHealth(Entity entity) {
+        if(entity instanceof PlayerEntity) {
+            return (((PlayerEntity) entity).getHealth() <= 0);
+        } else return false;
+    }
+
+    public static boolean friendCheck(PlayerEntity playerEntity) {
+        return friendCheck((Entity) playerEntity);
+    }
+    public static boolean friendCheck(Entity entity) {
+        if(entity instanceof PlayerEntity) {
+            return FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName());
+        } else return false;
+    }
+
     public static boolean isPassive(Entity entity) {
         if(entity instanceof IronGolemEntity && ((IronGolemEntity) entity).getAngryAt() == null) return true;
         else if(entity instanceof WolfEntity && (!((WolfEntity) entity).isAttacking() || ((WolfEntity) entity).getOwner() == MC.player)) return true;
@@ -357,7 +412,6 @@ public class WorldUtils implements Wrapper {
         return entity instanceof PlayerEntity && entity.isInvisibleTo(MC.player) && !entity.isOnGround() && !entity.collides();
     }
 
-    // must be done onTick - put this here because there may be other uses for fakeJump elsewhere, but it can just be put right into burrow if not.
     public static void fakeJump() {
         MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.40, MC.player.getZ(), true));
         MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.75, MC.player.getZ(), true));

@@ -1,6 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import dev.tigr.ares.core.feature.FriendManager;
+import com.google.common.collect.Streams;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -23,6 +23,7 @@ import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.DamageUtil;
 import net.minecraft.entity.Entity;
@@ -99,7 +100,7 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<Vec3d, Long> placedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EndCrystalEntity, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
     private final List<EndCrystalEntity> lostCrystals = new ArrayList<>();
-    private PlayerEntity targetPlayer;
+    private Entity targetPlayer;
 
     public CrystalAura() {
         INSTANCE = this;
@@ -108,10 +109,12 @@ public class CrystalAura extends Module {
     @Override
     public String getInfo() {
         if (targetPlayer != null
-                && !targetPlayer.isDead()
-                && !(targetPlayer.getHealth() <= 0)
+                && !targetPlayer.removed
+                && !WorldUtils.hasZeroHealth(targetPlayer)
                 && !(MC.player.distanceTo(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)) {
-            return targetPlayer.getGameProfile().getName();
+            if(targetPlayer instanceof PlayerEntity) return ((PlayerEntity)targetPlayer).getGameProfile().getName();
+            else if(targetPlayer instanceof OtherClientPlayerEntity) return targetPlayer.getDisplayName().asString();
+            else return "null";
         }
         else return "null";
     }
@@ -309,7 +312,8 @@ public class CrystalAura extends Module {
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(-1, 0, 0))));
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(0, 0, 1))));
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(0, 0, -1))));
-        return entities.stream().anyMatch(entity -> entity instanceof PlayerEntity);
+        return entities.stream().anyMatch(entity -> entity instanceof PlayerEntity)
+                || entities.stream().anyMatch(entity -> entity instanceof OtherClientPlayerEntity);
     }
 
     private boolean shouldOffhand() {
@@ -351,7 +355,7 @@ public class CrystalAura extends Module {
     private BlockPos getBestPlacement() {
         double bestScore = 69420;
         BlockPos target = null;
-        for(PlayerEntity targetedPlayer: getTargets()) {
+        for(Entity targetedPlayer: getTargets()) {
             // find best location to place
             List<BlockPos> targetsBlocks = getPlaceableBlocks(targetedPlayer);
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
@@ -375,7 +379,7 @@ public class CrystalAura extends Module {
     }
 
     // utils
-    private double getScore(BlockPos pos, PlayerEntity player) {
+    private double getScore(BlockPos pos, Entity player) {
         double score;
         if(placeMode.getValue() == Mode.DISTANCE) {
             score = Math.abs(player.getY() - pos.up().getY())
@@ -396,32 +400,28 @@ public class CrystalAura extends Module {
         return score;
     }
 
-    private List<PlayerEntity> getTargets() {
-        List<PlayerEntity> targets = new ArrayList<>();
+    private List<Entity> getTargets() {
+        List<Entity> targets = new ArrayList<>();
 
         if(targetSetting.getValue() == Target.CLOSEST) {
-            targets.addAll(MC.world.getPlayers().stream().filter(this::isValidTarget).collect(Collectors.toList()));
+            targets.addAll(Streams.stream(MC.world.getEntities()).filter(this::isValidTarget).collect(Collectors.toList()));
             targets.sort(Comparators.entityDistance);
         } else if(targetSetting.getValue() == Target.MOST_DAMAGE) {
-            for(PlayerEntity entityPlayer: MC.world.getPlayers()) {
-                if(!isValidTarget(entityPlayer))
+            for(Entity entity: MC.world.getEntities()) {
+                if(!isValidTarget(entity))
                     continue;
-                targets.add(entityPlayer);
+                targets.add(entity);
             }
         }
 
         return targets;
     }
 
-    private boolean isValidTarget(PlayerEntity player) {
-        return !FriendManager.isFriend(player.getGameProfile().getName())
-                && !player.isDead()
-                && !(player.getHealth() <= 0)
-                && !(MC.player.distanceTo(player) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)
-                && player != MC.player;
+    private boolean isValidTarget(Entity entity) {
+        return WorldUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 
-    private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
+    private List<BlockPos> getPlaceableBlocks(Entity player) {
         List<BlockPos> square = new ArrayList<>();
 
         int range = (int) Utils.roundDouble(placeRange.getValue(), 0);
@@ -447,7 +447,7 @@ public class CrystalAura extends Module {
     }
 
     // damage calculations
-    public static float getDamage(Vec3d vec3d, PlayerEntity entity) {
+    public static float getDamage(Vec3d vec3d, Entity entity) {
         float f2 = 12.0f;
         double d7 = MathHelper.sqrt(entity.squaredDistanceTo(vec3d)) / f2;
         if(d7 <= 1.0D) {
@@ -459,8 +459,10 @@ public class CrystalAura extends Module {
                 double d12 = Explosion.getExposure(vec3d, entity);
                 double d13 = (1.0D - d7) * d12;
                 float damage = transformForDifficulty((float)((int)((d13 * d13 + d13) / 2.0D * 7.0D * (double)f2 + 1.0D)));
-                damage = DamageUtil.getDamageLeft(damage, (float)entity.getArmor(), (float)entity.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
-                damage = getReduction(entity, damage, DamageSource.GENERIC);
+                if(entity instanceof PlayerEntity) {
+                    damage = DamageUtil.getDamageLeft(damage, (float)((PlayerEntity)entity).getArmor(), (float)((PlayerEntity)entity).getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
+                    damage = getReduction(((PlayerEntity)entity), damage, DamageSource.GENERIC);
+                }
                 return damage;
             }
         }

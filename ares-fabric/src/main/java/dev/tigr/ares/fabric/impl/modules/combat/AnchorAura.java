@@ -1,6 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import dev.tigr.ares.core.feature.FriendManager;
+import com.google.common.collect.Streams;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -20,6 +20,7 @@ import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
+import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedGoldenAppleItem;
@@ -30,7 +31,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
-import net.minecraft.world.dimension.DimensionType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -200,7 +200,8 @@ public class AnchorAura extends Module {
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(-1, 0, 0))));
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(0, 0, 1))));
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(0, 0, -1))));
-        return entities.stream().anyMatch(entity -> entity instanceof PlayerEntity);
+        return entities.stream().anyMatch(entity -> entity instanceof PlayerEntity
+                || entity instanceof OtherClientPlayerEntity);
     }
 
     private boolean shouldBreakAnchor() {
@@ -215,7 +216,7 @@ public class AnchorAura extends Module {
     private BlockPos getBestPlacement() {
         double bestScore = 69420;
         BlockPos target = null;
-        for(PlayerEntity targetedPlayer: getTargets()) {
+        for(Entity targetedPlayer: getTargets()) {
             // find best location to place
             List<BlockPos> targetsBlocks = getPlaceableBlocks(targetedPlayer);
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
@@ -236,7 +237,7 @@ public class AnchorAura extends Module {
     }
 
     // utils
-    private double getScore(BlockPos pos, PlayerEntity player) {
+    private double getScore(BlockPos pos, Entity player) {
         double score;
         if(placeMode.getValue() == Mode.DISTANCE) {
             score = Math.abs(player.getY() - pos.up().getY())
@@ -257,32 +258,28 @@ public class AnchorAura extends Module {
         return score;
     }
 
-    private List<PlayerEntity> getTargets() {
-        List<PlayerEntity> targets = new ArrayList<>();
+    private List<Entity> getTargets() {
+        List<Entity> targets = new ArrayList<>();
 
         if(targetSetting.getValue() == Target.CLOSEST) {
-            targets.addAll(MC.world.getPlayers().stream().filter(this::isValidTarget).collect(Collectors.toList()));
+            targets.addAll(Streams.stream(MC.world.getEntities()).filter(this::isValidTarget).collect(Collectors.toList()));
             targets.sort(Comparators.entityDistance);
         } else if(targetSetting.getValue() == Target.MOST_DAMAGE) {
-            for(PlayerEntity entityPlayer: MC.world.getPlayers()) {
-                if(!isValidTarget(entityPlayer))
+            for(Entity entity: MC.world.getEntities()) {
+                if(!isValidTarget(entity))
                     continue;
-                targets.add(entityPlayer);
+                targets.add(entity);
             }
         }
 
         return targets;
     }
 
-    private boolean isValidTarget(PlayerEntity player) {
-        return !FriendManager.isFriend(player.getGameProfile().getName())
-                && !player.isDead()
-                && !(player.getHealth() <= 0)
-                && !(MC.player.distanceTo(player) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)
-                && player != MC.player;
+    private boolean isValidTarget(Entity entity) {
+        return WorldUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 
-    private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
+    private List<BlockPos> getPlaceableBlocks(Entity player) {
         List<BlockPos> square = new ArrayList<>();
 
         int range = (int) Utils.roundDouble(placeRange.getValue(), 0);

@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -12,7 +11,7 @@ import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 
@@ -31,9 +30,7 @@ public class AutoTrap extends Module {
     @Override
     public void onTick() {
         if (delayTimer.passedMillis(delay.getValue())) {
-            for (PlayerEntity player : MC.world.getPlayers()) {
-                if (FriendManager.isFriend(player.getGameProfile().getName()) || MC.player == player) continue;
-
+            for (Entity player : WorldUtils.getPlayerTargets()) {
                 if (MC.player.distanceTo(player) <= range.getValue()) {
                     for (BlockPos pos : getPos(player)) {
                         if (MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
@@ -60,7 +57,7 @@ public class AutoTrap extends Module {
         }
     }
 
-    private BlockPos[] getPos(PlayerEntity player) {
+    private BlockPos[] getPos(Entity player) {
         BlockPos playerPos = new BlockPos(player.getPos());
         BlockPos[] blocks;
 

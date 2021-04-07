@@ -1,6 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import dev.tigr.ares.core.feature.FriendManager;
+import com.google.common.collect.Streams;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -14,17 +14,14 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.utils.Comparators;
-import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BedItem;
 import net.minecraft.item.EnchantedGoldenAppleItem;
-import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
@@ -184,7 +181,7 @@ public class BedAura extends Module {
     private Pair<BlockPos, Direction> getBestPlacement() {
         double bestScore = 69420;
         Pair<BlockPos, Direction> target = null;
-        for(PlayerEntity targetedPlayer: getTargets()) {
+        for(Entity targetedPlayer: getTargets()) {
             // find best location to place
             List<BlockPos> targetsBlocks = getPlaceableBlocks(targetedPlayer);
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
@@ -231,7 +228,7 @@ public class BedAura extends Module {
     }
 
     // utils
-    private double getScore(BlockPos pos, PlayerEntity player) {
+    private double getScore(BlockPos pos, Entity player) {
         double score;
         if(placeMode.getValue() == Mode.DISTANCE) {
             score = Math.abs(player.getY() - pos.up().getY())
@@ -252,32 +249,28 @@ public class BedAura extends Module {
         return score;
     }
 
-    private List<PlayerEntity> getTargets() {
-        List<PlayerEntity> targets = new ArrayList<>();
+    private List<Entity> getTargets() {
+        List<Entity> targets = new ArrayList<>();
 
         if(targetSetting.getValue() == Target.CLOSEST) {
-            targets.addAll(MC.world.getPlayers().stream().filter(this::isValidTarget).collect(Collectors.toList()));
+            targets.addAll(Streams.stream(MC.world.getEntities()).filter(this::isValidTarget).collect(Collectors.toList()));
             targets.sort(Comparators.entityDistance);
         } else if(targetSetting.getValue() == Target.MOST_DAMAGE) {
-            for(PlayerEntity entityPlayer: MC.world.getPlayers()) {
-                if(!isValidTarget(entityPlayer))
+            for(Entity entity: MC.world.getEntities()) {
+                if(!isValidTarget(entity))
                     continue;
-                targets.add(entityPlayer);
+                targets.add(entity);
             }
         }
 
         return targets;
     }
 
-    private boolean isValidTarget(PlayerEntity player) {
-        return !FriendManager.isFriend(player.getGameProfile().getName())
-                && !player.isDead()
-                && !(player.getHealth() <= 0)
-                && !(MC.player.distanceTo(player) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)
-                && player != MC.player;
+    private boolean isValidTarget(Entity entity) {
+        return WorldUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 
-    private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
+    private List<BlockPos> getPlaceableBlocks(Entity player) {
         List<BlockPos> square = new ArrayList<>();
 
         int range = (int) Utils.roundDouble(placeRange.getValue(), 0);
