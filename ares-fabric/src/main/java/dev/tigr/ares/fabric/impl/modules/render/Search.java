@@ -104,7 +104,7 @@ public class Search extends Module {
             else color = IRenderer.rainbow().setA(0.3f);
 
             for(BlockPos pos: new ArrayList<>(blocks)) {
-                RenderUtils.renderBlockNoPrepare(pos, color, color, 1f, 0f);
+                RenderUtils.renderBlockNoPrepare(pos, color, color, 2f, 0f);
             }
 
             RenderUtils.end3d();

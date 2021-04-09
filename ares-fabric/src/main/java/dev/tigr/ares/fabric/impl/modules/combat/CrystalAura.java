@@ -79,12 +79,14 @@ public class CrystalAura extends Module {
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
     private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Cancel", Canceller.NO_DESYNC));
 
-    private final Setting<Boolean> showColorSettings = register(new BooleanSetting("Color Settings", false));
-    private final Setting<Float> colorRed = register(new FloatSetting("Red", 1, 0, 1)).setVisibility(showColorSettings::getValue);
-    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 1, 0, 1)).setVisibility(showColorSettings::getValue);
-    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0.45f, 0, 1)).setVisibility(showColorSettings::getValue);
-    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showColorSettings::getValue);
-    private final Setting<Float> boxAlpha = register(new FloatSetting("Box Alpha", 0.69f, 0, 1)).setVisibility(showColorSettings::getValue);
+    private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
+    private final Setting<Float> colorRed = register(new FloatSetting("Red", 0.69f, 0f, 1f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 0f, 0f, 1f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0f, 0f, 1f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0f, 1f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0f, 1f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2.4f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> expandRender = register(new FloatSetting("Box Scale", 0f, -0.12f, 0.12f)).setVisibility(showRenderOptions::getValue);
 
     enum Mode { DAMAGE, DISTANCE }
     enum Order { PLACE_BREAK, BREAK_PLACE }
@@ -308,8 +310,8 @@ public class CrystalAura extends Module {
                     target,
                     fillColor,
                     outlineColor,
-                    2.4f,
-                    0.006f
+                    lineThickness.getValue(),
+                    expandRender.getValue()
             );
         }
     }

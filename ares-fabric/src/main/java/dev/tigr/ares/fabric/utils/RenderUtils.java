@@ -79,9 +79,11 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         renderBlock(pos, fillColor, outlineColor, 2f, 0);
     }
     public static void renderBlock(BlockPos pos, Color fillColor, Color outlineColor, float outlineThickness, float expansion) {
-        prepare3d();
-        renderBlockNoPrepare(pos, fillColor, outlineColor, outlineThickness, expansion);
-        end3d();
+        if(!MC.world.getBlockState(pos).isAir()) {
+            prepare3d();
+            renderBlockNoPrepare(pos, fillColor, outlineColor, outlineThickness, expansion);
+            end3d();
+        }
     }
     public static void renderBlockNoPrepare(BlockPos pos, Color fillColor, Color outlineColor) {
         renderBlockNoPrepare(pos, fillColor, outlineColor, 2f, 0);
