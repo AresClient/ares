@@ -17,11 +17,14 @@ public class Strafe extends Module {
     private final Setting<Double> height = register(new DoubleSetting("Height", 0.3, 0.3, 0.5)).setVisibility(lowHop::getValue);
     private final Setting<Boolean> speedBool = register(new BooleanSetting("Modify Speed", true));
     private final Setting<Float> speedVal = register(new FloatSetting("Speed", 0.32f, 0.2f, 0.6f)).setVisibility(speedBool::getValue);
+    private final Setting<Boolean> sprintBool = register(new BooleanSetting("Auto Sprint", true));
 
     @Override
     public void onMotion() {
         if(MC.player.input.movementForward != 0 || MC.player.input.movementSideways != 0) {
-            MC.player.setSprinting(true);
+            if(sprintBool.getValue()) {
+                MC.player.setSprinting(true);
+            }
 
             if(MC.player.isOnGround() && lowHop.getValue()) MC.player.addVelocity(0, height.getValue(), 0);
 
