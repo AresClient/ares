@@ -12,6 +12,7 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public class Surround extends Module {
 
         // make sure player is in the same place
         AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
-        if(!lastPos.equals(new BlockPos(loc.getPositionVector()))) {
+        if(!lastPos.equals(roundBlockPos(loc.getPositionVector()))) {
             setEnabled(false);
             return;
         }
@@ -101,26 +102,30 @@ public class Surround extends Module {
 
     @Override
     public void onEnable() {
-        BlockPos pos = lastPos = new BlockPos(MC.player.getPositionVector());
+        lastPos = roundBlockPos(MC.player.getPositionVector());
 
-        if(snap.getValue() && doSnap == true) {
+        if(snap.getValue() && doSnap) {
             double xPos = MC.player.getPositionVector().x;
             double zPos = MC.player.getPositionVector().z;
 
-            if(Math.abs((pos.getX() + 0.5) - MC.player.getPositionVector().x) >= 0.2) {
-                int xDir = (pos.getX() + 0.5) - MC.player.getPositionVector().x > 0 ? 1 : -1;
+            if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPositionVector().x) >= 0.2) {
+                int xDir = (lastPos.getX() + 0.5) - MC.player.getPositionVector().x > 0 ? 1 : -1;
                 xPos += 0.3 * xDir;
             }
 
-            if(Math.abs((pos.getZ() + 0.5) - MC.player.getPositionVector().z) >= 0.2) {
-                int zDir = (pos.getZ() + 0.5) - MC.player.getPositionVector().z > 0 ? 1 : -1;
+            if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPositionVector().z) >= 0.2) {
+                int zDir = (lastPos.getZ() + 0.5) - MC.player.getPositionVector().z > 0 ? 1 : -1;
                 zPos += 0.3 * zDir;
             }
 
             MC.player.motionX = MC.player.motionY = MC.player.motionZ = 0;
-            MC.player.setPosition(xPos, pos.getY(), zPos);
-            MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, pos.getY(), zPos, MC.player.onGround));
+            MC.player.setPosition(xPos, MC.player.posY, zPos);
+            MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, MC.player.posY, zPos, MC.player.onGround));
         }
+    }
+
+    private BlockPos roundBlockPos(Vec3d vec) {
+        return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
     }
 
     @Override
