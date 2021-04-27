@@ -116,6 +116,7 @@ public class AresMod extends Ares {
                 ConstantQMain.class,
                 DiscordPresence.class,
                 InfiniteChatLength.class,
+                LagNotifier.class,
                 MidClickFriend.class,
                 MsgOnToggle.class,
                 PortalChat.class,
