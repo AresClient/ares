@@ -96,6 +96,7 @@ public class AresMod extends Ares {
                 // misc
                 ChatSuffix.class,
                 DiscordPresence.class,
+                LagNotifier.class,
                 MsgOnToggle.class,
                 PortalChat.class,
                 ReloadSoundSystem.class,
