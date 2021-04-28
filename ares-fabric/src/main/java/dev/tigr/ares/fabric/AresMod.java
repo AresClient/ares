@@ -73,6 +73,7 @@ public class AresMod extends Ares {
                 CrystalCount.class,
                 ModuleList.class,
                 InvPreview.class,
+                LagNotifier.class,
                 PlayerList.class,
                 PlayerPreview.class,
                 TotemCount.class,
@@ -96,7 +97,6 @@ public class AresMod extends Ares {
                 // misc
                 ChatSuffix.class,
                 DiscordPresence.class,
-                LagNotifier.class,
                 MsgOnToggle.class,
                 PortalChat.class,
                 ReloadSoundSystem.class,
