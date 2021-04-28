@@ -1,4 +1,4 @@
-package dev.tigr.ares.fabric.impl.modules.misc;
+package dev.tigr.ares.fabric.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;

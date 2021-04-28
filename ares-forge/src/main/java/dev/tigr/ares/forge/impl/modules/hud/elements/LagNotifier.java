@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.impl.modules.misc;
+package dev.tigr.ares.forge.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
@@ -15,7 +15,7 @@ import dev.tigr.simpleevents.listener.EventListener;
 /**
  * @author nwroot
  */
-@Module.Info(name = "LagNotifier", description = "Notifies if the server stopped sending packets", category = Category.MISC)
+@Module.Info(name = "LagNotifier", description = "Notifies if the server stopped sending packets", category = Category.HUD)
 public class LagNotifier extends HudElement {
     private final Setting<Integer> maxTicks = register(new IntegerSetting("Max Ticks", 40, 10, 100));
     private final Setting<Boolean> hudDraw = register(new BooleanSetting("Draw Overlay", true));
