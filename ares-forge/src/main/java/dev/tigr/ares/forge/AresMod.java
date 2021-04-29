@@ -100,6 +100,8 @@ public class AresMod extends Ares {
                 ChestCount.class,
                 Coordinates.class,
                 CrystalCount.class,
+                InvPreview.class,
+                LagNotifier.class,
                 ModuleList.class,
                 PlayerList.class,
                 PlayerPreview.class,
@@ -107,7 +109,6 @@ public class AresMod extends Ares {
                 TotemCount.class,
                 Watermark.class,
                 TextShadow.class,
-                InvPreview.class,
 
                 // misc
                 AutoTool.class,

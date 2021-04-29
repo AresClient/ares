@@ -73,6 +73,7 @@ public class AresMod extends Ares {
                 CrystalCount.class,
                 ModuleList.class,
                 InvPreview.class,
+                LagNotifier.class,
                 PlayerList.class,
                 PlayerPreview.class,
                 TotemCount.class,
