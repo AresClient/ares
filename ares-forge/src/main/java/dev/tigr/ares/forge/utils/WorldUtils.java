@@ -1,7 +1,6 @@
 package dev.tigr.ares.forge.utils;
 
 import dev.tigr.ares.core.feature.FriendManager;
-import dev.tigr.ares.core.util.render.TextColor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -17,7 +16,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -29,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.CoreWrapper.UTILS;
 import static dev.tigr.ares.Wrapper.MC;
 
 /**
@@ -343,5 +340,9 @@ public class WorldUtils {
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.75, MC.player.posZ, true));
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.01, MC.player.posZ, true));
         MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.15, MC.player.posZ, true));
+    }
+
+    public static BlockPos roundBlockPos(Vec3d vec) {
+        return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
     }
 }

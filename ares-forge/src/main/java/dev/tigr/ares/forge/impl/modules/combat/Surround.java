@@ -12,7 +12,6 @@ import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,7 +47,7 @@ public class Surround extends Module {
 
         // make sure player is in the same place
         AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
-        if(!lastPos.equals(roundBlockPos(loc.getPositionVector()))) {
+        if(!lastPos.equals(WorldUtils.roundBlockPos(loc.getPositionVector()))) {
             setEnabled(false);
             return;
         }
@@ -102,7 +101,7 @@ public class Surround extends Module {
 
     @Override
     public void onEnable() {
-        lastPos = roundBlockPos(MC.player.getPositionVector());
+        lastPos = WorldUtils.roundBlockPos(MC.player.getPositionVector());
 
         if(snap.getValue() && doSnap) {
             double xPos = MC.player.getPositionVector().x;
@@ -122,10 +121,6 @@ public class Surround extends Module {
             MC.player.setPosition(xPos, MC.player.posY, zPos);
             MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, MC.player.posY, zPos, MC.player.onGround));
         }
-    }
-
-    private BlockPos roundBlockPos(Vec3d vec) {
-        return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
     }
 
     @Override

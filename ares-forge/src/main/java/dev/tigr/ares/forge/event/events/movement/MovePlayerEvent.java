@@ -8,6 +8,7 @@ public class MovePlayerEvent extends Event {
     private double x;
     private double y;
     private double z;
+    private boolean shouldDo;
 
     public MovePlayerEvent(MoverType moverType, double x, double y, double z) {
         this.moverType = moverType;
@@ -48,5 +49,13 @@ public class MovePlayerEvent extends Event {
         this.x = x;
         this.y = y;
         this.z = z;
+    }
+
+    public void setShouldDo(boolean shouldDo) {
+        this.shouldDo = shouldDo;
+    }
+
+    public boolean getShouldDo() {
+        return shouldDo;
     }
 }

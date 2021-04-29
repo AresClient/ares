@@ -30,9 +30,15 @@ public class Scaffold extends Module {
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> down = register(new BooleanSetting("Down", false));
     private final Setting<Boolean> tower = register(new BooleanSetting("Tower", true)).setVisibility(() -> radius.getValue() <= 0);
-    private final Setting<Integer> towerDelay = register(new IntegerSetting("Clip Delay", 128, 1, 500)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0);
+    private final Setting<Boolean> packetTower = register(new BooleanSetting("Packet Tower", false)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0);
+    private final Setting<Integer> towerJumpVelocity = register(new IntegerSetting("Jump Velocity", 42, 37, 60)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && !packetTower.getValue());
+    private final Setting<Integer> towerReturnVelocity = register(new IntegerSetting("Return Velocity", 30, 20, 60)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && !packetTower.getValue());
+    private final Setting<Integer> towerClipDelay = register(new IntegerSetting("Clip Delay", 128, 1, 500)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && packetTower.getValue());
+    private final Setting<Boolean> towerReturnPacket = register(new BooleanSetting("Packet Return To Ground", false)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && packetTower.getValue());
+    private final Setting<Integer> returnDelay = register(new IntegerSetting("Return Delay", 7, 0, 12)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && packetTower.getValue() && towerReturnPacket.getValue());
 
     private Timer towerDelayTimer = new Timer();
+    private boolean shouldResetTower;
 
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> {
@@ -48,22 +54,32 @@ public class Scaffold extends Module {
 
     @Override
     public void onTick() {
-        if(tower.getValue() && MC.options.keyJump.isPressed() && radius.getValue() <= 0) {
-            if(towerDelayTimer.passedMillis(towerDelay.getValue())) {
+        if(tower.getValue() && MC.options.keyJump.isPressed() && radius.getValue() <= 0 && !packetTower.getValue()) {
+            if(MC.player.isOnGround())
+                MC.player.setVelocity(MC.player.getVelocity().x *0.3,towerJumpVelocity.getValue().doubleValue() /100, MC.player.getVelocity().z *0.3);
+            if(MC.world.getBlockState(MC.player.getBlockPos().down()).isAir())
+                MC.player.setVelocity(MC.player.getVelocity().x *0.3, -(towerReturnVelocity.getValue().doubleValue() /100), MC.player.getVelocity().z *0.3);
+        }
+        if(tower.getValue() && packetTower.getValue() && MC.options.keyJump.isPressed() && radius.getValue() <= 0) {
+            if(shouldResetTower) {
+                towerDelayTimer.reset();
+                shouldResetTower = false;
+            }
+            if(!MC.player.isOnGround()) {
+                if (!MC.world.getBlockState(WorldUtils.roundBlockPos(MC.player.getPos()).down()).isAir()
+                        && towerReturnPacket.getValue()
+                        && towerDelayTimer.passedMillis(returnDelay.getValue())) {
+                    MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ(), true));
+                    MC.player.updatePosition(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ());
+                }
+                shouldResetTower = true;
+                return;
+            }
+            if(towerDelayTimer.passedMillis(towerClipDelay.getValue())) {
                 // Pretend that we are jumping to the server and then update player position to meet where the server thinks the player is instantly.
                 WorldUtils.fakeJump();
                 MC.player.updatePosition(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ());
-                // It may be preferable to make the value configurable for this, but from what I found in my (limited) testing +7 works best generally with NCP, and any higher than +10ish tends not to work at all
-                if(towerDelayTimer.passedMillis(towerDelay.getValue() + 7)) {
-                    // Make sure player is on ground before repeating, clips back down if not to speed up the process
-                    if(!MC.player.isOnGround()) {
-                        if(!MC.world.getBlockState(new BlockPos(MC.player.getX(), MC.player.getY() - 1, MC.player.getZ())).isAir()) {
-                            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ(), true));
-                            MC.player.updatePosition(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ());
-                        }
-                    }
-                    towerDelayTimer.reset();
-                }
+                shouldResetTower = true;
             }
         }
     }

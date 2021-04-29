@@ -46,7 +46,10 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
     @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/entity/AbstractClientPlayer;move(Lnet/minecraft/entity/MoverType;DDD)V"))
     public void movePlayer(AbstractClientPlayer abstractClientPlayer, MoverType type, double x, double y, double z) {
         MovePlayerEvent event = Ares.EVENT_MANAGER.post(new MovePlayerEvent(type, x, y, z));
-        if(!event.isCancelled()) super.move(type, event.getX(), event.getY(), event.getZ());
+        if(!event.isCancelled()) {
+            if(event.getShouldDo()) super.move(type, event.getX(), event.getY(), event.getZ());
+            else super.move(type, x, y, z);
+        }
     }
 
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
@@ -79,8 +82,6 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
     public void jump() {
         PlayerJumpEvent event = new PlayerJumpEvent();
         Ares.EVENT_MANAGER.post(event);
-        if(!event.isCancelled()) {
-            super.jump();
-        }
+        if(!event.isCancelled()) super.jump();
     }
 }

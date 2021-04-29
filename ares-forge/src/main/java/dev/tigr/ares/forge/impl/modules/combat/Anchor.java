@@ -28,9 +28,10 @@ public class Anchor extends Module {
         // if over hole
         if(event.getMoverType() == MoverType.SELF && MC.player != null && MC.player.rotationPitch > cutoff.getValue()
                 && isOverHole(MC.player.getPositionVector()) && MC.player.motionY <= 0.1) {
+            event.setShouldDo(true);
             // correct movement
             event.set(getBounds(MC.player.posX) * 0.2, isCenter(MC.player.getPositionVector()) ? -speed.getValue() : event.getY(), getBounds(MC.player.posZ) * 0.2);
-        }
+        } else event.setShouldDo(false);
     });
 
     private boolean isOverHole(Vec3d vec3d) {
