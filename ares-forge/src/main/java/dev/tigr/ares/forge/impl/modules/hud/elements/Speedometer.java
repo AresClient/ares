@@ -19,11 +19,12 @@ import net.minecraft.util.Timer;
 @Module.Info(name = "Speedometer", description = "Shows your speed", category = Category.HUD)
 public class Speedometer extends HudElement {
     private final Setting<Boolean> rainbow = register(new BooleanSetting("Rainbow", false));
-    private final Setting<SpeedUnits> speedUnit = register(new EnumSetting<>("Unit", SpeedUnits.KILOMETERS_PER_HOUR));
+    private final Setting<SpeedUnits> speedUnit = register(new EnumSetting<>("Unit", SpeedUnits.KILOMETERS_PH));
     
     enum SpeedUnits {
-        METERS_PER_SECOND,
-        KILOMETERS_PER_HOUR
+        METERS_PS,
+        MILES_PH,
+        KILOMETERS_PH
     }
 
     private double speed = 0;
@@ -45,14 +46,16 @@ public class Speedometer extends HudElement {
     }
 
     public void draw() {
-        String str = "INVALID"; // prevents compilation error (variable may be undefined)
+        String str;
         switch(speedUnit.getValue()) {
-            case METERS_PER_SECOND:
-                str = Utils.roundDouble(speed, 1) + " m/s";
+            case METERS_PS:
+                str = Utils.roundDouble(speed, 1) + " M/S";
                 break;
-            case KILOMETERS_PER_HOUR:
-                str = Utils.roundDouble(speed * 3.6, 1) + " km/h";
+            case MILES_PH:
+                str = Utils.roundDouble(speed * 2.23694, 1) + " MPH";
                 break;
+            default:
+                str = Utils.roundDouble(speed * 3.6, 1) + " KM/H";
         }
 
         drawString(str, getX(), getY(), rainbow.getValue() ? IRenderer.rainbow() : Color.WHITE);
