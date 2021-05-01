@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.impl.modules.hud.elements;
+package dev.tigr.ares.fabric.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
@@ -9,12 +9,13 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.forge.impl.modules.hud.HudElement;
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.Timer;
+import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.render.RenderTickCounter;
 
 /**
  * @author Tigermouthbear
+ * Ported to Fabric by nwroot
  */
 @Module.Info(name = "Speedometer", description = "Shows your speed", category = Category.HUD)
 public class Speedometer extends HudElement {
@@ -28,20 +29,25 @@ public class Speedometer extends HudElement {
     }
 
     private double speed = 0;
-
+    
     public Speedometer() {
-        super(150, 60, 0, FONT_RENDERER.getFontHeight());
+        super(150, 60, 0, 0); // FONT_RENDERER.getFontHeight() is broken when initializing on Fabric
     }
 
     @Override
     public void onTick() {
-        if(MC.player.ticksExisted % 10 != 0) return;
+        if(MC.player.age % 10 != 0) return;
+        
+        if(!MC.player.isAlive()) {
+            speed = 0;
+            return;
+        }
 
-        float tickLength = ReflectionHelper.getPrivateValue(Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), "tickLength", "field_194149_e");
+        float tickLength = ReflectionHelper.getPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), "tickTime", "field_1968");
         double tps = tickLength / 1000;
 
-        double xMove = MC.player.posX - MC.player.prevPosX;
-        double zMove = MC.player.posZ - MC.player.prevPosZ;
+        double xMove = MC.player.getPos().x - MC.player.prevX;
+        double zMove = MC.player.getPos().z - MC.player.prevZ;
         speed = Math.sqrt(xMove * xMove + zMove * zMove) / tps;
     }
 
@@ -60,5 +66,6 @@ public class Speedometer extends HudElement {
 
         drawString(str, getX(), getY(), rainbow.getValue() ? IRenderer.rainbow() : Color.WHITE);
         setWidth((int) FONT_RENDERER.getStringWidth(str) + 1);
+        setHeight(FONT_RENDERER.getFontHeight());
     }
 }
