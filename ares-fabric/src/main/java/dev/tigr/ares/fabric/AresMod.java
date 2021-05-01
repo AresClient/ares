@@ -78,6 +78,7 @@ public class AresMod extends Ares {
                 PlayerPreview.class,
                 TotemCount.class,
                 Watermark.class,
+                Speedometer.class,
                 TextShadow.class,
 
                 // exploit
