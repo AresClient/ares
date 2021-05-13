@@ -14,17 +14,17 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
-import dev.tigr.ares.fabric.utils.Comparators;
-import dev.tigr.ares.fabric.utils.RenderUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.*;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BedItem;
 import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -43,32 +43,32 @@ import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
  */
 @Module.Info(name = "BedAura", description = "Automatically places and explodes beds in the nether or end for combat", category = Category.COMBAT)
 public class BedAura extends Module {
-    // TODO: add auto bed in hotbar and fix render bug
+    // TODO: fix render bug, place mode which doesn't use / uses fewer calculations (focuses on placing on or above player or not at all), place mode which uses true rotations?
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
     private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
-    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 7, 0, 15));
-    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 5, 0, 15));
+    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 12, 0, 15));
+    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 1, 0, 15));
     private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
+    private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9));
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
 
-    private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
-    private final Setting<Float> colorRed = register(new FloatSetting("Red", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
-    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
-    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0.45f, 0, 1)).setVisibility(showRenderOptions::getValue);
-    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showRenderOptions::getValue);
-    private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0, 1)).setVisibility(showRenderOptions::getValue);
-    private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
+//    private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
+//    private final Setting<Float> colorRed = register(new FloatSetting("Red", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
+//    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
+//    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0.45f, 0, 1)).setVisibility(showRenderOptions::getValue);
+//    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showRenderOptions::getValue);
+//    private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0, 1)).setVisibility(showRenderOptions::getValue);
+//    private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
 
     enum Mode { DAMAGE, DISTANCE }
     enum Target { CLOSEST, MOST_DAMAGE }
 
     private long renderTimer = -1;
-    private long placeTimer = -1;
-    private long breakTimer = -1;
+    private final Timer logicTimer = new Timer();
     private double[] rotations = null;
     public Pair<BlockPos, Direction> target = null;
     private Stack<BlockPos> placed = new Stack<>();
@@ -88,13 +88,16 @@ public class BedAura extends Module {
             renderTimer = System.nanoTime() / 1000000;
         }
 
+        // replenish
+        replenishBed();
+
         // do logic
         place();
         explode();
     }
 
     private void place() {
-        if((System.nanoTime() / 1000000) - placeTimer >= placeDelay.getValue() * 25L) {
+        if(logicTimer.passedTicks(placeDelay.getValue()) && placed.isEmpty()) {
             // if no gapple switch and player is holding apple
             if(noGappleSwitch.getValue() && MC.player.inventory.getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
                 if(target != null) target = null;
@@ -106,7 +109,7 @@ public class BedAura extends Module {
             if(target == null) return;
 
             placeBed(target);
-            placeTimer = System.nanoTime() / 1000000;
+            logicTimer.reset();
         }
     }
 
@@ -142,7 +145,7 @@ public class BedAura extends Module {
     }
 
     private void explode() {
-        if(!shouldBreakBed() || placed.isEmpty()) return;
+        if(!logicTimer.passedTicks(breakDelay.getValue()) || placed.isEmpty()) return;
 
         BlockPos pos = placed.pop();
         Vec3d vec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
@@ -152,7 +155,7 @@ public class BedAura extends Module {
         rotations = WorldUtils.calculateLookAt(vec.x, vec.y, vec.z, MC.player);
 
         // reset timer
-        breakTimer = System.nanoTime() / 1000000;
+        logicTimer.reset();
     }
 
     @EventHandler
@@ -165,31 +168,27 @@ public class BedAura extends Module {
     });
 
     // draw target
-    @Override
-    public void onRender3d() {
-        if(target != null) {
-            Color fillColor = new Color(
-                    colorRed.getValue(),
-                    colorGreen.getValue(),
-                    colorBlue.getValue(),
-                    fillAlpha.getValue()
-            );
-            Color outlineColor = new Color(
-                    colorRed.getValue(),
-                    colorGreen.getValue(),
-                    colorBlue.getValue(),
-                    boxAlpha.getValue()
-            );
-            RenderUtils.prepare3d();
-            Box bb = RenderUtils.getBoundingBox(target.getFirst()).expand(target.getSecond().getOffsetX(), 0, target.getSecond().getOffsetZ());
-            if(bb != null) RenderUtils.renderBlockNoPrepare(bb, fillColor, outlineColor, lineThickness.getValue());
-            RenderUtils.end3d();
-        }
-    }
-
-    private boolean shouldBreakBed() {
-        return (System.nanoTime() / 1000000) - breakTimer >= breakDelay.getValue() * 50;
-    }
+//    @Override
+//    public void onRender3d() {
+//        if(target != null) {
+//            Color fillColor = new Color(
+//                    colorRed.getValue(),
+//                    colorGreen.getValue(),
+//                    colorBlue.getValue(),
+//                    fillAlpha.getValue()
+//            );
+//            Color outlineColor = new Color(
+//                    colorRed.getValue(),
+//                    colorGreen.getValue(),
+//                    colorBlue.getValue(),
+//                    boxAlpha.getValue()
+//            );
+//            RenderUtils.prepare3d();
+//            Box bb = RenderUtils.getBoundingBox(target.getFirst()).expand(target.getSecond().getOffsetX(), 0, target.getSecond().getOffsetZ());
+//            if(bb != null) RenderUtils.renderBlockNoPrepare(bb, fillColor, outlineColor, lineThickness.getValue());
+//            RenderUtils.end3d();
+//        }
+//    }
 
     private boolean canBreakBed(Pair<BlockPos, Direction> pair) {
         return MC.player.squaredDistanceTo(pair.getFirst().getX(), pair.getFirst().getY(), pair.getFirst().getZ()) <= breakRange.getValue() * breakRange.getValue() // check range
@@ -308,5 +307,20 @@ public class BedAura extends Module {
                 MC.world.getBlockState(pos.south()).isAir() ||
                 MC.world.getBlockState(pos.west()).isAir()
         );
+    }
+
+    private void replenishBed() {
+        int slot = replenishSlot.getValue() - 1;
+        if(MC.player.inventory.getStack(slot).getItem() instanceof BedItem) return;
+        if(MC.currentScreen == null || MC.currentScreen instanceof InventoryScreen) {
+            for(int i = 45; i > 8; i--) {
+                if(MC.player.inventory.getStack(i).getItem() instanceof BedItem) {
+                    MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player);
+                    MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(slot), 0, SlotActionType.PICKUP, MC.player);
+                    MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player); // return any items that may have been there to i
+                    return;
+                }
+            }
+        }
     }
 }

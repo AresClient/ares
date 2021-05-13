@@ -14,13 +14,12 @@ import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
-import dev.tigr.ares.fabric.utils.Comparators;
-import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.RenderUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.*;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -46,6 +45,8 @@ import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
  */
 @Module.Info(name = "AnchorAura", description = "Automatically places and explodes respawn anchors in the overworld", category = Category.COMBAT)
 public class AnchorAura extends Module {
+    //TODO: Chain delays so that break delay starts after placing has finished and vice versa? Give every anchor placed a seperate timer so they're guaranteed to break with correct timing?
+    // As it stands the way break delay is handled right now makes it basically useless because either the anchor is broken right after it is placed, or it just spams anchors everywhere.
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
     private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
@@ -73,8 +74,8 @@ public class AnchorAura extends Module {
     enum Rotations { PACKET, REAL, NONE }
 
     private long renderTimer = -1;
-    private long placeTimer = -1;
-    private long breakTimer = -1;
+    private final Timer placeTimer = new Timer();
+    private final Timer breakTimer = new Timer();
     private double[] rotations = null;
     public BlockPos target = null;
     private Stack<BlockPos> placed = new Stack<>();
@@ -106,7 +107,7 @@ public class AnchorAura extends Module {
     }
 
     private void place() {
-        if((System.nanoTime() / 1000000) - placeTimer >= placeDelay.getValue() * 25L) {
+        if(placeTimer.passedTicks(placeDelay.getValue())) {
             // if no gapple switch and player is holding apple
             if(noGappleSwitch.getValue() && MC.player.inventory.getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
                 if(target != null) target = null;
@@ -118,7 +119,7 @@ public class AnchorAura extends Module {
             if(target == null) return;
 
             placeAnchor(target);
-            placeTimer = System.nanoTime() / 1000000;
+            placeTimer.reset();
         }
     }
 
@@ -141,7 +142,7 @@ public class AnchorAura extends Module {
     }
 
     private void explode() {
-        if(!shouldBreakAnchor() || placed.isEmpty()) return;
+        if(!breakTimer.passedTicks(breakDelay.getValue()) || placed.isEmpty()) return;
         BlockPos pos = placed.pop();
         Vec3d vec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
 
@@ -169,7 +170,7 @@ public class AnchorAura extends Module {
         rotations = WorldUtils.calculateLookAt(vec.x, vec.y, vec.z, MC.player);
 
         // reset timer
-        breakTimer = System.nanoTime() / 1000000;
+        breakTimer.reset();
     }
 
     @EventHandler
@@ -226,10 +227,6 @@ public class AnchorAura extends Module {
                 || entity instanceof OtherClientPlayerEntity);
     }
 
-    private boolean shouldBreakAnchor() {
-        return (System.nanoTime() / 1000000) - breakTimer >= breakDelay.getValue() * 50;
-    }
-
     private boolean canBreakAnchor(BlockPos pos) {
         return MC.player.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) <= breakRange.getValue() * breakRange.getValue() // check range
         && !(MC.player.getHealth() - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
@@ -246,6 +243,8 @@ public class AnchorAura extends Module {
             for(BlockPos pos: blocks) {
                 if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer) < minDamage.getValue())
                     continue;
+
+                if(!MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent())) continue;
 
                 double score = getScore(pos, targetedPlayer);
 
@@ -315,7 +314,7 @@ public class AnchorAura extends Module {
     }
 
     private boolean canAnchorBePlacedHere(BlockPos pos) {
-        return MC.world.getBlockState(pos).isAir();
+        return MC.world.getBlockState(pos).isAir() || MC.world.getBlockState(pos).getMaterial().isLiquid();
     }
 
     private boolean shouldRotate() {
