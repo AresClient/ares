@@ -18,6 +18,7 @@ import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -35,6 +36,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.Items;
+import net.minecraft.item.PotionItem;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -64,20 +66,26 @@ public class CrystalAura extends Module {
     private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
     private final Setting<Order> order = register(new EnumSetting<>("Order", Order.PLACE_BREAK));
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
-    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
-    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 2, 0, 15));
-    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 2, 0, 15));
-    private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 2, 0, 15));
-    private final Setting<Integer> breakOffhandDelay = register(new IntegerSetting("Offh. Break Delay", 2, 0, 15));
+    private final Setting<Boolean> doSwitch = register(new BooleanSetting("Do Switch", false));
+    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(doSwitch::getValue);
+    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 2, 0, 20));
+    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 2, 0, 20));
+    private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 2, 0, 20));
+    private final Setting<Integer> breakOffhandDelay = register(new IntegerSetting("Offh. Break Delay", 2, 0, 20));
     private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
-    private final Setting<Integer> maxBreakTries = register(new IntegerSetting("Break Attempts", 2, 1, 5));
+    private final Setting<Integer> maxBreakTries = register(new IntegerSetting("Break Attempts", 3, 1, 5));
+    private final Setting<Integer> lostWindow = register(new IntegerSetting("Lost Window", 6, 0, 20));
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
+    private final Setting<Boolean> oneDotTwelve = register(new BooleanSetting("1.12-", false));
     private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true));
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true));
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
-    private final Setting<Canceller> cancelMode = register(new EnumSetting<>("Cancel", Canceller.NO_DESYNC));
+    private final Setting<Boolean> pauseOnEat = register(new BooleanSetting("Pause On Eat", true));
+    private final Setting<Boolean> pauseOnPot = register(new BooleanSetting("Pause On Pot", true));
+    private final Setting<Boolean> pauseOnXP = register(new BooleanSetting("Pause On XP", false));
+    private final Setting<Boolean> pauseOnMine = register(new BooleanSetting("Pause On Mine", false));
 
     private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
     private final Setting<Float> colorRed = register(new FloatSetting("Red", 0.69f, 0f, 1f)).setVisibility(showRenderOptions::getValue);
@@ -92,16 +100,17 @@ public class CrystalAura extends Module {
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
     enum Rotations { PACKET, REAL, NONE }
-    enum Canceller { NO_DESYNC, ON_HIT, ON_PACKET }
 
-    private long renderTimer = -1;
-    private long placeTimer = -1;
-    private long breakTimer = -1;
-    private long cleanupTimer = -1;
+    private final Timer renderTimer = new Timer();
+    private final Timer placeTimer = new Timer();
+    private final Timer breakTimer = new Timer();
+    private final Timer cleanupTimer = new Timer();
+    private final Timer addingTimer = new Timer();
     private double[] rotations = null;
     public BlockPos target = null;
     private final LinkedHashMap<Vec3d, Long> placedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EndCrystalEntity, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
+    private final LinkedHashMap<EndCrystalEntity, AtomicInteger> waitingCrystals = new LinkedHashMap<>();
     private final List<EndCrystalEntity> lostCrystals = new ArrayList<>();
     private Entity targetPlayer;
 
@@ -128,13 +137,30 @@ public class CrystalAura extends Module {
     }
 
     private void run() {
+        // pause with options
+        if((pauseOnEat.getValue() && MC.player.isUsingItem() && (MC.player.getMainHandStack().getItem().isFood() || MC.player.getOffHandStack().getItem().isFood())) ||
+                (pauseOnPot.getValue() && MC.player.isUsingItem() && (MC.player.getMainHandStack().getItem() instanceof PotionItem || MC.player.getOffHandStack().getItem() instanceof PotionItem)) ||
+                (pauseOnXP.getValue() && MC.player.isUsingItem() && (MC.player.getMainHandStack().getItem() == Items.EXPERIENCE_BOTTLE || MC.player.getOffHandStack().getItem() == Items.EXPERIENCE_BOTTLE)) ||
+                (pauseOnMine.getValue() && MC.interactionManager.isBreakingBlock()))
+            return;
+
         // reset rotations
         if(rotations != null) rotations = null;
 
         // cleanup render
-        if((System.nanoTime() / 1000000) - renderTimer >= 3000) {
+        if(cleanupTimer.passedSec(3)) {
             target = null;
-            renderTimer = System.nanoTime() / 1000000;
+            renderTimer.reset();
+        }
+
+        // add crystal to lost list if waiting duration has expired since attempting to break so that the CA will place elsewhere
+        for(Map.Entry<EndCrystalEntity, AtomicInteger> entry: waitingCrystals.entrySet()) {
+            if(entry.getKey().removed) {
+                waitingCrystals.remove(entry.getKey());
+            } else if(entry.getValue().getAndIncrement() >= lostWindow.getValue()) {
+                lostCrystals.add(entry.getKey());
+                waitingCrystals.remove(entry.getKey());
+            }
         }
 
         // do logic
@@ -148,7 +174,7 @@ public class CrystalAura extends Module {
         }
 
         // cleanup place map and lost crystals every ten seconds
-        if((System.nanoTime() / 1000000) - cleanupTimer >= 10000) {
+        if(cleanupTimer.passedSec(10)) {
             lostCrystals.removeIf(crystal -> MC.world.getEntityById(crystal.getEntityId()) == null);
 
             // cleanup crystals that never spawned
@@ -157,7 +183,7 @@ public class CrystalAura extends Module {
                 Map.Entry<Vec3d, Long> entry = first.get();
                 if((System.nanoTime() / 1000000) - entry.getValue() >= 10000) placedCrystals.remove(entry.getKey());
             }
-            cleanupTimer = System.nanoTime() / 1000000;
+            cleanupTimer.reset();
         }
 
         // rotate for actual mode
@@ -168,7 +194,7 @@ public class CrystalAura extends Module {
     }
 
     private void place(boolean offhand) {
-        if((System.nanoTime() / 1000000) - placeTimer >= (offhand ? placeOffhandDelay.getValue() : placeDelay.getValue()) * 25) {
+        if(placeTimer.passedTicks(offhand ? placeOffhandDelay.getValue() : placeDelay.getValue())) {
             // if no gapple switch and player is holding apple
             if(!offhand && noGappleSwitch.getValue() && MC.player.inventory.getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
                 if(target != null) target = null;
@@ -180,18 +206,20 @@ public class CrystalAura extends Module {
             if(target == null) return;
 
             placeCrystal(offhand, target);
-            placeTimer = System.nanoTime() / 1000000;
+            placeTimer.reset();
         }
     }
 
     private void placeCrystal(boolean offhand, BlockPos pos) {
         // switch to crystals if not holding
         if(!offhand && MC.player.inventory.getMainHandStack().getItem() != Items.END_CRYSTAL) {
-            int slot = InventoryUtils.findItemInHotbar(Items.END_CRYSTAL);
-            if(slot != -1) {
-                MC.player.inventory.selectedSlot = slot;
-                MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
-            }
+            if(doSwitch.getValue()) {
+                int slot = InventoryUtils.findItemInHotbar(Items.END_CRYSTAL);
+                if (slot != -1) {
+                    MC.player.inventory.selectedSlot = slot;
+                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                }
+            } else return;
         }
 
         // place
@@ -216,7 +244,7 @@ public class CrystalAura extends Module {
 
             // remove if it hits limit of tries
             if(entry.getValue().get() + 1 == maxBreakTries.getValue()) {
-                lostCrystals.add(entry.getKey());
+                waitingCrystals.put(entry.getKey(), new AtomicInteger(0));
                 spawnedCrystals.remove(entry.getKey());
             }
             else entry.getValue().set(entry.getValue().get() + 1);
@@ -275,15 +303,18 @@ public class CrystalAura extends Module {
         }
     });
 
-    //Cancel Crystals on Explosion packet received
+    //Remove Crystals from lists on Explosion packet received
     @EventHandler
     private EventListener<PacketEvent.Receive> packetReceiveListener = new EventListener<>(event -> {
-        if (event.getPacket() instanceof ExplosionS2CPacket && cancelMode.getValue() != Canceller.NO_DESYNC ) {
+        if(event.getPacket() instanceof ExplosionS2CPacket) {
             final ExplosionS2CPacket packet = (ExplosionS2CPacket) event.getPacket();
-            for (Entity e : MC.world.getEntities()) {
-                if (e instanceof EndCrystalEntity) {
-                    if (MathHelper.sqrt(e.squaredDistanceTo(packet.getX(), packet.getY(), packet.getZ())) <= Math.max(breakRange.getValue(), placeRange.getValue()) + 2) {
-                        e.remove();
+            for(Entity e : MC.world.getEntities()) {
+                if(e instanceof EndCrystalEntity) {
+                    if(MathHelper.sqrt(e.squaredDistanceTo(packet.getX(), packet.getY(), packet.getZ())) <= Math.max(breakRange.getValue(), placeRange.getValue()) + 2) {
+                        //Remove from all these lists because we can be sure it has broken if the packet was received
+                        spawnedCrystals.remove(e);
+                        waitingCrystals.remove(e);
+                        lostCrystals.remove(e);
                     }
                 }
             }
@@ -314,6 +345,21 @@ public class CrystalAura extends Module {
                     expandRender.getValue()
             );
         }
+
+        // add crystals to spawned map to be broken - this is a workaround because putting this in any
+        // of the functions that run on tick causes it to block modules like surround and scaffold tower,
+        // if there's a better way that doesn't mess up the on tick function, don't hesitate to replace this. -Makrennel
+        if(addingTimer.passedTicks(10)) {
+            for (Entity entity : MC.world.getEntities()) {
+                if (entity instanceof EndCrystalEntity) {
+                    if (getDamage(entity.getPos(), targetPlayer) >= (minDamage.getValue() /2) && !waitingCrystals.containsKey(entity) && !spawnedCrystals.containsKey(entity)) {
+                        spawnedCrystals.putIfAbsent((EndCrystalEntity) entity, new AtomicInteger(0));
+                        lostCrystals.remove(entity);
+                    }
+                }
+            }
+            addingTimer.reset();
+        }
     }
 
     private boolean isPartOfHole(BlockPos pos) {
@@ -331,7 +377,7 @@ public class CrystalAura extends Module {
     }
 
     private boolean shouldBreakCrystal(boolean offhand) {
-        return (System.nanoTime() / 1000000) - breakTimer >= (offhand ? breakOffhandDelay.getValue() : breakDelay.getValue()) * 50;
+        return breakTimer.passedTicks(offhand ? breakOffhandDelay.getValue() : breakDelay.getValue());
     }
 
     private boolean canBreakCrystal(EndCrystalEntity crystal) {
@@ -351,15 +397,8 @@ public class CrystalAura extends Module {
         //spoof rotations
         rotations = WorldUtils.calculateLookAt(crystal.getX() + 0.5, crystal.getY() + 0.5, crystal.getZ() + 0.5, MC.player);
 
-        //cancel crystal if ON_HIT
-        if(cancelMode.getValue() == Canceller.ON_HIT) {
-            crystal.remove();
-            MC.world.finishRemovingEntities();
-            MC.world.getEntities();
-        }
-
         // reset timer
-        breakTimer = System.nanoTime() / 1000000;
+        breakTimer.reset();
     }
 
     private BlockPos getBestPlacement() {
@@ -449,11 +488,20 @@ public class CrystalAura extends Module {
 
     private boolean canCrystalBePlacedHere(BlockPos pos) {
         BlockPos boost = pos.add(0, 1, 0);
-        return (MC.world.getBlockState(pos).getBlock() == Blocks.BEDROCK
-                || MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN)
-                && MC.world.getBlockState(boost).getBlock() == Blocks.AIR
-                && MC.world.getNonSpectatingEntities(Entity.class, new Box(boost)).stream().allMatch(entity -> entity instanceof EndCrystalEntity
-                && !lostCrystals.contains(entity));
+        if(!oneDotTwelve.getValue()) {
+            return (MC.world.getBlockState(pos).getBlock() == Blocks.BEDROCK
+                    || MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN)
+                    && MC.world.getBlockState(boost).getBlock() == Blocks.AIR
+                    && MC.world.getNonSpectatingEntities(Entity.class, new Box(boost)).stream().allMatch(entity -> entity instanceof EndCrystalEntity && !lostCrystals.contains(entity));
+        } else {
+            BlockPos boost2 = pos.add(0, 2, 0);
+            return (MC.world.getBlockState(pos).getBlock() == Blocks.BEDROCK
+                    || MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN)
+                    && MC.world.getBlockState(boost).getBlock() == Blocks.AIR
+                    && MC.world.getBlockState(boost2).getBlock() == Blocks.AIR
+                    && MC.world.getNonSpectatingEntities(Entity.class, new Box(boost)).stream().allMatch(entity -> entity instanceof EndCrystalEntity && !lostCrystals.contains(entity))
+                    && MC.world.getNonSpectatingEntities(Entity.class, new Box(boost2)).stream().allMatch(entity -> entity instanceof EndCrystalEntity && !lostCrystals.contains(entity));
+        }
     }
 
     // damage calculations
