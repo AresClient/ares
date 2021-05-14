@@ -2,17 +2,17 @@ package dev.tigr.ares.forge.impl.modules.misc;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.init.Enchantments;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemSword;
-import net.minecraft.item.ItemTool;
+import net.minecraft.item.*;
 import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.util.math.BlockPos;
@@ -23,10 +23,14 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
  */
 @Module.Info(name = "AutoTool", description = "Automatically picks the best tool for the job", category = Category.MISC)
 public class AutoTool extends Module {
+    private final Setting<Boolean> endCrystals = register(new BooleanSetting("End Crystals", false));
+
     @EventHandler
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         if(event.getPacket() instanceof CPacketUseEntity) {
             if(((CPacketUseEntity) event.getPacket()).getAction() == CPacketUseEntity.Action.ATTACK) {
+                if(((CPacketUseEntity) event.getPacket()).getEntityFromWorld(MC.world) instanceof EntityEnderCrystal && !endCrystals.getValue())
+                    return;
                 int slot = getWeapon();
                 if(slot != -1 && slot != MC.player.inventory.currentItem) {
                     MC.player.inventory.currentItem = slot;
