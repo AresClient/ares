@@ -3,10 +3,7 @@ package dev.tigr.ares.fabric.utils;
 import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
+import net.minecraft.block.*;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -44,7 +41,11 @@ public class WorldUtils implements Wrapper {
     }
 
     public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
-        return placeBlock(Hand.MAIN_HAND, pos, rotate, ignoreEntity);
+        return placeBlockMainHand(pos, rotate, ignoreEntity, null);
+    }
+
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity, Direction overrideSide) {
+        return placeBlock(Hand.MAIN_HAND, pos, rotate, ignoreEntity, overrideSide);
     }
 
     public static boolean placeBlockNoRotate(Hand hand, BlockPos pos) {
@@ -60,13 +61,17 @@ public class WorldUtils implements Wrapper {
         placeBlock(hand, pos, rotate, false);
         return true;
     }
-
     public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
+        placeBlock(hand, pos, rotate, ignoreEntity, null);
+        return true;
+    }
+
+    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity, Direction overrideSide) {
         // make sure place is empty if ignoreEntity is not true
-        if (ignoreEntity) {
+        if(ignoreEntity) {
             if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
                 return false;
-        } else if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
+        } else if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() || !MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent()))
             return false;
 
         Vec3d eyesPos = new Vec3d(MC.player.getX(),
@@ -76,15 +81,23 @@ public class WorldUtils implements Wrapper {
         Vec3d hitVec = null;
         BlockPos neighbor = null;
         Direction side2 = null;
-        for(Direction side: Direction.values()) {
-            neighbor = pos.offset(side);
-            side2 = side.getOpposite();
 
-            // check if neighbor can be right clicked aka it isnt air
-            if(MC.world.getBlockState(neighbor).isAir()) {
-                neighbor = null;
-                side2 = null;
-                continue;
+        if(overrideSide != null) {
+            neighbor = pos.offset(overrideSide.getOpposite());
+            side2 = overrideSide;
+        }
+
+        for(Direction side: Direction.values()) {
+            if(overrideSide == null) {
+                neighbor = pos.offset(side);
+                side2 = side.getOpposite();
+
+                // check if neighbor can be right clicked aka it isnt air
+                if(MC.world.getBlockState(neighbor).isAir() || MC.world.getBlockState(neighbor).getBlock() instanceof FluidBlock) {
+                    neighbor = null;
+                    side2 = null;
+                    continue;
+                }
             }
 
             hitVec = new Vec3d(neighbor.getX(), neighbor.getY(), neighbor.getZ()).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getUnitVector()).multiply(0.5));
@@ -112,7 +125,7 @@ public class WorldUtils implements Wrapper {
                 MC.player.pitch + MathHelper
                         .wrapDegrees(pitch - MC.player.pitch)};
 
-        if (rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
+        if(rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
 
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
         MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));

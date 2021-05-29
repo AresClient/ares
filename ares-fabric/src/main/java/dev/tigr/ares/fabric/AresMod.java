@@ -83,6 +83,7 @@ public class AresMod extends Ares {
                 TextShadow.class,
 
                 // exploit
+                AirInteract.class,
                 FastPlace.class,
                 InstantMine.class,
                 LiquidInteract.class,

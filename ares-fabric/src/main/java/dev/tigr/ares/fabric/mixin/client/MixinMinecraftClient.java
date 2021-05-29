@@ -10,6 +10,7 @@ import dev.tigr.ares.fabric.event.player.InteractEvent;
 import dev.tigr.ares.fabric.gui.AresChatGUI;
 import dev.tigr.ares.fabric.gui.AresMainMenu;
 import dev.tigr.ares.fabric.gui.AresUpdateGUI;
+import dev.tigr.ares.fabric.impl.modules.exploit.AirInteract;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.gui.screen.ChatScreen;
@@ -17,6 +18,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.item.BlockItem;
 import net.minecraft.util.profiler.Profiler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -74,6 +76,11 @@ public class MixinMinecraftClient {
         }
 
         if(Ares.EVENT_MANAGER.post(new OpenScreenEvent(screen)).isCancelled()) ci.cancel();
+    }
+
+    @Inject(method = "doItemUse", at = @At(value = "INVOKE"), cancellable = true)
+    public void onKeyPressUse(CallbackInfo ci) {
+        if(AirInteract.INSTANCE.getEnabled() && MC.player.getMainHandStack().getItem() instanceof BlockItem) ci.cancel();
     }
 
     @Redirect(method = "handleBlockBreaking", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
