@@ -54,39 +54,54 @@ import java.util.stream.Collectors;
 public class CrystalAura extends Module {
     public static CrystalAura INSTANCE;
 
-    private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
-    private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
-    private final Setting<Order> order = register(new EnumSetting<>("Order", Order.PLACE_BREAK));
-    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
-    private final Setting<Boolean> doSwitch = register(new BooleanSetting("Do Switch", true));
-    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(doSwitch::getValue);
-    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 2, 0, 15));
-    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 2, 0, 15));
-    private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 2, 0, 15));
-    private final Setting<Integer> breakOffhandDelay = register(new IntegerSetting("Offh. Break Delay", 2, 0, 15));
-    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
-    private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
-    private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
-    private final Setting<Integer> maxBreakTries = register(new IntegerSetting("Break Attempts", 3, 1, 5));
-    private final Setting<Integer> lostWindow = register(new IntegerSetting("Lost Window", 6, 0, 20));
-    private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
-    private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", false));
-    private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true));
-    private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true));
-    private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET));
-    private final Setting<Boolean> pauseOnEat = register(new BooleanSetting("Pause On Eat", false));
-    private final Setting<Boolean> pauseOnPot = register(new BooleanSetting("Pause On Pot", false));
-    private final Setting<Boolean> pauseOnXP = register(new BooleanSetting("Pause On XP", false));
-    private final Setting<Boolean> pauseOnMine = register(new BooleanSetting("Pause On Mine", false));
+    //Setting which enumerates the pages
+    private final Setting<Page> page = register(new EnumSetting<>("Page", Page.GENERAL));
+    enum Page { GENERAL, RENDER, BREAK, PLACE }
 
-    private final Setting<Boolean> showColorSettings = register(new BooleanSetting("Color Settings", false));
-    private final Setting<Integer> colorRed = register(new IntegerSetting("Red", 237, 0, 255)).setVisibility(showColorSettings::getValue);
-    private final Setting<Integer> colorGreen = register(new IntegerSetting("Green", 0, 0, 255)).setVisibility(showColorSettings::getValue);
-    private final Setting<Integer> colorBlue = register(new IntegerSetting("Blue", 0, 0, 255)).setVisibility(showColorSettings::getValue);
-    private final Setting<Integer> fillAlpha = register(new IntegerSetting("Fill Alpha", 30, 0, 100)).setVisibility(showColorSettings::getValue);
-    private final Setting<Integer> boxAlpha = register(new IntegerSetting("Box Alpha", 69, 0, 100)).setVisibility(showColorSettings::getValue);
+    //General Page
+    private final Setting<Boolean> doSwitch = register(new BooleanSetting("Do Switch", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(() -> page.getValue() == Page.GENERAL && doSwitch.getValue());
+    private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Order> order = register(new EnumSetting<>("Order", Order.PLACE_BREAK)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> pauseOnEat = register(new BooleanSetting("Pause On Eat", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> pauseOnPot = register(new BooleanSetting("Pause On Pot", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> pauseOnXP = register(new BooleanSetting("Pause On XP", false)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> pauseOnMine = register(new BooleanSetting("Pause On Mine", false)).setVisibility(() -> page.getValue() == Page.GENERAL);
+
+    //Place Page
+    private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 2, 0, 20)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 2, 0, 20)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", false)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE)).setVisibility(() -> page.getValue() == Page.PLACE);
+
+    //Break Page
+    private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 2, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Integer> breakOffhandDelay = register(new IntegerSetting("Offh. Break Delay", 2, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Integer> breakAge = register(new IntegerSetting("Break Age", 0, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Boolean> breakOnSpawn = register(new BooleanSetting("Break On Spawn", true)).setVisibility(() -> page.getValue() == Page.BREAK && !(breakAge.getValue() > 0));
+    private final Setting<BreakMode> breakMode = register(new EnumSetting<>("Break Mode", BreakMode.SMART)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Integer> maxBreakTries = register(new IntegerSetting("Break Attempts", 3, 1, 5)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Integer> lostWindow = register(new IntegerSetting("Fail Window", 6, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK);
+    private final Setting<Boolean> retryLost = register(new BooleanSetting("Retry Failed Crystals", true)).setVisibility(() -> page.getValue() == Page.BREAK && breakMode.getValue() != BreakMode.ALL);
+    private final Setting<Integer> retryAfter = register(new IntegerSetting("Retry After", 4, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK && breakMode.getValue() != BreakMode.ALL && retryLost.getValue());
+    private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true)).setVisibility(() -> page.getValue() == Page.BREAK);
+
+    //Render Page
+    private final Setting<Integer> colorRed = register(new IntegerSetting("Red", 237, 0, 255)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Integer> colorGreen = register(new IntegerSetting("Green", 0, 0, 255)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Integer> colorBlue = register(new IntegerSetting("Blue", 0, 0, 255)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Integer> fillAlpha = register(new IntegerSetting("Fill Alpha", 30, 0, 100)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Integer> boxAlpha = register(new IntegerSetting("Box Alpha", 69, 0, 100)).setVisibility(() -> page.getValue() == Page.RENDER);
 
     enum Mode { DAMAGE, DISTANCE }
+    enum BreakMode { OWN, SMART, ALL }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
     enum Rotations { PACKET, REAL, NONE }
@@ -95,13 +110,13 @@ public class CrystalAura extends Module {
     private final Timer placeTimer = new Timer();
     private final Timer breakTimer = new Timer();
     private final Timer cleanupTimer = new Timer();
-    private final Timer addingTimer = new Timer();
+    private final Timer rotationTimer = new Timer();
+    private BlockPos rotatePos = null;
     private double[] rotations = null;
     public BlockPos target = null;
     private final LinkedHashMap<Vec3d, Long> placedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EntityEnderCrystal, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
-    private final LinkedHashMap<EntityEnderCrystal, AtomicInteger> waitingCrystals = new LinkedHashMap<>();
-    private final List<EntityEnderCrystal> lostCrystals = new ArrayList<>();
+    private final LinkedHashMap<EntityEnderCrystal, Integer> lostCrystals = new LinkedHashMap<>();
     private EntityPlayer targetPlayer;
 
     public CrystalAura() {
@@ -125,6 +140,48 @@ public class CrystalAura extends Module {
     }
 
     private void run() {
+        // Break modes on a separate thread, otherwise the smart break damage calculations hold up the onTick function for all modules.
+        EXECUTOR.execute(() -> {
+            for(Entity entity : MC.world.getLoadedEntityList()) {
+                if(entity.getDistance(MC.player) > Math.max(placeRange.getValue(), breakRange.getValue()) +2) continue;
+                if(entity instanceof EntityEnderCrystal) {
+                    EntityEnderCrystal c = (EntityEnderCrystal) entity;
+                    if(breakMode.getValue() == BreakMode.SMART) {
+                        // Check if the player wants to retry breaking lost crystals
+                        if(!retryLost.getValue() && lostCrystals.containsKey(c)) continue;
+                        if(lostCrystals.containsKey(c)) {
+                            if(c.ticksExisted < lostCrystals.get(c) + lostWindow.getValue() + retryAfter.getValue()) continue;
+                        }
+                        if(getDamage(entity.getPositionVector(), targetPlayer) >= (minDamage.getValue() / 2) && !spawnedCrystals.containsKey(c)) {
+                            //add crystal to spawned list so that it can be broken.
+                            spawnedCrystals.put(c, new AtomicInteger(0));
+                            lostCrystals.remove(c);
+                            continue;
+                        }
+                    }
+                    if(breakMode.getValue() == BreakMode.ALL) {
+                        if(lostCrystals.containsKey(c)) {
+                            if(c.ticksExisted < lostCrystals.get(c) + lostWindow.getValue()) continue;
+                        }
+                        if(!spawnedCrystals.containsKey(c)) {
+                            spawnedCrystals.put(c, new AtomicInteger(0));
+                            lostCrystals.remove(c);
+                            continue;
+                        }
+                    }
+                    if(breakMode.getValue() == BreakMode.OWN && retryLost.getValue()) {
+                        if(!lostCrystals.containsKey(c)) continue;
+                        if(lostCrystals.containsKey(c)) {
+                            if(c.ticksExisted < lostCrystals.get(c) + lostWindow.getValue() + retryAfter.getValue()) continue;
+                        }
+                        spawnedCrystals.put(c, new AtomicInteger(0));
+                        lostCrystals.remove(c);
+                        continue;
+                    }
+                }
+            }
+        });
+
         // pause with options
         if((pauseOnEat.getValue() && MC.player.isHandActive() && (MC.player.getHeldItemMainhand().getItem() instanceof ItemFood || MC.player.getHeldItemOffhand().getItem() instanceof ItemFood)) ||
                 (pauseOnPot.getValue() && MC.player.isHandActive() && (MC.player.getHeldItemMainhand().getItem() instanceof ItemPotion || MC.player.getHeldItemOffhand().getItem() instanceof ItemPotion)) ||
@@ -132,23 +189,26 @@ public class CrystalAura extends Module {
                 (pauseOnMine.getValue() && MC.playerController.getIsHittingBlock()))
             return;
 
-        // reset rotations
-        if(rotations != null) rotations = null;
+        // rotations
+        /*
+        There is no point in performing this more than once per tick - movement packets are only sent on tick anyways.
+        So instead of performing this on place / on break, rotate onTick towards a position. This will also help to
+        smoothen the rotation out somewhat while moving (which, in absence of yawsteps, will help somewhat) and by
+        using a reset delay of 10 ticks (may need adjustment) we can avoid micro resets of the rotation of the player
+        in between place/breaks which should help alleviate rubberbanding problems with NCP's fly check. -Makrennel
+         */
+        if(rotations != null && rotationTimer.passedTicks(10)) {
+            rotatePos = null;
+            rotations = null;
+            rotationTimer.reset();
+        } else if(rotatePos != null) {
+            rotations = WorldUtils.calculateLookAt(rotatePos.getX() + 0.5, rotatePos.getY() + 0.5, rotatePos.getZ() + 0.5, MC.player);
+        }
 
         // cleanup render
         if(cleanupTimer.passedMillis(3000)) {
             target = null;
             renderTimer.reset();
-        }
-
-        // add crystal to lost list if waiting duration has expired since attempting to break so that the CA will place elsewhere
-        for(Map.Entry<EntityEnderCrystal, AtomicInteger> entry: waitingCrystals.entrySet()) {
-            if(entry.getKey().isDead) {
-                waitingCrystals.remove(entry.getKey());
-            } else if(entry.getValue().getAndIncrement() >= lostWindow.getValue()) {
-                lostCrystals.add(entry.getKey());
-                waitingCrystals.remove(entry.getKey());
-            }
         }
 
         // do logic
@@ -163,7 +223,10 @@ public class CrystalAura extends Module {
 
         // cleanup place map and lost crystals every ten seconds
         if(cleanupTimer.passedSec(10)) {
-            lostCrystals.removeIf(crystal -> !MC.world.loadedEntityList.contains(crystal));
+            for(Map.Entry<EntityEnderCrystal, Integer> entry: lostCrystals.entrySet()) {
+                if(MC.world.getEntityByID(entry.getKey().getEntityId()) == null)
+                    lostCrystals.remove(entry.getKey());
+            }
 
             // cleanup crystals that never spawned
             Optional<Map.Entry<Vec3d, Long>> first = placedCrystals.entrySet().stream().findFirst();
@@ -206,7 +269,8 @@ public class CrystalAura extends Module {
 
         // place
         MC.player.connection.sendPacket(new CPacketPlayerTryUseItemOnBlock(pos, EnumFacing.UP, offhand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND, 0.5f, 0.5f, 0.5f));
-        rotations = WorldUtils.calculateLookAt(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, MC.player);
+        rotationTimer.reset();
+        rotatePos = pos;
 
         // add to place map
         placedCrystals.put(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), System.nanoTime() / 1000000);
@@ -226,7 +290,7 @@ public class CrystalAura extends Module {
 
             // remove if it hits limit of tries
             if(entry.getValue().get() + 1 == maxBreakTries.getValue()) {
-                waitingCrystals.put(entry.getKey(), new AtomicInteger(0));
+                lostCrystals.put(entry.getKey(), entry.getKey().ticksExisted);
                 spawnedCrystals.remove(entry.getKey());
             }
             else entry.getValue().set(entry.getValue().get() + 1);
@@ -243,7 +307,7 @@ public class CrystalAura extends Module {
                 if(entry.getKey().equals(crystal.getPositionVector())) {
                     // break crystal if possible and add to spawned crystals map
                     boolean offhand = shouldOffhand();
-                    if(shouldBreakCrystal(offhand) && canBreakCrystal(crystal)) {
+                    if(shouldBreakCrystal(offhand) && canBreakCrystal(crystal) && breakOnSpawn.getValue()) {
                         MC.addScheduledTask(() -> breakCrystal(crystal, offhand));
                         spawnedCrystals.put(crystal, new AtomicInteger(1));
                     } else spawnedCrystals.put(crystal, new AtomicInteger(0));
@@ -282,6 +346,8 @@ public class CrystalAura extends Module {
         if(event.getPacket() instanceof CPacketPlayer && rotations != null && rotateMode.getValue() == Rotations.PACKET) {
             ReflectionHelper.setPrivateValue(CPacketPlayer.class, (CPacketPlayer) event.getPacket(), (float) rotations[1], "pitch", "field_149473_f");
             ReflectionHelper.setPrivateValue(CPacketPlayer.class, (CPacketPlayer) event.getPacket(), (float) rotations[0], "yaw", "field_149476_e");
+            MC.player.rotationYawHead = (float) rotations[0];
+            MC.player.renderYawOffset = (float) rotations[0];
         }
     });
 
@@ -302,21 +368,6 @@ public class CrystalAura extends Module {
             }
             RenderUtils.end3d();
         }
-
-        // add crystals to spawned map to be broken - this is a workaround because putting this in any
-        // of the functions that run on tick causes it to block modules like surround and scaffold tower,
-        // if there's a better way that doesn't mess up the on tick function, don't hesitate to replace this. -Makrennel
-        if(addingTimer.passedTicks(10)) {
-            for (Entity entity : MC.world.getLoadedEntityList()) {
-                if (entity instanceof EntityEnderCrystal) {
-                    if (getDamage(entity.getPositionVector(), targetPlayer) >= (minDamage.getValue() /2) && !waitingCrystals.containsKey(entity) && !spawnedCrystals.containsKey(entity)) {
-                        spawnedCrystals.putIfAbsent((EntityEnderCrystal) entity, new AtomicInteger(0));
-                        lostCrystals.remove(entity);
-                    }
-                }
-            }
-            addingTimer.reset();
-        }
     }
 
     @EventHandler
@@ -336,10 +387,9 @@ public class CrystalAura extends Module {
             if(packet.getCategory() == SoundCategory.BLOCKS && packet.getSound() == SoundEvents.ENTITY_GENERIC_EXPLODE) {
                 for(Entity e : MC.world.getLoadedEntityList()) {
                     if(e instanceof EntityEnderCrystal) {
-                        if(e.getDistance(packet.getX(), packet.getY(), packet.getZ()) <= Math.max(breakRange.getValue(), placeRange.getValue()) + 2) {
+                        if(e.getDistanceSq(packet.getX(), packet.getY(), packet.getZ()) <= 36) {
                             //Remove from all these lists because we can be sure it has broken if the packet was received
                             spawnedCrystals.remove(e);
-                            waitingCrystals.remove(e);
                             lostCrystals.remove(e);
                         }
                     }
@@ -367,7 +417,8 @@ public class CrystalAura extends Module {
 
     private boolean canBreakCrystal(EntityEnderCrystal crystal) {
         return MC.player.getDistance(crystal) <= breakRange.getValue() // check range
-                && !(MC.player.getHealth() - getDamage(crystal.getPositionVector(), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
+                && !(MC.player.getHealth() - getDamage(crystal.getPositionVector(), MC.player) <= 1 && preventSuicide.getValue()) // check suicide
+                && crystal.ticksExisted >= breakAge.getValue(); // check that the crystal has been in the world for the minimum age specified
     }
 
     private void breakCrystal(EntityEnderCrystal crystal, boolean offhand) {
@@ -380,7 +431,8 @@ public class CrystalAura extends Module {
         MC.player.swingArm(hand);
 
         //spoof rotations
-        rotations = WorldUtils.calculateLookAt(crystal.posX + 0.5, crystal.posY + 0.5, crystal.posZ + 0.5, MC.player);
+        rotationTimer.reset();
+        rotatePos = crystal.getPosition();
 
         // reset timer
         breakTimer.reset();
@@ -485,14 +537,21 @@ public class CrystalAura extends Module {
                     || MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN)
                     && MC.world.getBlockState(boost).getBlock() == Blocks.AIR
                     && MC.world.getBlockState(boost2).getBlock() == Blocks.AIR
-                    && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(boost)).stream().allMatch(entity -> entity instanceof EntityEnderCrystal && !lostCrystals.contains(entity))
-                    && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(boost2)).stream().allMatch(entity -> entity instanceof EntityEnderCrystal && !lostCrystals.contains(entity));
+                    && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(boost)).stream().allMatch(entity -> entity instanceof EntityEnderCrystal && !isCrystalLost((EntityEnderCrystal) entity))
+                    && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(boost2)).stream().allMatch(entity -> entity instanceof EntityEnderCrystal && !isCrystalLost((EntityEnderCrystal) entity));
         } else {
             return (MC.world.getBlockState(pos).getBlock() == Blocks.BEDROCK
                     || MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN)
                     && MC.world.getBlockState(boost).getBlock() == Blocks.AIR
-                    && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(boost)).stream().allMatch(entity -> entity instanceof EntityEnderCrystal && !lostCrystals.contains(entity));
+                    && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(boost)).stream().allMatch(entity -> entity instanceof EntityEnderCrystal && !isCrystalLost((EntityEnderCrystal) entity));
         }
+    }
+
+    private boolean isCrystalLost(EntityEnderCrystal entity) {
+        if(lostCrystals.containsKey(entity)) {
+            return entity.ticksExisted >= lostCrystals.get(entity) + lostWindow.getValue();
+        }
+        return false;
     }
 
     // damage calculations
