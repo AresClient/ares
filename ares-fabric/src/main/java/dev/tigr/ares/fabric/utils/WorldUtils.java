@@ -33,40 +33,42 @@ import java.util.stream.StreamSupport;
  */
 public class WorldUtils implements Wrapper {
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(pos, true, false);
+        return placeBlockMainHand(pos, true);
     }
-
     public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
-        return placeBlockMainHand(pos, rotate, false);
+        return placeBlockMainHand(pos, rotate, true);
     }
-
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
-        return placeBlockMainHand(pos, rotate, ignoreEntity, null);
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace) {
+        return placeBlockMainHand(pos, rotate, airPlace, false);
     }
-
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity, Direction overrideSide) {
-        return placeBlock(Hand.MAIN_HAND, pos, rotate, ignoreEntity, overrideSide);
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
+        return placeBlockMainHand(pos, rotate, airPlace, ignoreEntity, null);
     }
-
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
+        return placeBlock(Hand.MAIN_HAND, pos, rotate, airPlace, ignoreEntity, overrideSide);
+    }
     public static boolean placeBlockNoRotate(Hand hand, BlockPos pos) {
-        return placeBlock(hand, pos, false, false);
+        return placeBlock(hand, pos, false, true, false);
     }
 
     public static boolean placeBlock(Hand hand, BlockPos pos) {
         placeBlock(hand, pos, true, false);
         return true;
     }
-
     public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate) {
         placeBlock(hand, pos, rotate, false);
         return true;
     }
-    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
-        placeBlock(hand, pos, rotate, ignoreEntity, null);
+    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean airPlace) {
+        placeBlock(hand, pos, rotate, airPlace, false);
+        return true;
+    }
+    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
+        placeBlock(hand, pos, rotate, airPlace, ignoreEntity, null);
         return true;
     }
 
-    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity, Direction overrideSide) {
+    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
             if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
@@ -105,9 +107,13 @@ public class WorldUtils implements Wrapper {
         }
 
         // Air place if no neighbour was found
-        if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-        if(neighbor == null) neighbor = pos;
-        if(side2 == null) side2 = Direction.UP;
+        if(airPlace) {
+            if (hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+            if (neighbor == null) neighbor = pos;
+            if (side2 == null) side2 = Direction.UP;
+        } else if(hitVec == null || neighbor == null || side2 == null) {
+            return false;
+        }
 
         // place block
         double diffX = hitVec.x - eyesPos.x;
@@ -434,5 +440,28 @@ public class WorldUtils implements Wrapper {
 
     public static BlockPos roundBlockPos(Vec3d vec) {
         return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
+    }
+
+    public static void snapPlayer() {
+        BlockPos lastPos = MC.player.isOnGround() ? WorldUtils.roundBlockPos(MC.player.getPos()) : MC.player.getBlockPos();
+        snapPlayer(lastPos);
+    }
+    public static void snapPlayer(BlockPos lastPos) {
+        double xPos = MC.player.getPos().x;
+        double zPos = MC.player.getPos().z;
+
+        if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPos().x) >= 0.2) {
+            int xDir = (lastPos.getX() + 0.5) - MC.player.getPos().x > 0 ? 1 : -1;
+            xPos += 0.3 * xDir;
+        }
+
+        if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPos().z) >= 0.2) {
+            int zDir = (lastPos.getZ() + 0.5) - MC.player.getPos().z > 0 ? 1 : -1;
+            zPos += 0.3 * zDir;
+        }
+
+        MC.player.setVelocity(0, 0, 0);
+        MC.player.updatePosition(xPos, MC.player.getY(), zPos);
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY(), MC.player.getZ(), MC.player.isOnGround()));
     }
 }

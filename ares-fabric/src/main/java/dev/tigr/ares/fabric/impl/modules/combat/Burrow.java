@@ -164,7 +164,7 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true);
+        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true, true);
 
         MC.player.inventory.selectedSlot = oldSelection;
 

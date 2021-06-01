@@ -109,6 +109,7 @@ public class RenderUtils {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_LINE_SMOOTH);
         glLineWidth(2);
+        GlStateManager.disableAlpha();
         glDisable(GL_TEXTURE_2D);
         glEnable(GL_CULL_FACE);
         glDisable(GL_DEPTH_TEST);
@@ -128,6 +129,7 @@ public class RenderUtils {
 
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_2D);
+        GlStateManager.enableAlpha();
         glDisable(GL_BLEND);
         glDisable(GL_LINE_SMOOTH);
     }

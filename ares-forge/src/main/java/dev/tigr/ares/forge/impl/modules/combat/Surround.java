@@ -4,18 +4,21 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
+import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
+import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.Timer;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.init.Blocks;
-import net.minecraft.network.play.client.CPacketPlayer;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Tigermouthbear
@@ -24,12 +27,26 @@ import java.util.List;
 public class Surround extends Module {
     public static Surround INSTANCE;
 
-    private final Setting<Boolean> snap = register(new BooleanSetting("Center", true));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 0, 0, 10));
+    private final Setting<Boolean> onlyGround = register(new BooleanSetting("Only On Ground", false));
+    private final Setting<Boolean> snap = register(new BooleanSetting("Center", true));
+    private final Setting<Integer> centerDelay = register(new IntegerSetting("Center Delay", 0, 0, 10));
+    private final Setting<Boolean> placeOnCrystal = register(new BooleanSetting("Place on Crystal", true));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> air = register(new BooleanSetting("Air-place", false));
+    private final Setting<Boss> boss = register(new EnumSetting<>("Boss", Boss.NONE));
+    private final Setting<Boolean> renderFinished = register(new BooleanSetting("Render Finished", true));
+    private final Setting<Integer> renderAlpha = register(new IntegerSetting("Render Alpha", 40, 0, 100));
+
+    enum Boss {NONE, BOSSPLUS, BOSS}
+
+    private LinkedHashMap<BlockPos, Pair<Timer, Boolean>> renderChange = new LinkedHashMap<>();
+
     private BlockPos lastPos = new BlockPos(0, -100, 0);
     private int ticks = 0;
+
+    private boolean hasCentered = false;
+    private Timer onGroundCenter = new Timer();
 
     public Surround() {
         INSTANCE = this;
@@ -43,41 +60,99 @@ public class Surround extends Module {
 
     @Override
     public void onTick() {
-        if(!MC.player.onGround || (delay.getValue() != 0 && ticks++ % delay.getValue() != 0)) return;
-
-        // make sure player is in the same place
-        AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
-        if(!lastPos.equals(WorldUtils.roundBlockPos(loc.getPositionVector()))) {
-            setEnabled(false);
-            return;
+        if(onGroundCenter.passedTicks(centerDelay.getValue()) && snap.getValue() && doSnap && !hasCentered && MC.player.onGround) {
+            WorldUtils.snapPlayer(lastPos);
+            hasCentered = true;
         }
 
-        // find obby
-        int obbyIndex = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
-        if(obbyIndex == -1) return;
-        int prevSlot = MC.player.inventory.currentItem;
+        if(!hasCentered && !MC.player.onGround) {
+            onGroundCenter.reset();
+        }
 
-        if(needsToPlace()) {
-            for(BlockPos pos: getPositions()) {
-                MC.player.inventory.currentItem = obbyIndex;
-                if(WorldUtils.placeBlockMainHand(pos, rotate.getValue()) && delay.getValue() != 0) return;
+        BlockPos roundedPos = WorldUtils.roundBlockPos(MC.player.getPositionVector());
+        if(onlyGround.getValue() && !MC.player.onGround && roundedPos.getY() <= lastPos.getY()) {
+            lastPos = WorldUtils.roundBlockPos(MC.player.getPositionVector());
+        }
+
+        if(MC.player.onGround || !onlyGround.getValue()) {
+            if(delay.getValue() != 0 && ticks++ % delay.getValue() != 0) return;
+
+            // make sure player is in the same place
+            AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
+            BlockPos locRounded = WorldUtils.roundBlockPos(loc.getPositionVector());
+            if(!lastPos.equals(loc.onGround ? locRounded : loc.getPosition())) {
+                if(onlyGround.getValue() || !(loc.getPositionVector().y <= lastPos.getY() + 1.5)
+                        || ((Math.floor(loc.getPositionVector().x) != lastPos.getX() || Math.floor(loc.getPositionVector().z) != lastPos.getZ()) && !(loc.getPositionVector().y <= lastPos.getY() + 0.75))
+                        || (!MC.world.getBlockState(lastPos).getMaterial().isReplaceable() && loc.getPosition() != lastPos)
+                ) {
+                    setEnabled(false);
+                    return;
+                }
+                if(!onlyGround.getValue() && locRounded.getY() <= lastPos.getY()) {
+                    lastPos = locRounded;
+                }
             }
 
-            MC.player.inventory.currentItem = prevSlot;
+            // find obby
+            int obbyIndex = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
+            if(obbyIndex == -1) return;
+            int prevSlot = MC.player.inventory.currentItem;
+
+            if(needsToPlace()) {
+                for(BlockPos pos : getPositions()) {
+                    if(MC.world.getBlockState(pos).getMaterial().isReplaceable())
+                        renderChange.putIfAbsent(pos, new Pair<>(new Timer(), false));
+
+                    MC.player.inventory.currentItem = obbyIndex;
+                    if(WorldUtils.placeBlockMainHand(pos, rotate.getValue(), air.getValue(), placeOnCrystal.getValue())) {
+                        if(renderChange.containsKey(pos)) {
+                            renderChange.get(pos).setSecond(true);
+                            renderChange.get(pos).getFirst().reset();
+                        }
+                        if(delay.getValue() != 0) {
+                            MC.player.inventory.currentItem = prevSlot;
+                            return;
+                        }
+                    }
+                }
+
+                MC.player.inventory.currentItem = prevSlot;
+            }
         }
     }
 
     private boolean needsToPlace() {
-        return anyAir(lastPos.north(), lastPos.east(), lastPos.south(), lastPos.west());
+        return anyAir(lastPos.north(), lastPos.east(), lastPos.south(), lastPos.west(),
+                lastPos.north(2), lastPos.east(2), lastPos.south(2), lastPos.west(2),
+                lastPos.north().east(), lastPos.east().south(), lastPos.south().west(), lastPos.west().north()
+        );
     }
 
     // returns list of places blocks should be placed at
     private List<BlockPos> getPositions() {
         List<BlockPos> positions = new ArrayList<>();
+        if(!onlyGround.getValue()) add(positions, lastPos.down());
         add(positions, lastPos.north());
         add(positions, lastPos.east());
         add(positions, lastPos.south());
         add(positions, lastPos.west());
+        if(boss.getValue() != Boss.NONE) {
+            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north(2));
+            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east(2));
+            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south(2));
+            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west(2));
+        }
+        if(boss.getValue() == Boss.BOSSPLUS) {
+            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north().east());
+            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east().south());
+            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south().west());
+            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west().north());
+            //Yeah, boss is cringe but some stupid people from some russian server unironically want it - Makrennel
+        }
         return positions;
     }
 
@@ -101,31 +176,39 @@ public class Surround extends Module {
 
     @Override
     public void onEnable() {
-        lastPos = WorldUtils.roundBlockPos(MC.player.getPositionVector());
-
-        if(snap.getValue() && doSnap) {
-            double xPos = MC.player.getPositionVector().x;
-            double zPos = MC.player.getPositionVector().z;
-
-            if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPositionVector().x) >= 0.2) {
-                int xDir = (lastPos.getX() + 0.5) - MC.player.getPositionVector().x > 0 ? 1 : -1;
-                xPos += 0.3 * xDir;
-            }
-
-            if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPositionVector().z) >= 0.2) {
-                int zDir = (lastPos.getZ() + 0.5) - MC.player.getPositionVector().z > 0 ? 1 : -1;
-                zPos += 0.3 * zDir;
-            }
-
-            MC.player.motionX = MC.player.motionY = MC.player.motionZ = 0;
-            MC.player.setPosition(xPos, MC.player.posY, zPos);
-            MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, MC.player.posY, zPos, MC.player.onGround));
-        }
+        lastPos = MC.player.onGround ? WorldUtils.roundBlockPos(MC.player.getPositionVector()) : MC.player.getPosition();
     }
 
     @Override
     public void onDisable() {
         ticks = 0;
         doSnap = true;
+        hasCentered = false;
+        renderChange.clear();
+    }
+
+    // draw blocks
+    @Override
+    public void onRender3d() {
+        for(Map.Entry<BlockPos, Pair<Timer, Boolean>> entry: renderChange.entrySet()) {
+            if(entry.getValue().getSecond() && entry.getValue().getFirst().passedTicks(6) && !MC.world.getBlockState(entry.getKey()).getMaterial().isReplaceable()) {
+                entry.getValue().setSecond(false);
+            }
+        }
+
+        RenderUtils.prepare3d();
+        for (BlockPos pos : getPositions()) {
+            AxisAlignedBB render = new AxisAlignedBB(pos);
+            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond()) {
+                RenderGlobal.renderFilledBox(render, 1,1,0,renderAlpha.getValue().floatValue() /100);
+            } else if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
+                RenderGlobal.renderFilledBox(render, 1,0,0,renderAlpha.getValue().floatValue() /100);
+            } else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue()) {
+                RenderGlobal.renderFilledBox(render, 0,0,1,renderAlpha.getValue().floatValue() /100);
+            } else if(renderFinished.getValue()) {
+                RenderGlobal.renderFilledBox(render, 0,1,0,renderAlpha.getValue().floatValue() /100);
+            }
+        }
+        RenderUtils.end3d();
     }
 }

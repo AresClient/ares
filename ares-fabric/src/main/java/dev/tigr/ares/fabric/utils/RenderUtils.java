@@ -33,6 +33,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
         GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
+        RenderSystem.disableAlphaTest();
         RenderSystem.disableTexture();
         RenderSystem.depthMask(false);
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
@@ -46,6 +47,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.depthMask(true);
         RenderSystem.enableTexture();
+        RenderSystem.enableAlphaTest();
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         GL11.glPopMatrix();

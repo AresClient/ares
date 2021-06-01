@@ -34,19 +34,20 @@ import static dev.tigr.ares.Wrapper.MC;
  */
 public class WorldUtils {
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(pos, true, false);
+        return placeBlockMainHand(pos, true);
     }
-
     public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
         return placeBlockMainHand(pos, rotate, false);
     }
-
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
-        return placeBlock(EnumHand.MAIN_HAND, pos, rotate, ignoreEntity);
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace) {
+        return placeBlock(EnumHand.MAIN_HAND, pos, rotate, airPlace, false);
+    }
+    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
+        return placeBlock(EnumHand.MAIN_HAND, pos, rotate, airPlace, ignoreEntity);
     }
 
     public static boolean placeBlockNoRotate(EnumHand hand, BlockPos pos) {
-        return placeBlock(hand, pos, false, false);
+        return placeBlock(hand, pos, false, false, false);
     }
 
     public static boolean placeBlock(EnumHand hand, BlockPos pos) {
@@ -57,7 +58,11 @@ public class WorldUtils {
         placeBlock(hand, pos, rotate, false);
         return true;
     }
-    public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean ignoreEntity) {
+    public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean airPlace) {
+        placeBlock(hand, pos, rotate, airPlace, false);
+        return true;
+    }
+    public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
             if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
@@ -89,9 +94,13 @@ public class WorldUtils {
         }
 
         // Air place if no neighbour was found
-        if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-        if(neighbor == null) neighbor = pos;
-        if(side2 == null) side2 = EnumFacing.UP;
+        if(airPlace) {
+            if (hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+            if (neighbor == null) neighbor = pos;
+            if (side2 == null) side2 = EnumFacing.UP;
+        } else if(hitVec == null || neighbor == null || side2 == null) {
+            return false;
+        }
 
         // place block
         double diffX = hitVec.x - eyesPos.x;
@@ -344,5 +353,28 @@ public class WorldUtils {
 
     public static BlockPos roundBlockPos(Vec3d vec) {
         return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
+    }
+
+    public static void snapPlayer() {
+        BlockPos lastPos = MC.player.onGround ? roundBlockPos(MC.player.getPositionVector()) : MC.player.getPosition();
+        snapPlayer(lastPos);
+    }
+    public static void snapPlayer(BlockPos lastPos) {
+        double xPos = MC.player.getPositionVector().x;
+        double zPos = MC.player.getPositionVector().z;
+
+        if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPositionVector().x) >= 0.2) {
+            int xDir = (lastPos.getX() + 0.5) - MC.player.getPositionVector().x > 0 ? 1 : -1;
+            xPos += 0.3 * xDir;
+        }
+
+        if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPositionVector().z) >= 0.2) {
+            int zDir = (lastPos.getZ() + 0.5) - MC.player.getPositionVector().z > 0 ? 1 : -1;
+            zPos += 0.3 * zDir;
+        }
+
+        MC.player.motionX = MC.player.motionY = MC.player.motionZ = 0;
+        MC.player.setPosition(xPos, MC.player.posY, zPos);
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, MC.player.posY, zPos, MC.player.onGround));
     }
 }

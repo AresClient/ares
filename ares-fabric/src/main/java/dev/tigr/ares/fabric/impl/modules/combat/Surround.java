@@ -6,19 +6,20 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
+import dev.tigr.ares.fabric.utils.RenderUtils;
 import dev.tigr.ares.fabric.utils.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Tigermouthbear
@@ -27,17 +28,29 @@ import java.util.List;
 public class Surround extends Module {
     public static Surround INSTANCE;
 
-    private final Setting<Boolean> snap = register(new BooleanSetting("Center", true));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 0, 0, 10));
+    private final Setting<Boolean> onlyGround = register(new BooleanSetting("Only On Ground", false));
+    private final Setting<Boolean> snap = register(new BooleanSetting("Center", true));
+    private final Setting<Integer> centerDelay = register(new IntegerSetting("Center Delay", 0, 0, 10));
+    private final Setting<Boolean> placeOnCrystal = register(new BooleanSetting("Place on Crystal", true));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
-    private final Setting<Boolean> air = register(new BooleanSetting("Air-place", false));
+    private final Setting<Boolean> air = register(new BooleanSetting("AirPlace", true));
+    private final Setting<Boss> boss = register(new EnumSetting<>("Boss", Boss.NONE));
     private final Setting<Primary> primary = register(new EnumSetting<>("Main", Primary.Obsidian));
     private final Setting<Boolean> allBlocks = register(new BooleanSetting("All BP Blocks", true));
+    private final Setting<Boolean> renderFinished = register(new BooleanSetting("Render Finished", true));
+    private final Setting<Integer> renderAlpha = register(new IntegerSetting("Render Alpha", 40, 0, 100));
 
-    enum Primary {Obsidian, EnderChest, CryingObsidian, NetheriteBlock, AncientDebris, EnchantingTable, RespawnAnchor, Anvil}
+    enum Primary {Obsidian, EnderChest, CryingObsidian, NetheriteBlock, AncientDebris, RespawnAnchor, Anvil}
+    enum Boss {NONE, BOSSPLUS, BOSS}
+
+    private LinkedHashMap<BlockPos, Pair<Timer, Boolean>> renderChange = new LinkedHashMap<>();
 
     private BlockPos lastPos = new BlockPos(0, -100, 0);
     private int ticks = 0;
+
+    private boolean hasCentered = false;
+    private Timer onGroundCenter = new Timer();
 
     public Surround() {
         INSTANCE = this;
@@ -58,25 +71,60 @@ public class Surround extends Module {
 
     @Override
     public void onTick() {
-        if (surroundInstanceDelay.passedMillis(timeToStart)) {
-            if (!MC.player.isOnGround() || (delay.getValue() != 0 && ticks++ % delay.getValue() != 0)) return;
+        if(onGroundCenter.passedTicks(centerDelay.getValue()) && snap.getValue() && doSnap && !hasCentered && MC.player.isOnGround()) {
+            WorldUtils.snapPlayer(lastPos);
+            hasCentered = true;
+        }
+
+        if(!hasCentered && !MC.player.isOnGround()) {
+            onGroundCenter.reset();
+        }
+
+        BlockPos roundedPos = WorldUtils.roundBlockPos(MC.player.getPos());
+        if(onlyGround.getValue() && !MC.player.isOnGround() && roundedPos.getY() <= lastPos.getY()) {
+            lastPos = WorldUtils.roundBlockPos(MC.player.getPos());
+        }
+
+        if(surroundInstanceDelay.passedMillis(timeToStart) && (MC.player.isOnGround() || !onlyGround.getValue())) {
+            if(delay.getValue() != 0 && ticks++ % delay.getValue() != 0) return;
 
             // make sure player is in the same place
             AbstractClientPlayerEntity loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
-            if (!lastPos.equals(WorldUtils.roundBlockPos(loc.getPos()))) {
-                setEnabled(false);
-                return;
+            BlockPos locRounded = WorldUtils.roundBlockPos(loc.getPos());
+            if(!lastPos.equals(loc.isOnGround() ? locRounded : loc.getBlockPos())) {
+                if(onlyGround.getValue() || !(loc.getPos().y <= lastPos.getY() + 1.5)
+                        || ((Math.floor(loc.getPos().x) != lastPos.getX() || Math.floor(loc.getPos().z) != lastPos.getZ()) && !(loc.getPos().y <= lastPos.getY() + 0.75))
+                        || (!MC.world.getBlockState(lastPos).getMaterial().isReplaceable() && loc.getBlockPos() != lastPos)
+                ) {
+                    setEnabled(false);
+                    return;
+                }
+                if(!onlyGround.getValue() && locRounded.getY() <= lastPos.getY()) {
+                    lastPos = locRounded;
+                }
             }
 
             // find obby
             int obbyIndex = findBlock();
-            if (obbyIndex == -1) return;
+            if(obbyIndex == -1) return;
             int prevSlot = MC.player.inventory.selectedSlot;
 
-            if (needsToPlace()) {
-                for (BlockPos pos : getPositions()) {
+            if(needsToPlace()) {
+                for(BlockPos pos : getPositions()) {
+                    if(MC.world.getBlockState(pos).getMaterial().isReplaceable())
+                        renderChange.putIfAbsent(pos, new Pair<>(new Timer(), false));
+
                     MC.player.inventory.selectedSlot = obbyIndex;
-                    if (WorldUtils.placeBlockMainHand(pos, rotate.getValue()) && delay.getValue() != 0) return;
+                    if(WorldUtils.placeBlockMainHand(pos, rotate.getValue(), air.getValue(), placeOnCrystal.getValue())) {
+                        if(renderChange.containsKey(pos)) {
+                            renderChange.get(pos).setSecond(true);
+                            renderChange.get(pos).getFirst().reset();
+                        }
+                        if(delay.getValue() != 0) {
+                            MC.player.inventory.selectedSlot = prevSlot;
+                            return;
+                        }
+                    }
                 }
 
                 MC.player.inventory.selectedSlot = prevSlot;
@@ -85,16 +133,37 @@ public class Surround extends Module {
     }
 
     private boolean needsToPlace() {
-        return anyAir(lastPos.north(), lastPos.east(), lastPos.south(), lastPos.west());
+        return anyAir(lastPos.down(), lastPos.north(), lastPos.east(), lastPos.south(), lastPos.west(),
+                lastPos.north(2), lastPos.east(2), lastPos.south(2), lastPos.west(2),
+                lastPos.north().east(), lastPos.east().south(), lastPos.south().west(), lastPos.west().north()
+        );
     }
 
     // returns list of places blocks should be placed at
     private List<BlockPos> getPositions() {
         List<BlockPos> positions = new ArrayList<>();
+        if(!onlyGround.getValue()) add(positions, lastPos.down());
         add(positions, lastPos.north());
         add(positions, lastPos.east());
         add(positions, lastPos.south());
         add(positions, lastPos.west());
+        if(boss.getValue() != Boss.NONE) {
+            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north(2));
+            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east(2));
+            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south(2));
+            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west(2));
+        }
+        if(boss.getValue() == Boss.BOSSPLUS) {
+            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north().east());
+            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east().south());
+            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south().west());
+            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK
+                    || MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west().north());
+            //Yeah, boss is cringe but some stupid people from some russian server unironically want it - Makrennel
+        }
         return positions;
     }
 
@@ -144,26 +213,7 @@ public class Surround extends Module {
 
     @Override
     public void onEnable() {
-        lastPos = WorldUtils.roundBlockPos(MC.player.getPos());
-
-        if(snap.getValue() && doSnap) {
-            double xPos = MC.player.getPos().x;
-            double zPos = MC.player.getPos().z;
-
-            if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPos().x) >= 0.2) {
-                int xDir = (lastPos.getX() + 0.5) - MC.player.getPos().x > 0 ? 1 : -1;
-                xPos += 0.3 * xDir;
-            }
-
-            if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPos().z) >= 0.2) {
-                int zDir = (lastPos.getZ() + 0.5) - MC.player.getPos().z > 0 ? 1 : -1;
-                zPos += 0.3 * zDir;
-            }
-
-            MC.player.setVelocity(0, 0, 0);
-            MC.player.updatePosition(xPos, MC.player.getY(), zPos);
-            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY(), MC.player.getZ(), MC.player.isOnGround()));
-        }
+        lastPos = MC.player.isOnGround() ? WorldUtils.roundBlockPos(MC.player.getPos()) : MC.player.getBlockPos();
     }
 
     @Override
@@ -171,5 +221,41 @@ public class Surround extends Module {
         ticks = 0;
         doSnap = true;
         timeToStart = 0;
+        hasCentered = false;
+        renderChange.clear();
+    }
+
+    // draw blocks
+    @Override
+    public void onRender3d() {
+        Color airColor = new Color(1,0,0,renderAlpha.getValue().floatValue() /100);
+        Color changeColor = new Color(1,1,0,renderAlpha.getValue().floatValue() /100);
+        Color blockColor = new Color(0,0,1,renderAlpha.getValue().floatValue() /100);
+        Color bedrockColor = new Color(0,1,0,renderAlpha.getValue().floatValue() /100);
+
+        for(Map.Entry<BlockPos, Pair<Timer, Boolean>> entry: renderChange.entrySet()) {
+            if(entry.getValue().getSecond() && entry.getValue().getFirst().passedTicks(6) && !MC.world.getBlockState(entry.getKey()).getMaterial().isReplaceable()) {
+                entry.getValue().setSecond(false);
+            }
+        }
+
+        RenderUtils.prepare3d();
+        for (BlockPos pos : getPositions()) {
+            Box render = new Box(pos).offset(
+                    -MC.gameRenderer.getCamera().getPos().x,
+                    -MC.gameRenderer.getCamera().getPos().y,
+                    -MC.gameRenderer.getCamera().getPos().z
+            );
+            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond()) {
+                RenderUtils.renderFilledBox(render, changeColor);
+            } else if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
+                RenderUtils.renderFilledBox(render, airColor);
+            } else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue()) {
+                RenderUtils.renderFilledBox(render, blockColor);
+            } else if(renderFinished.getValue()) {
+                RenderUtils.renderFilledBox(render, bedrockColor);
+            }
+        }
+        RenderUtils.end3d();
     }
 }
