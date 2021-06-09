@@ -8,7 +8,7 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.Timer;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;

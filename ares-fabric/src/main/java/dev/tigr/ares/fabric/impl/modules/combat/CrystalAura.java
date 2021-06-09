@@ -18,7 +18,7 @@ import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.RenderUtils;
-import dev.tigr.ares.fabric.utils.Timer;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;

@@ -15,13 +15,15 @@ import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.utils.*;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.*;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.BedItem;
 import net.minecraft.item.EnchantedGoldenAppleItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
@@ -30,9 +32,7 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.getDamage;
@@ -43,10 +43,10 @@ import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
  */
 @Module.Info(name = "BedAura", description = "Automatically places and explodes beds in the nether or end for combat", category = Category.COMBAT)
 public class BedAura extends Module {
-    // TODO: fix render bug, place mode which doesn't use / uses fewer calculations (focuses on placing on or above player or not at all), place mode which uses true rotations?
+    // TODO: Simpler 1.15+ mode which focuses on placing on player rather than calculating. Better rotations. Antisuicide / max self damage. Smart Break?
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
     private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
-    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
+//    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
     private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 12, 0, 15));
     private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 1, 0, 15));
@@ -54,24 +54,29 @@ public class BedAura extends Module {
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
     private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9));
+    private final Setting<Boolean> silentSwitch = register(new BooleanSetting("Silent Switch", true)).setVisibility(() -> Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0);
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
+    private final Setting<Boolean> oneDotTwelve = register(new BooleanSetting("1.12", false));
 
-//    private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
-//    private final Setting<Float> colorRed = register(new FloatSetting("Red", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
-//    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
-//    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0.45f, 0, 1)).setVisibility(showRenderOptions::getValue);
-//    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showRenderOptions::getValue);
-//    private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0, 1)).setVisibility(showRenderOptions::getValue);
-//    private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
+    private final Setting<Boolean> renderAir = register(new BooleanSetting("Render While Air", false));
+    private final Setting<Float> colorRed = register(new FloatSetting("Red", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 1, 0, 1)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0.45f, 0, 1)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0, 1)).setVisibility(showRenderOptions::getValue);
+    private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
 
     enum Mode { DAMAGE, DISTANCE }
     enum Target { CLOSEST, MOST_DAMAGE }
 
-    private long renderTimer = -1;
     private final Timer logicTimer = new Timer();
     private double[] rotations = null;
     public Pair<BlockPos, Direction> target = null;
-    private Stack<BlockPos> placed = new Stack<>();
+    private final Stack<BlockPos> placed = new Stack<>();
+
+    private Box renderBox = null;
+    private final Timer renderTimer = new Timer();
 
     @Override
     public void onTick() {
@@ -79,17 +84,24 @@ public class BedAura extends Module {
     }
 
     private void run() {
+        // remove bed poses from world if not a bed anymore
+        placed.removeIf(pos -> !(MC.world.getBlockState(pos).getBlock() instanceof BedBlock));
+
         // reset rotations
         if(rotations != null) rotations = null;
 
         // cleanup render
-        if((System.nanoTime() / 1000000) - renderTimer >= 3000) {
+        if(renderTimer.passedSec(3)) {
             target = null;
-            renderTimer = System.nanoTime() / 1000000;
         }
+
+        // Check player has beds
+        if(amountBedInInventory() <= 0 && placed.isEmpty()) return;
 
         // replenish
         replenishBed();
+
+        if(amountBedInHotbar() <= 0 && placed.isEmpty()) return;
 
         // do logic
         place();
@@ -114,6 +126,9 @@ public class BedAura extends Module {
     }
 
     private void placeBed(Pair<BlockPos, Direction> pair) {
+        int oldSelection = -1;
+        if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0)
+            oldSelection = MC.player.inventory.selectedSlot;
         // switch to crystals if not holding
         if(!(MC.player.inventory.getMainHandStack().getItem() instanceof BedItem)) {
             int slot = -1;
@@ -133,6 +148,10 @@ public class BedAura extends Module {
         placeRotated(pair.getFirst(), pair.getSecond());
         placed.add(pair.getFirst());
 
+        // Swap back
+        if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0 && oldSelection != -1)
+            MC.player.inventory.selectedSlot = oldSelection;
+
         // set render pos
         target = pair;
     }
@@ -147,7 +166,7 @@ public class BedAura extends Module {
     private void explode() {
         if(!logicTimer.passedTicks(breakDelay.getValue()) || placed.isEmpty()) return;
 
-        BlockPos pos = placed.pop();
+        BlockPos pos = placed.peek();
         Vec3d vec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
         MC.interactionManager.interactBlock(MC.player, MC.world, Hand.MAIN_HAND, new BlockHitResult(vec, Direction.UP, pos, true));
 
@@ -168,32 +187,56 @@ public class BedAura extends Module {
     });
 
     // draw target
-//    @Override
-//    public void onRender3d() {
-//        if(target != null) {
-//            Color fillColor = new Color(
-//                    colorRed.getValue(),
-//                    colorGreen.getValue(),
-//                    colorBlue.getValue(),
-//                    fillAlpha.getValue()
-//            );
-//            Color outlineColor = new Color(
-//                    colorRed.getValue(),
-//                    colorGreen.getValue(),
-//                    colorBlue.getValue(),
-//                    boxAlpha.getValue()
-//            );
-//            RenderUtils.prepare3d();
-//            Box bb = RenderUtils.getBoundingBox(target.getFirst()).expand(target.getSecond().getOffsetX(), 0, target.getSecond().getOffsetZ());
-//            if(bb != null) RenderUtils.renderBlockNoPrepare(bb, fillColor, outlineColor, lineThickness.getValue());
-//            RenderUtils.end3d();
-//        }
-//    }
+    @Override
+    public void onRender3d() {
+        Color fillColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), fillAlpha.getValue());
+        Color outlineColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), boxAlpha.getValue());
 
-    private boolean canBreakBed(Pair<BlockPos, Direction> pair) {
-        return MC.player.squaredDistanceTo(pair.getFirst().getX(), pair.getFirst().getY(), pair.getFirst().getZ()) <= breakRange.getValue() * breakRange.getValue() // check range
-        && !(MC.player.getHealth() - getDamage(new Vec3d(pair.getFirst().getX() + 0.5 + pair.getSecond().getOffsetX() / 2d, pair.getFirst().getY() + 0.5, pair.getFirst().getZ() + 0.5 + pair.getSecond().getOffsetZ() / 2d), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
+        if(target != null) {
+            if(MC.world.getBlockState(target.getFirst()).getBlock() instanceof BedBlock) {
+                switch (target.getSecond()) {
+                    case NORTH:
+                        renderBox = RenderUtils.getBoundingBox(target.getFirst()).expand(0, 0, 0.5).offset(0, 0, -0.5);
+                        renderTimer.reset();
+                        break;
+                    case WEST:
+                        renderBox = RenderUtils.getBoundingBox(target.getFirst()).expand(0.5, 0, 0).offset(-0.5, 0, 0);
+                        renderTimer.reset();
+                        break;
+                    case SOUTH:
+                        renderBox = RenderUtils.getBoundingBox(target.getFirst()).expand(0, 0, 0.5).offset(0, 0, 0.5);
+                        renderTimer.reset();
+                        break;
+                    case EAST:
+                        renderBox = RenderUtils.getBoundingBox(target.getFirst()).expand(0.5, 0, 0).offset(0.5, 0, 0);
+                        renderTimer.reset();
+                        break;
+                }
+            }
+        }
+
+        if(renderBox != null) {
+            if(MC.world.getBlockState(new BlockPos(renderBox.minX, renderBox.minY, renderBox.minZ)).getBlock() instanceof BedBlock) {
+                renderTimer.reset();
+            } else if(!renderAir.getValue()) {
+                renderBox = null;
+                return;
+            }
+            if(renderAir.getValue() && renderTimer.passedTicks(placeDelay.getValue() +5)) {
+                renderBox = null;
+                return;
+            }
+            RenderUtils.renderBlock(renderBox
+                            .offset(-MC.gameRenderer.getCamera().getPos().x, -MC.gameRenderer.getCamera().getPos().y, -MC.gameRenderer.getCamera().getPos().z),
+                    fillColor, outlineColor, lineThickness.getValue()
+            );
+        }
     }
+
+//    private boolean canBreakBed(Pair<BlockPos, Direction> pair) {
+//        return MC.player.squaredDistanceTo(pair.getFirst().getX(), pair.getFirst().getY(), pair.getFirst().getZ()) <= breakRange.getValue() * breakRange.getValue() // check range
+//        && !(MC.player.getHealth() - getDamage(new Vec3d(pair.getFirst().getX() + 0.5 + pair.getSecond().getOffsetX() / 2d, pair.getFirst().getY() + 0.5, pair.getFirst().getZ() + 0.5 + pair.getSecond().getOffsetZ() / 2d), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
+//    }
 
     private Pair<BlockPos, Direction> getBestPlacement() {
         double bestScore = 69420;
@@ -229,17 +272,33 @@ public class BedAura extends Module {
         BlockState south = MC.world.getBlockState(pos.south());
         BlockState west = MC.world.getBlockState(pos.west());
 
-        if(north.isAir() && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.north())).stream().noneMatch(Entity::collides))
-            return new Pair<>(pos.north(), Direction.SOUTH);
+        if((!oneDotTwelve.getValue() ? north.getMaterial().isReplaceable() : north.getBlock() instanceof AirBlock)
+                && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.north())).stream().noneMatch(Entity::collides)) {
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube(MC.world, pos.down())
+                    && MC.world.getBlockState(pos.north().down()).isFullCube(MC.world, pos.north().down()))
+                return new Pair<>(pos.north(), Direction.SOUTH);
+        }
 
-        if(east.isAir() && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.east())).stream().noneMatch(Entity::collides))
-            return new Pair<>(pos.east(), Direction.WEST);
+        if((!oneDotTwelve.getValue() ? east.getMaterial().isReplaceable() : east.getBlock() instanceof AirBlock)
+                && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.east())).stream().noneMatch(Entity::collides)) {
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube(MC.world, pos.down())
+                    && MC.world.getBlockState(pos.east().down()).isFullCube(MC.world, pos.north().down()))
+                return new Pair<>(pos.east(), Direction.WEST);
+        }
 
-        if(south.isAir() && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.south())).stream().noneMatch(Entity::collides))
-            return new Pair<>(pos.south(), Direction.NORTH);
+        if((!oneDotTwelve.getValue() ? south.getMaterial().isReplaceable() : south.getBlock() instanceof AirBlock)
+                && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.south())).stream().noneMatch(Entity::collides)) {
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube(MC.world, pos.down())
+                    && MC.world.getBlockState(pos.south().down()).isFullCube(MC.world, pos.north().down()))
+                return new Pair<>(pos.south(), Direction.NORTH);
+        }
 
-        if(west.isAir() && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.west())).stream().noneMatch(Entity::collides))
-            return new Pair<>(pos.west(), Direction.EAST);
+        if((!oneDotTwelve.getValue() ? west.getMaterial().isReplaceable() : west.getBlock() instanceof AirBlock)
+                && MC.world.getNonSpectatingEntities(Entity.class, new Box(pos.west())).stream().noneMatch(Entity::collides)) {
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube(MC.world, pos.down())
+                    && MC.world.getBlockState(pos.west().down()).isFullCube(MC.world, pos.north().down()))
+                return new Pair<>(pos.west(), Direction.EAST);
+        }
 
         return null;
     }
@@ -301,12 +360,43 @@ public class BedAura extends Module {
     }
 
     private boolean canBedBePlacedHere(BlockPos pos) {
-        return MC.world.getBlockState(pos).isAir() && (
-                MC.world.getBlockState(pos.north()).isAir() ||
-                MC.world.getBlockState(pos.east()).isAir() ||
-                MC.world.getBlockState(pos.south()).isAir() ||
-                MC.world.getBlockState(pos.west()).isAir()
-        );
+        if(oneDotTwelve.getValue()) {
+            return (MC.world.getBlockState(pos).getMaterial().isReplaceable() && MC.world.getBlockState(pos.down()).isFullCube(MC.world, pos.down()))
+                    && (MC.world.getBlockState(pos.north()).getBlock() instanceof AirBlock && MC.world.getBlockState(pos.north().down()).isFullCube(MC.world, pos.north().down())
+                    || MC.world.getBlockState(pos.east()).getBlock() instanceof AirBlock && MC.world.getBlockState(pos.east().down()).isFullCube(MC.world, pos.east().down())
+                    || MC.world.getBlockState(pos.south()).getBlock() instanceof AirBlock && MC.world.getBlockState(pos.south().down()).isFullCube(MC.world, pos.south().down())
+                    || MC.world.getBlockState(pos.west()).getBlock() instanceof AirBlock && MC.world.getBlockState(pos.west().down()).isFullCube(MC.world, pos.west().down())
+            );
+        } else {
+            return MC.world.getBlockState(pos).getMaterial().isReplaceable()
+                    && (MC.world.getBlockState(pos.north()).getMaterial().isReplaceable()
+                    || MC.world.getBlockState(pos.east()).getMaterial().isReplaceable()
+                    || MC.world.getBlockState(pos.south()).getMaterial().isReplaceable()
+                    || MC.world.getBlockState(pos.west()).getMaterial().isReplaceable()
+            );
+        }
+    }
+
+    private int amountBedInInventory() {
+        int quantity = 0;
+
+        for(int i = 0; i <= 44; i++) {
+            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            if(stackInSlot.getItem() instanceof BedItem) quantity += stackInSlot.getCount();
+        }
+
+        return quantity;
+    }
+
+    private int amountBedInHotbar() {
+        int quantity = 0;
+
+        for(int i = 0; i < 9; i++) {
+            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            if(stackInSlot.getItem() instanceof BedItem) quantity += stackInSlot.getCount();
+        }
+
+        return quantity;
     }
 
     private void replenishBed() {
@@ -315,9 +405,19 @@ public class BedAura extends Module {
         if(MC.currentScreen == null || MC.currentScreen instanceof InventoryScreen) {
             for(int i = 45; i > 8; i--) {
                 if(MC.player.inventory.getStack(i).getItem() instanceof BedItem) {
-                    MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player);
-                    MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(slot), 0, SlotActionType.PICKUP, MC.player);
-                    MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player); // return any items that may have been there to i
+                    if(InventoryUtils.getHotbarBlank() != slot) {
+                        if(MC.player.inventory.getStack(slot).isEmpty()) {
+                            MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player);
+                            MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(slot), 0, SlotActionType.PICKUP, MC.player);
+                        } else {
+                            MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player);
+                            MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(slot), 0, SlotActionType.PICKUP, MC.player);
+                            MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player); // return any items that may have been there to i
+                        }
+
+                    } else {
+                        MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.QUICK_MOVE, MC.player);
+                    }
                     return;
                 }
             }

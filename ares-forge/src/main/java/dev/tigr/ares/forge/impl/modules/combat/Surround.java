@@ -10,7 +10,7 @@ import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.RenderUtils;
-import dev.tigr.ares.forge.utils.Timer;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderGlobal;

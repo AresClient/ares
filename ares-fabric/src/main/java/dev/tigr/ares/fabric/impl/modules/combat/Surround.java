@@ -11,7 +11,7 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.RenderUtils;
-import dev.tigr.ares.fabric.utils.Timer;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;

@@ -66,6 +66,7 @@ public class AresMod extends Ares {
                 AutoSurround.class,
                 AutoTotem.class,
                 AutoTrap.class,
+                BedAura.class,
                 BowRelease.class,
                 Burrow.class,
                 BurrowDetect.class,

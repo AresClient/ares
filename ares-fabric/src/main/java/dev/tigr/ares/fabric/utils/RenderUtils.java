@@ -173,12 +173,19 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void renderFilledBox(Box box, float red, float green, float blue, float alpha) {
+        renderFilledBox(
+                box.minX, box.minY, box.minZ,
+                box.maxX, box.maxY, box.maxZ,
+                red, green, blue, alpha /2f);
+    }
+
+    public static void renderFilledBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(5, VertexFormats.POSITION_COLOR);
         WorldRenderer.drawBox(bufferBuilder,
-                box.minX, box.minY, box.minZ,
-                box.maxX, box.maxY, box.maxZ, red, green, blue, alpha / 2f);
+                minX, minY, minZ,
+                maxX, maxY, maxZ, red, green, blue, alpha /2f);
         tessellator.draw();
     }
 

@@ -92,6 +92,17 @@ public class InventoryUtils {
         return index;
     }
 
+    public static int getHotbarBlank() {
+        int index = -1;
+        for(int i = 0; i < 9; i++) {
+            if(MC.player.inventory.getStackInSlot(i).isEmpty()) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
     public static int getSlotIndex(int index) {
         return index < 9 ? index + 36 : index;
     }

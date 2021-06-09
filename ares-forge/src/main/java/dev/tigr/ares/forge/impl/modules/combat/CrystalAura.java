@@ -15,7 +15,7 @@ import dev.tigr.ares.forge.event.events.client.EntityEvent;
 import dev.tigr.ares.forge.event.events.player.DestroyBlockEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.*;
-import dev.tigr.ares.forge.utils.Timer;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
@@ -555,7 +555,7 @@ public class CrystalAura extends Module {
     }
 
     // damage calculations
-    private static float getDamage(Vec3d pos, EntityPlayer entity) {
+    public static float getDamage(Vec3d pos, EntityPlayer entity) {
         double blockDensity = entity.world.getBlockDensity(pos, entity.getEntityBoundingBox());
         double power = (1.0D - (entity.getDistance(pos.x, pos.y, pos.z) / 12.0D)) * blockDensity;
         float damage = (float) ((int) ((power * power + power) / 2.0D * 7.0D * 12.0D + 1.0D));
@@ -582,7 +582,7 @@ public class CrystalAura extends Module {
     }
 
     // raytracing
-    private static RayTraceResult.Type rayTrace(Vec3d start, Vec3d end) {
+    public static RayTraceResult.Type rayTrace(Vec3d start, Vec3d end) {
         double minX = Math.min(start.x, end.x);
         double minY = Math.min(start.y, end.y);
         double minZ = Math.min(start.z, end.z);

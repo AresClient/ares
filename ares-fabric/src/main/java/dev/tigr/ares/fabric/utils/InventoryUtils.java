@@ -91,6 +91,28 @@ public class InventoryUtils implements Wrapper {
         return index;
     }
 
+    public static int getHotbarBlank() {
+        int index = -1;
+        for(int i = 0; i < 9; i++) {
+            if(MC.player.inventory.getStack(i).isEmpty()) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
+    public static int getInventoryBlank() {
+        int index = -1;
+        for(int i = 9; i < 45; i++) {
+            if(MC.player.inventory.getStack(i).isEmpty()) {
+                index = i;
+                break;
+            }
+        }
+        return index;
+    }
+
     public static int getSlotIndex(int index) {
         return index < 9 ? index + 36 : index;
     }

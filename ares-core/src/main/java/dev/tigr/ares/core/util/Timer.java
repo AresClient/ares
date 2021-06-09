@@ -1,4 +1,4 @@
-package dev.tigr.ares.fabric.utils;
+package dev.tigr.ares.core.util;
 
 /**
  * @author Makrennel

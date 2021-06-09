@@ -9,7 +9,7 @@ import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.event.events.movement.PlayerJumpEvent;
 import dev.tigr.ares.forge.event.events.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.Timer;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
