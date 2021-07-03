@@ -6,6 +6,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.StringSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.OpenScreenEvent;
+import dev.tigr.ares.fabric.mixin.accessors.SignEditScreenAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
@@ -29,7 +30,7 @@ public class AutoSign extends Module {
         if(event.getScreen() instanceof SignEditScreen) {
             event.setCancelled(true);
 
-            SignBlockEntity signBlockEntity = ReflectionHelper.getPrivateValue(SignEditScreen.class, event.getScreen(), "field_3031", "sign");
+            SignBlockEntity signBlockEntity = ((SignEditScreenAccessor) event.getScreen()).getSign();
             if(signBlockEntity == null) return;
             MC.player.networkHandler.sendPacket(new UpdateSignC2SPacket(
                     signBlockEntity.getPos(),

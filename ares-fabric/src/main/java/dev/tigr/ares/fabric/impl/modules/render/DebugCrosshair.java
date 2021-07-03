@@ -5,10 +5,10 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.render.CrosshairRenderEvent;
+import dev.tigr.ares.fabric.mixin.accessors.DrawableHelperAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.options.GameOptions;
+import net.minecraft.client.option.GameOptions;
 import net.minecraft.client.render.Camera;
 import net.minecraft.screen.NamedScreenHandlerFactory;
 import net.minecraft.util.hit.BlockHitResult;
@@ -24,7 +24,7 @@ public class DebugCrosshair extends Module {
     @EventHandler
     public EventListener<CrosshairRenderEvent> crosshairRenderEvent = new EventListener<>(event -> {
         event.setCancelled(true);
-        int zLevel = ReflectionHelper.getPrivateValue(DrawableHelper.class, MC.inGameHud, "zOffset", "field_22734");
+        int zLevel = ((DrawableHelperAccessor) MC.inGameHud).getZOffset();
         DebugCrosshair.renderCrosshair(MC.getTickDelta(), MC.getWindow().getScaledWidth(), MC.getWindow().getScaledHeight(), (float) zLevel);
     });
 
@@ -32,14 +32,15 @@ public class DebugCrosshair extends Module {
         GameOptions gameOptions = MC.options;
 
         if(gameOptions.getPerspective().isFirstPerson() && (!MC.player.isSpectator() || shouldRenderSpectatorCrosshair(MC.crosshairTarget)) && !gameOptions.hudHidden) {
-            RenderSystem.pushMatrix();
-            RenderSystem.translatef((float)(width / 2), (float)(height / 2), zLevel);
+            // TODO: render fix
+            //RenderSystem.pushMatrix();
+            //RenderSystem.translatef((float)(width / 2), (float)(height / 2), zLevel);
             Camera camera = MC.gameRenderer.getCamera();
-            RenderSystem.rotatef(camera.getPitch(), -1.0F, 0.0F, 0.0F);
-            RenderSystem.rotatef(camera.getYaw(), 0.0F, 1.0F, 0.0F);
-            RenderSystem.scalef(-1.0F, -1.0F, -1.0F);
-            RenderSystem.renderCrosshair(10);
-            RenderSystem.popMatrix();
+            //RenderSystem.rotatef(camera.getPitch(), -1.0F, 0.0F, 0.0F);
+            //RenderSystem.rotatef(camera.getYaw(), 0.0F, 1.0F, 0.0F);
+            //RenderSystem.scalef(-1.0F, -1.0F, -1.0F);
+            //RenderSystem.renderCrosshair(10);
+            //RenderSystem.popMatrix();
         }
     }
 

@@ -1,16 +1,14 @@
 package dev.tigr.ares.fabric.mixin.render;
 
 import dev.tigr.ares.core.Ares;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.render.CapeColorEvent;
-import net.minecraft.client.model.ModelPart;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerEntityModelAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.feature.CapeFeatureRenderer;
-import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +27,7 @@ public abstract class MixinCapeFeatureRenderer {
         CapeColorEvent event = Ares.EVENT_MANAGER.post(new CapeColorEvent(abstractClientPlayerEntity));
         if(event.getColor() != null) {
             VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(RenderLayer.getEntitySolid(abstractClientPlayerEntity.getCapeTexture()));
-            ((ModelPart) ReflectionHelper.getPrivateValue(PlayerEntityModel.class, capeFeatureRenderer.getContextModel(), "cape", "field_3485")).render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV, event.getColor().getRed(), event.getColor().getGreen(), event.getColor().getBlue(), event.getColor().getAlpha());
+            ((PlayerEntityModelAccessor) capeFeatureRenderer).getCloak().render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV, event.getColor().getRed(), event.getColor().getGreen(), event.getColor().getBlue(), event.getColor().getAlpha());
             matrixStack.pop();
             ci.cancel();
         }

@@ -33,7 +33,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
         GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        RenderSystem.disableAlphaTest();
+        //GL11.glDisable(GL11.GL_ALPHA_TEST);
         RenderSystem.disableTexture();
         RenderSystem.depthMask(false);
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
@@ -47,7 +47,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.depthMask(true);
         RenderSystem.enableTexture();
-        RenderSystem.enableAlphaTest();
+        //GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         GL11.glPopMatrix();
@@ -146,7 +146,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(3, VertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
 
         buffer.vertex(minX, minY, minZ).color(red, green, blue, alpha).next();
         buffer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).next();
@@ -182,7 +182,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     public static void renderFilledBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
-        bufferBuilder.begin(5, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
         WorldRenderer.drawBox(bufferBuilder,
                 minX, minY, minZ,
                 maxX, maxY, maxZ, red, green, blue, alpha /2f);
@@ -210,8 +210,8 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         Vec3d pos = entity.getPos();
 
         Vec3d eyeVector = new Vec3d(0.0, 0.0, 75)
-                .rotateX((float) (-Math.toRadians(MC.cameraEntity.pitch)))
-                .rotateY((float) (-Math.toRadians(MC.cameraEntity.yaw)))
+                .rotateX((float) (-Math.toRadians(MC.cameraEntity.getPitch())))
+                .rotateY((float) (-Math.toRadians(MC.cameraEntity.getYaw())))
                 .add(MC.cameraEntity.getPos()
                         .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 
@@ -222,8 +222,8 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     public static void drawTracer(Vec3d pos, Color color) {
         RenderSystem.disableDepthTest();
         Vec3d eyeVector = new Vec3d(0.0, 0.0, 75)
-                .rotateX((float) (-Math.toRadians(MC.player.pitch)))
-                .rotateY((float) (-Math.toRadians(MC.player.yaw)))
+                .rotateX((float) (-Math.toRadians(MC.player.getPitch())))
+                .rotateY((float) (-Math.toRadians(MC.player.getYaw())))
                 .add(MC.cameraEntity.getPos()
                 .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 

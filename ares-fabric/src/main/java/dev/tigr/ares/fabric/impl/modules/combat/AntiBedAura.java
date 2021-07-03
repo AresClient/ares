@@ -21,16 +21,16 @@ public class AntiBedAura extends Module {
     @Override
     public void onTick() {
         if(WorldUtils.isHole(MC.player.getBlockPos()) != HoleType.NONE && MC.world.getBlockState(MC.player.getBlockPos().up()).getBlock() != Block.getBlockFromItem(Items.STRING)) {
-            int prev = MC.player.inventory.selectedSlot;
-            if(MC.player.inventory.getMainHandStack().getItem() != Items.STRING) {
+            int prev = MC.player.getInventory().selectedSlot;
+            if(MC.player.getInventory().getMainHandStack().getItem() != Items.STRING) {
                 int slot = InventoryUtils.findItemInHotbar(Items.STRING);
                 if(slot != -1) {
-                    MC.player.inventory.selectedSlot = slot;
-                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                    MC.player.getInventory().selectedSlot = slot;
+                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
                 }
             }
             WorldUtils.placeBlockMainHand(MC.player.getBlockPos().up(), rotate.getValue());
-            MC.player.inventory.selectedSlot = prev;
+            MC.player.getInventory().selectedSlot = prev;
         }
     }
 }

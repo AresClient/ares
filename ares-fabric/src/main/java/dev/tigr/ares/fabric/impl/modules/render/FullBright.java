@@ -4,6 +4,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
+import dev.tigr.ares.fabric.impl.modules.render.FullBright.visionMode;
 import net.minecraft.potion.Potions;
 
 /**
@@ -33,7 +34,7 @@ public class FullBright extends Module {
     public void onTick() {
         switch(mode.getValue()) {
             case NIGHTVISION:
-                Potions.NIGHT_VISION.getEffects().forEach(statusEffectInstance -> MC.player.applyStatusEffect(statusEffectInstance));
+                Potions.NIGHT_VISION.getEffects().forEach(statusEffectInstance -> MC.player.setStatusEffect(statusEffectInstance, null));
                 break;
 
             default:

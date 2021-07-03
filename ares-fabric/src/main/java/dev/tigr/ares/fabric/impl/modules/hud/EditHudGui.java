@@ -32,13 +32,13 @@ public class EditHudGui extends Screen implements Wrapper {
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.pushMatrix();
+        //RenderSystem.pushMatrix();
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.color4f(1, 1, 1, 1);
-        RenderSystem.enableAlphaTest();
+        //RenderSystem.color4f(1, 1, 1, 1);
+        //GL11.glEnable(GL11.GL_ALPHA_TEST);
 
         elements.stream().filter(Module::getEnabled).forEach(hudElement -> {
             hudElement.onEditDraw(mouseX, mouseY, this);
@@ -67,8 +67,8 @@ public class EditHudGui extends Screen implements Wrapper {
 
         RenderSystem.disableBlend();
         RenderSystem.enableDepthTest();
-        RenderSystem.enableAlphaTest();
-        RenderSystem.popMatrix();
+        //GL11.glEnable(GL11.GL_ALPHA_TEST);
+        //RenderSystem.popMatrix();
 
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }

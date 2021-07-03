@@ -6,6 +6,7 @@ import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.movement.*;
+import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
@@ -55,7 +56,7 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity {
 
     @Redirect(method = "updateNausea", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;inNetherPortal:Z", ordinal = 0))
     public boolean portalChat(ClientPlayerEntity clientPlayerEntity) {
-        return (boolean) ReflectionHelper.getPrivateValue(Entity.class, clientPlayerEntity, "inNetherPortal", "field_5963") && !Ares.EVENT_MANAGER.post(new PortalChatEvent()).isCancelled();
+        return ((EntityAccessor) clientPlayerEntity).isInNetherPortal() && !Ares.EVENT_MANAGER.post(new PortalChatEvent()).isCancelled();
     }
 
     @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))

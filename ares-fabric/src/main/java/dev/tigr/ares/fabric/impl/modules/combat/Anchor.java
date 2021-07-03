@@ -25,7 +25,7 @@ public class Anchor extends Module {
     @EventHandler
     public EventListener<MovePlayerEvent> movePlayerEvent = new EventListener<>(event -> {
         // if over hole
-        if(event.getMoverType() == MovementType.SELF && MC.player != null && MC.player.pitch > cutoff.getValue()
+        if(event.getMoverType() == MovementType.SELF && MC.player != null && MC.player.getPitch() > cutoff.getValue()
                 && isOverHole(MC.player.getPos()) && MC.player.getVelocity().y <= 0.1) {
             event.setShouldDo(true);
             // correct movement

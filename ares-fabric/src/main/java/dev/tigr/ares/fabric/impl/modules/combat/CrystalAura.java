@@ -15,6 +15,13 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.EntityEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
+import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.BreakMode;
+import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Mode;
+import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Order;
+import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Page;
+import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Rotations;
+import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Target;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.RenderUtils;
@@ -136,7 +143,7 @@ public class CrystalAura extends Module {
     @Override
     public String getInfo() {
         if (targetPlayer != null
-                && !targetPlayer.removed
+                && !targetPlayer.isRemoved()
                 && !WorldUtils.hasZeroHealth(targetPlayer)
                 && !(MC.player.distanceTo(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)) {
             if(targetPlayer instanceof PlayerEntity) return ((PlayerEntity)targetPlayer).getGameProfile().getName();
@@ -236,7 +243,7 @@ public class CrystalAura extends Module {
         // cleanup place map and lost crystals every ten seconds
         if(cleanupTimer.passedSec(10)) {
             for(Map.Entry<EndCrystalEntity, Integer> entry: lostCrystals.entrySet()) {
-                if(MC.world.getEntityById(entry.getKey().getEntityId()) == null)
+                if(MC.world.getEntityById(entry.getKey().getId()) == null)
                     lostCrystals.remove(entry.getKey());
             }
 
@@ -251,15 +258,15 @@ public class CrystalAura extends Module {
 
         // rotate for actual mode
         if(rotations != null && rotateMode.getValue() == Rotations.REAL) {
-            MC.player.pitch = (float) rotations[1];
-            MC.player.yaw = (float) rotations[0];
+            MC.player.setPitch((float) rotations[1]);
+            MC.player.setYaw((float) rotations[0]);
         }
     }
 
     private void place(boolean offhand) {
         if(placeTimer.passedTicks(offhand ? placeOffhandDelay.getValue() : placeDelay.getValue())) {
             // if no gapple switch and player is holding apple
-            if(!offhand && noGappleSwitch.getValue() && MC.player.inventory.getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
+            if(!offhand && noGappleSwitch.getValue() && MC.player.getInventory().getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
                 if(target != null) target = null;
                 return;
             }
@@ -275,12 +282,12 @@ public class CrystalAura extends Module {
 
     private void placeCrystal(boolean offhand, BlockPos pos) {
         // switch to crystals if not holding
-        if(!offhand && MC.player.inventory.getMainHandStack().getItem() != Items.END_CRYSTAL) {
+        if(!offhand && MC.player.getInventory().getMainHandStack().getItem() != Items.END_CRYSTAL) {
             if(doSwitch.getValue()) {
                 int slot = InventoryUtils.findItemInHotbar(Items.END_CRYSTAL);
                 if (slot != -1) {
-                    MC.player.inventory.selectedSlot = slot;
-                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                    MC.player.getInventory().selectedSlot = slot;
+                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
                 }
             } else return;
         }
@@ -362,8 +369,8 @@ public class CrystalAura extends Module {
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         // rotation spoofing
         if(event.getPacket() instanceof PlayerMoveC2SPacket && rotations != null && rotateMode.getValue() == Rotations.PACKET) {
-            ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), (float) rotations[1], "pitch", "field_12885");
-            ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), (float) rotations[0], "yaw", "field_12887");
+            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch((float) rotations[1]);
+            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw((float) rotations[0]);
             MC.player.headYaw = (float) rotations[0];
             MC.player.bodyYaw = (float) rotations[0];
         }
@@ -441,7 +448,7 @@ public class CrystalAura extends Module {
         Hand hand = offhand ? Hand.OFF_HAND : Hand.MAIN_HAND;
 
         // break
-        if(sync.getValue()) MC.player.networkHandler.sendPacket(new PlayerInteractEntityC2SPacket(crystal, hand, false));
+        if(sync.getValue()) MC.player.networkHandler.sendPacket(PlayerInteractEntityC2SPacket.interact(crystal, false, hand));
         MC.interactionManager.attackEntity(MC.player, crystal);
         MC.player.swingHand(hand);
 
@@ -566,12 +573,12 @@ public class CrystalAura extends Module {
     // damage calculations
     public static float getDamage(Vec3d vec3d, Entity entity) {
         float f2 = 12.0f;
-        double d7 = MathHelper.sqrt(entity.squaredDistanceTo(vec3d)) / f2;
+        double d7 = Math.sqrt(entity.squaredDistanceTo(vec3d)) / f2;
         if(d7 <= 1.0D) {
             double d8 = entity.getX() - vec3d.x;
             double d9 = entity.getEyeY() - vec3d.y;
             double d10 = entity.getZ() - vec3d.z;
-            double d11 = MathHelper.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
+            double d11 = Math.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
             if(d11 != 0.0D) {
                 double d12 = Explosion.getExposure(vec3d, entity);
                 double d13 = (1.0D - d7) * d12;

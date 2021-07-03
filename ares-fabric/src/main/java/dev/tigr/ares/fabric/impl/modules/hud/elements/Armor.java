@@ -21,7 +21,7 @@ public class Armor extends HudElement {
         int x = getX();
 
         for(int i = 3; i >= 0; i--) {
-            RenderUtils.renderItemStack(MC.player.inventory.armor.get(i), x, getY());
+            RenderUtils.renderItemStack(MC.player.getInventory().armor.get(i), x, getY());
             x += itemSize + 2;
         }
     }

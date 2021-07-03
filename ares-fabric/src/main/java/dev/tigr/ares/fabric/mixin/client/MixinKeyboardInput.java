@@ -1,14 +1,14 @@
 package dev.tigr.ares.fabric.mixin.client;
 
 import dev.tigr.ares.core.Ares;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.movement.InventoryMoveEvent;
 import dev.tigr.ares.fabric.event.movement.SlowDownEvent;
+import dev.tigr.ares.fabric.mixin.accessors.KeyBindingAccessor;
 import dev.tigr.simpleevents.event.Result;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.input.KeyboardInput;
-import net.minecraft.client.options.KeyBinding;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -50,7 +50,7 @@ public class MixinKeyboardInput {
     // i rlly have to manually do this to be compatible with inertia :(
     private boolean inertiaBypass(KeyBinding keyBinding) {
         return InputUtil.isKeyPressed(MinecraftClient.getInstance().getWindow().getHandle(),
-                ((InputUtil.Key) ReflectionHelper.getPrivateValue(KeyBinding.class, keyBinding, "boundKey", "field_1655")).getCode());
+                ((KeyBindingAccessor) keyBinding).getBoundKey().getCode());
     }
 
     @Inject(method = "tick", at = @At("RETURN"))

@@ -31,7 +31,7 @@ public class HotbarReplenish extends Module {
     @Override
     public void onTick() {
         if((MC.currentScreen instanceof GenericContainerScreen && MC.player != null) || enable) {
-            for(int i = 0; i < 9; i++) hotbar.put(i, MC.player.inventory.getStack(i).getItem());
+            for(int i = 0; i < 9; i++) hotbar.put(i, MC.player.getInventory().getStack(i).getItem());
             enable = false;
         }
 
@@ -47,19 +47,19 @@ public class HotbarReplenish extends Module {
         if(move != -1) {
             MC.interactionManager.clickSlot(0, InventoryUtils.getSlotIndex(move), 0, SlotActionType.PICKUP, MC.player);
             move = -1;
-            if(!MC.player.inventory.getCursorStack().isEmpty()) clickBlank = true;
+            if(!MC.player.currentScreenHandler.getCursorStack().isEmpty()) clickBlank = true;
             return;
         }
 
         for(int stack: hotbar.keySet()) {
             Item item = hotbar.get(stack);
-            if(MC.player.inventory.getStack(stack).getItem() != item) {
-                if(MC.player.inventory.getStack(stack).isEmpty() && MC.player.inventory.getCursorStack().getItem() != item) {
+            if(MC.player.getInventory().getStack(stack).getItem() != item) {
+                if(MC.player.getInventory().getStack(stack).isEmpty() && MC.player.currentScreenHandler.getCursorStack().getItem() != item) {
                     int count = InventoryUtils.amountInInventory(item);
                     if(count == 0) continue;
                     int index = -1;
                     for(int i = 9; i < 45; i++) {
-                        if(MC.player.inventory.getStack(i).getItem() == item) {
+                        if(MC.player.getInventory().getStack(i).getItem() == item) {
                             index = i;
                             break;
                         }
@@ -69,7 +69,7 @@ public class HotbarReplenish extends Module {
                     move = stack;
                     return;
                 } else {
-                    hotbar.put(stack, MC.player.inventory.getStack(stack).getItem());
+                    hotbar.put(stack, MC.player.getInventory().getStack(stack).getItem());
                 }
             }
         }

@@ -15,7 +15,7 @@ public class InventoryUtils implements Wrapper {
         int quantity = 0;
 
         for(int i = 0; i <= 44; i++) {
-            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            ItemStack stackInSlot = MC.player.getInventory().getStack(i);
             if(stackInSlot.getItem() == item) quantity += stackInSlot.getCount();
         }
 
@@ -26,7 +26,7 @@ public class InventoryUtils implements Wrapper {
         int quantity = 0;
 
         for(int i = 0; i <= 9; i++) {
-            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            ItemStack stackInSlot = MC.player.getInventory().getStack(i);
             if(stackInSlot.getItem() == item) quantity += stackInSlot.getCount();
         }
         if(MC.player.getOffHandStack().getItem() == item) quantity += MC.player.getOffHandStack().getCount();
@@ -39,7 +39,7 @@ public class InventoryUtils implements Wrapper {
     public static int findItem(Item item) {
         int index = -1;
         for(int i = 0; i < 45; i++) {
-            if(MC.player.inventory.getStack(i).getItem() == item) {
+            if(MC.player.getInventory().getStack(i).getItem() == item) {
                 index = i;
                 break;
             }
@@ -54,7 +54,7 @@ public class InventoryUtils implements Wrapper {
     public static int findItemInHotbar(Item item) {
         int index = -1;
         for(int i = 0; i < 9; i++) {
-            if(MC.player.inventory.getStack(i).getItem() == item) {
+            if(MC.player.getInventory().getStack(i).getItem() == item) {
                 index = i;
                 break;
             }
@@ -69,9 +69,9 @@ public class InventoryUtils implements Wrapper {
     public static int getBlockInHotbar() {
         for(int i = 0; i < 9; i++) {
             if(
-                    MC.player.inventory.getStack(i) == ItemStack.EMPTY
-                            || !(MC.player.inventory.getStack(i).getItem() instanceof BlockItem)
-                            || !Block.getBlockFromItem(MC.player.inventory.getStack(i).getItem()).getDefaultState().isFullCube(MC.world, new BlockPos(0, 0, 0))
+                    MC.player.getInventory().getStack(i) == ItemStack.EMPTY
+                            || !(MC.player.getInventory().getStack(i).getItem() instanceof BlockItem)
+                            || !Block.getBlockFromItem(MC.player.getInventory().getStack(i).getItem()).getDefaultState().isFullCube(MC.world, new BlockPos(0, 0, 0))
             ) continue;
 
             return i;
@@ -83,7 +83,7 @@ public class InventoryUtils implements Wrapper {
     public static int getBlank() {
         int index = -1;
         for(int i = 0; i < 45; i++) {
-            if(MC.player.inventory.getStack(i).isEmpty()) {
+            if(MC.player.getInventory().getStack(i).isEmpty()) {
                 index = i;
                 break;
             }
@@ -94,7 +94,7 @@ public class InventoryUtils implements Wrapper {
     public static int getHotbarBlank() {
         int index = -1;
         for(int i = 0; i < 9; i++) {
-            if(MC.player.inventory.getStack(i).isEmpty()) {
+            if(MC.player.getInventory().getStack(i).isEmpty()) {
                 index = i;
                 break;
             }
@@ -105,7 +105,7 @@ public class InventoryUtils implements Wrapper {
     public static int getInventoryBlank() {
         int index = -1;
         for(int i = 9; i < 45; i++) {
-            if(MC.player.inventory.getStack(i).isEmpty()) {
+            if(MC.player.getInventory().getStack(i).isEmpty()) {
                 index = i;
                 break;
             }

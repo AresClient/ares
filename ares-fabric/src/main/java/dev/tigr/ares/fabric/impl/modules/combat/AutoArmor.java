@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.fabric.impl.modules.combat.AutoArmor.ArmorType;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;
@@ -16,7 +17,7 @@ public class AutoArmor extends Module {
     @Override
     public void onTick() {
         for(int i = 3; i >= 0; i--) {
-            if(MC.player.inventory.armor.get(i).isEmpty()) {
+            if(MC.player.getInventory().armor.get(i).isEmpty()) {
                 equipArmor(i);
                 break;
             }
@@ -29,7 +30,7 @@ public class AutoArmor extends Module {
         int bestRating = -1;
 
         for(int i = 9; i <= 44; i++) {
-            Item item = MC.player.inventory.getStack(i).getItem();
+            Item item = MC.player.getInventory().getStack(i).getItem();
             if(item instanceof ArmorItem && getArmorTypeFromItem(item) == armorType) {
                 int damageReduction = ((ArmorItem) item).getProtection();
                 if(damageReduction >= bestRating) {

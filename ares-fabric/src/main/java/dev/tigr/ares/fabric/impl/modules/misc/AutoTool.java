@@ -4,8 +4,10 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
+import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DamageBlockEvent;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -28,13 +30,13 @@ public class AutoTool extends Module {
     @EventHandler
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         if(event.getPacket() instanceof PlayerInteractEntityC2SPacket) {
-            if(((PlayerInteractEntityC2SPacket) event.getPacket()).getType() == PlayerInteractEntityC2SPacket.InteractionType.ATTACK) {
-                if(((PlayerInteractEntityC2SPacket) event.getPacket()).getEntity(MC.world) instanceof EndCrystalEntity && !endCrystals.getValue())
-                    return;
+            Pair<WorldUtils.InteractType, Integer> interactData = WorldUtils.getInteractData((PlayerInteractEntityC2SPacket) event.getPacket());
+            if(interactData.getFirst() == WorldUtils.InteractType.ATTACK) {
+                if(MC.world.getEntityById(interactData.getSecond()) instanceof EndCrystalEntity && !endCrystals.getValue()) return;
                 int slot = getWeapon();
-                if(slot != -1 && slot != MC.player.inventory.selectedSlot) {
-                    MC.player.inventory.selectedSlot = slot;
-                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                if(slot != -1 && slot != MC.player.getInventory().selectedSlot) {
+                    MC.player.getInventory().selectedSlot = slot;
+                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
                 }
             }
         }
@@ -43,9 +45,9 @@ public class AutoTool extends Module {
     @EventHandler
     public EventListener<DamageBlockEvent> leftClickBlockEvent = new EventListener<>(event -> {
         int slot = getTool(event.getBlockPos());
-        if(slot != -1 && slot != MC.player.inventory.selectedSlot) {
-            MC.player.inventory.selectedSlot = slot;
-            MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+        if(slot != -1 && slot != MC.player.getInventory().selectedSlot) {
+            MC.player.getInventory().selectedSlot = slot;
+            MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
         }
     });
 
@@ -53,7 +55,7 @@ public class AutoTool extends Module {
         int index = -1;
         double best = 0;
         for(int i = 0; i < 9; i++) {
-            ItemStack stack = MC.player.inventory.getStack(i);
+            ItemStack stack = MC.player.getInventory().getStack(i);
             if(stack.isEmpty()) continue;
             double damage = -1;
             Item item = stack.getItem();
@@ -73,7 +75,7 @@ public class AutoTool extends Module {
         int index = -1;
         double best = 0;
         for(int i = 0; i < 9; i++) {
-            ItemStack stack = MC.player.inventory.getStack(i);
+            ItemStack stack = MC.player.getInventory().getStack(i);
             if(stack.isEmpty()) continue;
 
             float speed = stack.getMiningSpeedMultiplier(MC.world.getBlockState(pos));

@@ -7,6 +7,7 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.entity.ChestBlockEntity;
 
 /**
@@ -22,7 +23,7 @@ public class ChestCount extends HudElement {
     }
 
     public void draw() {
-        int chests = (int) MC.world.blockEntities.stream().filter(tileEntity -> tileEntity instanceof ChestBlockEntity).count();
+        int chests = (int) WorldUtils.getBlockEntities().stream().filter(tileEntity -> tileEntity instanceof ChestBlockEntity).count();
         String text = chests + " chests";
         drawString(text, getX(), getY(), rainbow.getValue() ? IRenderer.rainbow() : Color.WHITE);
         setWidth((int) FONT_RENDERER.getStringWidth(text) + 1);

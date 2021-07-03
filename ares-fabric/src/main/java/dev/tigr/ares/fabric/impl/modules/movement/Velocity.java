@@ -7,6 +7,8 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.EntityPushEvent;
+import dev.tigr.ares.fabric.mixin.accessors.EntityVelocityUpdateS2CPacketAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.ExplosionS2CPacketAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
@@ -30,16 +32,16 @@ public class Velocity extends Module {
         if(MC.world == null || MC.player == null) return;
         if(event.getPacket() instanceof EntityVelocityUpdateS2CPacket) {
             EntityVelocityUpdateS2CPacket velocity = (EntityVelocityUpdateS2CPacket) event.getPacket();
-            if(velocity.getId() == MC.player.getEntityId()) {
-                ReflectionHelper.setPrivateValue(EntityVelocityUpdateS2CPacket.class, velocity, (int) (velocity.getVelocityX() * horizontal.getValue()), "velocityX", "field_12561");
-                ReflectionHelper.setPrivateValue(EntityVelocityUpdateS2CPacket.class, velocity, (int) (velocity.getVelocityY() * vertical.getValue()), "velocityY", "field_12562");
-                ReflectionHelper.setPrivateValue(EntityVelocityUpdateS2CPacket.class, velocity, (int) (velocity.getVelocityZ() * horizontal.getValue()), "velocityZ", "field_12563");
+            if(velocity.getId() == MC.player.getId()) {
+                ((EntityVelocityUpdateS2CPacketAccessor) velocity).setVelocityX((int) (velocity.getVelocityX() * horizontal.getValue()));
+                ((EntityVelocityUpdateS2CPacketAccessor) velocity).setVelocityY((int) (velocity.getVelocityY() * vertical.getValue()));
+                ((EntityVelocityUpdateS2CPacketAccessor) velocity).setVelocityZ((int) (velocity.getVelocityZ() * horizontal.getValue()));
             }
         } else if(event.getPacket() instanceof ExplosionS2CPacket) {
             ExplosionS2CPacket velocity = (ExplosionS2CPacket) event.getPacket();
-            ReflectionHelper.setPrivateValue(ExplosionS2CPacket.class, velocity, (int) (velocity.getPlayerVelocityX() * horizontal.getValue()), "playerVelocityX", "field_12176");
-            ReflectionHelper.setPrivateValue(ExplosionS2CPacket.class, velocity, (int) (velocity.getPlayerVelocityY() * vertical.getValue()), "playerVelocityY", "field_12183");
-            ReflectionHelper.setPrivateValue(ExplosionS2CPacket.class, velocity, (int) (velocity.getPlayerVelocityZ() * horizontal.getValue()), "playerVelocityZ", "field_12182");
+            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityX((int) (velocity.getPlayerVelocityX() * horizontal.getValue()));
+            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityY((int) (velocity.getPlayerVelocityY() * vertical.getValue()));
+            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityZ((int) (velocity.getPlayerVelocityZ() * horizontal.getValue()));
         }
     });
 }

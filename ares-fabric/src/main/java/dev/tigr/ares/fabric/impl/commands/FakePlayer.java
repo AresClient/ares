@@ -4,8 +4,7 @@ import com.mojang.authlib.GameProfile;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.util.global.MojangApi;
 import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-
+import net.minecraft.nbt.NbtCompound;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,9 +30,9 @@ public class FakePlayer extends Command {
                     OtherClientPlayerEntity fakePlayer = new OtherClientPlayerEntity(MC.world, new GameProfile(playerUUID, player));
                     fakePlayer.copyFrom(MC.player);
 
-                    CompoundTag compoundTag = new CompoundTag();
-                    MC.player.writeCustomDataToTag(compoundTag);
-                    fakePlayer.readCustomDataFromTag(compoundTag);
+                    NbtCompound compoundTag = new NbtCompound();
+                    MC.player.writeCustomDataToNbt(compoundTag);
+                    fakePlayer.readCustomDataFromNbt(compoundTag);
 
                     MC.world.addEntity(getRandomId(), fakePlayer);
                     return 1;

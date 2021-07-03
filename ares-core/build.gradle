@@ -1,8 +1,10 @@
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
 dependencies {
     // ares
-    compile "org.json:json:20190722"
-    compile "dev.tigr:simpleevents:1.0"
-    compile "com.github.Vatuu:discord-rpc:1.6.2"
+    implementation "org.json:json:20190722"
+    implementation "dev.tigr:simpleevents:1.0"
+    implementation "com.github.Vatuu:discord-rpc:1.6.2"
 
     // minecraft
     implementation "org.apache.logging.log4j:log4j-api:2.8.1"

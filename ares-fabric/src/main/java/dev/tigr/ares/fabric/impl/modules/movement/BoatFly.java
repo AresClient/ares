@@ -62,12 +62,12 @@ public class BoatFly extends Module {
 
         event.y = 0;
 
-        boat.yaw = MC.player.yaw;
+        boat.setYaw(MC.player.getYaw());
 
         // set phase
         if(phase.getValue()) {
             boat.noClip = true;
-            boat.pushSpeedReduction = 1;
+            //boat.pushSpeedReduction = 1;
         } else boat.noClip = false;
 
         if(!MC.options.keyForward.isPressed() &&
@@ -75,7 +75,7 @@ public class BoatFly extends Module {
                 !MC.options.keyLeft.isPressed() &&
                 !MC.options.keyRight.isPressed()) event.x = event.z = 0;
         else {
-            float yaw = MC.player.yaw;
+            float yaw = MC.player.getYaw();
             float forward = 1;
 
             if(MC.player.forwardSpeed < 0) {
@@ -118,7 +118,7 @@ public class BoatFly extends Module {
             else f = -0.6F;
         }
 
-        Vec3d vector = (new Vec3d(f, 0.0D, 0.0D)).rotateX(-boat.yaw * 0.017453292F - ((float)Math.PI / 2F));
+        Vec3d vector = (new Vec3d(f, 0.0D, 0.0D)).rotateX(-boat.getYaw() * 0.017453292F - ((float)Math.PI / 2F));
         return new Vec3d(boat.getX() + vector.x, boat.getY() + (double)f1, boat.getZ() + vector.z);
     }
 
@@ -129,22 +129,17 @@ public class BoatFly extends Module {
                 if(packets.contains(event.getPacket())) packets.remove(event.getPacket());
                 else {
                     // move boat to previous location
-                    try {
-                        event.getPacket().read(createPacketData(boat.prevX, boat.prevY, boat.prevZ, boat.prevYaw, boat.prevPitch));
-                    } catch(IOException e) {
-                        UTILS.printMessage("Error while using boatfly, disabling...");
-                        setEnabled(false);
-                    }
+                    event.setPacket(createPacket(boat.prevX, boat.prevY, boat.prevZ, boat.prevYaw, boat.prevPitch));
 
                     // cause dismount then remount
-                    MC.player.networkHandler.sendPacket(new PlayerInteractEntityC2SPacket(boat, Hand.OFF_HAND, false));
+                    MC.player.networkHandler.sendPacket(PlayerInteractEntityC2SPacket.interact(boat, false, Hand.OFF_HAND));
 
                     // move boat to current location
                     MC.player.networkHandler.sendPacket(add(new VehicleMoveC2SPacket(boat)));
 
                     // send player position
                     Vec3d pos = getRidingPosition();
-                    MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(pos.x, pos.y, pos.z, MC.player.isOnGround()));
+                    MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(pos.x, pos.y, pos.z, MC.player.isOnGround()));
 
                     // confirm with predicted tpId
                     ++tpId;
@@ -152,21 +147,12 @@ public class BoatFly extends Module {
                 }
             }
 
-            if(event.getPacket() instanceof PlayerInputC2SPacket || event.getPacket() instanceof PlayerMoveC2SPacket.LookOnly || event.getPacket() instanceof BoatPaddleStateC2SPacket) event.setCancelled(true);
+            if(event.getPacket() instanceof PlayerInputC2SPacket || event.getPacket() instanceof PlayerMoveC2SPacket.LookAndOnGround || event.getPacket() instanceof BoatPaddleStateC2SPacket) event.setCancelled(true);
         }
     });
 
     private VehicleMoveC2SPacket createPacket(double x, double y, double z, float yaw, float pitch) {
-        VehicleMoveC2SPacket packet = new VehicleMoveC2SPacket();
-
-        try {
-            packet.read(createPacketData(x, y, z, yaw, pitch));
-        } catch(IOException e) {
-            UTILS.printMessage("Error while using boatfly, disabling...");
-            setEnabled(false);
-        }
-
-        return packet;
+        return new VehicleMoveC2SPacket(createPacketData(x, y, z, yaw, pitch));
     }
 
     private PacketByteBuf createPacketData(double x, double y, double z, float yaw, float pitch) {

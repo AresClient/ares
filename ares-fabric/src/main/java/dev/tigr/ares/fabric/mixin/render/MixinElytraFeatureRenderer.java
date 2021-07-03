@@ -3,6 +3,7 @@ package dev.tigr.ares.fabric.mixin.render;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.render.CapeColorEvent;
+import dev.tigr.ares.fabric.mixin.accessors.ElytraFeatureRendererAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.RenderLayer;
@@ -45,7 +46,7 @@ public class MixinElytraFeatureRenderer<T extends LivingEntity, M extends Entity
                 } else identifier = SKIN;
                 ItemStack itemStack = livingEntity.getEquippedStack(EquipmentSlot.CHEST);
                 VertexConsumer vertexConsumer = ItemRenderer.getArmorGlintConsumer(vertexConsumerProvider, RenderLayer.getArmorCutoutNoCull(identifier), false, itemStack.hasGlint());
-                ((ElytraEntityModel<T>) ReflectionHelper.getPrivateValue(ElytraFeatureRenderer.class, elytraFeatureRenderer, "elytra", "field_4852")).render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV, event.getColor().getRed(), event.getColor().getGreen(), event.getColor().getBlue(), event.getColor().getAlpha());
+                ((ElytraFeatureRendererAccessor) elytraFeatureRenderer).getElytra().render(matrixStack, vertexConsumer, i, OverlayTexture.DEFAULT_UV, event.getColor().getRed(), event.getColor().getGreen(), event.getColor().getBlue(), event.getColor().getAlpha());
                 matrixStack.pop();
                 ci.cancel();
             }

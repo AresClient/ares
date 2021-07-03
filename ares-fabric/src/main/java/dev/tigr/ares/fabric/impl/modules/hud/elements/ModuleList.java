@@ -10,6 +10,7 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
+import dev.tigr.ares.fabric.impl.modules.hud.elements.ModuleList.Mode;
 import dev.tigr.ares.fabric.utils.Comparators;
 import net.minecraft.util.math.Vec3d;
 

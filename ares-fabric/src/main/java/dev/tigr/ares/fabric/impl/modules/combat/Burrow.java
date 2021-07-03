@@ -7,7 +7,11 @@ import dev.tigr.ares.core.setting.settings.*;
 import dev.tigr.ares.core.setting.settings.numerical.*;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.TextColor;
+import dev.tigr.ares.fabric.impl.modules.combat.Burrow.CurrBlock;
+import dev.tigr.ares.fabric.impl.modules.combat.Burrow.RubberbandMode;
 import dev.tigr.ares.fabric.impl.modules.movement.NoBlockPush;
+import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import dev.tigr.ares.fabric.utils.HoleType;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
@@ -75,12 +79,12 @@ public class Burrow extends Module {
     }
 
     private void switchToBlock() {
-        oldSelection = MC.player.inventory.selectedSlot;
+        oldSelection = MC.player.getInventory().selectedSlot;
         //main block
         int newItem = InventoryUtils.findBlockInHotbar(getCurrBlock());
         //backup block to use when either is unavailable
         if (newItem == -1) newItem = InventoryUtils.findBlockInHotbar(getBackBlock());
-        if (newItem != -1) MC.player.inventory.selectedSlot = newItem;
+        if (newItem != -1) MC.player.getInventory().selectedSlot = newItem;
         else toggle();
     }
 
@@ -128,7 +132,7 @@ public class Burrow extends Module {
     public void onTick() {
         //turns on Timer if Fast Mode is set to Timer
         if (!fakeJump.getValue() && useTimer.getValue()) {
-            ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / timerTPS.getValue(), "tickTime", "field_1968");
+            ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / timerTPS.getValue());
         }
         //run the main sequence
         run();
@@ -136,17 +140,17 @@ public class Burrow extends Module {
     public void onDisable() {
         //turns off Timer
         if(!fakeJump.getValue() && useTimer.getValue()) {
-            ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / 20.0F, "tickTime", "field_1968");
+            ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / 20.0F);
         }
         if (rotate.getValue()) {
-            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(oldYaw, oldPitch, MC.player.isOnGround()));
+            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(oldYaw, oldPitch, MC.player.isOnGround()));
         }
     }
     public void run() {
         if (MC.player == null || MC.world == null) return;
 
-        oldYaw = MC.player.yaw;
-        oldPitch = MC.player.pitch;
+        oldYaw = MC.player.getYaw();
+        oldPitch = MC.player.getPitch();
 
         switchToBlock();
 
@@ -166,11 +170,11 @@ public class Burrow extends Module {
         //place block where the player was before jumping
         WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true, true);
 
-        MC.player.inventory.selectedSlot = oldSelection;
+        MC.player.getInventory().selectedSlot = oldSelection;
 
         //tries to produce a rubberband
         if (rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
-            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + fakeClipHeight.getValue(), MC.player.getZ(), false));
+            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), MC.player.getY() + fakeClipHeight.getValue(), MC.player.getZ(), false));
         } else MC.player.jump();
 
         //disable module

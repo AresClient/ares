@@ -6,6 +6,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
+import dev.tigr.ares.fabric.impl.modules.combat.Offhand.SItem;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -37,7 +38,7 @@ public class Offhand extends Module {
         if(move) {
             MC.interactionManager.clickSlot(0, 45, 0, SlotActionType.PICKUP, MC.player);
             move = false;
-            if(!MC.player.inventory.getCursorStack().isEmpty()) clickBlank = true;
+            if(!MC.player.currentScreenHandler.getCursorStack().isEmpty()) clickBlank = true;
             return;
         }
 

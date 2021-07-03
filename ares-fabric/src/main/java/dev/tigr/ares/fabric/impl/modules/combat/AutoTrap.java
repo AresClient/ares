@@ -7,6 +7,7 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.fabric.impl.modules.combat.AutoTrap.Mode;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
@@ -41,12 +42,12 @@ public class AutoTrap extends Module {
                                     ).isEmpty()
                             ) {
                                 //place block
-                                int oldSlot = MC.player.inventory.selectedSlot;
+                                int oldSlot = MC.player.getInventory().selectedSlot;
                                 int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
                                 if (newSlot == -1) return;
-                                else MC.player.inventory.selectedSlot = newSlot;
+                                else MC.player.getInventory().selectedSlot = newSlot;
                                 WorldUtils.placeBlockMainHand(pos, rotate.getValue());
-                                MC.player.inventory.selectedSlot = oldSlot;
+                                MC.player.getInventory().selectedSlot = oldSlot;
                                 delayTimer.reset();
                                 return;
                             }

@@ -7,6 +7,7 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.WaterCollisionEvent;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -30,7 +31,7 @@ public class Jesus extends Module {
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         if(event.getPacket() instanceof PlayerMoveC2SPacket && MC.player.getVehicle() == null) {
             if(shouldJesus() && !MC.player.isSubmergedInWater() && MC.world.getBlockState(MC.player.getBlockPos().down()).getMaterial().isLiquid())
-                ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), ((PlayerMoveC2SPacket) event.getPacket()).getY(0) - offset.getValue(), "y", "field_12886");
+                ((PlayerMoveC2SPacketAccessor) event.getPacket()).setY(((PlayerMoveC2SPacket) event.getPacket()).getY(0) - offset.getValue());
         }
     });
 

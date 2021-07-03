@@ -13,6 +13,6 @@ public class AresMainMenu extends TitleScreen {
     @Override
     public void init() {
         super.init();
-        addButton(new ButtonWidget(2, 2, 98, 20, new LiteralText("Account Manager"), (buttonWidget) -> Ares.GUI_MANAGER.openGUI(AccountManagerGUI.class)));
+        addDrawableChild(new ButtonWidget(2, 2, 98, 20, new LiteralText("Account Manager"), (buttonWidget) -> Ares.GUI_MANAGER.openGUI(AccountManagerGUI.class)));
     }
 }

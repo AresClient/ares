@@ -27,16 +27,16 @@ public class AresUpdateGUI extends Screen implements Wrapper {
 
     @Override
     public void init() {
-        addButton(new ButtonWidget(this.width / 2 - 50 - 105, this.height / 6 + 96, 100, 20, new LiteralText("Download"), button -> openLink("https://aresclient.org/download")));
-        addButton(new ButtonWidget(this.width / 2 - 50, this.height / 6 + 96, 100, 20, new LiteralText("View Changelog"), button -> openLink("https://aresclient.org/changelogs/" + UpdateHelper.getLatestVersion() + ".txt")));
-        addButton(new ButtonWidget(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, new LiteralText("Skip"), button -> MC.openScreen(new AresMainMenu())));
+        addDrawableChild(new ButtonWidget(this.width / 2 - 50 - 105, this.height / 6 + 96, 100, 20, new LiteralText("Download"), button -> openLink("https://aresclient.org/download")));
+        addDrawableChild(new ButtonWidget(this.width / 2 - 50, this.height / 6 + 96, 100, 20, new LiteralText("View Changelog"), button -> openLink("https://aresclient.org/changelogs/" + UpdateHelper.getLatestVersion() + ".txt")));
+        addDrawableChild(new ButtonWidget(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, new LiteralText("Skip"), button -> MC.openScreen(new AresMainMenu())));
     }
 
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         renderBackground(matrixStack);
-        drawCenteredString(matrixStack, client.textRenderer, "Ares " + TextColor.BLUE + UpdateHelper.getLatestVersion() + TextColor.WHITE + " has been released. You are still on version " + TextColor.BLUE + Ares.VERSION_FULL, this.width / 2, 110, 16764108);
-        drawCenteredString(matrixStack, client.textRenderer, "Would you like to download it, view the changelog, or skip for now?", this.width / 2, 120, 16764108);
+        drawCenteredText(matrixStack, client.textRenderer, "Ares " + TextColor.BLUE + UpdateHelper.getLatestVersion() + TextColor.WHITE + " has been released. You are still on version " + TextColor.BLUE + Ares.VERSION_FULL, this.width / 2, 110, 16764108);
+        drawCenteredText(matrixStack, client.textRenderer, "Would you like to download it, view the changelog, or skip for now?", this.width / 2, 120, 16764108);
 
         super.render(matrixStack, mouseX, mouseY, partialTicks);
     }

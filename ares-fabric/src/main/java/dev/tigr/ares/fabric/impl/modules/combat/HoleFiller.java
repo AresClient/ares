@@ -52,16 +52,16 @@ public class HoleFiller extends Module {
                             new Box(hole)
                     ).stream().noneMatch(Entity::collides)
             ) {
-                int first = MC.player.inventory.selectedSlot;
+                int first = MC.player.getInventory().selectedSlot;
                 int slot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
                 if(slot == -1) {
                     slot = InventoryUtils.findBlockInHotbar(Blocks.CRYING_OBSIDIAN);
                     if(slot == -1) return;
                 }
-                MC.player.inventory.selectedSlot = slot;
+                MC.player.getInventory().selectedSlot = slot;
 
                 WorldUtils.placeBlockMainHand(hole, rotate.getValue());
-                MC.player.inventory.selectedSlot = first;
+                MC.player.getInventory().selectedSlot = first;
                 return;
             }
         }

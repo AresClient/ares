@@ -14,6 +14,9 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.impl.modules.combat.BedAura.Mode;
+import dev.tigr.ares.fabric.impl.modules.combat.BedAura.Target;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.*;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -111,7 +114,7 @@ public class BedAura extends Module {
     private void place() {
         if(logicTimer.passedTicks(placeDelay.getValue()) && placed.isEmpty()) {
             // if no gapple switch and player is holding apple
-            if(noGappleSwitch.getValue() && MC.player.inventory.getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
+            if(noGappleSwitch.getValue() && MC.player.getInventory().getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
                 if(target != null) target = null;
                 return;
             }
@@ -128,19 +131,19 @@ public class BedAura extends Module {
     private void placeBed(Pair<BlockPos, Direction> pair) {
         int oldSelection = -1;
         if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0)
-            oldSelection = MC.player.inventory.selectedSlot;
+            oldSelection = MC.player.getInventory().selectedSlot;
         // switch to crystals if not holding
-        if(!(MC.player.inventory.getMainHandStack().getItem() instanceof BedItem)) {
+        if(!(MC.player.getInventory().getMainHandStack().getItem() instanceof BedItem)) {
             int slot = -1;
             for(int i = 0; i < 9; i++) {
-                if(MC.player.inventory.getStack(i).getItem() instanceof BedItem) {
+                if(MC.player.getInventory().getStack(i).getItem() instanceof BedItem) {
                     slot = i;
                     break;
                 }
             }
             if(slot != -1) {
-                MC.player.inventory.selectedSlot = slot;
-                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                MC.player.getInventory().selectedSlot = slot;
+                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
             }
         }
 
@@ -150,7 +153,7 @@ public class BedAura extends Module {
 
         // Swap back
         if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0 && oldSelection != -1)
-            MC.player.inventory.selectedSlot = oldSelection;
+            MC.player.getInventory().selectedSlot = oldSelection;
 
         // set render pos
         target = pair;
@@ -158,9 +161,9 @@ public class BedAura extends Module {
 
     private void placeRotated(BlockPos pos, Direction direction) {
         float yaw = direction.asRotation();
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(yaw, MC.player.pitch, MC.player.isOnGround()));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, MC.player.getPitch(), MC.player.isOnGround()));
         WorldUtils.placeBlockNoRotate(Hand.MAIN_HAND, pos);
-        rotations = new double[] { yaw, MC.player.pitch };
+        rotations = new double[] { yaw, MC.player.getPitch() };
     }
 
     private void explode() {
@@ -181,8 +184,8 @@ public class BedAura extends Module {
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         // rotation spoofing
         if(event.getPacket() instanceof PlayerMoveC2SPacket && rotations != null) {
-            ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), (float) rotations[1], "pitch", "field_12885");
-            ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), (float) rotations[0], "yaw", "field_12887");
+            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch((float) rotations[1]);
+            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw((float) rotations[0]);
         }
     });
 
@@ -381,7 +384,7 @@ public class BedAura extends Module {
         int quantity = 0;
 
         for(int i = 0; i <= 44; i++) {
-            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            ItemStack stackInSlot = MC.player.getInventory().getStack(i);
             if(stackInSlot.getItem() instanceof BedItem) quantity += stackInSlot.getCount();
         }
 
@@ -392,7 +395,7 @@ public class BedAura extends Module {
         int quantity = 0;
 
         for(int i = 0; i < 9; i++) {
-            ItemStack stackInSlot = MC.player.inventory.getStack(i);
+            ItemStack stackInSlot = MC.player.getInventory().getStack(i);
             if(stackInSlot.getItem() instanceof BedItem) quantity += stackInSlot.getCount();
         }
 
@@ -401,12 +404,12 @@ public class BedAura extends Module {
 
     private void replenishBed() {
         int slot = replenishSlot.getValue() - 1;
-        if(MC.player.inventory.getStack(slot).getItem() instanceof BedItem) return;
+        if(MC.player.getInventory().getStack(slot).getItem() instanceof BedItem) return;
         if(MC.currentScreen == null || MC.currentScreen instanceof InventoryScreen) {
             for(int i = 45; i > 8; i--) {
-                if(MC.player.inventory.getStack(i).getItem() instanceof BedItem) {
+                if(MC.player.getInventory().getStack(i).getItem() instanceof BedItem) {
                     if(InventoryUtils.getHotbarBlank() != slot) {
-                        if(MC.player.inventory.getStack(slot).isEmpty()) {
+                        if(MC.player.getInventory().getStack(slot).isEmpty()) {
                             MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(i), 0, SlotActionType.PICKUP, MC.player);
                             MC.interactionManager.clickSlot(MC.player.currentScreenHandler.syncId, InventoryUtils.getSlotIndex(slot), 0, SlotActionType.PICKUP, MC.player);
                         } else {

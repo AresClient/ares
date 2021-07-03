@@ -17,6 +17,7 @@ import net.minecraft.util.Identifier;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
@@ -40,7 +41,7 @@ public class Capes extends Module {
             Cape cape = CAPE_MAP.get(uuid);
             if(cape.isRainbow()) {
                 Color color = IRenderer.rainbow();
-                RenderSystem.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+                GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             }
             if(cape.getIdentifier() != null) event.getCir().setReturnValue(cape.getIdentifier());
         }

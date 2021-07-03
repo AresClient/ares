@@ -7,7 +7,6 @@ import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
-import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
@@ -26,9 +25,11 @@ public class CustomUtils implements IUtils {
         MC.inGameHud.getChatHud().addMessage(new LiteralText(TextColor.DARK_GRAY + "[" + TextColor.DARK_RED + "Ares" + TextColor.DARK_GRAY + "]" + TextColor.WHITE + " ").append(textComponentString));
     }
 
+    // TODO: BARITONE FOR FABRIC
     @Override
     public void executeBaritoneCommand(String string) {
-        Baritone.executeCommand(string);
+        //Baritone.executeCommand(string);
+        printMessage(TextColor.RED + "Baritone is currently disabled on 1.17");
     }
 
     @Override

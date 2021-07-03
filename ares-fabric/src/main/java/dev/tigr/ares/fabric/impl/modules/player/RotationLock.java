@@ -23,16 +23,16 @@ public class RotationLock extends Module {
     public void onTick() {
         switch(mode.getValue()) {
             case SOUTH:
-                MC.player.yaw = 0;
+                MC.player.setYaw(0);
                 break;
             case WEST:
-                MC.player.yaw = 90;
+                MC.player.setYaw(90);
                 break;
             case NORTH:
-                MC.player.yaw = 180;
+                MC.player.setYaw(180);
                 break;
             case EAST:
-                MC.player.yaw = -90;
+                MC.player.setYaw(-90);
                 break;
         }
     }

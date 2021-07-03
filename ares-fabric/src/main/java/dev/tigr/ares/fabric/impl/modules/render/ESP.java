@@ -8,6 +8,10 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.IRenderer;
+import dev.tigr.ares.fabric.impl.modules.render.ESP.Color;
+import dev.tigr.ares.fabric.impl.modules.render.ESP.Mode;
+import dev.tigr.ares.fabric.mixin.accessors.ShaderEffectAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.WorldRendererAccessor;
 import dev.tigr.ares.fabric.utils.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.client.gl.GlUniform;
@@ -66,10 +70,7 @@ public class ESP extends Module {
     public void onTick() {
         if(mode.getValue() != Mode.OUTLINE) return;
 
-        ShaderEffect outlineShaderGroup = ReflectionHelper.getPrivateValue(WorldRenderer.class, MC.worldRenderer, "entityOutlineShader", "field_4059");
-        List<PostProcessShader> shaders = ReflectionHelper.getPrivateValue(ShaderEffect.class, outlineShaderGroup, "passes", "field_1497");
-
-        shaders.forEach(shader -> {
+        ((ShaderEffectAccessor) ((WorldRendererAccessor) MC.worldRenderer).getEntityOutlineShader()).getPasses().forEach(shader -> {
             GlUniform outlineRadius = shader.getProgram().getUniformByName("Radius");
             if(outlineRadius != null) outlineRadius.set(4 / 5f);
         });

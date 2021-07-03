@@ -9,6 +9,10 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.MovePlayerEvent;
+import dev.tigr.ares.fabric.impl.modules.movement.PacketFly.Bounds;
+import dev.tigr.ares.fabric.impl.modules.movement.PacketFly.Mode;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerPositionLookS2CPacketAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.Blocks;
@@ -46,8 +50,8 @@ public class PacketFly extends Module {
 
     @Override
     public void onEnable() {
-        pitch = MC.player.pitch;
-        yaw = MC.player.yaw;
+        pitch = MC.player.getPitch();
+        yaw = MC.player.getYaw();
 
         serverX = MC.player.getX();
         serverY = MC.player.getY();
@@ -77,7 +81,7 @@ public class PacketFly extends Module {
         double z = MC.player.getZ();
 
         if(keyPressed) {
-            float yaw = MC.player.yaw;
+            float yaw = MC.player.getYaw();
             float forward = 1;
 
             if(MC.player.forwardSpeed < 0) {
@@ -94,8 +98,8 @@ public class PacketFly extends Module {
         }
 
         // calculate rotation
-        float yaw = smooth.getValue() ? this.yaw : MC.player.yaw;
-        float pitch = smooth.getValue() ? this.pitch : MC.player.pitch;
+        float yaw = smooth.getValue() ? this.yaw : MC.player.getYaw();
+        float pitch = smooth.getValue() ? this.pitch : MC.player.getPitch();
 
         // send move packets and keep player and the position the server thinks its at
         if(mode.getValue() == Mode.SETBACK) setbackMove(x, y, z, yaw, pitch);
@@ -107,15 +111,15 @@ public class PacketFly extends Module {
 
     private void fastMove(double x, double y, double z, float yaw, float pitch) {
         // send new position and confirm with predicted id
-        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Both(x, y, z, yaw, pitch, MC.player.isOnGround())));
+        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Full(x, y, z, yaw, pitch, MC.player.isOnGround())));
         MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(++tpId));
 
         // send out of bounds packet and confirm with predicted id
-        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Both(MC.player.getX(), getBounds(), MC.player.getZ(), yaw, pitch, MC.player.isOnGround())));
+        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Full(MC.player.getX(), getBounds(), MC.player.getZ(), yaw, pitch, MC.player.isOnGround())));
         MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(++tpId));
 
         // send new position and confirm again
-        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Both(x, y, z, yaw, pitch, MC.player.isOnGround())));
+        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Full(x, y, z, yaw, pitch, MC.player.isOnGround())));
         if(extraPacket.getValue()) MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(tpId - 1));
         MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(tpId));
         if(extraPacket.getValue()) MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(tpId + 1));
@@ -123,11 +127,11 @@ public class PacketFly extends Module {
 
     private void setbackMove(double x, double y, double z, float yaw, float pitch) {
         // send out of bounds packet and confirm with predicted id
-        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Both(MC.player.getX(), getBounds(), MC.player.getZ(), yaw, pitch, MC.player.isOnGround())));
+        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Full(MC.player.getX(), getBounds(), MC.player.getZ(), yaw, pitch, MC.player.isOnGround())));
         MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(++tpId));
 
         // send new position and confirm again
-        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Both(x, y, z, yaw, pitch, MC.player.isOnGround())));
+        MC.player.networkHandler.sendPacket(add(new PlayerMoveC2SPacket.Full(x, y, z, yaw, pitch, MC.player.isOnGround())));
         if(extraPacket.getValue()) MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(tpId - 1));
         MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(tpId));
         if(extraPacket.getValue()) MC.player.networkHandler.sendPacket(new TeleportConfirmC2SPacket(tpId + 1));
@@ -146,12 +150,12 @@ public class PacketFly extends Module {
     @EventHandler
     public EventListener<PacketEvent.Sent> onPacketSent = new EventListener<>(event -> {
         if(event.getPacket() instanceof PlayerMoveC2SPacket) {
-            if(packets.contains((PlayerMoveC2SPacket) event.getPacket())) packets.remove((PlayerMoveC2SPacket) event.getPacket());
+            if(packets.contains(event.getPacket())) packets.remove(event.getPacket());
             else event.setCancelled(true);
 
             if(!event.isCancelled() && smooth.getValue()) {
-                ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, (PlayerMoveC2SPacket) event.getPacket(), pitch, "pitch", "field_12885");
-                ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, (PlayerMoveC2SPacket) event.getPacket(), yaw, "yaw", "field_12887");
+                ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch(pitch);
+                ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw(yaw);
             }
         }
     });
@@ -167,8 +171,8 @@ public class PacketFly extends Module {
             tpId = packet.getTeleportId();
 
             if(smooth.getValue()) {
-                ReflectionHelper.setPrivateValue(PlayerPositionLookS2CPacket.class, (PlayerPositionLookS2CPacket) event.getPacket(), MC.player.pitch, "pitch", "field_12391");
-                ReflectionHelper.setPrivateValue(PlayerPositionLookS2CPacket.class, (PlayerPositionLookS2CPacket) event.getPacket(), MC.player.yaw, "yaw", "field_12393");
+                ((PlayerPositionLookS2CPacketAccessor) event.getPacket()).setPitch(MC.player.getPitch());
+                ((PlayerPositionLookS2CPacketAccessor) event.getPacket()).setYaw(MC.player.getYaw());
             }
         }
 

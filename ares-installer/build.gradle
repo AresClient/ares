@@ -1,32 +1,34 @@
 buildscript {
     repositories {
-        jcenter()
+        gradlePluginPortal()
     }
     dependencies {
-        classpath "com.github.jengelman.gradle.plugins:shadow:4.0.4"
+        classpath "gradle.plugin.com.github.jengelman.gradle.plugins:shadow:7.0.0"
     }
 }
 apply plugin: "com.github.johnrengelman.shadow"
 
 version = project.installerVersion
 
-dependencies {
-    compile "org.json:json:20190722"
-    shadow "org.json:json:20190722"
-    compile "li.flor:native-j-file-chooser:1.6.4"
-    shadow "li.flor:native-j-file-chooser:1.6.4"
-    compile "com.github.FabricMC:fabric-installer:master-SNAPSHOT"
-}
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
-shadowJar {
-    configurations = [project.configurations.shadow]
-    setClassifier("release")
+dependencies {
+    implementation "org.json:json:20190722"
+    shadow "org.json:json:20190722"
+    implementation "li.flor:native-j-file-chooser:1.6.4"
+    shadow "li.flor:native-j-file-chooser:1.6.4"
+    implementation "com.github.FabricMC:fabric-installer:master-SNAPSHOT"
 }
 
 jar {
+    //noinspection GroovyAssignabilityCheck
     manifest {
         attributes("Main-Class": "dev.tigr.ares.installer.Installer")
     }
 }
 
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier.set("release")
+}
 build.dependsOn(shadowJar)

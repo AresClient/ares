@@ -14,10 +14,10 @@ public class Gamemode extends Command {
 
         register(literal("gm").redirect(register(literal("gamemode").then(
                 literal("c").executes(c -> {
-                    MC.player.setGameMode(GameMode.CREATIVE);
+                    MC.interactionManager.setGameMode(GameMode.CREATIVE);
                     return 1;
                 })).then(literal("s").executes(c -> {
-                    MC.player.setGameMode(GameMode.SURVIVAL);
+                    MC.interactionManager.setGameMode(GameMode.SURVIVAL);
                     return 1;
                 }))
         )));

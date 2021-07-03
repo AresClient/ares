@@ -4,6 +4,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.entity.*;
 import net.minecraft.util.math.Box;
 
@@ -21,7 +22,7 @@ public class ChestESP extends Module {
     @Override
     public void onRender3d() {
         RenderUtils.prepare3d();
-        for(BlockEntity tileEntity: MC.world.blockEntities) {
+        for(BlockEntity tileEntity: WorldUtils.getBlockEntities()) {
             Box bb = RenderUtils.getBoundingBox(tileEntity.getPos());
             if(bb == null) continue;
             if(tileEntity instanceof ChestBlockEntity || tileEntity instanceof BarrelBlockEntity)

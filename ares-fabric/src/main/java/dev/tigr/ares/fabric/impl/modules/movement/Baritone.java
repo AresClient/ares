@@ -1,18 +1,15 @@
 package dev.tigr.ares.fabric.impl.modules.movement;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.Settings;
-import baritone.api.event.events.ChatEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 
 /**
  * @author Tigermouthbear
  */
-@Module.Info(name = "Baritone", description = "Allows you to change the settings for baritone", category = Category.MOVEMENT, enabled = true, visible = false, alwaysListening = true)
+// TODO: BARITONE FOR 1.17
+@Module.Info(name = "Baritone", description = "*DISABLED* Allows you to change the settings for baritone", category = Category.MOVEMENT, enabled = true, visible = false, alwaysListening = true)
 public class Baritone extends Module {
     private final Setting<Boolean> allowSprint = register(new BooleanSetting("Allow Sprint", true));
     private final Setting<Boolean> allowBreak = register(new BooleanSetting("Allow Break", true));
@@ -25,7 +22,7 @@ public class Baritone extends Module {
     private final Setting<Boolean> renderGoal = register(new BooleanSetting("Render Goal", true));
     private final Setting<Boolean> enterPortal = register(new BooleanSetting("Avoid Portals", false));
 
-    private static <T> void setVal(Settings.Setting<T> setting, T val) {
+    /*private static <T> void setVal(Settings.Setting<T> setting, T val) {
         ReflectionHelper.setPrivateValue(Settings.Setting.class, setting, val, "value");
     }
 
@@ -57,6 +54,8 @@ public class Baritone extends Module {
         setVal(BaritoneAPI.getSettings().renderGoal, renderGoal.getValue());
         setVal(BaritoneAPI.getSettings().enterPortal, enterPortal.getValue());
     }
+
+     */
 
     @Override
     public void onDisable() {

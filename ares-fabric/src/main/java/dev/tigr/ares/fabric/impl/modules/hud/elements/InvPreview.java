@@ -31,7 +31,7 @@ public class InvPreview extends HudElement {
     }
 
     private void renderItems() {
-        DefaultedList<ItemStack> items = MC.player.inventory.main;
+        DefaultedList<ItemStack> items = MC.player.getInventory().main;
 
         int x = getX() + 4;
         int y = getY() - HEIGHT / 3 + 2;

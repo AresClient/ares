@@ -23,7 +23,7 @@ public class EntitySpeed extends Module {
     public EventListener<UpdateLivingEntityEvent.Post> updateLivingEntityPost = new EventListener<>(event -> {
         if(MC.player == null) return;
         if(MC.player.getRootVehicle() != null && event.getEntity() == MC.player.getRootVehicle() && MC.player.isRiding()) {
-            MC.player.getRootVehicle().yaw = MC.player.yaw;
+            MC.player.getRootVehicle().setYaw(MC.player.getYaw());
             MC.player.getRootVehicle().setVelocity(0, fly.getValue() ? 0 : MC.player.getRootVehicle().getVelocity().y, 0);
 
             if(onGround.getValue()) MC.player.getRootVehicle().distanceTraveled = speed.getValue().intValue();

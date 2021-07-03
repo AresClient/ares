@@ -35,7 +35,7 @@ public class Strafe extends Module {
                 speed = (float) Math.sqrt(MC.player.getVelocity().x * MC.player.getVelocity().x + MC.player.getVelocity().z * MC.player.getVelocity().z);
             else speed = speedVal.getValue();
 
-            float yaw = MC.player.yaw;
+            float yaw = MC.player.getYaw();
             float forward = 1;
 
             if(MC.player.forwardSpeed < 0) {

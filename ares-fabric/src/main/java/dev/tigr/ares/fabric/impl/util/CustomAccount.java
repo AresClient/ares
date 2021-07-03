@@ -12,8 +12,10 @@ import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.impl.render.CustomRenderStack;
+import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
@@ -107,7 +109,8 @@ public class CustomAccount extends AbstractAccount {
                 "mojang"
         );
 
-        return ReflectionHelper.setPrivateValue(MC.getClass(), MC, session, "session", "field_1726");
+        ((MinecraftClientAccessor) MC).setSession(session);
+        return true;
     }
 
     @Override
@@ -128,7 +131,7 @@ public class CustomAccount extends AbstractAccount {
         // draw it
         Matrix4f matrix4f = ((CustomRenderStack)RENDER_STACK).getMatrixStack().peek().getModel();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(GL11.GL_TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);
+        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);
         bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0)            .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 0).next();
         bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0)                       .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 0).next();
         bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0)           .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 1).next();

@@ -21,9 +21,9 @@ public class InventoryMove extends Module {
     @Override
     public void onTick() {
         if(MC.currentScreen instanceof ChatScreen || MC.currentScreen == null) return;
-        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_UP)) MC.player.pitch -= 4;
-        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_DOWN)) MC.player.pitch += 4;
-        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT)) MC.player.yaw -= 4;
-        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT)) MC.player.yaw += 4;
+        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_UP)) MC.player.setPitch(MC.player.getPitch() - 4);
+        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_DOWN)) MC.player.setPitch(MC.player.getPitch() + 4);
+        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_LEFT)) MC.player.setYaw(MC.player.getPitch() - 4);
+        if(InputUtil.isKeyPressed(MC.getWindow().getHandle(), GLFW.GLFW_KEY_RIGHT))MC.player.setYaw(MC.player.getPitch() + 4);
     }
 }

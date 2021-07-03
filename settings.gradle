@@ -1,3 +1,13 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+        gradlePluginPortal()
+    }
+}
+
 include "ares-core"
 include "ares-forge"
 include "ares-fabric"

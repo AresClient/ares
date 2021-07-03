@@ -8,6 +8,8 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.fabric.impl.modules.combat.Surround.Boss;
+import dev.tigr.ares.fabric.impl.modules.combat.Surround.Primary;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.RenderUtils;
@@ -107,27 +109,27 @@ public class Surround extends Module {
             // find obby
             int obbyIndex = findBlock();
             if(obbyIndex == -1) return;
-            int prevSlot = MC.player.inventory.selectedSlot;
+            int prevSlot = MC.player.getInventory().selectedSlot;
 
             if(needsToPlace()) {
                 for(BlockPos pos : getPositions()) {
                     if(MC.world.getBlockState(pos).getMaterial().isReplaceable())
                         renderChange.putIfAbsent(pos, new Pair<>(new Timer(), false));
 
-                    MC.player.inventory.selectedSlot = obbyIndex;
+                    MC.player.getInventory().selectedSlot = obbyIndex;
                     if(WorldUtils.placeBlockMainHand(pos, rotate.getValue(), air.getValue(), placeOnCrystal.getValue())) {
                         if(renderChange.containsKey(pos)) {
                             renderChange.get(pos).setSecond(true);
                             renderChange.get(pos).getFirst().reset();
                         }
                         if(delay.getValue() != 0) {
-                            MC.player.inventory.selectedSlot = prevSlot;
+                            MC.player.getInventory().selectedSlot = prevSlot;
                             return;
                         }
                     }
                 }
 
-                MC.player.inventory.selectedSlot = prevSlot;
+                MC.player.getInventory().selectedSlot = prevSlot;
             }
         }
     }

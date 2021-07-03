@@ -6,6 +6,7 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Tessellator;
+import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -26,17 +27,17 @@ public class CustomRenderer implements IRenderer {
 
     @SuppressWarnings("deprecation")
     private void draw(boolean texture) {
-        RenderSystem.color4f(1, 1, 1, 1);
+        //RenderSystem.color4f(1, 1, 1, 1);
 
         RenderSystem.disableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        RenderSystem.disableAlphaTest();
-        RenderSystem.disableLighting();
+        //GL11.glDisable(GL11.GL_ALPHA_TEST);
+        //RenderSystem.disableLighting();
 
         RenderSystem.disableCull();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
-        RenderSystem.shadeModel(GL11.GL_SMOOTH);
+        //RenderSystem.shadeModel(GL11.GL_SMOOTH);
 
         if(texture) RenderSystem.enableTexture();
         else RenderSystem.disableTexture();
@@ -44,7 +45,7 @@ public class CustomRenderer implements IRenderer {
         // actually draw
         Tessellator.getInstance().draw();
 
-        RenderSystem.enableAlphaTest();
+        //GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableDepthTest();
         RenderSystem.enableTexture();
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
@@ -63,7 +64,7 @@ public class CustomRenderer implements IRenderer {
     public void drawRect(double x, double y, double width, double height, Color color) {
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(GL11.GL_TRIANGLES, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).            color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0).                      color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).           color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
@@ -95,7 +96,7 @@ public class CustomRenderer implements IRenderer {
         // draw it
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(GL11.GL_TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);
+        bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);
         bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0)            .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 0).next();
         bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0)                       .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 0).next();
         bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0)           .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 1).next();
@@ -137,7 +138,7 @@ public class CustomRenderer implements IRenderer {
 
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(GL11.GL_LINES, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         bufferBuilder.vertex(matrix4f, (float) endX, (float) endY, (float) endZ)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
@@ -158,7 +159,7 @@ public class CustomRenderer implements IRenderer {
 
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(GL11.GL_LINE_LOOP, VertexFormats.POSITION_COLOR);
+        bufferBuilder.begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.POSITION_COLOR);
         for(int i = 0; i < points.length; i += 2)
             bufferBuilder.vertex(matrix4f, (float) points[i], (float) points[i + 1], 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();

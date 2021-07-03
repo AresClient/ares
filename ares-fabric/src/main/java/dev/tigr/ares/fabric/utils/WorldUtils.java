@@ -3,8 +3,13 @@ package dev.tigr.ares.fabric.utils;
 import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
+import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.core.util.global.ReflectionHelper;
+import io.netty.buffer.Unpooled;
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.network.OtherClientPlayerEntity;
+import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SpawnGroup;
@@ -16,11 +21,14 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.SquidEntity;
 import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
+import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -126,12 +134,12 @@ public class WorldUtils implements Wrapper {
         float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
 
         float[] rotations = {
-                MC.player.yaw
-                        + MathHelper.wrapDegrees(yaw - MC.player.yaw),
-                MC.player.pitch + MathHelper
-                        .wrapDegrees(pitch - MC.player.pitch)};
+                MC.player.getYaw()
+                        + MathHelper.wrapDegrees(yaw - MC.player.getYaw()),
+                MC.player.getPitch() + MathHelper
+                        .wrapDegrees(pitch - MC.player.getPitch())};
 
-        if(rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(rotations[0], rotations[1], MC.player.isOnGround()));
+        if(rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(rotations[0], rotations[1], MC.player.isOnGround()));
 
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
         MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
@@ -151,7 +159,7 @@ public class WorldUtils implements Wrapper {
     }
 
     public static void moveEntityWithSpeed(Entity entity, double speed, boolean shouldMoveY) {
-        float yaw = (float) Math.toRadians(MC.player.yaw);
+        float yaw = (float) Math.toRadians(MC.player.getYaw());
 
         double motionX = 0;
         double motionY = 0;
@@ -314,13 +322,13 @@ public class WorldUtils implements Wrapper {
     //End credit to Kami
 
     public static void rotate(float yaw, float pitch) {
-        MC.player.yaw = yaw;
-        MC.player.pitch = pitch;
+        MC.player.setYaw(yaw);
+        MC.player.setPitch(pitch);
     }
 
     public static void rotate(double[] rotations) {
-        MC.player.yaw = (float) rotations[0];
-        MC.player.pitch = (float) rotations[1];
+        MC.player.setYaw((float) rotations[0]);
+        MC.player.setPitch((float) rotations[1]);
     }
 
     public static void lookAtBlock(BlockPos blockToLookAt) {
@@ -384,7 +392,7 @@ public class WorldUtils implements Wrapper {
     public static boolean isValidTarget(Entity entity, double distance, boolean doDistance) {
         return (entity instanceof PlayerEntity || entity instanceof OtherClientPlayerEntity)
                 && !friendCheck(entity)
-                && !entity.removed
+                && !entity.isRemoved()
                 && !hasZeroHealth(entity)
                 && !shouldDistance(entity, distance, doDistance)
                 && entity != MC.player;
@@ -432,10 +440,10 @@ public class WorldUtils implements Wrapper {
     }
 
     public static void fakeJump() {
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.40, MC.player.getZ(), true));
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.75, MC.player.getZ(), true));
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.01, MC.player.getZ(), true));
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), MC.player.getY() + 0.40, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), MC.player.getY() + 0.75, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), MC.player.getY() + 1.01, MC.player.getZ(), true));
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ(), true));
     }
 
     public static BlockPos roundBlockPos(Vec3d vec) {
@@ -461,7 +469,31 @@ public class WorldUtils implements Wrapper {
         }
 
         MC.player.setVelocity(0, 0, 0);
-        MC.player.updatePosition(xPos, MC.player.getY(), zPos);
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY(), MC.player.getZ(), MC.player.isOnGround()));
+        MC.player.setPosition(xPos, MC.player.getY(), zPos);
+        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), MC.player.getY(), MC.player.getZ(), MC.player.isOnGround()));
+    }
+
+    public static List<BlockEntity> getBlockEntities() {
+        List<BlockEntity> blockEntities = new ArrayList<>();
+        ChunkPos chunkPos = MC.player.getChunkPos();
+
+        int viewDistance = MC.options.viewDistance;
+        for(int x = -viewDistance; x < viewDistance; x++) {
+            for(int z = -viewDistance; z < viewDistance; z++) {
+                WorldChunk worldChunk = MC.world.getChunkManager().getWorldChunk(chunkPos.x + x, chunkPos.z + z);
+                blockEntities.addAll(worldChunk.getBlockEntities().values());
+            }
+        }
+
+
+        return blockEntities;
+    }
+
+    public static enum InteractType {INTERACT, ATTACK, INTERACT_AT}
+    public static Pair<InteractType, Integer> getInteractData(PlayerInteractEntityC2SPacket packet) {
+        PacketByteBuf buffer = new PacketByteBuf(Unpooled.buffer());
+        packet.write(buffer);
+        int id = buffer.readVarInt();
+        return new Pair<InteractType, Integer>(buffer.readEnumConstant(InteractType.class), id);
     }
 }

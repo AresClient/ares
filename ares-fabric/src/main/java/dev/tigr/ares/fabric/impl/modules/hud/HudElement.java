@@ -82,7 +82,7 @@ public abstract class HudElement extends Module {
     public void onRender2d() {
         if(!(MC.currentScreen instanceof EditHudGui) && !(MC.currentScreen instanceof CustomGUIManager)) {
             drawBackground();
-            RenderSystem.color4f(1, 1, 1, 1);
+            //RenderSystem.color4f(1, 1, 1, 1);
             draw();
         }
     }

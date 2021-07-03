@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
+import dev.tigr.ares.fabric.mixin.accessors.AbstractBlockAccessor;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -26,12 +27,12 @@ public class IceSpeed extends Module {
     @Override
     public void onDisable() {
         setSlipperiness(0.98f);
-        ReflectionHelper.setPrivateValue(AbstractBlock.class, Blocks.BLUE_ICE, 0.989f, "slipperiness", "field_23163");
+        ((AbstractBlockAccessor) Blocks.BLUE_ICE).setSlipperiness(0.989f);
     }
 
     private void setSlipperiness(float speed) {
-        for(Block block: Arrays.asList(Blocks.ICE, Blocks.PACKED_ICE, Blocks.FROSTED_ICE, Blocks.BLUE_ICE)){
-            ReflectionHelper.setPrivateValue(AbstractBlock.class, block, speed, "slipperiness", "field_23163");
+        for(Block block: Arrays.asList(Blocks.ICE, Blocks.PACKED_ICE, Blocks.FROSTED_ICE, Blocks.BLUE_ICE)) {
+            ((AbstractBlockAccessor) block).setSlipperiness(speed);
         }
     }
 }

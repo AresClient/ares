@@ -4,9 +4,8 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderTickCounter;
+import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 
 /**
  * @author Tigermouthbear
@@ -17,11 +16,11 @@ public class Timer extends Module {
 
     @Override
     public void onTick() {
-        ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / tps.getValue(), "tickTime", "field_1968");
+        ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / tps.getValue());
     }
 
     @Override
     public void onDisable() {
-        ReflectionHelper.setPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), 1000.0F / 20.0F, "tickTime", "field_1968");
+        ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / 20.0F);
     }
 }

@@ -46,14 +46,14 @@ public class FireworkAura extends Module {
             // place trap
             if (MC.world.getBlockState(trapPos).getBlock() == Blocks.AIR) {
                 if (trapTimer.passedMillis(trapDelay.getValue())) {
-                    int oldSelection = MC.player.inventory.selectedSlot;
+                    int oldSelection = MC.player.getInventory().selectedSlot;
                     int newSelection = InventoryUtils.getBlockInHotbar();
                     if (newSelection == -1) {
                         setEnabled(false);
                         UTILS.printMessage(TextColor.RED + "No Blocks Found");
-                    } else MC.player.inventory.selectedSlot = newSelection;
+                    } else MC.player.getInventory().selectedSlot = newSelection;
                     WorldUtils.placeBlockMainHand(trapPos, rotate.getValue());
-                    MC.player.inventory.selectedSlot = oldSelection;
+                    MC.player.getInventory().selectedSlot = oldSelection;
                     delayTimer.reset();
                     trapTimer.reset();
                 }
@@ -61,18 +61,18 @@ public class FireworkAura extends Module {
 
             // place fireworks
             else if (delayTimer.passedMillis(delay.getValue())) {
-                if (MathHelper.sqrt(MC.player.squaredDistanceTo(playerPos.getX(), playerPos.getY(), playerPos.getZ())) <= range.getValue()) {
+                if (Math.sqrt(MC.player.squaredDistanceTo(playerPos.getX(), playerPos.getY(), playerPos.getZ())) <= range.getValue()) {
 
                     // switch
-                    int oldSelection = MC.player.inventory.selectedSlot;
+                    int oldSelection = MC.player.getInventory().selectedSlot;
                     int newSelection = InventoryUtils.findItemInHotbar(Items.FIREWORK_ROCKET);
                     if (newSelection == -1) return;
-                    else MC.player.inventory.selectedSlot = newSelection;
+                    else MC.player.getInventory().selectedSlot = newSelection;
 
                     // rotate
                     if (rotate.getValue()) {
                         double[] rotations = WorldUtils.calculateLookAt(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, MC.player);
-                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
+                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
                     }
                     // place
                     MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
@@ -81,7 +81,7 @@ public class FireworkAura extends Module {
                     MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
 
                     // switch return
-                    MC.player.inventory.selectedSlot = oldSelection;
+                    MC.player.getInventory().selectedSlot = oldSelection;
 
                     // reset timer
                     trapTimer.reset();

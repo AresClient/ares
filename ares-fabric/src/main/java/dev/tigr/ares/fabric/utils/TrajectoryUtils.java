@@ -125,19 +125,19 @@ public class TrajectoryUtils {
             z = pos.z;
 
             // offset projectile so its not inside player
-            x -= MathHelper.cos(entityThrower.yaw / 180.0F * (float) Math.PI) * 0.16F;
-            z -= MathHelper.sin(entityThrower.yaw / 180.0F * (float) Math.PI) * 0.16F;
+            x -= MathHelper.cos(entityThrower.getYaw() / 180.0F * (float) Math.PI) * 0.16F;
+            z -= MathHelper.sin(entityThrower.getYaw() / 180.0F * (float) Math.PI) * 0.16F;
 
             // create bounding box
             updateBoundingBox();
 
             // get heading
-            double f = (double) -MathHelper.sin(entityThrower.yaw * 0.017453292F) * MathHelper.cos(entityThrower.pitch * 0.017453292F);
-            double f1 = (double) -MathHelper.sin((entityThrower.pitch + projectile.pitchOffset) * 0.017453292F);
-            double f2 = (double) MathHelper.cos(entityThrower.yaw * 0.017453292F) * MathHelper.cos(entityThrower.pitch * 0.017453292F);
+            double f = (double) -MathHelper.sin(entityThrower.getYaw() * 0.017453292F) * MathHelper.cos(entityThrower.getPitch() * 0.017453292F);
+            double f1 = (double) -MathHelper.sin((entityThrower.getPitch() + projectile.pitchOffset) * 0.017453292F);
+            double f2 = (double) MathHelper.cos(entityThrower.getYaw() * 0.017453292F) * MathHelper.cos(entityThrower.getPitch() * 0.017453292F);
 
             // set velocity
-            double divisor = MathHelper.sqrt(f * f + f1 * f1 + f2 * f2);
+            double divisor = Math.sqrt(f * f + f1 * f1 + f2 * f2);
             double velocity = getInitialVelocity();
             f = f / divisor;
             f1 = f1 / divisor;
@@ -149,9 +149,9 @@ public class TrajectoryUtils {
             motionY = f1;
             motionZ = f2;
 
-            float rotation = MathHelper.sqrt(f * f + f2 * f2);
+            double rotation = Math.sqrt(f * f + f2 * f2);
             this.yaw = (float)(MathHelper.atan2(f, f2) * (180D / Math.PI));
-            this.pitch = (float)(MathHelper.atan2(f1, (double)rotation) * (180D / Math.PI));
+            this.pitch = (float)(MathHelper.atan2(f1, rotation) * (180D / Math.PI));
 
             motionX += entityThrower.getVelocity().x;
             motionZ += entityThrower.getVelocity().z;
@@ -159,7 +159,7 @@ public class TrajectoryUtils {
 
             mock = new ArrowEntity(entityThrower.world, x, y, z);
             mock.setBoundingBox(boundingBox);
-            mock.setWorld(entityThrower.world);
+            mock.world = entityThrower.world;
         }
 
         private void update() {

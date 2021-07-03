@@ -1,10 +1,9 @@
 package dev.tigr.ares.fabric.impl.modules.misc;
 
-import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.mixin.accessors.ChatMessageC2SPacketAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
@@ -22,7 +21,7 @@ public class ChatSuffix extends Module {
 
             ChatMessageC2SPacket chatPacket = (ChatMessageC2SPacket) event.getPacket();
             String msg = chatPacket.getChatMessage().concat(" \u00bb \u028c\u0433\u1d07\u0455");
-            ReflectionHelper.setPrivateValue(ChatMessageC2SPacket.class, chatPacket, msg, "chatMessage", "field_12764");
+            ((ChatMessageC2SPacketAccessor) chatPacket).setChatMessage(msg);
         }
     });
 }

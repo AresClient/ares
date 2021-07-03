@@ -11,6 +11,7 @@ import dev.tigr.ares.fabric.gui.AresChatGUI;
 import dev.tigr.ares.fabric.gui.AresMainMenu;
 import dev.tigr.ares.fabric.gui.AresUpdateGUI;
 import dev.tigr.ares.fabric.impl.modules.exploit.AirInteract;
+import dev.tigr.ares.fabric.mixin.accessors.ChatScreenAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.RunArgs;
 import net.minecraft.client.gui.screen.ChatScreen;
@@ -71,7 +72,7 @@ public class MixinMinecraftClient {
 
         // open chat gui if chat
         if(screen instanceof ChatScreen && screen.getClass() == ChatScreen.class && !MC.player.isSleeping()) {
-            MC.openScreen(new AresChatGUI(ReflectionHelper.getPrivateValue(ChatScreen.class, screen, "originalChatText", "field_18973")));
+            MC.openScreen(new AresChatGUI(((ChatScreenAccessor) screen).getOriginalChatText()));
             ci.cancel();
         }
 

@@ -12,12 +12,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.entity.MoverType;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -30,10 +27,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
  */
 @Mixin(EntityPlayerSP.class)
 public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
-    @Shadow
-    @Final
-    public NetHandlerPlayClient connection;
-
     public MixinEntityPlayerSP(World worldIn, GameProfile playerProfile) {
         super(worldIn, playerProfile);
     }
@@ -54,7 +47,6 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
 
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
     public void noPushOutOfBlocks(double var1, double var2, double var3, CallbackInfoReturnable ci) {
-        BlockPushEvent blockPushEvent = Ares.EVENT_MANAGER.post((new BlockPushEvent(var1, var2, var3)));
         if (Ares.EVENT_MANAGER.post(new BlockPushEvent(var1, var2, var3)).isCancelled()) ci.cancel();
     }
 

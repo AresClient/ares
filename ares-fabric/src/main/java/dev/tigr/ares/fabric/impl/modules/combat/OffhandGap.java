@@ -58,7 +58,7 @@ public class OffhandGap extends Module {
         if(move) {
             MC.interactionManager.clickSlot(0, 45, 0, SlotActionType.PICKUP, MC.player);
             move = false;
-            if(!MC.player.inventory.getCursorStack().isEmpty()) clickBlank = true;
+            if(!MC.player.currentScreenHandler.getCursorStack().isEmpty()) clickBlank = true;
             return;
         }
 

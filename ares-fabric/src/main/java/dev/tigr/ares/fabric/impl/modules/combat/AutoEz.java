@@ -6,8 +6,10 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.StringSetting;
+import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.fabric.event.client.LivingDeathEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.entity.Entity;
@@ -28,10 +30,9 @@ public class AutoEz extends Module {
     @EventHandler
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         if(event.getPacket() instanceof PlayerInteractEntityC2SPacket) {
-            PlayerInteractEntityC2SPacket packet = (PlayerInteractEntityC2SPacket) event.getPacket();
-
-            if(packet.getType() == PlayerInteractEntityC2SPacket.InteractionType.ATTACK) {
-                Entity e = packet.getEntity(MC.world);
+            Pair<WorldUtils.InteractType, Integer> interactData = WorldUtils.getInteractData((PlayerInteractEntityC2SPacket) event.getPacket());
+            if(interactData.getFirst() == WorldUtils.InteractType.ATTACK) {
+                Entity e = MC.world.getEntityById(interactData.getSecond());
                 if(e instanceof PlayerEntity) {
                     target = (PlayerEntity) e;
                     hasBeenCombat = 500;

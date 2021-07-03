@@ -39,7 +39,7 @@ public class HopperAura extends Module {
     @EventHandler
     public EventListener<PacketEvent.Sent> packetSentListener = new EventListener<>(event -> {
         if(event.getPacket() instanceof PlayerInteractBlockC2SPacket) {
-            if (MC.player.inventory.getMainHandStack().getItem() == Items.HOPPER) {
+            if (MC.player.getInventory().getMainHandStack().getItem() == Items.HOPPER) {
                 hoppersPlaced.add(((BlockHitResult) MC.crosshairTarget).getBlockPos().offset(((BlockHitResult) MC.crosshairTarget).getSide()));
             }
         }
@@ -47,7 +47,7 @@ public class HopperAura extends Module {
 
     @Override
     public void onTick() {
-        List<BlockEntity> hoppers = MC.world.blockEntities.stream().filter(p -> p instanceof HopperBlockEntity).collect(Collectors.toList());
+        List<BlockEntity> hoppers = WorldUtils.getBlockEntities().stream().filter(p -> p instanceof HopperBlockEntity).collect(Collectors.toList());
 
         if(hoppers.size() > 0) {
             for(BlockEntity hopper: hoppers) {
@@ -60,7 +60,7 @@ public class HopperAura extends Module {
                     int newSelection = InventoryUtils.findItemInHotbar(Items.NETHERITE_PICKAXE);
                     if(newSelection == -1) newSelection = InventoryUtils.findItemInHotbar(Items.DIAMOND_PICKAXE);
                     if(newSelection == -1) newSelection = InventoryUtils.findItemInHotbar(Items.IRON_PICKAXE);
-                    if(newSelection != -1) MC.player.inventory.selectedSlot = newSelection;
+                    if(newSelection != -1) MC.player.getInventory().selectedSlot = newSelection;
                     else return;
                     if(lockRotations.getValue()) WorldUtils.lookAtBlock(hopperPos);
 

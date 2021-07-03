@@ -47,8 +47,8 @@ public class Freecam extends Module {
         }
         clone = new OtherClientPlayerEntity(MC.world, MC.getSession().getProfile());
         clone.copyFrom(MC.player);
-        clone.setEntityId(-68);
-        MC.world.addEntity(clone.getEntityId(), clone);
+        clone.setId(-68);
+        MC.world.addEntity(clone.getId(), clone);
     }
 
     @Override
@@ -72,7 +72,7 @@ public class Freecam extends Module {
         MC.player.noClip = false;
         if(clone != null) {
             MC.player.copyFrom(clone);
-            MC.world.removeEntity(clone.getEntityId());
+            MC.world.removeEntity(clone.getId(), Entity.RemovalReason.DISCARDED);
         }
         if(ride != null) {
             MC.player.startRiding(ride);

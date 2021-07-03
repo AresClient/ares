@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
+import dev.tigr.ares.fabric.impl.modules.movement.Flight.Mode;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 
 /**
@@ -21,8 +22,8 @@ public class Flight extends Module {
 
         switch(mode.getValue()) {
             case VANILLA:
-                MC.player.abilities.setFlySpeed((speed.getValue() / 20) / 10);
-                MC.player.abilities.allowFlying = true;
+                MC.player.getAbilities().setFlySpeed((speed.getValue() / 20) / 10);
+                MC.player.getAbilities().allowFlying = true;
                 break;
 
             case VELOCITY:
@@ -37,7 +38,7 @@ public class Flight extends Module {
 
     @Override
     public void onDisable() {
-        MC.player.abilities.allowFlying = false;
+        MC.player.getAbilities().allowFlying = false;
     }
 
     enum Mode {VANILLA, VELOCITY, JETPACK}

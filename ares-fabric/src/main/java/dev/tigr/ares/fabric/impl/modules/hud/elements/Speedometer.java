@@ -10,6 +10,9 @@ import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
+import dev.tigr.ares.fabric.impl.modules.hud.elements.Speedometer.SpeedUnits;
+import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderTickCounter;
 
@@ -43,7 +46,7 @@ public class Speedometer extends HudElement {
             return;
         }
 
-        float tickLength = ReflectionHelper.getPrivateValue(RenderTickCounter.class, ReflectionHelper.getPrivateValue(MinecraftClient.class, MC, "renderTickCounter", "field_1728"), "tickTime", "field_1968");
+        float tickLength = ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).getTickTime();
         double tps = tickLength / 1000;
 
         double xMove = MC.player.getPos().x - MC.player.prevX;

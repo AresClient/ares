@@ -3,10 +3,9 @@ package dev.tigr.ares.fabric.impl.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IFontRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
+import dev.tigr.ares.fabric.impl.render.CustomFontRenderer.Glyph;
+import dev.tigr.ares.fabric.impl.render.CustomFontRenderer.GlyphPage;
+import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
@@ -23,8 +22,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 import static dev.tigr.ares.Wrapper.*;
 
@@ -299,7 +298,7 @@ public class CustomFontRenderer implements IFontRenderer {
 
                 Matrix4f matrices = ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
                 BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-                bufferBuilder.begin(7, VertexFormats.POSITION_TEXTURE);
+                bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
                 bufferBuilder.vertex(matrices, (float) x, (float) (y + scaledHeight), 0).texture((float) texX, (float) (texY + texHeight)).next();
                 bufferBuilder.vertex(matrices, (float) (x + scaledWidth), (float) (y + scaledHeight), 0).texture((float) (texX + texWidth), (float) (texY + texHeight)).next();
                 bufferBuilder.vertex(matrices, (float) (x + scaledWidth), (float) y, 0).texture((float) (texX + texWidth), (float) texY).next();
@@ -309,18 +308,18 @@ public class CustomFontRenderer implements IFontRenderer {
                 RenderSystem.enableBlend();
                 RenderSystem.blendFunc(770, 771);
                 RenderSystem.disableDepthTest();
-                RenderSystem.disableAlphaTest();
+                //GL11.glDisable(GL11.GL_ALPHA_TEST);
                 RenderSystem.enableTexture();
-                RenderSystem.disableLighting();
+                //RenderSystem.disableLighting();
                 RenderSystem.disableCull();
                 GL11.glEnable(GL11.GL_LINE_SMOOTH);
                 RenderSystem.lineWidth(1);
-                RenderSystem.shadeModel(GL11.GL_SMOOTH);
+                //RenderSystem.shadeModel(GL11.GL_SMOOTH);
 
                 BufferRenderer.draw(bufferBuilder);
 
                 RenderSystem.disableBlend();
-                RenderSystem.enableAlphaTest();
+                //GL11.glEnable(GL11.GL_ALPHA_TEST);
                 RenderSystem.enableDepthTest();
                 RenderSystem.enableTexture();
                 GL11.glDisable(GL11.GL_LINE_SMOOTH);
@@ -345,7 +344,7 @@ public class CustomFontRenderer implements IFontRenderer {
 
         public void drawString(String text, double x, double y, Color color, boolean shadow) {
             if(shadow) {
-                RenderSystem.color4f(0, 0, 0, 0.8f);
+                GL11.glColor4f(0, 0, 0, 0.8f);
 
                 double shadowX = x + 0.2;
                 for(int i = 0; i < text.length(); i++) {
@@ -354,10 +353,10 @@ public class CustomFontRenderer implements IFontRenderer {
                     else shadowX += drawChar(c, shadowX, y);
                 }
 
-                RenderSystem.color4f(1, 1, 1, 1);
+                GL11.glColor4f(1, 1, 1, 1);
             }
 
-            RenderSystem.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             drawString(text, x, y);
         }
 
@@ -398,7 +397,7 @@ public class CustomFontRenderer implements IFontRenderer {
             }
             if(!currLine.toString().equals("")) lines.add(currLine.toString());
 
-            RenderSystem.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             for(String line: lines) {
                 drawString(line, x, y);
                 y += getFontHeight();
@@ -436,7 +435,8 @@ public class CustomFontRenderer implements IFontRenderer {
             float red = (float) (color >> 16 & 255) / 255.0F;
             float blue = (float) (color >> 8 & 255) / 255.0F;
             float green = (float) (color & 255) / 255.0F;
-            RenderSystem.color4f(red, blue, green, 1);
+            GL11.glColor4f(red, blue, green, 1);
+            //RenderSystem.color4f(red, blue, green, 1);
         }
     }
 

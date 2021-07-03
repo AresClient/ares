@@ -15,6 +15,10 @@ import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
+import dev.tigr.ares.fabric.impl.modules.combat.AnchorAura.Mode;
+import dev.tigr.ares.fabric.impl.modules.combat.AnchorAura.Rotations;
+import dev.tigr.ares.fabric.impl.modules.combat.AnchorAura.Target;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.*;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -102,15 +106,15 @@ public class AnchorAura extends Module {
 
         // rotate for actual mode
         if(rotations != null && rotateMode.getValue() == Rotations.REAL) {
-            MC.player.pitch = (float) rotations[1];
-            MC.player.yaw = (float) rotations[0];
+            MC.player.setPitch((float) rotations[1]);
+            MC.player.setYaw((float) rotations[0]);
         }
     }
 
     private void place() {
         if(placeTimer.passedTicks(placeDelay.getValue())) {
             // if no gapple switch and player is holding apple
-            if(noGappleSwitch.getValue() && MC.player.inventory.getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
+            if(noGappleSwitch.getValue() && MC.player.getInventory().getMainHandStack().getItem() instanceof EnchantedGoldenAppleItem) {
                 if(target != null) target = null;
                 return;
             }
@@ -126,11 +130,11 @@ public class AnchorAura extends Module {
 
     private void placeAnchor(BlockPos pos) {
         // switch to crystals if not holding
-        if(MC.player.inventory.getMainHandStack().getItem() != Items.RESPAWN_ANCHOR) {
+        if(MC.player.getInventory().getMainHandStack().getItem() != Items.RESPAWN_ANCHOR) {
             int slot = InventoryUtils.findItemInHotbar(Items.RESPAWN_ANCHOR);
             if(slot != -1) {
-                MC.player.inventory.selectedSlot = slot;
-                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                MC.player.getInventory().selectedSlot = slot;
+                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
             }
         }
 
@@ -148,21 +152,21 @@ public class AnchorAura extends Module {
         Vec3d vec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
 
         // click glowstone
-        if(MC.player.inventory.getMainHandStack().getItem() != Items.GLOWSTONE) {
+        if(MC.player.getInventory().getMainHandStack().getItem() != Items.GLOWSTONE) {
             int slot = InventoryUtils.findItemInHotbar(Items.GLOWSTONE);
             if(slot != -1) {
-                MC.player.inventory.selectedSlot = slot;
-                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                MC.player.getInventory().selectedSlot = slot;
+                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
             }
         }
         MC.interactionManager.interactBlock(MC.player, MC.world, Hand.MAIN_HAND, new BlockHitResult(vec, Direction.UP, pos, true));
 
         // click anchor without glowstone
-        if(MC.player.inventory.getMainHandStack().getItem() == Items.GLOWSTONE) {
+        if(MC.player.getInventory().getMainHandStack().getItem() == Items.GLOWSTONE) {
             int slot = InventoryUtils.findItemInHotbar(Items.RESPAWN_ANCHOR);
             if(slot != -1) {
-                MC.player.inventory.selectedSlot = slot;
-                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket());
+                MC.player.getInventory().selectedSlot = slot;
+                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
             }
         }
         MC.interactionManager.interactBlock(MC.player, MC.world, Hand.MAIN_HAND, new BlockHitResult(vec, Direction.UP, pos, true));
@@ -187,8 +191,8 @@ public class AnchorAura extends Module {
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
         // rotation spoofing
         if(event.getPacket() instanceof PlayerMoveC2SPacket && rotations != null && rotateMode.getValue() == Rotations.PACKET) {
-            ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), (float) rotations[1], "pitch", "field_12885");
-            ReflectionHelper.setPrivateValue(PlayerMoveC2SPacket.class, event.getPacket(), (float) rotations[0], "yaw", "field_12887");
+            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch((float) rotations[1]);
+            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw((float) rotations[0]);
         }
     });
 

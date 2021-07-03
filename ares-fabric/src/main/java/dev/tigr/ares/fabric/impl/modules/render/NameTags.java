@@ -5,14 +5,15 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.render.RenderNametagsEvent;
 import dev.tigr.ares.fabric.impl.render.CustomRenderStack;
+import dev.tigr.ares.fabric.mixin.accessors.MatrixStackAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
+import org.lwjgl.opengl.GL11;
 
 import java.util.Deque;
 
@@ -40,13 +41,13 @@ public class NameTags extends Module {
         float fScale = (float) Math.max(Math.min(MC.player.distanceTo(abstractClientPlayerEntity) / (100 * scale.getValue()), max.getValue()/50), 1/80d);
 
         // push matrix from nametag event to render stack
-        Deque<MatrixStack.Entry> stack = ReflectionHelper.getPrivateValue(MatrixStack.class, ((CustomRenderStack)RENDER_STACK).getMatrixStack(), "stack", "field_20898");
+        Deque<MatrixStack.Entry> stack = ((MatrixStackAccessor) ((CustomRenderStack)RENDER_STACK).getMatrixStack()).getStack();
         stack.addLast(matrixStack.peek());
 
         RENDER_STACK.translate(0, f, 0);
         ((CustomRenderStack)RENDER_STACK).getMatrixStack().multiply(MC.getEntityRenderDispatcher().getRotation());
         RENDER_STACK.scale(-fScale, -fScale, fScale);
-        RenderSystem.enableAlphaTest();
+        //GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.disableDepthTest();
 
         // calculate health

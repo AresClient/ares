@@ -63,7 +63,7 @@ public class AutoCity extends Module {
                 // find pick
                 int index = -1;
                 for(int i = 0; i < 9; i++) {
-                    if(MC.player.inventory.getStack(i).getItem() instanceof PickaxeItem) {
+                    if(MC.player.getInventory().getStack(i).getItem() instanceof PickaxeItem) {
                         index = i;
                         break;
                     }
@@ -71,13 +71,13 @@ public class AutoCity extends Module {
                 if(index == -1) UTILS.printMessage("No pickaxe in hotbar!");
                 else {
                     // switch to pick
-                    MC.player.inventory.selectedSlot = index;
+                    MC.player.getInventory().selectedSlot = index;
                     MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(index));
 
                     // rotate
                     if (rotate.getValue()) {
                         double[] rotations = WorldUtils.calculateLookAt(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
-                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
+                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
                     }
 
                     // break

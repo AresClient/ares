@@ -1,28 +1,20 @@
 package dev.tigr.ares.fabric.gui;
 
 import dev.tigr.ares.core.feature.Command;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.fabric.mixin.accessors.ChatScreenAccessor;
 import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Style;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
-import java.lang.reflect.Field;
-
 /**
  * @author Tigermouthbear 10/16/20
  */
 public class AresChatGUI extends ChatScreen {
-    private final Field commandSuggestorField;
-
     public AresChatGUI(String prefix) {
         super(prefix);
-
-        commandSuggestorField = ReflectionHelper.getField(ChatScreen.class, "commandSuggestor", "field_21616");
-        commandSuggestorField.setAccessible(true);
     }
 
     @Override
@@ -61,18 +53,14 @@ public class AresChatGUI extends ChatScreen {
         }
 
         this.setFocused(this.chatField);
-        this.chatField.setSelected(true);
+        this.chatField.setTextFieldFocused(true);
         fill(matrixStack, 2, this.height - 14, this.width - 2, this.height - 2, client.options.getTextBackgroundColor(Integer.MIN_VALUE));
         this.chatField.render(matrixStack, mouseX, mouseY, partialTicks);
 
         if(chatField.getText().startsWith(Command.PREFIX.getValue()))
             textRenderer.drawWithShadow(matrixStack, Command.complete(chatField.getText()), 4 + textRenderer.getWidth(chatField.getText()), chatField.y, 7368816);
 
-        try {
-            ((CommandSuggestor)commandSuggestorField.get(this)).render(matrixStack, mouseX, mouseY);
-        } catch(IllegalAccessException e) {
-            e.printStackTrace();
-        }
+        ((ChatScreenAccessor) this).getCommandSuggestor().render(matrixStack, mouseX, mouseY);
 
         Style style = this.client.inGameHud.getChatHud().getText(mouseX, mouseY);
         if (style != null && style.getHoverEvent() != null) {

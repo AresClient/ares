@@ -1,14 +1,9 @@
 allprojects {
     repositories {
         mavenCentral()
-        jcenter()
-        maven {
-            name = "spongepowered-repo"
-            url = "https://repo.spongepowered.org/repository/maven-public/"
-        }
         maven {
             name = "swt-repo"
-            url = "http://maven-eclipse.github.io/maven"
+            url = "https://maven-eclipse.github.io/maven"
         }
         maven {
             name = "jitpack.io"
@@ -21,10 +16,23 @@ allprojects {
         maven {
             name = "tigr.dev"
             url = "https://maven.tigr.dev"
+            metadataSources {
+                mavenPom()
+                artifact()
+                ignoreGradleMetadataRedirection()
+            }
         }
         maven {
-            name = 'impactdevelopment-repo'
-            url = 'https://impactdevelopment.github.io/maven/'
+            name = "spongepowered-repo"
+            url = "https://repo.spongepowered.org/repository/maven-public/"
+        }
+        maven {
+            name = "impactdevelopment-repo"
+            url = "https://impactdevelopment.github.io/maven/"
+        }
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
         }
     }
 }
@@ -35,9 +43,7 @@ subprojects {
     group = project.modGroup
     archivesBaseName = project.name
 
-    compileJava {
-        sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
-    }
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
 }
 
 task buildAll(type: GradleBuild) {

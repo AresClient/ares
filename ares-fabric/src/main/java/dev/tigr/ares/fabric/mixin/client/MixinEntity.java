@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  */
 @Mixin(Entity.class)
 public class MixinEntity {
-    @Shadow private int entityId;
     private final Entity entity = ((Entity) (Object) this);
 
     @Inject(method = "changeLookDirection", at = @At("HEAD"), cancellable = true)
@@ -33,7 +32,7 @@ public class MixinEntity {
     public void move(MovementType movementType, Vec3d vec3d, CallbackInfo ci) {
         if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity)).isCancelled()) {
             entity.setBoundingBox(entity.getBoundingBox().offset(vec3d));
-            entity.moveToBoundingBoxCenter();
+            //entity.moveToBoundingBoxCenter(); TODO: HERE
             ci.cancel();
         }
     }

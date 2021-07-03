@@ -69,8 +69,8 @@ public class Scaffold extends Module {
                 if (!MC.world.getBlockState(WorldUtils.roundBlockPos(MC.player.getPos()).down()).isAir()
                         && towerReturnPacket.getValue()
                         && towerDelayTimer.passedMillis(returnDelay.getValue())) {
-                    MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ(), true));
-                    MC.player.updatePosition(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ());
+                    MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionAndOnGround(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ(), true));
+                    MC.player.setPosition(MC.player.getX(), Math.floor(MC.player.getY()), MC.player.getZ());
                 }
                 shouldResetTower = true;
                 return;
@@ -78,7 +78,7 @@ public class Scaffold extends Module {
             if(towerDelayTimer.passedMillis(towerClipDelay.getValue())) {
                 // Pretend that we are jumping to the server and then update player position to meet where the server thinks the player is instantly.
                 WorldUtils.fakeJump();
-                MC.player.updatePosition(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ());
+                MC.player.setPosition(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ());
                 shouldResetTower = true;
             }
         }
@@ -86,11 +86,11 @@ public class Scaffold extends Module {
 
     @Override
     public void onMotion() {
-        int oldSlot = MC.player.inventory.selectedSlot;
+        int oldSlot = MC.player.getInventory().selectedSlot;
         int newSlot = InventoryUtils.getBlockInHotbar();
 
         if(newSlot != -1) {
-            MC.player.inventory.selectedSlot = newSlot;
+            MC.player.getInventory().selectedSlot = newSlot;
         } else {
             UTILS.printMessage(TextColor.RED + "No blocks found in hotbar!");
             setEnabled(false);
@@ -101,7 +101,7 @@ public class Scaffold extends Module {
         if(radius.getValue() != 0 && down.getValue()) radius.setValue(0);
 
         if(MC.options.keySprint.isPressed() && down.getValue()) {
-            float yaw = (float) Math.toRadians(MC.player.yaw);
+            float yaw = (float) Math.toRadians(MC.player.getYaw());
             double yVelocity = MC.player.getVelocity().y;
 
             if(MC.options.keyForward.isPressed()) {
@@ -121,7 +121,7 @@ public class Scaffold extends Module {
 
             if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under, rotate.getValue());
 
-            MC.player.inventory.selectedSlot = oldSlot;
+            MC.player.getInventory().selectedSlot = oldSlot;
 
             return;
         }
@@ -132,7 +132,7 @@ public class Scaffold extends Module {
 
             if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under, rotate.getValue());
 
-            MC.player.inventory.selectedSlot = oldSlot;
+            MC.player.getInventory().selectedSlot = oldSlot;
 
             return;
         }
@@ -152,6 +152,6 @@ public class Scaffold extends Module {
             }
         }
 
-        MC.player.inventory.selectedSlot = oldSlot;
+        MC.player.getInventory().selectedSlot = oldSlot;
     }
 }

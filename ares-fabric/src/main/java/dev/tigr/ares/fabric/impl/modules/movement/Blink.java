@@ -6,6 +6,7 @@ import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.network.OtherClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 
 import java.util.LinkedList;
@@ -32,8 +33,8 @@ public class Blink extends Module {
         if(MC.player != null) {
             clone = new OtherClientPlayerEntity(MC.world, MC.getSession().getProfile());
             clone.copyFrom(MC.player);
-            clone.setEntityId(-69);
-            MC.world.addEntity(clone.getEntityId(), clone);
+            clone.setId(-69);
+            MC.world.addEntity(clone.getId(), clone);
         }
     }
 
@@ -42,7 +43,7 @@ public class Blink extends Module {
         while(!queue.isEmpty()) MC.player.networkHandler.sendPacket(queue.poll());
 
         if(MC.player != null) {
-            MC.world.removeEntity(clone.getEntityId());
+            MC.world.removeEntity(clone.getId(), Entity.RemovalReason.DISCARDED);
             clone = null;
         }
     }

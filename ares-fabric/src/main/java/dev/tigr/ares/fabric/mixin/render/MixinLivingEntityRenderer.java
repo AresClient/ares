@@ -5,6 +5,7 @@ import dev.tigr.ares.fabric.event.render.RenderLivingEvent;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.LivingEntity;
@@ -19,8 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(LivingEntityRenderer.class)
 public abstract class MixinLivingEntityRenderer<T extends LivingEntity> extends EntityRenderer<T> {
-    protected MixinLivingEntityRenderer(EntityRenderDispatcher dispatcher) {
-        super(dispatcher);
+    protected MixinLivingEntityRenderer(EntityRendererFactory.Context ctx) {
+        super(ctx);
     }
 
     @Inject(method = "render", at = @At("HEAD"))
