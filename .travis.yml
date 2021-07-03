@@ -1,8 +1,8 @@
 language: java
-jdk: openjdk8
+jdk: openjdk16
 
 os: linux
-dist: trusty
+dist: bionic
 
 script:
   - ./scripts/travis_script.sh
