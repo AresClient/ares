@@ -11,8 +11,16 @@ Ares is a free, open source minecraft utility mod aimed at anarchy servers. Crea
 ## Installing
 Visit https://aresclient.org/download for instructions on downloading and installing.
 
-## Building (requires JDK 16)
-To build all versions of Ares, run the `buildAll` gradle task. To build the forge or fabric version, run the `buildForge` or `buildFabric` gradle tasks. The built jars will be in the `build` folder. To set up the development environment, run the `setupWorkspace` gradle task (this may take a while and produce warnings). For testing, run the `testForge` or `testFabric` gradle task to build and copy the mod into your mods folder automatically (currently only works for default minecraft folder).
+## Building
+- Requires JDK 16
+- To build all versions of Ares, run the `build` gradle task. 
+- To build the forge or fabric version, run the `:ares-forge:build` or `:ares-fabric:build` gradle tasks. 
+- To build the installer, run the `:ares-installer:build` gradle task. 
+- All built jars will be copied to the `build` folder.
+
+## Developer Environment
+- To set up the development environment, run the `setupWorkspace` gradle task (this may take a while and produce warnings).
+- For testing, run the `testForge` or `testFabric` gradle task to build and copy the mod into your mods folder automatically (currently only works for default minecraft folder).
 
 ## Contributing
 Feel free to open a pull request or issue, we currently don't have templates for either of these so please be descriptive in your explanations. If you provide a pull request, please keep the same formatting as the rest of the project.

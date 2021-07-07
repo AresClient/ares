@@ -44,25 +44,14 @@ subprojects {
     archivesBaseName = project.name
 
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
-}
 
-task buildAll(type: GradleBuild) {
-    group = "ares"
-    description = "builds all versions of Ares"
-
-    tasks = [":buildForge", ":buildFabric", ":buildInstaller"]
-}
-
-task buildForge(type: GradleBuild) {
-    group = "ares"
-    description = "builds the forge version of Ares"
-
-    tasks = [":ares-forge:clean", ":ares-forge:build"]
-
-    doLast {
+    // copy artifacts to root build folder after build
+    tasks.getByName("build").doLast {
+        String version = project.name == "ares-forge" ? project.aresForgeVersion :
+                (project.name == "ares-fabric" ? project.aresFabricVersion : project.installerVersion)
         copy {
-            from "ares-forge/build/libs/ares-forge-${project.aresForgeVersion}-release.jar"
-            into "build"
+            from "${project.rootProject.rootDir}/${project.name}/build/libs/${project.name}-$version-release.jar"
+            into "${project.rootProject.rootDir}/build"
         }
     }
 }
@@ -71,7 +60,7 @@ task testForge(type: GradleBuild) {
     group = "ares"
     description = "builds the forge version of Ares, then copies the jar into the mods folder"
 
-    tasks = [":buildForge"]
+    tasks = [":ares-forge:build"]
 
     doLast {
         copy {
@@ -81,25 +70,11 @@ task testForge(type: GradleBuild) {
     }
 }
 
-task buildFabric(type: GradleBuild) {
-    group = "ares"
-    description = "builds the fabric version of Ares"
-
-    tasks = [":ares-fabric:clean", ":ares-fabric:build"]
-
-    doLast {
-        copy {
-            from "ares-fabric/build/libs/ares-fabric-${project.aresFabricVersion}-release.jar"
-            into "build"
-        }
-    }
-}
-
 task testFabric(type: GradleBuild) {
     group = "ares"
     description = "builds the fabric version of Ares, then copies the jar into the mods folder"
 
-    tasks = [":buildFabric"]
+    tasks = [":ares-fabric:build"]
 
     doLast {
         copy {
@@ -114,20 +89,6 @@ task setupWorkspace(type: GradleBuild) {
     description = "sets up all development environments for all versions of ares"
 
     tasks = [":ares-forge:classes", ":ares-fabric:genSources"]
-}
-
-task buildInstaller(type: GradleBuild) {
-    group = "ares"
-    description = "builds the ares installer as a seperate jar"
-
-    tasks = [":ares-installer:build"]
-
-    doLast {
-        copy {
-            from "ares-installer/build/libs/ares-installer-${project.installerVersion}-release.jar"
-            into "build"
-        }
-    }
 }
 
 private static String getModsFolder() {
