@@ -3,15 +3,12 @@ package dev.tigr.ares.fabric.impl.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IFontRenderer;
-import dev.tigr.ares.fabric.impl.render.CustomFontRenderer.Glyph;
-import dev.tigr.ares.fabric.impl.render.CustomFontRenderer.GlyphPage;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -51,13 +48,8 @@ public class CustomFontRenderer implements IFontRenderer {
     }
 
     @Override
-    public double drawChar(char c, double x, double y) {
-        return getGlyphPage().drawChar(c, x, y);
-    }
-
-    @Override
-    public void drawString(String text, double x, double y) {
-        getGlyphPage().drawString(text, x, y);
+    public double drawChar(char c, double x, double y, Color color) {
+        return getGlyphPage().drawChar(c, x, y, color);
     }
 
     @Override
@@ -65,6 +57,7 @@ public class CustomFontRenderer implements IFontRenderer {
         getGlyphPage().drawString(text, x, y, color, shadow);
     }
 
+    @Override
     public void drawString(String text, double x, double y, Color color) {
         drawString(text, x, y, color, false);
     }
@@ -161,11 +154,11 @@ public class CustomFontRenderer implements IFontRenderer {
         private final int width;
         private final int height;
         private final double glyphSize;
-        private final BufferedImage bufferedImage;
         private final AbstractTexture texture;
         private double charHeight;
 
         GlyphPage(Font font, int size) {
+
             // generate color codes
             for(int i = 0; i < 32; ++i) {
                 int j = (i >> 3 & 1) * 85;
@@ -210,7 +203,7 @@ public class CustomFontRenderer implements IFontRenderer {
             height = (int) (charHeight * 16);
 
             // create image and setup graphics
-            bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+            BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics2D = (Graphics2D) bufferedImage.getGraphics();
 
             // setup font and colors
@@ -279,7 +272,7 @@ public class CustomFontRenderer implements IFontRenderer {
             return new GlyphPage(font, size);
         }
 
-        public double drawChar(char c, double x, double y) {
+        public double drawChar(char c, double x, double y, Color color) {
             Glyph glyph = characterGlyphMap.get(c);
             if(glyph == null) return 0;
 
@@ -294,70 +287,62 @@ public class CustomFontRenderer implements IFontRenderer {
             double scaledHeight = glyph.height * glyphSize;
 
             if(texture != null) {
-                RenderSystem.bindTexture(texture.getGlId());
+                RenderSystem.setShader(GameRenderer::getPositionColorTexShader);
+                RenderSystem.setShaderTexture(0, texture.getGlId());
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-                Matrix4f matrices = ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
-                BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-                bufferBuilder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-                bufferBuilder.vertex(matrices, (float) x, (float) (y + scaledHeight), 0).texture((float) texX, (float) (texY + texHeight)).next();
-                bufferBuilder.vertex(matrices, (float) (x + scaledWidth), (float) (y + scaledHeight), 0).texture((float) (texX + texWidth), (float) (texY + texHeight)).next();
-                bufferBuilder.vertex(matrices, (float) (x + scaledWidth), (float) y, 0).texture((float) (texX + texWidth), (float) texY).next();
-                bufferBuilder.vertex(matrices, (float) x, (float) y, 0).texture((float) texX, (float) texY).next();
-                bufferBuilder.end();
+                Matrix4f matrix4f = ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
+                Tessellator tessellator = Tessellator.getInstance();
+                BufferBuilder bufferBuilder = tessellator.getBuffer();
+                bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);
+                bufferBuilder.vertex(matrix4f, (float) (x + scaledWidth), (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture((float) (texX + texWidth), (float) texY).next();
+                bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture((float) texX, (float) texY).next();
+                bufferBuilder.vertex(matrix4f, (float) x, (float) (y + scaledHeight), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture((float) texX, (float) (texY + texHeight)).next();
+                bufferBuilder.vertex(matrix4f, (float) x, (float) (y + scaledHeight), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture((float) texX, (float) (texY + texHeight)).next();
+                bufferBuilder.vertex(matrix4f, (float) (x + scaledWidth), (float) (y + scaledHeight), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture((float) (texX + texWidth), (float) (texY + texHeight)).next();
+                bufferBuilder.vertex(matrix4f, (float) (x + scaledWidth), (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture((float) (texX + texWidth), (float) texY).next();
 
                 RenderSystem.enableBlend();
                 RenderSystem.blendFunc(770, 771);
                 RenderSystem.disableDepthTest();
-                //GL11.glDisable(GL11.GL_ALPHA_TEST);
                 RenderSystem.enableTexture();
-                //RenderSystem.disableLighting();
                 RenderSystem.disableCull();
-                GL11.glEnable(GL11.GL_LINE_SMOOTH);
                 RenderSystem.lineWidth(1);
-                //RenderSystem.shadeModel(GL11.GL_SMOOTH);
 
-                BufferRenderer.draw(bufferBuilder);
+                tessellator.draw();
 
                 RenderSystem.disableBlend();
-                //GL11.glEnable(GL11.GL_ALPHA_TEST);
                 RenderSystem.enableDepthTest();
-                RenderSystem.enableTexture();
-                GL11.glDisable(GL11.GL_LINE_SMOOTH);
             }
 
             return glyph.width * glyphSize;
         }
 
         // draw string no shadow keep color
-        public void drawString(String text, double x, double y) {
+        public void drawString(String text, double x, double y, Color color) {
             // do regular text
             for(int i = 0; i < text.length(); i++) {
                 char c = text.charAt(i);
 
                 if(c == 167 && i + 1 < text.length()) {
                     int colorCode = "0123456789abcdefklmnor".indexOf(String.valueOf(text.charAt(i + 1)).toLowerCase(Locale.ROOT).charAt(0));
-                    color(colorCodes[colorCode]);
+                    color = color(colorCodes[colorCode]);
                     ++i;
-                } else x += drawChar(c, x, y);
+                } else x += drawChar(c, x, y, color);
             }
         }
 
         public void drawString(String text, double x, double y, Color color, boolean shadow) {
             if(shadow) {
-                GL11.glColor4f(0, 0, 0, 0.8f);
-
                 double shadowX = x + 0.2;
                 for(int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if(c == 167 && i + 1 < text.length()) ++i;
-                    else shadowX += drawChar(c, shadowX, y);
+                    else shadowX += drawChar(c, shadowX, y, Color.BLACK);
                 }
-
-                GL11.glColor4f(1, 1, 1, 1);
             }
 
-            GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-            drawString(text, x, y);
+            drawString(text, x, y, color);
         }
 
         // returns height of split string
@@ -397,9 +382,8 @@ public class CustomFontRenderer implements IFontRenderer {
             }
             if(!currLine.toString().equals("")) lines.add(currLine.toString());
 
-            GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             for(String line: lines) {
-                drawString(line, x, y);
+                drawString(line, x, y, color);
                 y += getFontHeight();
             }
 
@@ -431,12 +415,11 @@ public class CustomFontRenderer implements IFontRenderer {
             return (int) (charHeight * glyphSize);
         }
 
-        private void color(int color) {
+        private Color color(int color) {
             float red = (float) (color >> 16 & 255) / 255.0F;
             float blue = (float) (color >> 8 & 255) / 255.0F;
             float green = (float) (color & 255) / 255.0F;
-            GL11.glColor4f(red, blue, green, 1);
-            //RenderSystem.color4f(red, blue, green, 1);
+            return new Color(red, green, blue, 1);
         }
     }
 

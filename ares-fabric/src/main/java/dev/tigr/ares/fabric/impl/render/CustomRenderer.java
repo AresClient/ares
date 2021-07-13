@@ -4,10 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.render.*;
 import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
@@ -25,30 +22,23 @@ public class CustomRenderer implements IRenderer {
         draw(false);
     }
 
-    @SuppressWarnings("deprecation")
     private void draw(boolean texture) {
-        //RenderSystem.color4f(1, 1, 1, 1);
-
         RenderSystem.disableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        //GL11.glDisable(GL11.GL_ALPHA_TEST);
-        //RenderSystem.disableLighting();
-
         RenderSystem.disableCull();
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
-        //RenderSystem.shadeModel(GL11.GL_SMOOTH);
 
         if(texture) RenderSystem.enableTexture();
-        else RenderSystem.disableTexture();
+        else {
+            RenderSystem.disableTexture();
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        }
 
         // actually draw
         Tessellator.getInstance().draw();
 
-        //GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableDepthTest();
         RenderSystem.enableTexture();
-        GL11.glDisable(GL11.GL_LINE_SMOOTH);
     }
 
     /**
@@ -65,12 +55,12 @@ public class CustomRenderer implements IRenderer {
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
-        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).            color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
-        bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0).                      color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
-        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).           color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
-        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).           color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
-        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) (y + height), 0). color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
-        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).            color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) (y + height), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
     }
 
@@ -95,14 +85,15 @@ public class CustomRenderer implements IRenderer {
 
         // draw it
         Matrix4f matrix4f = getMatrix();
-        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);
-        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0)            .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 0).next();
-        bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0)                       .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 0).next();
-        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0)           .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 1).next();
-        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0)           .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 1).next();
+        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 0).next();
+        bufferBuilder.vertex(matrix4f, (float) x, (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 0).next();
+        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 1).next();
+        bufferBuilder.vertex(matrix4f, (float) x, (float) (y + height), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(0, 1).next();
         bufferBuilder.vertex(matrix4f, (float) (x + width), (float) (y + height), 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 1).next();
-        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0)            .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 0).next();
+        bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).texture(1, 0).next();
         draw(true);
     }
 
@@ -140,7 +131,7 @@ public class CustomRenderer implements IRenderer {
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
         bufferBuilder.vertex(matrix4f, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
-        bufferBuilder.vertex(matrix4f, (float) endX, (float) endY, (float) endZ)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(matrix4f, (float) endX, (float) endY, (float) endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
     }
 
@@ -157,11 +148,27 @@ public class CustomRenderer implements IRenderer {
 
         RenderSystem.lineWidth(weight);
 
+        boolean first = true;
+        float firstX = 0, firstY = 0, prevX = 0, prevY = 0;
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.LINE_STRIP, VertexFormats.POSITION_COLOR);
-        for(int i = 0; i < points.length; i += 2)
-            bufferBuilder.vertex(matrix4f, (float) points[i], (float) points[i + 1], 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
+        for(int i = 0; i < points.length; i += 2) {
+            if(first) {
+                firstX = (float) points[i];
+                firstY = (float) points[i + 1];
+                first = false;
+            } else bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+
+            prevX = (float) points[i];
+            prevY = (float) points[i + 1];
+            bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+
+            if(i >= points.length - 2) {
+                bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+                bufferBuilder.vertex(matrix4f, firstX, firstY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            }
+        }
         draw();
     }
 
@@ -172,20 +179,18 @@ public class CustomRenderer implements IRenderer {
         double scaleHeight = (double) MC.getWindow().getHeight() / MC.getWindow().getScaledHeight();
 
         // enable gl scissor
-        GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
-        GL11.glScissor(
+        //GL20.glPushAttrib(GL20.GL_SCISSOR_BIT);
+        RenderSystem.enableScissor(
                 (int) (x * scaleWidth),
                 (MC.getWindow().getHeight()) - (int) ((y + height) * scaleHeight),
                 (int) (width * scaleWidth),
                 (int) (height * scaleHeight)
         );
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
     }
 
     @Override
     public void stopScissor() {
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        GL11.glPopAttrib();
+        RenderSystem.disableScissor();
     }
 
     @Override

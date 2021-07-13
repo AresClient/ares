@@ -58,12 +58,12 @@ public class CustomRenderer implements IRenderer {
     public void drawRect(double x, double y, double width, double height, Color color) {
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_COLOR);
-        bufferBuilder.pos(x + width, y, 0).            color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x, y, 0).                       color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x, y + height, 0).           color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x, y + height, 0).           color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + width, y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y + height, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y + height, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
         bufferBuilder.pos(x + width, y + height, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x + width, y, 0).            color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + width, y, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
         draw();
     }
 
@@ -89,12 +89,12 @@ public class CustomRenderer implements IRenderer {
         // draw it
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR);
-        bufferBuilder.pos(x + width, y, 0).            tex(1, 0)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x, y, 0).                       tex(0, 0)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x, y + height, 0).           tex(0, 1)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x, y + height, 0).           tex(0, 1)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x + width, y + height, 0).tex(1, 1)   .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(x + width, y, 0).            tex(1, 0)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + width, y, 0).tex(1, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y, 0).tex(0, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y + height, 0).tex(0, 1).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y + height, 0).tex(0, 1).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + width, y + height, 0).tex(1, 1).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + width, y, 0).tex(1, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
         draw(true);
     }
 
@@ -131,7 +131,7 @@ public class CustomRenderer implements IRenderer {
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(GL11.GL_LINES, DefaultVertexFormats.POSITION_COLOR);
         bufferBuilder.pos(startX, startY, startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
-        bufferBuilder.pos(endX, endY, endZ)    .color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(endX, endY, endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
         draw();
     }
 

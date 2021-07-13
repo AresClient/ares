@@ -1,9 +1,7 @@
 package dev.tigr.ares.core.util.render;
 
 public interface IFontRenderer {
-    double drawChar(char c, double x, double y);
-
-    void drawString(String text, double x, double y);
+    double drawChar(char c, double x, double y, Color color);
 
     void drawString(String text, double x, double y, Color color, boolean shadow);
 

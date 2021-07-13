@@ -52,13 +52,8 @@ public class CustomFontRenderer implements IFontRenderer {
     }
 
     @Override
-    public double drawChar(char c, double x, double y) {
-        return getGlyphPage().drawChar(c, x, y);
-    }
-
-    @Override
-    public void drawString(String text, double x, double y) {
-        getGlyphPage().drawString(text, x, y);
+    public double drawChar(char c, double x, double y, Color color) {
+        return getGlyphPage().drawChar(c, x, y, color);
     }
 
     @Override
@@ -291,7 +286,8 @@ public class CustomFontRenderer implements IFontRenderer {
             return new GlyphPage(font, size);
         }
 
-        public double drawChar(char c, double x, double y) {
+        public double drawChar(char c, double x, double y, Color color) {
+            GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             Glyph glyph = characterGlyphMap.get(c);
             if(glyph == null) return 0;
 
@@ -333,7 +329,7 @@ public class CustomFontRenderer implements IFontRenderer {
         }
 
         // draw string no shadow keep color
-        public void drawString(String text, double x, double y) {
+        public void drawString(String text, double x, double y, Color color) {
             GlStateManager.disableOutlineMode();
             GlStateManager.disableDepth();
             GlStateManager.enableBlend();
@@ -351,9 +347,9 @@ public class CustomFontRenderer implements IFontRenderer {
 
                 if(c == 167 && i + 1 < text.length()) {
                     int colorCode = "0123456789abcdefklmnor".indexOf(String.valueOf(text.charAt(i + 1)).toLowerCase(Locale.ROOT).charAt(0));
-                    color(colorCodes[colorCode]);
+                    color = color(colorCodes[colorCode]);
                     ++i;
-                } else x += drawChar(c, x, y);
+                } else x += drawChar(c, x, y, color);
             }
 
             GlStateManager.enableAlpha();
@@ -364,18 +360,15 @@ public class CustomFontRenderer implements IFontRenderer {
 
         public void drawString(String text, double x, double y, Color color, boolean shadow) {
             if(shadow) {
-                GlStateManager.color(0, 0, 0, 0.8f);
-
                 double shadowX = x + 0.2;
                 for(int i = 0; i < text.length(); i++) {
                     char c = text.charAt(i);
                     if(c == 167 && i + 1 < text.length()) ++i;
-                    else shadowX += drawChar(c, shadowX, y);
+                    else shadowX += drawChar(c, shadowX, y, Color.BLACK);
                 }
             }
 
-            GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-            drawString(text, x, y);
+            drawString(text, x, y, color);
         }
 
         public int drawSplitString(String text, double x, double y, Color color, double width) {
@@ -414,9 +407,8 @@ public class CustomFontRenderer implements IFontRenderer {
             }
             if(!currLine.toString().equals("")) lines.add(currLine.toString());
 
-            GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             for(String line: lines) {
-                drawString(line, x, y);
+                drawString(line, x, y, color);
                 y += getFontHeight();
             }
 
@@ -448,11 +440,11 @@ public class CustomFontRenderer implements IFontRenderer {
             return (int) (charHeight * glyphSize);
         }
 
-        private void color(int color) {
+        private Color color(int color) {
             float red = (float) (color >> 16 & 255) / 255.0F;
             float blue = (float) (color >> 8 & 255) / 255.0F;
             float green = (float) (color & 255) / 255.0F;
-            GlStateManager.color(red, blue, green, 1);
+            return new Color(red, green, blue, 1);
         }
     }
 
