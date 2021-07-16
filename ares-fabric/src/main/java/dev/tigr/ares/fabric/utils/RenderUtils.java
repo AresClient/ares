@@ -142,7 +142,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void renderBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha, float lineThickness)  {
-        GL11.glLineWidth(lineThickness);
+        RenderSystem.lineWidth(lineThickness);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();

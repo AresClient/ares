@@ -30,7 +30,6 @@ dependencies {
     shadow(project(":ares-installer"))
 
     // include ares core deps
-    include "net.fabricmc.fabric-api:fabric-resource-loader-v0:${project.fabricResourceLoaderVersion}"
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 
     // fabritone

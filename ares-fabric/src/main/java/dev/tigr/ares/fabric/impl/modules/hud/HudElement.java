@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.impl.modules.hud;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;

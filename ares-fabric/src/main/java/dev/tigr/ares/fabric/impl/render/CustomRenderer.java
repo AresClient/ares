@@ -1,12 +1,12 @@
 package dev.tigr.ares.fabric.impl.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
 import net.minecraft.client.render.*;
 import net.minecraft.util.math.Matrix4f;
-import org.lwjgl.opengl.GL11;
 
 import static dev.tigr.ares.Wrapper.*;
 
@@ -23,21 +23,21 @@ public class CustomRenderer implements IRenderer {
     }
 
     private void draw(boolean texture) {
+        RenderSystem.depthMask(true);
         RenderSystem.disableDepthTest();
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
 
         if(texture) RenderSystem.enableTexture();
-        else {
-            RenderSystem.disableTexture();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        }
+        else RenderSystem.disableTexture();
 
         // actually draw
         Tessellator.getInstance().draw();
 
         RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
+        RenderSystem.enableCull();
         RenderSystem.enableTexture();
     }
 
@@ -52,6 +52,7 @@ public class CustomRenderer implements IRenderer {
      */
     @Override
     public void drawRect(double x, double y, double width, double height, Color color) {
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR);
@@ -125,14 +126,15 @@ public class CustomRenderer implements IRenderer {
      * @param color  color of the line
      */
     public void drawLine(double startX, double startY, double startZ, double endX, double endY, double endZ, int weight, Color color) {
-        RenderSystem.lineWidth(weight);
-
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
+        RenderSystem.lineWidth(weight);
         bufferBuilder.vertex(matrix4f, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         bufferBuilder.vertex(matrix4f, (float) endX, (float) endY, (float) endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
+        RenderSystem.lineWidth(1f);
     }
 
     /**
@@ -146,30 +148,31 @@ public class CustomRenderer implements IRenderer {
     public void drawLineLoop(int weight, Color color, double... points) {
         if(points.length % 2 != 0) return;
 
-        RenderSystem.lineWidth(weight);
-
         boolean first = true;
         float firstX = 0, firstY = 0, prevX = 0, prevY = 0;
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f matrix4f = getMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
+        RenderSystem.lineWidth(weight);
         for(int i = 0; i < points.length; i += 2) {
             if(first) {
                 firstX = (float) points[i];
                 firstY = (float) points[i + 1];
                 first = false;
-            } else bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            } else bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
 
             prevX = (float) points[i];
             prevY = (float) points[i + 1];
-            bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
 
             if(i >= points.length - 2) {
-                bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-                bufferBuilder.vertex(matrix4f, firstX, firstY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+                bufferBuilder.vertex(matrix4f, prevX, prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+                bufferBuilder.vertex(matrix4f, firstX, firstY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
             }
         }
         draw();
+        RenderSystem.lineWidth(1f);
     }
 
     @Override

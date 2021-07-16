@@ -2,7 +2,6 @@ package dev.tigr.ares.fabric.mixin.client;
 
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.UpdateHelper;
 import dev.tigr.ares.fabric.AresMod;
 import dev.tigr.ares.fabric.event.client.OpenScreenEvent;
