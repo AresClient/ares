@@ -3,7 +3,7 @@ sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 dependencies {
     // ares
     implementation "org.json:json:20190722"
-    implementation "dev.tigr:simpleevents:1.0"
+    implementation "dev.tigr:simpleevents:1.1"
     implementation "com.github.Vatuu:discord-rpc:1.6.2"
 
     // minecraft
