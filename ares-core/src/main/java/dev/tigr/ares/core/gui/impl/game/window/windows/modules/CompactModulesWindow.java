@@ -12,8 +12,10 @@ import static dev.tigr.ares.core.Ares.RENDERER;
  * @author Tigermouthbear 6/23/20
  */
 public class CompactModulesWindow extends Window {
-    public CompactModulesWindow(GUI gui, DynamicValue<Color> color) {
+    private final DynamicValue<Color> color2;
+    public CompactModulesWindow(GUI gui, DynamicValue<Color> color, DynamicValue<Color> color2) {
         super(gui, "Modules", color, false, 0.03, 0.1);
+        this.color2 = color2;
 
         setWidth(() -> getScreenWidth() / 3d);
         setHeight(() -> getScreenHeight() / 2d);
@@ -34,8 +36,8 @@ public class CompactModulesWindow extends Window {
             prev = button;
 
             // add category element to window
-            CategoryElement categoryElement = new CategoryElement(getGUI(), category, color, () -> getHeight() / 12d, 2);
-            categoryElement.setX(() -> getWidth() / 4 + 1);
+            CategoryElement categoryElement = new CategoryElement(getGUI(), category, color2, () -> getHeight() / 12d, 2);
+            categoryElement.setX(() -> getWidth() / 4);
             categoryElement.setY(this::getBarHeight);
             categoryElement.setWidth(() -> getWidth() / 4 * 3);
             categoryElement.setHeight(() -> getHeight() - getBarHeight());
@@ -47,9 +49,9 @@ public class CompactModulesWindow extends Window {
     @Override
     public void draw(int mouseX, int mouseY) {
         // draw line separating categories
-        RENDERER.drawLine((int)(getRenderX() + getWidth() / 4d), getRenderY() + getBarHeight(), (int)(getRenderX() + getWidth() / 4d), getRenderY() + getHeight(), 1, color.getValue());
+        RENDERER.drawLine(getRenderX() + getWidth() / 4d, getRenderY() + getBarHeight(), getRenderX() + getWidth() / 4d, getRenderY() + getHeight(), 1, color.getValue());
 
         // draw line separating modules
-        RENDERER.drawLine(getRenderX() + (getWidth() / 4d + 1) + (getWidth() / 4d * 3 / 2), getRenderY() + getBarHeight(), getRenderX() + (getWidth() / 4d + 1) + (getWidth() / 4d * 3d / 2d), getRenderY() + getHeight(), 1, color.getValue());
+        RENDERER.drawLine(getRenderX() + getWidth() / 4d + (getWidth() / 4d * 3 / 2), getRenderY() + getBarHeight(), getRenderX() + getWidth() / 4d + (getWidth() / 4d * 3d / 2d), getRenderY() + getHeight(), 1, color2.getValue());
     }
 }

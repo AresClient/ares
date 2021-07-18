@@ -47,7 +47,7 @@ public class ModuleElement extends Element {
             SettingElement<?> settingElement = SettingElement.create(getGUI(), setting);
             settingElement.setHeight(() -> getModHeight() / 2d);
             settingElement.setWidth(this::getWidth);
-            settingElement.setVisibility(() -> open.getState() && setting.isVisible());
+            settingElement.setVisibility(() -> open.getState() && setting.isVisible() && (settingElement.getRenderY() + settingElement.getHeight()) <= (getRenderY() + getHeight()));
             if(prev == null) settingElement.setY(this::getModHeight);
             else {
                 SettingElement<?> finalPrev = prev;
@@ -61,10 +61,7 @@ public class ModuleElement extends Element {
 
     @Override
     public void draw(int mouseX, int mouseY, float partialTicks) {
-        double diff = getRenderY() + getHeight() - getParent().getRenderY() - getParent().getHeight();
-        RENDERER.startScissor(getRenderX(), Math.max(getRenderY() + offset.getValue(), getParent().getRenderY()), getWidth(), diff < 0 ? getHeight() : Math.max(0, getParent().getRenderY() + getParent().getHeight() - (getRenderY() + offset.getValue())));
         super.draw(mouseX, mouseY, partialTicks);
-        RENDERER.stopScissor();
 
         // tick animations
         open.tick();

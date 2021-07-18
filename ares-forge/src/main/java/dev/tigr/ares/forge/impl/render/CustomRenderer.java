@@ -160,7 +160,6 @@ public class CustomRenderer implements IRenderer {
         ScaledResolution resolution = new ScaledResolution(MC);
         double scaleWidth = (double) MC.displayWidth / resolution.getScaledWidth_double();
         double scaleHeight = (double) MC.displayHeight / resolution.getScaledHeight_double();
-        GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
         GL11.glScissor(
                 (int) (x * scaleWidth),
                 (MC.displayHeight) - (int) ((y + height) * scaleHeight),
@@ -173,7 +172,6 @@ public class CustomRenderer implements IRenderer {
     @Override
     public void stopScissor() {
         GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        GL11.glPopAttrib();
     }
 
     @Override

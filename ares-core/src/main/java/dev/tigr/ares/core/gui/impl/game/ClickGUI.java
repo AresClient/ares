@@ -33,7 +33,7 @@ public class ClickGUI extends GUI {
         NavigationBar navigationBar = add(new NavigationBar(this, COLOR));
 
         // create modules window
-        CompactModulesWindow modules = new CompactModulesWindow(this, COLOR);
+        CompactModulesWindow modules = new CompactModulesWindow(this, COLOR, () -> COLOR.getValue().setA(0.8F));
         navigationBar.addNavigationButton(new NavigationButton(this, new LocationIdentifier("textures/icons/modules.png"), () -> toggleWindow(modules)));
 
         // create expanded modules window

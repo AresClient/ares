@@ -52,7 +52,7 @@ public class ExpandedCategoryElement extends Element {
         CategoryElement categoryElement = new CategoryElement(getGUI(), category, color, () -> getExpandedHeight() / 18d, () -> Math.max(getHeight() - getTopHeight(), 0), 1);
         categoryElement.setY(this::getTopHeight);
         categoryElement.setWidth(this::getWidth);
-        categoryElement.setHeight(this::getExpandedHeight);
+        categoryElement.setHeight(() -> getHeight() - getTopHeight());
         add(categoryElement);
 
         // set size
