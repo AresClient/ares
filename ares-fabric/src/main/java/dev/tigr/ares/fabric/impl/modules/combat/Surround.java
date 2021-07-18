@@ -228,36 +228,36 @@ public class Surround extends Module {
     }
 
     // draw blocks
-    @Override
-    public void onRender3d() {
-        Color airColor = new Color(1,0,0,renderAlpha.getValue().floatValue() /100);
-        Color changeColor = new Color(1,1,0,renderAlpha.getValue().floatValue() /100);
-        Color blockColor = new Color(0,0,1,renderAlpha.getValue().floatValue() /100);
-        Color bedrockColor = new Color(0,1,0,renderAlpha.getValue().floatValue() /100);
-
-        for(Map.Entry<BlockPos, Pair<Timer, Boolean>> entry: renderChange.entrySet()) {
-            if(entry.getValue().getSecond() && entry.getValue().getFirst().passedTicks(6) && !MC.world.getBlockState(entry.getKey()).getMaterial().isReplaceable()) {
-                entry.getValue().setSecond(false);
-            }
-        }
-
-        RenderUtils.prepare3d();
-        for (BlockPos pos : getPositions()) {
-            Box render = new Box(pos).offset(
-                    -MC.gameRenderer.getCamera().getPos().x,
-                    -MC.gameRenderer.getCamera().getPos().y,
-                    -MC.gameRenderer.getCamera().getPos().z
-            );
-            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond()) {
-                RenderUtils.renderFilledBox(render, changeColor);
-            } else if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
-                RenderUtils.renderFilledBox(render, airColor);
-            } else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue()) {
-                RenderUtils.renderFilledBox(render, blockColor);
-            } else if(renderFinished.getValue()) {
-                RenderUtils.renderFilledBox(render, bedrockColor);
-            }
-        }
-        RenderUtils.end3d();
-    }
+//    @Override
+//    public void onRender3d() {
+//        Color airColor = new Color(1,0,0,renderAlpha.getValue().floatValue() /100);
+//        Color changeColor = new Color(1,1,0,renderAlpha.getValue().floatValue() /100);
+//        Color blockColor = new Color(0,0,1,renderAlpha.getValue().floatValue() /100);
+//        Color bedrockColor = new Color(0,1,0,renderAlpha.getValue().floatValue() /100);
+//
+//        for(Map.Entry<BlockPos, Pair<Timer, Boolean>> entry: renderChange.entrySet()) {
+//            if(entry.getValue().getSecond() && entry.getValue().getFirst().passedTicks(6) && !MC.world.getBlockState(entry.getKey()).getMaterial().isReplaceable()) {
+//                entry.getValue().setSecond(false);
+//            }
+//        }
+//
+//        RenderUtils.prepare3d();
+//        for (BlockPos pos : getPositions()) {
+//            Box render = new Box(pos).offset(
+//                    -MC.gameRenderer.getCamera().getPos().x,
+//                    -MC.gameRenderer.getCamera().getPos().y,
+//                    -MC.gameRenderer.getCamera().getPos().z
+//            );
+//            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond()) {
+//                RenderUtils.renderFilledBox(render, changeColor);
+//            } else if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
+//                RenderUtils.renderFilledBox(render, airColor);
+//            } else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue()) {
+//                RenderUtils.renderFilledBox(render, blockColor);
+//            } else if(renderFinished.getValue()) {
+//                RenderUtils.renderFilledBox(render, bedrockColor);
+//            }
+//        }
+//        RenderUtils.end3d();
+//    }
 }

@@ -9,18 +9,11 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.EntityEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
-import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.BreakMode;
-import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Mode;
-import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Order;
-import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Page;
-import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Rotations;
-import dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.Target;
 import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
@@ -394,30 +387,30 @@ public class CrystalAura extends Module {
     });
 
     // draw target
-    @Override
-    public void onRender3d() {
-        if(target != null) {
-            Color fillColor = new Color(
-                    colorRed.getValue(),
-                    colorGreen.getValue(),
-                    colorBlue.getValue(),
-                    fillAlpha.getValue()
-            );
-            Color outlineColor = new Color(
-                    colorRed.getValue(),
-                    colorGreen.getValue(),
-                    colorBlue.getValue(),
-                    boxAlpha.getValue()
-            );
-            RenderUtils.renderBlock(
-                    target,
-                    fillColor,
-                    outlineColor,
-                    lineThickness.getValue(),
-                    expandRender.getValue()
-            );
-        }
-    }
+//    @Override
+//    public void onRender3d() {
+//        if(target != null) {
+//            Color fillColor = new Color(
+//                    colorRed.getValue(),
+//                    colorGreen.getValue(),
+//                    colorBlue.getValue(),
+//                    fillAlpha.getValue()
+//            );
+//            Color outlineColor = new Color(
+//                    colorRed.getValue(),
+//                    colorGreen.getValue(),
+//                    colorBlue.getValue(),
+//                    boxAlpha.getValue()
+//            );
+//            RenderUtils.renderBlock(
+//                    target,
+//                    fillColor,
+//                    outlineColor,
+//                    lineThickness.getValue(),
+//                    expandRender.getValue()
+//            );
+//        }
+//    }
 
     private boolean isPartOfHole(BlockPos pos) {
         List<Entity> entities = new ArrayList<>();

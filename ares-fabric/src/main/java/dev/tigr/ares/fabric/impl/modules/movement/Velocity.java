@@ -4,7 +4,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.EntityPushEvent;
 import dev.tigr.ares.fabric.mixin.accessors.EntityVelocityUpdateS2CPacketAccessor;
@@ -39,9 +38,9 @@ public class Velocity extends Module {
             }
         } else if(event.getPacket() instanceof ExplosionS2CPacket) {
             ExplosionS2CPacket velocity = (ExplosionS2CPacket) event.getPacket();
-            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityX((int) (velocity.getPlayerVelocityX() * horizontal.getValue()));
-            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityY((int) (velocity.getPlayerVelocityY() * vertical.getValue()));
-            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityZ((int) (velocity.getPlayerVelocityZ() * horizontal.getValue()));
+            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityX(velocity.getPlayerVelocityX() * horizontal.getValue());
+            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityY(velocity.getPlayerVelocityY() * vertical.getValue());
+            ((ExplosionS2CPacketAccessor) velocity).setPlayerVelocityZ(velocity.getPlayerVelocityZ() * horizontal.getValue());
         }
     });
 }

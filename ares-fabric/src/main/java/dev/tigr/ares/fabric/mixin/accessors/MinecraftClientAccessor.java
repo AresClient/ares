@@ -15,7 +15,6 @@ public interface MinecraftClientAccessor {
     @Accessor("renderTickCounter")
     RenderTickCounter getRenderTickCounter();
 
-    @Mutable
-    @Accessor("session")
+    @Mutable @Accessor("session")
     void setSession(Session session);
 }
