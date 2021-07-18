@@ -14,7 +14,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 /**
  * @author Tigermouthbear
@@ -110,8 +109,12 @@ public class Module implements Wrapper {
         return alwaysListening;
     }
 
-    public ArrayList<Setting> getSettings() {
-        return settingCategory.getSettings().stream().filter(setting -> setting != enabled).collect(Collectors.toCollection(ArrayList::new));
+    public ArrayList<Setting<?>> getSettings() {
+        ArrayList<Setting<?>> list = new ArrayList<>();
+        for(Setting<?> setting: settingCategory.getSettings()) {
+            if(setting != enabled) list.add(setting);
+        }
+        return list;
     }
 
     public Setting<String> getBind() {
@@ -146,7 +149,11 @@ public class Module implements Wrapper {
     public static void tick() {
         try {
             TICKS++;
-            Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onTick);
+            for(Module module: Module.MANAGER.getInstances()) {
+                if(module.getEnabled() || module.isAlwaysListening()) {
+                    module.onTick();
+                }
+            }
         } catch(Throwable e) {
             e.printStackTrace();
         }
@@ -154,7 +161,11 @@ public class Module implements Wrapper {
 
     public static void render3d() {
         try {
-            Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onRender3d);
+            for(Module module: Module.MANAGER.getInstances()) {
+                if(module.getEnabled() || module.isAlwaysListening()) {
+                    module.onRender3d();
+                }
+            }
         } catch(Throwable e) {
             e.printStackTrace();
         }
@@ -162,7 +173,11 @@ public class Module implements Wrapper {
 
     public static void render2d() {
         try {
-            Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onRender2d);
+            for(Module module: Module.MANAGER.getInstances()) {
+                if(module.getEnabled() || module.isAlwaysListening()) {
+                    module.onRender2d();
+                }
+            }
         } catch(Throwable e) {
             e.printStackTrace();
         }
@@ -170,7 +185,11 @@ public class Module implements Wrapper {
 
     public static void motion() {
         try {
-            Module.MANAGER.getInstances().stream().filter(module -> module.getEnabled() || module.isAlwaysListening()).forEach(Module::onMotion);
+            for(Module module: Module.MANAGER.getInstances()) {
+                if(module.getEnabled() || module.isAlwaysListening()) {
+                    module.onMotion();
+                }
+            }
         } catch(Throwable e) {
             e.printStackTrace();
         }

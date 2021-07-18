@@ -23,7 +23,11 @@ public class EditHudGui extends GuiScreen implements Wrapper {
     public EditHudGui(GuiScreen prevScreen) {
         this.prevScreen = prevScreen;
         elements.clear();
-        Category.HUD.getModules().stream().filter(module -> module instanceof HudElement).forEach(module -> elements.add((HudElement) module));
+        for(Module module: Category.HUD.getModules()) {
+            if(module instanceof HudElement) {
+                elements.add((HudElement) module);
+            }
+        }
     }
 
     @Override

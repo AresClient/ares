@@ -75,7 +75,11 @@ public class AccountManagerGUI extends GUI {
     // do this to prevent concurrent modification exception
     @Override
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        new ArrayList<>(getElements()).stream().filter(Element::isVisible).forEach(element -> element.click(mouseX, mouseY, mouseButton));
+        for(Element element: new ArrayList<>(getElements())) {
+            if(element.isVisible()) {
+                element.click(mouseX, mouseY, mouseButton);
+            }
+        }
     }
 
     // adds account to gui

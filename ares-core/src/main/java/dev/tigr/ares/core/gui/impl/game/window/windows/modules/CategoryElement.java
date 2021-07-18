@@ -73,7 +73,11 @@ public class CategoryElement extends Element {
         for(int i = 0; i < columns; i++) {
             RENDERER.startScissor(getRenderX() + pos, getRenderY(), width, scissorHeight.getValue());
             RENDER_STACK.translate(0, offsets[i], 0);
-            columnsList.get(i).stream().filter(Element::isVisible).forEach(element -> element.draw(mouseX, mouseY, partialTicks));
+            for(ModuleElement element: columnsList.get(i)) {
+                if(element.isVisible()) {
+                    element.draw(mouseX, mouseY, partialTicks);
+                }
+            }
             RENDER_STACK.translate(0, -offsets[i], 0);
             RENDERER.stopScissor();
             pos += width;

@@ -78,14 +78,22 @@ public class ExpandedModulesWindow extends Window {
 
     @Override
     public void release(int mouseX, int mouseY, int mouseButton) {
-        windows.stream().filter(Element::isVisible).forEach(window -> window.release(mouseX, mouseY, mouseButton));
+        for(ExpandedCategoryElement window: windows) {
+            if(window.isVisible()) {
+                window.release(mouseX, mouseY, mouseButton);
+            }
+        }
         super.release(mouseX, mouseY, mouseButton);
     }
 
     @Override
     public void keyTyped(Character typedChar, int keyCode) {
         super.keyTyped(typedChar, keyCode);
-        windows.stream().filter(Element::isVisible).forEach(window -> window.keyTyped(typedChar, keyCode));
+        for(ExpandedCategoryElement window: windows) {
+            if(window.isVisible()) {
+                window.keyTyped(typedChar, keyCode);
+            }
+        }
     }
 
     @Override
@@ -101,6 +109,11 @@ public class ExpandedModulesWindow extends Window {
 
     @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
-        return windows.stream().anyMatch(element -> element.isMouseOver(mouseX, mouseY) || element.dragging);
+        for(ExpandedCategoryElement element: windows) {
+            if(element.isMouseOver(mouseX, mouseY) || element.dragging) {
+                return true;
+            }
+        }
+        return false;
     }
 }

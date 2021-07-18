@@ -20,6 +20,7 @@ public class CustomTextureManager extends HashMap<LocationIdentifier, AbstractTe
         if(texture == null) {
             try {
                 texture = new NativeImageBackedTexture(NativeImage.read(CustomTextureManager.class.getResourceAsStream(resourceLocation.getPath())));
+                put(resourceLocation, texture);
             } catch(Exception e) {
                 e.printStackTrace();
                 return;

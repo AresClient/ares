@@ -99,13 +99,21 @@ public class ClickGUI extends GUI {
 
     @Override
     public void mouseReleased(int mouseX, int mouseY, int mouseButton) {
-        windows.stream().filter(Window::isVisible).forEach(window -> window.release(mouseX, mouseY, mouseButton));
+        for(Window window: windows) {
+            if(window.isVisible()) {
+                window.release(mouseX, mouseY, mouseButton);
+            }
+        }
         super.mouseReleased(mouseX, mouseY, mouseButton);
     }
 
     @Override
     public void keyTyped(Character typedChar, int keyCode) {
-        windows.stream().filter(Window::isVisible).forEach(window -> window.keyTyped(typedChar, keyCode));
+        for(Window window: windows) {
+            if(window.isVisible()) {
+                window.keyTyped(typedChar, keyCode);
+            }
+        }
         super.keyTyped(typedChar, keyCode);
     }
 

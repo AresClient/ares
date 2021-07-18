@@ -56,7 +56,11 @@ public class GUI {
      */
     public void draw(int mouseX, int mouseY, float partialTicks) {
         // render all elements
-        elements.stream().filter(Element::isVisible).forEach(element -> element.draw(mouseX, mouseY, partialTicks));
+        for(Element element: elements) {
+            if(element.isVisible()) {
+                element.draw(mouseX, mouseY, partialTicks);
+            }
+        }
     }
 
     /**
@@ -67,7 +71,11 @@ public class GUI {
      * @param mouseButton mouse button clicked
      */
     public void mouseClicked(int mouseX, int mouseY, int mouseButton) {
-        elements.stream().filter(Element::isVisible).forEach(element -> element.click(mouseX, mouseY, mouseButton));
+        for(Element element: elements) {
+            if(element.isVisible()) {
+                element.click(mouseX, mouseY, mouseButton);
+            }
+        }
     }
 
     /**
@@ -78,7 +86,11 @@ public class GUI {
      * @param mouseButton mouse button released
      */
     public void mouseReleased(int mouseX, int mouseY, int mouseButton) {
-        elements.stream().filter(Element::isVisible).forEach(element -> element.release(mouseX, mouseY, mouseButton));
+        for(Element element: elements) {
+            if(element.isVisible()) {
+                element.release(mouseX, mouseY, mouseButton);
+            }
+        }
     }
 
     /**
@@ -87,7 +99,11 @@ public class GUI {
      * @param keyCode   Keycode of character typed
      */
     public void keyTyped(Character typedChar, int keyCode) {
-        elements.stream().filter(Element::isVisible).forEach(element -> element.keyTyped(typedChar, keyCode));
+        for(Element element: elements) {
+            if(element.isVisible()) {
+                element.keyTyped(typedChar, keyCode);
+            }
+        }
     }
 
     /**
@@ -99,14 +115,20 @@ public class GUI {
      * @return mc default return val
      */
     public void mouseScrolled(double mouseX, double mouseY, double value) {
-        elements.stream().filter(Element::isVisible).forEach(element -> element.scroll(mouseX, mouseY, value));
+        for(Element element: elements) {
+            if(element.isVisible()) {
+                element.scroll(mouseX, mouseY, value);
+            }
+        }
     }
 
     /**
      * Calls the close method for all elements
      */
     public void onGuiClosed() {
-        elements.forEach(Element::close);
+        for(Element element: elements) {
+            element.close();
+        }
     }
 
     /**

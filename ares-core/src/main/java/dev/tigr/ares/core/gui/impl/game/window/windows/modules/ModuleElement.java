@@ -31,7 +31,15 @@ public class ModuleElement extends Element {
         this.color = color;
         this.modHeight = modHeight;
 
-        setHeight(() -> getModHeight() + open.getAnimationFactor() * (getModHeight() / 2d * module.getSettings().stream().filter(Setting::isVisible).count()));
+        setHeight(() -> {
+            long count = 0L;
+            for(Setting<?> setting: module.getSettings()) {
+                if(setting.isVisible()) {
+                    count++;
+                }
+            }
+            return getModHeight() + open.getAnimationFactor() * (getModHeight() / 2d * count);
+        });
 
         SettingElement<?> prev = null;
         for(Setting<?> setting: module.getSettings()) {

@@ -57,7 +57,11 @@ public class Element {
      * @param partialTicks partial ticks for rendering
      */
     public void draw(int mouseX, int mouseY, float partialTicks) {
-        children.stream().filter(Element::isVisible).forEach(element -> element.draw(mouseX, mouseY, partialTicks));
+        for(Element element: children) {
+            if(element.isVisible()) {
+                element.draw(mouseX, mouseY, partialTicks);
+            }
+        }
     }
 
     /**
@@ -68,7 +72,11 @@ public class Element {
      * @param mouseButton mouse button clicked
      */
     public void click(int mouseX, int mouseY, int mouseButton) {
-        children.stream().filter(Element::isVisible).forEach(element -> element.click(mouseX, mouseY, mouseButton));
+        for(Element element: children) {
+            if(element.isVisible()) {
+                element.click(mouseX, mouseY, mouseButton);
+            }
+        }
     }
 
     /**
@@ -79,7 +87,11 @@ public class Element {
      * @param mouseButton mouse button released
      */
     public void release(int mouseX, int mouseY, int mouseButton) {
-        children.stream().filter(Element::isVisible).forEach(element -> element.release(mouseX, mouseY, mouseButton));
+        for(Element element: children) {
+            if(element.isVisible()) {
+                element.release(mouseX, mouseY, mouseButton);
+            }
+        }
     }
 
     /**
@@ -89,7 +101,11 @@ public class Element {
      * @param keyCode   Keycode of character typed
      */
     public void keyTyped(Character typedChar, int keyCode) {
-        children.stream().filter(Element::isVisible).forEach(element -> element.keyTyped(typedChar, keyCode));
+        for(Element element: children) {
+            if(element.isVisible()) {
+                element.keyTyped(typedChar, keyCode);
+            }
+        }
     }
 
     /**
@@ -100,14 +116,20 @@ public class Element {
      * @param value  strength of the scroll
      */
     public void scroll(double mouseX, double mouseY, double value) {
-        children.stream().filter(Element::isVisible).forEach(element -> element.scroll(mouseX, mouseY, value));
+        for(Element element: children) {
+            if(element.isVisible()) {
+                element.scroll(mouseX, mouseY, value);
+            }
+        }
     }
 
     /**
      * Method called on GUI close
      */
     public void close() {
-        children.forEach(Element::close);
+        for(Element child: children) {
+            child.close();
+        }
     }
 
     /**

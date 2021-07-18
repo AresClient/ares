@@ -82,10 +82,12 @@ public class Macros extends Command {
             return TextColor.RED + "Macro binded to key " + TextColor.BLUE + key + TextColor.RED + " not found!";
 
         setting.getValue().remove(optional.get());
-        new ArrayList<>(macros).stream().filter(bind -> optional.get().equalsIgnoreCase(encode(bind.getValue(), bind.getName()))).forEach(bind -> {
-            macros.remove(bind);
-            bind.remove();
-        });
+        for(Setting<String> bind: new ArrayList<>(macros)) {
+            if(optional.get().equalsIgnoreCase(encode(bind.getValue(), bind.getName()))) {
+                macros.remove(bind);
+                bind.remove();
+            }
+        }
 
         return TextColor.RED + "Removed macro binded to key " + TextColor.BLUE + key;
     }
