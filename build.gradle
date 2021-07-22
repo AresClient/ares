@@ -48,7 +48,7 @@ subprojects {
     // copy artifacts to root build folder after build
     tasks.getByName("build").doLast {
         String version = project.name == "ares-forge" ? project.aresForgeVersion :
-                (project.name == "ares-fabric" ? project.aresFabricVersion : project.installerVersion)
+                (project.name == "ares-installer" ? project.installerVersion : project.aresFabricVersion)
         copy {
             from "${project.rootProject.rootDir}/${project.name}/build/libs/${project.name}-$version-release.jar"
             into "${project.rootProject.rootDir}/build"
@@ -84,11 +84,26 @@ task testFabric(type: GradleBuild) {
     }
 }
 
+task testFabric_1_16(type: GradleBuild) {
+    group = "ares"
+    description = "builds the fabric version of Ares, then copies the jar into the mods folder"
+
+    tasks = [":ares-fabric-1.16:build"]
+
+    doLast {
+        copy {
+            from "build/ares-fabric-1.16-${project.aresFabricVersion}-release.jar"
+            into getModsFolder()
+        }
+    }
+}
+
+
 task setupWorkspace(type: GradleBuild) {
     group = "ares"
     description = "sets up all development environments for all versions of ares"
 
-    tasks = [":ares-forge:classes", ":ares-fabric:genSources"]
+    tasks = [":ares-forge:classes", ":ares-fabric:genSources", ":ares-fabric-1.16:genSources"]
 }
 
 private static String getModsFolder() {

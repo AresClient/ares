@@ -4,7 +4,6 @@ package dev.tigr.ares.fabric.impl.modules.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.render.ItemTooltipEvent;
 import dev.tigr.ares.fabric.mixin.accessors.MapTextureAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -13,13 +12,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.client.render.*;
 import net.minecraft.item.FilledMapItem;
-import net.minecraft.item.map.MapState;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.lwjgl.opengl.GL11;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 

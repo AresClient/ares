@@ -1,0 +1,67 @@
+plugins {
+    id "fabric-loom" version "0.8-SNAPSHOT"
+    id "com.github.johnrengelman.shadow" version "7.0.0"
+}
+
+version = project.aresFabricVersion
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+    // fabric deps
+    minecraft "com.mojang:minecraft:1.16.5"
+    mappings "net.fabricmc:yarn:1.16.5+build.6:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.11.3"
+
+    // ares core
+    implementation project(":ares-core")
+    shadow(project(":ares-core")) {
+        exclude group: "org.apache.logging.log4j", module: "log4j-api"
+        exclude group: "com.mojang", module: "brigadier"
+        exclude group: "com.google.guava", module: "guava"
+    }
+
+    // ares installer
+    implementation(project(":ares-installer"))
+    shadow(project(":ares-installer"))
+
+    // include ares core deps
+    include "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.3.1+facf3bbf95"
+    implementation "dev.tigr:simpleevents:1.1"
+    implementation "org.json:json:20190722"
+    implementation "com.mojang:brigadier:1.0.17"
+    shadow "com.github.Vatuu:discord-rpc:1.6.2"
+
+    // fabritone
+    implementation "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
+    include "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+    options.release.set(8)
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+task customShadowJar(type: ShadowJar) {
+    configurations = [project.configurations.shadow]
+    from remapJar.archiveFile
+    exclude("mappings/**")
+    exclude("LICENSE")
+    archiveClassifier.set("release")
+
+    //noinspection GroovyAssignabilityCheck
+    manifest {
+        attributes("Main-Class": "dev.tigr.ares.installer.Installer")
+    }
+}
+
+build.dependsOn(customShadowJar)

@@ -12,3 +12,5 @@ include "ares-core"
 include "ares-forge"
 include "ares-fabric"
 include "ares-installer"
+include "ares-fabric-1.16"
+
