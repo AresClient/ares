@@ -47,7 +47,7 @@ public class ModuleElement extends Element {
             SettingElement<?> settingElement = SettingElement.create(getGUI(), setting);
             settingElement.setHeight(() -> getModHeight() / 2d);
             settingElement.setWidth(this::getWidth);
-            settingElement.setVisibility(() -> open.getState() && setting.isVisible() && (settingElement.getRenderY() + settingElement.getHeight()) <= (getRenderY() + getHeight()));
+            if((settingElement.getRenderY() + settingElement.getHeight()) <= (getRenderY() + getHeight())) settingElement.setVisibility(() -> open.getState() && setting.isVisible());
             if(prev == null) settingElement.setY(this::getModHeight);
             else {
                 SettingElement<?> finalPrev = prev;
