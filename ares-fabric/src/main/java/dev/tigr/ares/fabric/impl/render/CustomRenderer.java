@@ -18,10 +18,6 @@ public class CustomRenderer implements IRenderer {
         return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
     }
 
-    private Matrix3f getNormal() {
-        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getNormal();
-    }
-
     private void draw() {
         draw(false);
     }
@@ -130,16 +126,14 @@ public class CustomRenderer implements IRenderer {
      * @param color  color of the line
      */
     public void drawLine(double startX, double startY, double startZ, double endX, double endY, double endZ, int weight, Color color) {
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f model = getModel();
-        Matrix3f normal = getNormal();
-        Vec3f normalVec = getNormal(startX, startY, startZ, endX, endY, endZ);
 
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         RenderSystem.lineWidth(weight);
-        bufferBuilder.vertex(model, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
-        bufferBuilder.vertex(model, (float) endX, (float) endY, (float) endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+        bufferBuilder.vertex(model, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+        bufferBuilder.vertex(model, (float) endX, (float) endY, (float) endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
         RenderSystem.lineWidth(1f);
     }
@@ -157,13 +151,11 @@ public class CustomRenderer implements IRenderer {
 
         boolean first = true;
         double firstX = 0, firstY = 0, prevX = 0, prevY = 0, x, y;
-        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f model = getModel();
-        Matrix3f normal = getNormal();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
-        bufferBuilder.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
         RenderSystem.lineWidth(weight);
-
 
         for(int i = 0; i < points.length; i += 2) {
             if(first) {
@@ -176,33 +168,19 @@ public class CustomRenderer implements IRenderer {
                 x = (float) points[i];
                 y = (float) points[i + 1];
 
-                Vec3f normalVec = getNormal(prevX, prevY, 0, x, y, 0);
-                bufferBuilder.vertex(model, (float) prevX, (float) prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+                bufferBuilder.vertex(model, (float) prevX, (float) prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
                 prevX = x;
                 prevY = y;
-                bufferBuilder.vertex(model, (float) prevX, (float) prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+                bufferBuilder.vertex(model, (float) prevX, (float) prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
 
                 if(i >= points.length - 2) {
-                    normalVec = getNormal(prevX, prevY, 0, firstX, firstY, 0);
-                    bufferBuilder.vertex(model, (float) prevX, (float) prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
-                    bufferBuilder.vertex(model, (float) firstX, (float) firstY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+                    bufferBuilder.vertex(model, (float) prevX, (float) prevY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
+                    bufferBuilder.vertex(model, (float) firstX, (float) firstY, 0).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
                 }
             }
         }
         draw();
         RenderSystem.lineWidth(1f);
-    }
-
-    private static Vec3f getNormal(float x1, float y1, float z1, float x2, float y2, float z2) {
-        Vec3f normal = new Vec3f(x2 - x1, y2 - y1, z2 - z1);
-        normal.normalize();
-        return normal;
-    }
-
-    private static Vec3f getNormal(double x1, double y1, double z1, double x2, double y2, double z2) {
-        Vec3f normal = new Vec3f((float) (x2 - x1), (float) (y2 - y1), (float) (z2 - z1));
-        normal.normalize();
-        return normal;
     }
 
     @Override
