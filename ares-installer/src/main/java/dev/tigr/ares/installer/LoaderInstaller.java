@@ -16,9 +16,9 @@ import java.net.URL;
  * @author Tigermouthbear
  */
 public class LoaderInstaller {
-    public static boolean install(String gameVersion, File folder) throws Exception {
-        if(gameVersion.equals("1.12.2")) return false; // no automatic forge installation
-        else return installFabricLoader(folder, gameVersion);
+    public static boolean install(Installer.Candidate candidate, File folder) throws Exception {
+        if(candidate.getLoader() == Installer.Loader.FORGE) return false; // no automatic forge installation
+        else return installFabricLoader(folder, candidate.getVersion());
     }
 
     private static boolean installFabricLoader(File minecraftFolder, String gameVersion) throws IOException {

@@ -1,5 +1,6 @@
 package dev.tigr.ares.installer;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -10,6 +11,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Function;
 
@@ -19,19 +21,62 @@ import java.util.function.Function;
 public class Installer extends JFrame {
     private static final String URL = "https://aresclient.org/api/v1/downloads.json";
 
-    enum Version { FORGE, FABRIC }
+    enum Loader { FORGE, FABRIC }
+    static class Candidate {
+        private final String name;
+        private final Loader loader;
+        private final String version; // minecraft version
+        private final String url;
+
+        public Candidate(String name, Loader loader, String version, String url) {
+            this.name = name;
+            this.loader = loader;
+            this.version = version;
+            this.url = url;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Loader getLoader() {
+            return loader;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        @Override
+        public String toString() {
+            return version + " " + loader.name().toLowerCase();
+        }
+    }
 
     public static Installer INSTANCE;
     public static final Image BACKGROUND = getImage("background.png");
-    public static final JSONObject JSON_OBJECT = getJSONObject();
-    public static final String FORGE_MCVERSION = getMinecraftVersionFromJson(Version.FORGE);
-    public static final String FABRIC_MCVERSION = getMinecraftVersionFromJson(Version.FABRIC);
-    public static final String FORGE_VERSION = getVersionFromJson(Version.FORGE);
-    public static final String FABRIC_VERSION = getVersionFromJson(Version.FABRIC);
-    public static final String FORGE_URL = getURLFromJson(Version.FORGE);
-    public static final String FABRIC_URL = getURLFromJson(Version.FABRIC);
+    public static final JSONObject JSON_OBJECT = getJSONObjectFromURL(URL);
+    public static final JSONObject FORGE_OBJECT = getObjectOrExit(JSON_OBJECT, Loader.FORGE.name().toLowerCase());
+    public static final JSONObject FABRIC_OBJECT = getObjectOrExit(JSON_OBJECT, Loader.FABRIC.name().toLowerCase());
+    public static final ArrayList<Candidate> CANDIDATES = new ArrayList<>();
+    static {
+        getArrayOrExit(FORGE_OBJECT, "all").forEach(str -> {
+            if(!(str instanceof String)) return;
+            JSONObject version = getObjectOrExit(FORGE_OBJECT, (String) str);
+            CANDIDATES.add(new Candidate(getStringOrExit(version, "name"), Loader.FORGE, (String) str, getStringOrExit(version, "url")));
+        });
+        getArrayOrExit(FABRIC_OBJECT, "all").forEach(str -> {
+            if(!(str instanceof String)) return;
+            JSONObject version = getObjectOrExit(FABRIC_OBJECT, (String) str);
+            CANDIDATES.add(new Candidate(getStringOrExit(version, "name"), Loader.FABRIC, (String) str, getStringOrExit(version, "url")));
+        });
+    }
 
-    public static final int WINDOW_WIDTH = 700;
+    public static final int WINDOW_WIDTH = 650;
     public static final int WINDOW_HEIGHT = 500;
 
     private static JPanel panel;
@@ -44,10 +89,11 @@ public class Installer extends JFrame {
         setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setIconImage(getImage("icon.png"));
         setResizable(false);
 
         // add select version panel
-        panel = new SelectVersionPanel();
+        panel = new InstallPanel(CANDIDATES);
         add(panel);
 
         setVisible(true);
@@ -61,30 +107,13 @@ public class Installer extends JFrame {
         new Installer();
     }
 
-    void select(Version version) {
-        remove(panel);
-        panel = new InstallPanel(version);
-        add(panel);
-        revalidate();
-    }
-
-    void home() {
-        remove(panel);
-        panel = new SelectVersionPanel();
-        add(panel);
-        revalidate();
-    }
-
-    public static String install(Version version, File folder) {
-        String minecraftVersion = getMinecraftVersion(version);
-        String aresVersion = getVersion(version);
-
+    public static String install(Candidate candidate, File folder) {
         // only check for loader if not multimc
         if(!folder.getPath().contains("multimc")) {
             // lambda for checking if file is loader for forge or fabric
-            Function<String, Boolean> tester = version == Version.FABRIC
-                    ? file -> file.startsWith("fabric-loader-") && file.endsWith(FABRIC_MCVERSION)
-                    : file -> file.startsWith(FORGE_MCVERSION + "-forge-14.23.5.");
+            Function<String, Boolean> tester = candidate.getLoader() == Loader.FABRIC
+                    ? file -> file.startsWith("fabric-loader-") && file.endsWith(candidate.getVersion())
+                    : file -> file.startsWith(candidate.getVersion() + "-forge-14.23.5.");
 
             // find versions folder
             File versions = new File(folder, "versions");
@@ -92,12 +121,12 @@ public class Installer extends JFrame {
 
             // install minecraft forge or fabric if not installed
             if(Arrays.stream(versions.listFiles()).noneMatch(file -> file.isDirectory() && tester.apply(file.getName()))) {
-                String err = version == Version.FABRIC ? "Please install minecraft fabric for " + FABRIC_MCVERSION + " at https://fabricmc.net" : "Please install minecraft forge for " + FORGE_MCVERSION + " at https://files.minecraftforge.net/";
+                String err = candidate.getLoader() == Loader.FABRIC ? "Please install minecraft fabric for " + candidate.getVersion() + " at https://fabricmc.net" : "Please install minecraft forge for " + candidate.getVersion() + " at https://files.minecraftforge.net/";
                 try {
-                    if(!LoaderInstaller.install(minecraftVersion, folder)) return err;
+                    if(!LoaderInstaller.install(candidate, folder)) return err;
                 } catch(Exception e) {
                     e.printStackTrace();
-                    return err + "test";
+                    return err;
                 }
             }
         }
@@ -107,7 +136,7 @@ public class Installer extends JFrame {
         if(!mods.exists() || !mods.isDirectory()) mods.mkdir();
 
         // create file
-        File out = new File(mods, "Ares-" + aresVersion + "-" + minecraftVersion + ".jar");
+        File out = new File(mods, "Ares-" + candidate.getName() + "-" + candidate.getVersion() + ".jar");
         if(!out.exists()) {
             String err = "Error installing Ares client! Visit our website for the faq and link to discord for support";
             try {
@@ -116,15 +145,15 @@ public class Installer extends JFrame {
                 e.printStackTrace();
                 return err;
             }
-        } else return "Ares " + aresVersion + " " + minecraftVersion +" is already installed!";
+        } else return "Ares " + candidate.getName() + " " + candidate.getVersion() +" is already installed!";
 
         // remove old versions from mods folder
         Arrays.stream(mods.listFiles()).filter(file -> {
             String name = file.getName();
             if(name.equals(out.getName())) return false;
-            if(version == Version.FABRIC) return (name.startsWith("Ares-") && name.endsWith(".jar") && !name.contains("1.12.2")) || // stable
+            if(candidate.getLoader() == Loader.FABRIC) return (name.startsWith("Ares-") && name.endsWith(".jar") && !name.contains("1.12.2")) || // stable
                     name.startsWith("ares-fabric-"); // beta
-            if(version == Version.FORGE) return name.startsWith("Ares-") && name.endsWith("-1.12.2.jar") || // stable
+            if(candidate.getLoader() == Loader.FORGE) return name.startsWith("Ares-") && name.endsWith("-1.12.2.jar") || // stable
                     name.startsWith("ares-forge-"); // beta
 
             return false;
@@ -132,7 +161,7 @@ public class Installer extends JFrame {
 
         // download file to mods folder
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(getURL(version)).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(candidate.getUrl()).openConnection();
             connection.addRequestProperty("User-Agent", "Mozilla/4.76");
 
             FileOutputStream fos = new FileOutputStream(out);
@@ -143,7 +172,7 @@ public class Installer extends JFrame {
             return "Error downloading Ares Client! Check your internet connection.";
         }
 
-        return "Successfully installed Ares to " + folder.getPath();
+        return "Successfully installed Ares " + candidate.getName() + " for " + candidate.getLoader().name().toLowerCase() + " " + candidate.getVersion() + " to " + folder.getPath();
     }
     
     public static String getMinecraftFolder() {
@@ -156,86 +185,69 @@ public class Installer extends JFrame {
         } else return null;
     }
 
-    private static JSONObject getJSONObject() {
-        JSONObject jsonObject = null;
-
+    private static JSONObject getJSONObjectFromURL(String url) {
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(URL).openConnection();
+            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.addRequestProperty("User-Agent", "Mozilla/4.76");
             JSONObject parent = new JSONObject(new JSONTokener(connection.getInputStream()));
-            if(parent.has("versions")) jsonObject = parent.getJSONObject("versions");
-        } catch(Exception ignored) {
+            if(parent.has("versions")) return parent.getJSONObject("versions");
+        } catch(Exception e) {
+            e.printStackTrace();
         }
 
-        if(jsonObject == null) {
-            System.out.println("Error connecting to Ares download server! Check your internet connection");
-            System.exit(1);
-        }
-
-        return jsonObject;
-    }
-
-    public static String getMinecraftVersion(Version version) {
-        return version == Version.FABRIC ? FABRIC_MCVERSION : FORGE_MCVERSION;
-    }
-
-    private static String getMinecraftVersionFromJson(Version version) {
-        String name = version.name().toLowerCase();
-        if(JSON_OBJECT.has(name)) {
-            JSONObject versionObject = JSON_OBJECT.getJSONObject(name);
-            if(versionObject.has("version")) return versionObject.getString("version");
-        } else {
-            System.out.println("Error reading download json!");
-            System.exit(1);
-        }
-
-        return name;
-    }
-
-    public static String getVersion(Version version) {
-        return version == Version.FABRIC ? FABRIC_VERSION : FORGE_VERSION;
-    }
-
-    private static String getVersionFromJson(Version version) {
-        String name = version.name().toLowerCase();
-        if(JSON_OBJECT.has(name)) {
-            JSONObject versionObject = JSON_OBJECT.getJSONObject(name);
-            if(versionObject.has("name")) return versionObject.getString("name");
-        } else {
-            System.out.println("Error reading download json!");
-            System.exit(1);
-        }
-
+        System.out.println("Error connecting to Ares download server! Check your internet connection");
+        System.exit(1);
         return null;
     }
 
-    public static String getURL(Version version) {
-        return version == Version.FABRIC ? FABRIC_URL : FORGE_URL;
-    }
-
-    private static String getURLFromJson(Version version) {
-        String name = version.name().toLowerCase();
-        if(JSON_OBJECT.has(name)) {
-            JSONObject versionObject = JSON_OBJECT.getJSONObject(name);
-            if(versionObject.has("url")) return versionObject.getString("url");
-        } else {
-            System.out.println("Error reading download json!");
-            System.exit(1);
+    private static JSONObject getObjectOrExit(JSONObject jsonObject, String name) {
+        if(jsonObject.has(name)) {
+            try {
+                return jsonObject.getJSONObject(name);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
 
+        System.out.println("Error reading download json!");
+        System.exit(1);
+        return null;
+    }
+
+    private static JSONArray getArrayOrExit(JSONObject jsonObject, String name) {
+        if(jsonObject.has(name)) {
+            try {
+                return jsonObject.getJSONArray(name);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Error reading download json!");
+        System.exit(1);
+        return null;
+    }
+
+    private static String getStringOrExit(JSONObject jsonObject, String name) {
+        if(jsonObject.has(name)) {
+            try {
+                return jsonObject.getString(name);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.out.println("Error reading download json!");
+        System.exit(1);
         return null;
     }
 
     public static Image getImage(String name) {
         try {
-            return ImageIO.read(SelectVersionPanel.class.getResourceAsStream("/assets/ares/installer/" + name));
+            return ImageIO.read(Installer.class.getResourceAsStream("/assets/ares/installer/" + name));
         } catch(IOException e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static Image getImage(String name, int width, int height) {
-        return getImage(name).getScaledInstance(width, height, Image.SCALE_SMOOTH);
     }
 }

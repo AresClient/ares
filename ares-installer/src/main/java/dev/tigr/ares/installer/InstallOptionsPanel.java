@@ -5,6 +5,8 @@ import li.flor.nativejfilechooser.NativeJFileChooser;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.util.List;
+import java.util.Optional;
 
 import static dev.tigr.ares.installer.Installer.*;
 import static java.awt.Frame.getFrames;
@@ -15,7 +17,7 @@ import static java.awt.Frame.getFrames;
 public class InstallOptionsPanel extends JPanel {
     private File minecraftFolder;
 
-    InstallOptionsPanel(Installer.Version version) {
+    InstallOptionsPanel(List<Candidate> candidates) {
         // try to find mods folder
         String folder = getMinecraftFolder();
         minecraftFolder = folder != null ? new File(folder) : null;
@@ -30,21 +32,30 @@ public class InstallOptionsPanel extends JPanel {
         
         // create elements
         Font optionFont = new Font("Arial", Font.PLAIN, 16);
-        JLabel label = new JLabel("Ares " + getVersion(version) + " " + version.name().toLowerCase().replaceFirst("f", "F") + " " + getMinecraftVersion(version), SwingConstants.CENTER);
+        JLabel versionLabel = new JLabel("Select version", SwingConstants.RIGHT);
+
+        int i = 0;
+        String[] candidateStrings = new String[candidates.size()];
+        for(Candidate candidate: candidates) candidateStrings[i++] = candidate.toString();
+        JComboBox<String> versionCombo = new JComboBox<>(candidateStrings);
+
         JButton folderButton = new JButton("Select minecraft folder");
         JLabel folderLabel = new JLabel(minecraftFolder != null ? minecraftFolder.getPath() : "unknown");
         JButton installButton = new JButton("Install Latest");
-        JButton backButton = new JButton("Back");
 
         // add label
         c.gridx = 0;
         c.gridy = 0;
-        c.gridwidth = 2;
-        c.insets = new Insets(3, 3, 10, 3);
-        label.setForeground(Color.WHITE);
-        label.setFont(new Font("Arial", Font.PLAIN, 32));
-        add(label, c);
         c.gridwidth = 1;
+        c.insets = new Insets(3, 3, 10, 3);
+        versionLabel.setForeground(Color.WHITE);
+        versionLabel.setFont(optionFont);
+        add(versionLabel, c);
+
+        // add version combo
+        c.gridx = 1;
+        versionCombo.setFont(optionFont);
+        add(versionCombo, c);
 
         // add folder button
         folderButton.addActionListener(event -> {
@@ -60,6 +71,7 @@ public class InstallOptionsPanel extends JPanel {
             }
         });
         c.gridy = 1;
+        c.gridx = 0;
         folderButton.setFont(optionFont);
         folderButton.setForeground(Color.BLACK);
         add(folderButton, c);
@@ -79,14 +91,10 @@ public class InstallOptionsPanel extends JPanel {
         installButton.setPreferredSize(new Dimension(WINDOW_WIDTH / 20, WINDOW_HEIGHT / 10));
         installButton.setFont(installButton.getFont().deriveFont(22f));
         installButton.addActionListener(actionEvent -> {
-            JOptionPane.showMessageDialog(null, Installer.install(version, minecraftFolder), "Ares Client", JOptionPane.INFORMATION_MESSAGE);
+            Optional<Candidate> candidate = candidates.stream().filter(can -> can.toString().equals(versionCombo.getSelectedItem())).findAny();
+            if(candidate.isPresent()) JOptionPane.showMessageDialog(null, Installer.install(candidate.get(), minecraftFolder), "Ares Client", JOptionPane.INFORMATION_MESSAGE);
+            else JOptionPane.showMessageDialog(null, "Failed to find download candidate!", "", JOptionPane.ERROR_MESSAGE);
         });
         add(installButton, c);
-
-        // add back button
-        c.gridy = 3;
-        backButton.setFont(backButton.getFont().deriveFont(15f));
-        backButton.addActionListener(actionEvent -> INSTANCE.home());
-        add(backButton, c);
     }
 }

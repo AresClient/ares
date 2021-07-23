@@ -34,6 +34,7 @@ public abstract class Ares {
     public static final String NAME = "Ares";
 
     public enum Branches { BETA, STABLE }
+    public static String MOD_LOADER;
     public static String MC_VERSION;
     public static String VERSION;
     public static Branches BRANCH;
@@ -50,6 +51,8 @@ public abstract class Ares {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)
     public @interface Info {
+        String modLoader();
+
         String minecraftVersion();
 
         String version();
@@ -64,6 +67,7 @@ public abstract class Ares {
             // get and set ver info
             // should not be null
             Info info = clazz.getAnnotation(Info.class);
+            MOD_LOADER = info.modLoader();
             MC_VERSION = info.minecraftVersion();
             VERSION = info.version();
             BRANCH = info.branch();

@@ -19,11 +19,14 @@ public class UpdateHelper {
 
             if(jsonObject.has("versions")) {
                 JSONObject versions = jsonObject.getJSONObject("versions");
-                if(versions.has(Ares.MC_VERSION)) {
-                    JSONObject version = versions.getJSONObject(Ares.MC_VERSION);
-                    if(version.has("name")) {
-                        latestVersion = version.getString("name");
-                        return !latestVersion.equals(Ares.VERSION);
+                if(versions.has(Ares.MOD_LOADER)) {
+                    JSONObject modloader = versions.getJSONObject(Ares.MOD_LOADER);
+                    if(modloader.has(Ares.MC_VERSION)) {
+                        JSONObject version = modloader.getJSONObject(Ares.MC_VERSION);
+                        if(version.has("name")) {
+                            latestVersion = version.getString("name");
+                            return !latestVersion.equals(Ares.VERSION);
+                        }
                     }
                 }
             }
