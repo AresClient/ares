@@ -6,6 +6,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
+import dev.tigr.ares.core.util.render.TextColor;
 
 /**
  * @author Tigermouthbear
@@ -30,7 +31,7 @@ public class Baritone extends Module {
         ChatEvent chatEvent = new ChatEvent(args);
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onSendChatMessage(chatEvent);
         if(!chatEvent.isCancelled())
-            UTILS.printMessage("Invalid Command! You can view a list possible commands at https://github.com/cabaletta/baritone/blob/master/USAGE.md");
+            UTILS.printMessage(TextColor.RED + "Invalid Command!\n You can view a list possible commands at " + TextColor.BLUE + "https://github.com/cabaletta/baritone/blob/master/USAGE.md");
 
         BaritoneAPI.getSettings().chatControl.value = enabled;
     }
