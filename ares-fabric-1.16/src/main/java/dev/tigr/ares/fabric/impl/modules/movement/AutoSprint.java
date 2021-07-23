@@ -8,10 +8,11 @@ import dev.tigr.ares.core.feature.module.Module;
  */
 @Module.Info(name = "AutoSprint", description = "Makes player always sprinting in any direction", category = Category.MOVEMENT)
 public class AutoSprint extends Module {
-    private static final float SPRINT_SPEED = 0.28061673f;
+    private static final float SPRINT_SPEED = 0.15321f;
 
     @Override
     public void onMotion() {
+        //UTILS.printMessage(String.valueOf(Math.sqrt(MC.player.getVelocity().x * MC.player.getVelocity().x + MC.player.getVelocity().z * MC.player.getVelocity().z)));
         if(MC.player.input.movementForward != 0 || MC.player.input.movementSideways != 0) {
             MC.player.setSprinting(true);
 

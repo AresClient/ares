@@ -8,7 +8,7 @@ import dev.tigr.ares.core.feature.module.Module;
  */
 @Module.Info(name = "AutoSprint", description = "Makes player always sprinting in any direction", category = Category.MOVEMENT)
 public class AutoSprint extends Module {
-    private static final float SPRINT_SPEED = 0.28061673f;
+    private static final float SPRINT_SPEED = 0.15321f;
 
     @Override
     public void onMotion() {
