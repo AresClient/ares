@@ -32,19 +32,19 @@ public class AresChatGUI extends GuiChat {
             {
                 // top
                 GL11.glVertex2d(2, height - 14);
-                GL11.glVertex2d(width, height - 14);
+                GL11.glVertex2d(width - 2, height - 14);
 
                 // bottom
                 GL11.glVertex2d(2, height - 2);
-                GL11.glVertex2d(width, height - 2);
+                GL11.glVertex2d(width - 2, height - 2);
 
                 // left
                 GL11.glVertex2d(2, height - 14);
                 GL11.glVertex2d(2, height - 2);
 
                 // right
-                GL11.glVertex2d(width, height - 14);
-                GL11.glVertex2d(width, height - 2);
+                GL11.glVertex2d(width - 2, height - 14);
+                GL11.glVertex2d(width - 2, height - 2);
 
             }
             GL11.glEnd();

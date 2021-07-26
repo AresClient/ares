@@ -13,7 +13,6 @@ import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.util.math.MatrixStack;
-import org.lwjgl.opengl.GL11;
 
 import java.util.Deque;
 
@@ -47,7 +46,6 @@ public class NameTags extends Module {
         RENDER_STACK.translate(0, f, 0);
         ((CustomRenderStack)RENDER_STACK).getMatrixStack().multiply(MC.getEntityRenderDispatcher().getRotation());
         RENDER_STACK.scale(-fScale, -fScale, fScale);
-        //GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.disableDepthTest();
 
         // calculate health

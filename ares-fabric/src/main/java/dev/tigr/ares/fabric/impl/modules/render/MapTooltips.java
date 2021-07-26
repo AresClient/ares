@@ -14,7 +14,6 @@ import net.minecraft.client.render.*;
 import net.minecraft.item.FilledMapItem;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.lwjgl.opengl.GL11;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -53,7 +52,7 @@ public class MapTooltips extends Module {
             //RenderSystem.pushMatrix();
             RenderSystem.disableDepthTest();
             RenderSystem.enableBlend();
-            RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            RenderSystem.defaultBlendFunc();
             //GL11.glDisable(GL11.GL_ALPHA_TEST);
             //RenderSystem.disableLighting();
 

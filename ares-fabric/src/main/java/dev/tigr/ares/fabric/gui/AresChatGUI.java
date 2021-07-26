@@ -7,7 +7,8 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Style;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
+
+import static dev.tigr.ares.core.Ares.RENDERER;
 
 /**
  * @author Tigermouthbear 10/16/20
@@ -20,36 +21,12 @@ public class AresChatGUI extends ChatScreen {
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if(chatField.getText().startsWith(Command.PREFIX.getValue())) {
-            boolean blend = GL11.glIsEnabled(GL11.GL_BLEND);
-            boolean texture2d = GL11.glIsEnabled(GL11.GL_TEXTURE_2D);
-
-            GL11.glDisable(GL11.GL_BLEND);
-            GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glColor4f(Color.ARES_RED.getRed(), Color.ARES_RED.getGreen(), Color.ARES_RED.getBlue(), Color.ARES_RED.getAlpha());
-            GL11.glLineWidth(2);
-            GL11.glBegin(GL11.GL_LINES);
-            {
-                // top
-                GL11.glVertex2d(2, height - 14);
-                GL11.glVertex2d(width, height - 14);
-
-                // bottom
-                GL11.glVertex2d(2, height - 2);
-                GL11.glVertex2d(width, height - 2);
-
-                // left
-                GL11.glVertex2d(2, height - 14);
-                GL11.glVertex2d(2, height - 2);
-
-                // right
-                GL11.glVertex2d(width, height - 14);
-                GL11.glVertex2d(width, height - 2);
-
-            }
-            GL11.glEnd();
-
-            if(blend) GL11.glEnable(GL11.GL_BLEND);
-            if(texture2d) GL11.glEnable(GL11.GL_TEXTURE_2D);
+            RENDERER.drawLineLoop(2, Color.ARES_RED,
+                    2, height - 14,
+                    width - 2, height - 14,
+                    width - 2, height - 2,
+                    2, height - 2
+            );
         }
 
         this.setFocused(this.chatField);

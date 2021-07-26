@@ -9,7 +9,7 @@ import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.entity.Entity;
-import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
 /**
  * @author Tigermouthbear
@@ -26,16 +26,16 @@ public class Chams extends Module {
     @EventHandler
     public EventListener<RenderLivingEvent.Pre> livingRenderPreEvent = new EventListener<>(event -> {
         if(shouldRender(event.getEntity())) {
-            GL11.glEnable(32823);
-            GL11.glPolygonOffset(1.0f, -1000000.0f);
+            GL20.glEnable(32823);
+            GL20.glPolygonOffset(1.0f, -1000000.0f);
         }
     });
 
     @EventHandler
     public EventListener<RenderLivingEvent.Post> livingRenderPostEvent = new EventListener<>(event -> {
         if(shouldRender(event.getEntity())) {
-            GL11.glPolygonOffset(1.0f, 1000000.0f);
-            GL11.glDisable(32823);
+            GL20.glPolygonOffset(1.0f, 1000000.0f);
+            GL20.glDisable(32823);
         }
     });
 

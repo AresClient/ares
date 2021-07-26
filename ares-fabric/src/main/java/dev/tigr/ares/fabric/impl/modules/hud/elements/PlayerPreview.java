@@ -4,7 +4,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import org.lwjgl.opengl.GL11;
 
 /**
  * @author Tigermouthbear
@@ -19,6 +18,5 @@ public class PlayerPreview extends HudElement {
 
     public void draw() {
         InventoryScreen.drawEntity(getX(), getY(), 40, 0, 0, MC.player);
-        //GL11.glEnable(GL11.GL_ALPHA_TEST);
     }
 }

@@ -3,16 +3,13 @@ package dev.tigr.ares.fabric.utils;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.fabric.impl.render.CustomRenderStack;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.*;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
+import net.minecraft.util.math.*;
 
 /**
  * @author Tigermouthbear 8/11/20
@@ -29,28 +26,22 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void prepare3d() {
-        GL11.glPushMatrix();
+        RENDER_STACK.push();
         RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
         RenderSystem.disableDepthTest();
-        GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        //GL11.glDisable(GL11.GL_ALPHA_TEST);
         RenderSystem.disableTexture();
         RenderSystem.depthMask(false);
-        GL11.glEnable(GL11.GL_LINE_SMOOTH);
-        GL11.glHint(GL11.GL_LINE_SMOOTH_HINT, GL11.GL_NICEST);
 
-        GL11.glRotated(MathHelper.wrapDegrees(MC.gameRenderer.getCamera().getPitch()), 1, 0, 0);
-        GL11.glRotated(MathHelper.wrapDegrees(MC.gameRenderer.getCamera().getYaw() + 180.0), 0, 1, 0);
+        RENDER_STACK.rotate(MathHelper.wrapDegrees(MC.gameRenderer.getCamera().getPitch()), 1, 0, 0);
+        RENDER_STACK.rotate((float) MathHelper.wrapDegrees(MC.gameRenderer.getCamera().getYaw() + 180.0), 0, 1, 0);
     }
 
     public static void end3d() {
-        GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.depthMask(true);
-        RenderSystem.enableTexture();
-        //GL11.glEnable(GL11.GL_ALPHA_TEST);
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
-        GL11.glPopMatrix();
+        RENDER_STACK.pop();
     }
 
     // Entity Box
@@ -141,29 +132,34 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         renderBoundingBox(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, red, green, blue, alpha, lineThickness);
     }
 
-    public static void renderBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha, float lineThickness)  {
+    public static void renderBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha, float lineThickness) {
+        renderBoundingBox((float) minX, (float) minY, (float) minZ, (float) maxX, (float) maxY, (float) maxZ, red, green, blue, alpha, lineThickness);
+    }
+
+    public static void renderBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha, float lineThickness) {
         RenderSystem.lineWidth(lineThickness);
 
+        Matrix4f model = getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
 
-        buffer.vertex(minX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(maxX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(minX, maxY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
 
         tessellator.draw();
     }
@@ -183,7 +179,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-        WorldRenderer.drawBox(bufferBuilder,
+        WorldRenderer.drawBox(getMatrix(), bufferBuilder,
                 minX, minY, minZ,
                 maxX, maxY, maxZ, red, green, blue, alpha /2f);
         tessellator.draw();
@@ -237,5 +233,13 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         double z = (entity.prevZ + (entity.getZ() - entity.prevZ) * MC.getTickDelta()) - cameraPos.z;
 
         return new Vec3d(x, y, z);
+    }
+
+    private static MatrixStack getMatrix() {
+        return ((CustomRenderStack) RENDER_STACK).getMatrixStack();
+    }
+
+    private static Matrix4f getModel() {
+        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
     }
 }
