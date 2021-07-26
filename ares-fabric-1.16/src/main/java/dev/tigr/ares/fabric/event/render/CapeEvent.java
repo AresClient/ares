@@ -1,23 +1,35 @@
 package dev.tigr.ares.fabric.event.render;
 
-import net.minecraft.client.network.PlayerListEntry;
+import dev.tigr.ares.core.util.render.Color;
+import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.util.Identifier;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 public class CapeEvent {
-    private final PlayerListEntry playerListEntry;
-    private final CallbackInfoReturnable<Identifier> cir;
+    private final AbstractClientPlayerEntity abstractClientPlayerEntity;
+    private Identifier identifier = null;
+    private Color color = null;
 
-    public CapeEvent(PlayerListEntry playerListEntry, CallbackInfoReturnable<Identifier> cir) {
-        this.playerListEntry = playerListEntry;
-        this.cir = cir;
+    public CapeEvent(AbstractClientPlayerEntity abstractClientPlayerEntity) {
+        this.abstractClientPlayerEntity = abstractClientPlayerEntity;
     }
 
-    public PlayerListEntry getPlayerInfo() {
-        return playerListEntry;
+    public AbstractClientPlayerEntity getAbstractClientPlayerEntity() {
+        return abstractClientPlayerEntity;
     }
 
-    public CallbackInfoReturnable<Identifier> getCir() {
-        return cir;
+    public Identifier getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(Identifier identifier) {
+        this.identifier = identifier;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }

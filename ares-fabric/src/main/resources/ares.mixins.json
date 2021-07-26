@@ -41,7 +41,6 @@
     "client.MixinLivingEntity",
     "client.MixinMinecraftClient",
     "client.MixinPlayerEntity",
-    "render.MixinAbstractClientPlayerEntity",
     "render.MixinArmorFeatureRenderer",
     "render.MixinBackgroundRenderer",
     "render.MixinCamera",

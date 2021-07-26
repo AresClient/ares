@@ -1,13 +1,10 @@
 package dev.tigr.ares.fabric.impl.modules.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.Utils;
-import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.fabric.event.render.CapeColorEvent;
 import dev.tigr.ares.fabric.event.render.CapeEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -35,23 +32,13 @@ public class Capes extends Module {
 
     @EventHandler
     public EventListener<CapeEvent> capeEvent = new EventListener<>(event -> {
-        String uuid = event.getPlayerInfo().getProfile().getId().toString().replaceAll("-", "");
+        String uuid = event.getAbstractClientPlayerEntity().getGameProfile().getId().toString().replaceAll("-", "");
         if(CAPE_MAP.containsKey(uuid)) {
             Cape cape = CAPE_MAP.get(uuid);
-            if(cape.isRainbow()) {
-                Color color = IRenderer.rainbow();
-                RenderSystem.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+            if(cape.getIdentifier() != null) {
+                event.setIdentifier(cape.getIdentifier());
+                if(cape.isRainbow()) event.setColor(IRenderer.rainbow());
             }
-            if(cape.getIdentifier() != null) event.getCir().setReturnValue(cape.getIdentifier());
-        }
-    });
-
-    @EventHandler
-    public EventListener<CapeColorEvent> capeColorEvent = new EventListener<>(event -> {
-        String uuid = event.getPlayerEntity().getGameProfile().getId().toString().replaceAll("-", "");
-        if(CAPE_MAP.containsKey(uuid)) {
-            Cape cape = CAPE_MAP.get(uuid);
-            if(cape.isRainbow()) event.setColor(IRenderer.rainbow());
         }
     });
 

@@ -9,12 +9,12 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.forge.event.events.optimizations.CapeEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -36,7 +36,7 @@ public class Capes extends Module {
             Cape cape = CAPE_MAP.get(uuid);
             if(cape.isRainbow()) {
                 Color color = IRenderer.rainbow();
-                GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+                GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
             }
             if(cape.getResourceLocation() != null) event.getCir().setReturnValue(cape.getResourceLocation());
         }

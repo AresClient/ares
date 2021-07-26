@@ -476,12 +476,11 @@ public class WorldUtils implements Wrapper {
     public static List<BlockEntity> getBlockEntities() {
         List<BlockEntity> blockEntities = new ArrayList<>();
         ChunkPos chunkPos = MC.player.getChunkPos();
-
         int viewDistance = MC.options.viewDistance;
-        for(int x = -viewDistance; x < viewDistance; x++) {
-            for(int z = -viewDistance; z < viewDistance; z++) {
+        for(int x = -viewDistance; x <= viewDistance; x++) {
+            for(int z = -viewDistance; z <= viewDistance; z++) {
                 WorldChunk worldChunk = MC.world.getChunkManager().getWorldChunk(chunkPos.x + x, chunkPos.z + z);
-                blockEntities.addAll(worldChunk.getBlockEntities().values());
+                if(worldChunk != null) blockEntities.addAll(worldChunk.getBlockEntities().values());
             }
         }
 

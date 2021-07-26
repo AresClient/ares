@@ -8,6 +8,9 @@ import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.entity.*;
 import net.minecraft.util.math.Box;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author Tigermouthbear
  * updated to 1.16.2 on 8/28/20
@@ -19,10 +22,18 @@ public class ChestESP extends Module {
     private static final Color DISPENSER = new Color(0.65f, 0.65f, 0.65f, 0.5f);
     private static final Color SHULKER = new Color(1, 0.45f, 0.55f, 0.5f);
 
+    private final List<BlockEntity> blockEntities = new ArrayList<>();
+
+    @Override
+    public void onTick() {
+        blockEntities.clear();
+        blockEntities.addAll(WorldUtils.getBlockEntities());
+    }
+
     @Override
     public void onRender3d() {
         RenderUtils.prepare3d();
-        for(BlockEntity tileEntity: WorldUtils.getBlockEntities()) {
+        for(BlockEntity tileEntity: blockEntities) {
             Box bb = RenderUtils.getBoundingBox(tileEntity.getPos());
             if(bb == null) continue;
             if(tileEntity instanceof ChestBlockEntity || tileEntity instanceof BarrelBlockEntity)

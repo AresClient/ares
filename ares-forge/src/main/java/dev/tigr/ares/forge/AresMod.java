@@ -49,7 +49,7 @@ public class AresMod extends Ares {
         KEYBOARD_MANAGER = new CustomKeyboardManager();
         RENDERER = new CustomRenderer();
         RENDER_STACK = new CustomRenderStack();
-        FONT_RENDERER = new CustomFontRenderer("/assets/ares/font/font.ttf", 64);
+        FONT_RENDERER = new CustomFontRenderer("/assets/ares/font/arial.ttf", 64);
         TEXTURE_MANAGER = new CustomTextureManager();
     }
 
