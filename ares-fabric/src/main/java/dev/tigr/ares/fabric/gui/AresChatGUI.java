@@ -21,7 +21,7 @@ public class AresChatGUI extends ChatScreen {
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         if(chatField.getText().startsWith(Command.PREFIX.getValue())) {
-            RENDERER.drawLineLoop(2, Color.ARES_RED,
+            RENDERER.drawLineLoop(3, Color.ARES_RED,
                     2, height - 14,
                     width - 2, height - 14,
                     width - 2, height - 2,
