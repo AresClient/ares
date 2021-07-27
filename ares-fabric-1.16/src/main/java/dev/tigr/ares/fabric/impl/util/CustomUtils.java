@@ -5,9 +5,11 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.client.SystemChatMessageEvent;
 import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.core.util.IUtils;
+import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
+import dev.tigr.ares.fabric.impl.render.CustomFontRenderer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 

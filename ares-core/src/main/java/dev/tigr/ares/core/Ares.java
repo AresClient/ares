@@ -9,10 +9,11 @@ import dev.tigr.ares.core.setting.SettingsManager;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
 import dev.tigr.ares.core.util.IUtils;
-import dev.tigr.ares.core.util.render.IFontRenderer;
+import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
 import dev.tigr.ares.core.util.render.IRenderStack;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.ITextureManager;
+import dev.tigr.ares.core.util.render.font.GlyphFont;
 import dev.tigr.simpleevents.EventManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,8 +46,11 @@ public abstract class Ares {
     public static IKeyboardManager KEYBOARD_MANAGER = null;
     public static IRenderer RENDERER = null;
     public static IRenderStack RENDER_STACK = null;
-    public static IFontRenderer FONT_RENDERER = null;
+    public static AbstractFontRenderer FONT_RENDERER = null;
     public static ITextureManager TEXTURE_MANAGER = null;
+
+    public static final GlyphFont MONO_FONT = new GlyphFont("/assets/ares/font/mono.ttf", 64);
+    public static final GlyphFont ARIAL_FONT = new GlyphFont("/assets/ares/font/arial.ttf", 64);
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.TYPE)

@@ -1,6 +1,8 @@
 package dev.tigr.ares.core.util;
 
 import com.mojang.authlib.exceptions.AuthenticationException;
+import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
+import dev.tigr.ares.core.util.render.font.GlyphFont;
 
 import java.io.IOException;
 

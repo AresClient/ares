@@ -4,7 +4,7 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
 import dev.tigr.ares.core.util.IUtils;
-import dev.tigr.ares.core.util.render.IFontRenderer;
+import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
 import dev.tigr.ares.core.util.render.IRenderStack;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.ITextureManager;
@@ -18,6 +18,6 @@ public interface CoreWrapper {
     IKeyboardManager KEYBOARD_MANAGER = Ares.KEYBOARD_MANAGER;
     IRenderer RENDERER = Ares.RENDERER;
     IRenderStack RENDER_STACK = Ares.RENDER_STACK;
-    IFontRenderer FONT_RENDERER = Ares.FONT_RENDERER;
+    AbstractFontRenderer FONT_RENDERER = Ares.FONT_RENDERER;
     ITextureManager TEXTURE_MANAGER = Ares.TEXTURE_MANAGER;
 }
