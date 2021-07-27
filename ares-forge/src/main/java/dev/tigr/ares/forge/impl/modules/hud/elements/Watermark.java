@@ -15,7 +15,8 @@ import dev.tigr.ares.forge.impl.modules.hud.HudElement;
  */
 @Module.Info(name = "Watermark", description = "Shows an Ares logo on the hud overlay", category = Category.HUD, enabled = true, visible = false)
 public class Watermark extends HudElement {
-    private static final LocationIdentifier ARES_LOGO = new LocationIdentifier("textures/logo/ares_logo_white.png");
+    private static final LocationIdentifier ARES_LOGO_FG = new LocationIdentifier("textures/logo/ares_logo_hex_fg.png");
+    private static final LocationIdentifier ARES_LOGO_BG = new LocationIdentifier("textures/logo/ares_logo_hex_bg.png");
     private static final int WIDTH = 48;
 
     private final Setting<Boolean> logo = register(new BooleanSetting("Logo", true));
@@ -28,7 +29,8 @@ public class Watermark extends HudElement {
 
     public void draw() {
         if(logo.getValue() && versionNumber.getValue()) {
-            RENDERER.drawImage(getX(), getY(), WIDTH, getHeight(), ARES_LOGO, getHelmetColor());
+            RENDERER.drawImage(getX(), getY(), WIDTH, getHeight(), ARES_LOGO_BG, Color.WHITE);
+            RENDERER.drawImage(getX(), getY(), WIDTH, getHeight(), ARES_LOGO_FG, getHelmetColor());
 
             String text = "Ares " + Ares.VERSION_FULL;
             drawString(text, getX() + WIDTH, getY() + getHeight() / 2d - FONT_RENDERER.getFontHeight() / 2d, getColor());
@@ -36,7 +38,8 @@ public class Watermark extends HudElement {
             setWidth((int) (WIDTH + 4 + FONT_RENDERER.getStringWidth(text)));
             setHeight(WIDTH);
         } else if(logo.getValue()) {
-            RENDERER.drawImage(getX(), getY(), WIDTH, getHeight(), ARES_LOGO, getHelmetColor());
+            RENDERER.drawImage(getX(), getY(), WIDTH, getHeight(), ARES_LOGO_BG, Color.WHITE);
+            RENDERER.drawImage(getX(), getY(), WIDTH, getHeight(), ARES_LOGO_FG, getHelmetColor());
 
             setWidth(WIDTH);
             setHeight(WIDTH);
