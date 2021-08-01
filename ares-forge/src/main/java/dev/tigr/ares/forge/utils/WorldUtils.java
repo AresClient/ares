@@ -314,15 +314,15 @@ public class WorldUtils {
     public static boolean isTarget(Entity entity, boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
         if(!(entity instanceof EntityLivingBase) || entity == MC.player) return false;
 
-        if(players && entity instanceof EntityPlayer) return true;
-        if(friends && entity instanceof EntityPlayer && FriendManager.isFriend(((EntityPlayer) entity).getGameProfile().getName())) return true;
-        if(teammates && entity.getTeam() == MC.player.getTeam() && MC.player.getTeam() != null) return true;
+        if(players && entity instanceof EntityPlayer) {
+            if(FriendManager.isFriend(((EntityPlayer) entity).getGameProfile().getName())) return friends;
+            if(entity.getTeam() == MC.player.getTeam() && MC.player.getTeam() != null) return teammates;
+            return true;
+        }
+        if(!nametagged && entity.hasCustomName()) return false;
         if(passive && isPassive(entity)) return true;
         if(hostile && isHostile(entity)) return true;
-        if(nametagged && entity.hasCustomName()) return true;
-        if(bots && isBot(entity)) return true;
-
-        return false;
+        return bots && isBot(entity);
     }
 
     public static boolean isPassive(Entity entity) {

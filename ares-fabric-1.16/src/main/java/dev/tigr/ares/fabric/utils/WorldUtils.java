@@ -349,15 +349,15 @@ public class WorldUtils implements Wrapper {
     public static boolean isTarget(Entity entity, boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
         if(!(entity instanceof LivingEntity) || entity == MC.player) return false;
 
-        if(players && entity instanceof PlayerEntity) return true;
-        if(friends && entity instanceof PlayerEntity && FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName())) return true;
-        if(teammates && entity.getScoreboardTeam() == MC.player.getScoreboardTeam() && MC.player.getScoreboardTeam() != null) return true;
+        if(players && entity instanceof PlayerEntity) {
+            if(FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName())) return friends;
+            if(entity.getScoreboardTeam() == MC.player.getScoreboardTeam() && MC.player.getScoreboardTeam() != null) return teammates;
+            return true;
+        }
+        if(!nametagged && entity.hasCustomName()) return false;
         if(passive && isPassive(entity)) return true;
         if(hostile && isHostile(entity)) return true;
-        if(nametagged && entity.hasCustomName()) return true;
-        if(bots && isBot(entity)) return true;
-
-        return false;
+        return bots && isBot(entity);
     }
 
     public static List<Entity> getPlayerTargets() {
