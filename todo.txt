@@ -1,0 +1,23 @@
+AutoArmor - 1.17, 1.16, & check 1.12
+HoleFiller - 1.17
+NoSwing - 1.17
+MidClickFriend - 1.17 & 1.16
+AutoWalk - 1.17
+Nametags - 1.17 & 1.16
+EntitySpeed - 1.17 & 1.16
+BoatFly (Follows player control even after player leaves) - All
+Move *server not responding* to HUD - All
+Blink - 1.17 & check 1.16
+NoClip - 1.17 & check 1.16
+Jesus (remove offset setting) - 1.17 & 1.16
+Packetfly (just doesnt work) - 1.17 & 1.16
+Freecam - 1.17
+Blink - 1.17
+AutoSign - 1.17 & check others
+remove fakeplayer module (this is already a command)
+! fix block highlight rendering - 1.17
+fix BlockHighlight - 1.17
+MapTooltips - 1.17
+Fix HotBarReplenish shift clicking in inventory
+Make FullBright not change gamma setting
+Fix ModuleList rendering black in HUD editor
