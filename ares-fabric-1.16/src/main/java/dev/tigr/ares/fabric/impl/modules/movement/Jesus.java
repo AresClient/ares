@@ -17,7 +17,7 @@ import net.minecraft.util.shape.VoxelShapes;
  */
 @Module.Info(name = "Jesus", description = "Walk on water", category = Category.MOVEMENT)
 public class Jesus extends Module {
-    private final Setting<Double> offset = register(new DoubleSetting("Offset", 0.1, 0, 0.9));
+    private final Setting<Double> offset = register(new DoubleSetting("Offset", 0, 0, 0.9));
 
     @EventHandler
     public EventListener<WaterCollisionEvent> waterCollisionEvent = new EventListener<>(event -> {

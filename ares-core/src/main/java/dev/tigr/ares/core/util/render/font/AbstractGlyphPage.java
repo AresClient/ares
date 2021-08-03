@@ -3,13 +3,12 @@ package dev.tigr.ares.core.util.render.font;
 import dev.tigr.ares.core.util.render.Color;
 
 import java.awt.*;
-import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * @author Tigermouthbear 7/27/21

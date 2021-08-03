@@ -2,7 +2,6 @@ package dev.tigr.ares.fabric.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;

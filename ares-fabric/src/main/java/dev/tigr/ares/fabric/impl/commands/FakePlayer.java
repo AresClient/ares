@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.util.global.MojangApi;
 import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

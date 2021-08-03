@@ -4,9 +4,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.mixin.accessors.AbstractBlockAccessor;
-import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 

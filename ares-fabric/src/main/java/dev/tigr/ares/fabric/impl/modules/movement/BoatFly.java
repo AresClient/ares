@@ -19,7 +19,6 @@ import net.minecraft.network.packet.s2c.play.VehicleMoveS2CPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 

@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 import java.lang.reflect.Field
 
 buildscript {
@@ -105,7 +107,6 @@ mixin {
     }
 }
 
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 task customShadowJar(type: ShadowJar) {
     configurations = [project.configurations.shadow]
     archiveClassifier.set("release")

@@ -6,7 +6,6 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.fabric.impl.modules.combat.Offhand.SItem;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;

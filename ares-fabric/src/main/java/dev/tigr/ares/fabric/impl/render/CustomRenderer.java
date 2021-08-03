@@ -1,12 +1,11 @@
 package dev.tigr.ares.fabric.impl.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
 import net.minecraft.client.render.*;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.opengl.GL20;
 
 import static dev.tigr.ares.Wrapper.*;

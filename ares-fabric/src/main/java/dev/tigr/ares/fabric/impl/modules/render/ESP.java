@@ -6,22 +6,14 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.fabric.impl.modules.render.ESP.Color;
-import dev.tigr.ares.fabric.impl.modules.render.ESP.Mode;
 import dev.tigr.ares.fabric.mixin.accessors.ShaderEffectAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.WorldRendererAccessor;
 import dev.tigr.ares.fabric.utils.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.client.gl.GlUniform;
-import net.minecraft.client.gl.PostProcessShader;
-import net.minecraft.client.gl.ShaderEffect;
-import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-
-import java.util.List;
 
 /**
  * @author Tigermouthbear

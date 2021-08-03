@@ -4,7 +4,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.WaterCollisionEvent;
 import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
@@ -18,7 +17,7 @@ import net.minecraft.util.shape.VoxelShapes;
  */
 @Module.Info(name = "Jesus", description = "Walk on water", category = Category.MOVEMENT)
 public class Jesus extends Module {
-    private final Setting<Double> offset = register(new DoubleSetting("Offset", 0.1, 0, 0.9));
+    private final Setting<Double> offset = register(new DoubleSetting("Offset", 0, 0, 0.9));
 
     @EventHandler
     public EventListener<WaterCollisionEvent> waterCollisionEvent = new EventListener<>(event -> {

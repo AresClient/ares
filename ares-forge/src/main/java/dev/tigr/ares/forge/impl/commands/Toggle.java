@@ -3,7 +3,6 @@ package dev.tigr.ares.forge.impl.commands;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.forge.impl.modules.misc.MsgOnToggle;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.getString;
 import static com.mojang.brigadier.arguments.StringArgumentType.string;

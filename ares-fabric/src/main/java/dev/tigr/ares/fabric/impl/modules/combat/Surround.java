@@ -7,21 +7,19 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
-import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.impl.modules.combat.Surround.Boss;
-import dev.tigr.ares.fabric.impl.modules.combat.Surround.Primary;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.RenderUtils;
-import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /**
  * @author Tigermouthbear

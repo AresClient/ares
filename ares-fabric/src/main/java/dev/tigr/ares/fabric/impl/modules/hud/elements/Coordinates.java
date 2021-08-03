@@ -9,7 +9,6 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
 import net.minecraft.util.math.Direction;
-import net.minecraft.world.dimension.DimensionType;
 
 /**
  * @author Tigermouthbear

@@ -2,7 +2,6 @@ package dev.tigr.ares.fabric.impl.modules.player;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.simpleevents.listener.EventHandler;

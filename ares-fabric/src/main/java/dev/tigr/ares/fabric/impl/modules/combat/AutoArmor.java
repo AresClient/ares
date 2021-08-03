@@ -2,7 +2,6 @@ package dev.tigr.ares.fabric.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.fabric.impl.modules.combat.AutoArmor.ArmorType;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.Item;

@@ -9,7 +9,6 @@ BoatFly (Follows player control even after player leaves) - All
 Move *server not responding* to HUD - All
 Blink - 1.17 & check 1.16
 NoClip - 1.17 & check 1.16
-Jesus (remove offset setting) - 1.17 & 1.16
 Packetfly (just doesnt work) - 1.17 & 1.16
 Freecam - 1.17
 Blink - 1.17

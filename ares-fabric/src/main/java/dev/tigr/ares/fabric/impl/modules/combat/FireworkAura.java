@@ -6,9 +6,9 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
@@ -19,7 +19,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 /**

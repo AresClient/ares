@@ -8,7 +8,6 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.impl.modules.render.HoleESP.Mode;
 import dev.tigr.ares.fabric.utils.HoleType;
 import dev.tigr.ares.fabric.utils.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;

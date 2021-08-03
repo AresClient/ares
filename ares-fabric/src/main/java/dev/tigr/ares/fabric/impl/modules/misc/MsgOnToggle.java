@@ -6,7 +6,6 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import dev.tigr.simpleevents.listener.Priority;
 
 /**
  * @author Tigermouthbear

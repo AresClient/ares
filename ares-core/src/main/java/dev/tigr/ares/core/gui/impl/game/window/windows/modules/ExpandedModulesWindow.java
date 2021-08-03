@@ -1,7 +1,6 @@
 package dev.tigr.ares.core.gui.impl.game.window.windows.modules;
 
 import dev.tigr.ares.core.feature.module.Category;
-import dev.tigr.ares.core.gui.api.Element;
 import dev.tigr.ares.core.gui.api.GUI;
 import dev.tigr.ares.core.gui.impl.game.window.Window;
 import dev.tigr.ares.core.util.function.DynamicValue;

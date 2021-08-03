@@ -3,7 +3,6 @@ package dev.tigr.ares.forge.impl.modules.hud;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.gui.impl.game.ClickGUI;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.SettingCategory;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
@@ -16,7 +15,6 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 
 /**
  * @author Tigermouthbear

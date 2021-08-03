@@ -5,16 +5,12 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
-import dev.tigr.ares.fabric.impl.modules.hud.elements.Speedometer.SpeedUnits;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.RenderTickCounter;
 
 /**
  * @author Tigermouthbear

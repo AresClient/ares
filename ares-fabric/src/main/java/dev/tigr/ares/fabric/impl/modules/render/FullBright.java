@@ -4,7 +4,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import dev.tigr.ares.fabric.impl.modules.render.FullBright.visionMode;
 import net.minecraft.potion.Potions;
 
 /**

@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.impl.modules.render;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;

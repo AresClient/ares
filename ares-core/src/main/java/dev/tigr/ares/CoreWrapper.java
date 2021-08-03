@@ -4,10 +4,10 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
 import dev.tigr.ares.core.util.IUtils;
-import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
 import dev.tigr.ares.core.util.render.IRenderStack;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.ITextureManager;
+import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
 
 /**
  * @author Tigermouthbear 11/23/20

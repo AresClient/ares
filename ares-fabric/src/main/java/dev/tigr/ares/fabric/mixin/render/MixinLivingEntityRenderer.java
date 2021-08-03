@@ -3,7 +3,6 @@ package dev.tigr.ares.fabric.mixin.render;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.fabric.event.render.RenderLivingEvent;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.LivingEntityRenderer;

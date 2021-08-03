@@ -1,11 +1,9 @@
 package dev.tigr.ares.fabric.impl.modules.player;
 
-import com.google.common.net.HostAndPort;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.OpenScreenEvent;
 import dev.tigr.ares.fabric.mixin.accessors.ConnectScreenAccessor;
@@ -17,7 +15,6 @@ import dev.tigr.simpleevents.listener.Priority;
 import net.minecraft.client.gui.screen.ConnectScreen;
 import net.minecraft.client.gui.screen.DisconnectedScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.network.ServerAddress;
 import net.minecraft.client.network.ServerInfo;
@@ -25,7 +22,6 @@ import net.minecraft.client.util.math.MatrixStack;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
