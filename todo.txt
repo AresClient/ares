@@ -18,5 +18,5 @@ remove fakeplayer module (this is already a command)
 MapTooltips - 1.17
 Fix HotBarReplenish shift clicking in inventory
 Make FullBright not change gamma setting
-Fix ModuleList rendering black in HUD editor
 fix line width (GUI, BlockHighlight) - 1.17
+rainbow outline doesnt work on moduleList - 1.17 & 1.16

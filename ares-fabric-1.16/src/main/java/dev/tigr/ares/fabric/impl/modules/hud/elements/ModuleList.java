@@ -105,7 +105,7 @@ public class ModuleList extends HudElement {
     }
 
     private void drawModule(Module module, double x, double y) {
-        if(background.getValue() != Background.NONE) RENDERER.drawRect(x - 1, y - 1, FONT_RENDERER.getStringWidth(module.getHudName()) + 2, FONT_RENDERER.getFontHeight() + 1, Color.BLACK);
+        if(background.getValue() != Background.NONE && !(MC.currentScreen instanceof EditHudGui)) RENDERER.drawRect(x - 1, y - 1, FONT_RENDERER.getStringWidth(module.getHudName()) + 2, FONT_RENDERER.getFontHeight() + 1, Color.BLACK);
         drawString(module.getHudName(), x, y, rainbow.getValue() ? IRenderer.rainbow() : Color.WHITE);
     }
 
