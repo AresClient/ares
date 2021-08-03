@@ -126,7 +126,7 @@ public class CustomAccount extends AbstractAccount {
 
     @Override
     public void drawHead(double x, double y, double width, double height) {
-        GL11.glColor4d(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         GlStateManager.enableAlpha();
         GlStateManager.enableTexture2D();
 

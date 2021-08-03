@@ -31,22 +31,22 @@ public class HoleESP extends Module {
     private final Setting<Float> bedrockRed = register(new FloatSetting("BR.Red", 0, 0, 1)).setVisibility(bedrockColor::getValue);
     private final Setting<Float> bedrockGreen = register(new FloatSetting("BR.Green", 0.93f, 0, 1)).setVisibility(bedrockColor::getValue);
     private final Setting<Float> bedrockBlue = register(new FloatSetting("BR.Blue", 0, 0, 1)).setVisibility(bedrockColor::getValue);
-    private final Setting<Float> bedrockFillAlpha = register(new FloatSetting("BR.Fill", 0.3f, 0, 1)).setVisibility(bedrockColor::getValue);
-    private final Setting<Float> bedrockBoxAlpha = register(new FloatSetting("BR.Line", 0.69f, 0, 1)).setVisibility(bedrockColor::getValue);
+    private final Setting<Float> bedrockFillAlpha = register(new FloatSetting("BR.Fill", 0.17f, 0, 1)).setVisibility(bedrockColor::getValue);
+    private final Setting<Float> bedrockBoxAlpha = register(new FloatSetting("BR.Line", 0.5f, 0, 1)).setVisibility(bedrockColor::getValue);
 
     private final Setting<Boolean> obbyColor = register(new BooleanSetting("Obsidian Color", false)).setVisibility(() -> mode.getValue() != Mode.BEDROCKONLY);
     private final Setting<Float> obbyRed = register(new FloatSetting("OB.Red", 0.93f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
     private final Setting<Float> obbyGreen = register(new FloatSetting("OB.Green", 0.93f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
     private final Setting<Float> obbyBlue = register(new FloatSetting("OB.Blue", 0, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
-    private final Setting<Float> obbyFillAlpha = register(new FloatSetting("OB.Fill", 0.3f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
-    private final Setting<Float> obbyBoxAlpha = register(new FloatSetting("OB.Line", 0.69f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyFillAlpha = register(new FloatSetting("OB.Fill", 0.17f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyBoxAlpha = register(new FloatSetting("OB.Line", 0.5f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
 
     private final Setting<Boolean> otherColor = register(new BooleanSetting("Other Color", false)).setVisibility(() -> mode.getValue() == Mode.ALL);
     private final Setting<Float> otherRed = register(new FloatSetting("OTH.Red", 1, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
     private final Setting<Float> otherGreen = register(new FloatSetting("OTH.Green", 1, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
     private final Setting<Float> otherBlue = register(new FloatSetting("OTH.Blue", 1, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
-    private final Setting<Float> otherFillAlpha = register(new FloatSetting("OTH.Fill", 0.3f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
-    private final Setting<Float> otherBoxAlpha = register(new FloatSetting("OTH.Line", 0.69f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherFillAlpha = register(new FloatSetting("OTH.Fill", 0.17f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherBoxAlpha = register(new FloatSetting("OTH.Line", 0.5f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
 
     @Override
     public void onTick() {

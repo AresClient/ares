@@ -18,7 +18,7 @@ import net.minecraft.util.math.Vec3d;
  */
 @Module.Info(name = "Trajectories", description = "Renders the projected path of throwables", category = Category.RENDER)
 public class Trajectories extends Module {
-    private final Setting<Boolean> box = register(new BooleanSetting("Block-Outline", true));
+    private final Setting<Boolean> box = register(new BooleanSetting("Block-Outline", false));
 
     private TrajectoryUtils.Result result = null;
 
@@ -43,14 +43,13 @@ public class Trajectories extends Module {
             }
 
             if(box.getValue()) {
-                RenderUtils.renderBlockNoPrepare(
+                RenderUtils.renderSelectionBoundingBox(
                         new Box(new BlockPos(result.getHitVec())).offset(
                                 -MC.gameRenderer.getCamera().getPos().x,
                                 -MC.gameRenderer.getCamera().getPos().y,
                                 -MC.gameRenderer.getCamera().getPos().z
                         ),
-                        new Color(0,0,0,0),
-                        new Color(1, 0, 0, 0.6f)
+                        1, 0, 0, 0.6f, 2
                 );
             }
 

@@ -13,22 +13,11 @@ import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
 
 import static dev.tigr.ares.Wrapper.MC;
-import static org.lwjgl.opengl.GL11.*;
 
 /**
  * @author Tigermouthbear
  */
 public class RenderUtils {
-    /**
-     * Returns the current color of the cycling rainbow
-     *
-     * @return color
-     */
-    public static Color rainbow() {
-        float hue = (System.currentTimeMillis() % (320 * 32)) / (320f * 32);
-        return new Color(Color.HSBtoRGB(hue, 1, 1));
-    }
-
     /**
      * Renders an item onto the GUI
      *
@@ -38,7 +27,7 @@ public class RenderUtils {
      */
     public static void renderItem(ItemStack itemStack, int x, int y) {
         GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+        GlStateManager.tryBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
         GlStateManager.enableDepth();
         RenderHelper.enableGUIStandardItemLighting();
 
@@ -56,7 +45,7 @@ public class RenderUtils {
                 .rotateYaw((float) (-Math.toRadians(MC.player.rotationYaw)));
 
         prepare3d();
-        GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         GL11.glBegin(GL11.GL_LINES);
         GL11.glVertex3d(eyeVector.x + MC.getRenderManager().viewerPosX, (double) MC.player.getEyeHeight() + eyeVector.y + MC.getRenderManager().viewerPosY, eyeVector.z + MC.getRenderManager().viewerPosZ);
         GL11.glVertex3d(pos.x, pos.y, pos.z);
@@ -71,14 +60,14 @@ public class RenderUtils {
                 .rotatePitch((float) (-Math.toRadians(MC.player.rotationPitch)))
                 .rotateYaw((float) (-Math.toRadians(MC.player.rotationYaw)));
 
-        GL11.glBlendFunc(GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GL11.glLineWidth(1);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glDepthMask(false);
-        GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         GL11.glBegin(GL11.GL_LINES);
         GL11.glVertex3d(eyeVector.x, (double) MC.player.getEyeHeight() + eyeVector.y, eyeVector.z);
         GL11.glVertex3d(pos.x, pos.y, pos.z);
@@ -105,33 +94,33 @@ public class RenderUtils {
     }
 
     public static void prepare3d() {
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glEnable(GL_LINE_SMOOTH);
-        glLineWidth(2);
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glEnable(GL11.GL_LINE_SMOOTH);
+        GL11.glLineWidth(2);
         GlStateManager.disableAlpha();
-        glDisable(GL_TEXTURE_2D);
-        glEnable(GL_CULL_FACE);
-        glDisable(GL_DEPTH_TEST);
+        GL11.glDisable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_CULL_FACE);
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
 
         double renderPosX = MC.getRenderManager().viewerPosX;
         double renderPosY = MC.getRenderManager().viewerPosY;
         double renderPosZ = MC.getRenderManager().viewerPosZ;
 
-        glPushMatrix();
-        glTranslated(-renderPosX, -renderPosY, -renderPosZ);
-        glColor4f(1, 1, 1, 1);
+        GL11.glPushMatrix();
+        GL11.glTranslated(-renderPosX, -renderPosY, -renderPosZ);
+        GlStateManager.color(1, 1, 1, 1);
     }
 
     public static void end3d() {
-        glColor4f(1, 1, 1, 1);
-        glPopMatrix();
+        GlStateManager.color(1, 1, 1, 1);
+        GL11.glPopMatrix();
 
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+        GL11.glEnable(GL11.GL_TEXTURE_2D);
         GlStateManager.enableAlpha();
-        glDisable(GL_BLEND);
-        glDisable(GL_LINE_SMOOTH);
+        GL11.glDisable(GL11.GL_BLEND);
+        GL11.glDisable(GL11.GL_LINE_SMOOTH);
     }
 
     public static AxisAlignedBB getBoundingBox(BlockPos pos) {

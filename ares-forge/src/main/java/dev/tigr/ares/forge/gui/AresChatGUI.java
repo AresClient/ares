@@ -3,6 +3,7 @@ package dev.tigr.ares.forge.gui;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.util.render.Color;
 import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.text.ITextComponent;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -26,7 +27,7 @@ public class AresChatGUI extends GuiChat {
 
             GL11.glDisable(GL11.GL_BLEND);
             GL11.glDisable(GL11.GL_TEXTURE_2D);
-            GL11.glColor4f(Color.ARES_RED.getRed(), Color.ARES_RED.getGreen(), Color.ARES_RED.getBlue(), Color.ARES_RED.getAlpha());
+            GlStateManager.color(Color.ARES_RED.getRed(), Color.ARES_RED.getGreen(), Color.ARES_RED.getBlue(), Color.ARES_RED.getAlpha());
             GL11.glLineWidth(2);
             GL11.glBegin(GL11.GL_LINES);
             {

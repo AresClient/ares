@@ -15,9 +15,8 @@ Freecam - 1.17
 Blink - 1.17
 AutoSign - 1.17 & check others
 remove fakeplayer module (this is already a command)
-! fix block highlight rendering - 1.17
-fix BlockHighlight - 1.17
 MapTooltips - 1.17
 Fix HotBarReplenish shift clicking in inventory
 Make FullBright not change gamma setting
 Fix ModuleList rendering black in HUD editor
+fix line width (GUI, BlockHighlight) - 1.17

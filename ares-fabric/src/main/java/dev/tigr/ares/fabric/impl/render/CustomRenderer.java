@@ -7,6 +7,7 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
 import net.minecraft.client.render.*;
 import net.minecraft.util.math.*;
+import org.lwjgl.opengl.GL20;
 
 import static dev.tigr.ares.Wrapper.*;
 
@@ -126,16 +127,16 @@ public class CustomRenderer implements IRenderer {
      * @param color  color of the line
      */
     public void drawLine(double startX, double startY, double startZ, double endX, double endY, double endZ, int weight, Color color) {
+        GL20.glLineWidth(weight);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f model = getModel();
 
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        RenderSystem.lineWidth(weight);
         bufferBuilder.vertex(model, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         bufferBuilder.vertex(model, (float) endX, (float) endY, (float) endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
-        RenderSystem.lineWidth(1f);
+        GL20.glLineWidth(1);
     }
 
     /**
@@ -151,11 +152,11 @@ public class CustomRenderer implements IRenderer {
 
         boolean first = true;
         double firstX = 0, firstY = 0, prevX = 0, prevY = 0, x, y;
+        GL20.glLineWidth(weight);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f model = getModel();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
-        RenderSystem.lineWidth(weight);
 
         for(int i = 0; i < points.length; i += 2) {
             if(first) {
@@ -180,7 +181,7 @@ public class CustomRenderer implements IRenderer {
             }
         }
         draw();
-        RenderSystem.lineWidth(1f);
+        GL20.glLineWidth(1);
     }
 
     @Override

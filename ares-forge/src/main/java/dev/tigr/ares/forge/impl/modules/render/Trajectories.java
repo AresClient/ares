@@ -19,7 +19,7 @@ import org.lwjgl.opengl.GL11;
  */
 @Module.Info(name = "Trajectories", description = "Renders the projected path of throwables", category = Category.RENDER)
 public class Trajectories extends Module {
-    private final Setting<Boolean> box = register(new BooleanSetting("Block-Outline", true));
+    private final Setting<Boolean> box = register(new BooleanSetting("Block-Outline", false));
 
     private TrajectoryUtils.Result result = null;
 

@@ -15,28 +15,16 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL14;
 
 /**
  * @author Tigermouthbear 8/11/20
  */
 public class RenderUtils extends DrawableHelper implements Wrapper {
-    /**
-     * Returns the current color of the cycling rainbow
-     *
-     * @return color
-     */
-    public static Color rainbow() {
-        float hue = (System.currentTimeMillis() % (320 * 32)) / (320f * 32);
-        return new Color(Color.HSBtoRGB(hue, 1, 1));
-    }
-
     public static void prepare3d() {
         GL11.glPushMatrix();
         RenderSystem.enableBlend();
         RenderSystem.disableDepthTest();
-        GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ZERO);
-        RenderSystem.disableAlphaTest();
+        RenderSystem.defaultBlendFunc();
         RenderSystem.disableTexture();
         RenderSystem.depthMask(false);
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
@@ -50,7 +38,6 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         GL11.glDisable(GL11.GL_LINE_SMOOTH);
         RenderSystem.depthMask(true);
         RenderSystem.enableTexture();
-        RenderSystem.enableAlphaTest();
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         GL11.glPopMatrix();
@@ -145,7 +132,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void renderBoundingBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha, float lineThickness)  {
-        GL11.glLineWidth(lineThickness);
+        RenderSystem.lineWidth(lineThickness);
 
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
@@ -179,7 +166,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         renderFilledBox(
                 box.minX, box.minY, box.minZ,
                 box.maxX, box.maxY, box.maxZ,
-                red, green, blue, alpha /2f);
+                red, green, blue, alpha);
     }
 
     public static void renderFilledBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
@@ -188,7 +175,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         bufferBuilder.begin(5, VertexFormats.POSITION_COLOR);
         WorldRenderer.drawBox(bufferBuilder,
                 minX, minY, minZ,
-                maxX, maxY, maxZ, red, green, blue, alpha /2f);
+                maxX, maxY, maxZ, red, green, blue, alpha);
         tessellator.draw();
     }
 
@@ -231,14 +218,5 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
                 .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 
         drawLine(pos, eyeVector, 2, color);
-    }
-
-    public static Vec3d getRenderPos(Entity entity) {
-        Vec3d cameraPos = MC.gameRenderer.getCamera().getPos();
-        double x = (entity.prevX + (entity.getX() - entity.prevX) * MC.getTickDelta()) - cameraPos.x;
-        double y = (entity.prevY + (entity.getY() - entity.prevY) * MC.getTickDelta()) - cameraPos.y;
-        double z = (entity.prevZ + (entity.getZ() - entity.prevZ) * MC.getTickDelta()) - cameraPos.z;
-
-        return new Vec3d(x, y, z);
     }
 }

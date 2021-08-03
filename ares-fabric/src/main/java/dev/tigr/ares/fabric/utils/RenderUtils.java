@@ -10,21 +10,12 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.*;
+import org.lwjgl.opengl.GL20;
 
 /**
  * @author Tigermouthbear 8/11/20
  */
 public class RenderUtils extends DrawableHelper implements Wrapper {
-    /**
-     * Returns the current color of the cycling rainbow
-     *
-     * @return color
-     */
-    public static Color rainbow() {
-        float hue = (System.currentTimeMillis() % (320 * 32)) / (320f * 32);
-        return new Color(Color.HSBtoRGB(hue, 1, 1));
-    }
-
     public static void prepare3d() {
         RENDER_STACK.push();
         RenderSystem.enableBlend();
@@ -137,12 +128,13 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void renderBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha, float lineThickness) {
-        RenderSystem.lineWidth(lineThickness);
+        GL20.glLineWidth(lineThickness);
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         Matrix4f model = getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
 
         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
@@ -162,6 +154,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
 
         tessellator.draw();
+        GL20.glLineWidth(1);
     }
 
     public static void renderFilledBox(Box box, Color color) {
@@ -170,18 +163,48 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
 
     public static void renderFilledBox(Box box, float red, float green, float blue, float alpha) {
         renderFilledBox(
-                box.minX, box.minY, box.minZ,
-                box.maxX, box.maxY, box.maxZ,
-                red, green, blue, alpha /2f);
+                (float) box.minX, (float) box.minY, (float) box.minZ,
+                (float) box.maxX, (float) box.maxY, (float) box.maxZ,
+                red, green, blue, alpha);
     }
 
-    public static void renderFilledBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
+    public static void renderFilledBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha) {
+        Matrix4f model = getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLE_STRIP, VertexFormats.POSITION_COLOR);
-        WorldRenderer.drawBox(getMatrix(), bufferBuilder,
-                minX, minY, minZ,
-                maxX, maxY, maxZ, red, green, blue, alpha /2f);
+
+        bufferBuilder.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+        bufferBuilder.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
+
         tessellator.draw();
     }
 
@@ -224,15 +247,6 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
                 .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 
         drawLine(pos, eyeVector, 2, color);
-    }
-
-    public static Vec3d getRenderPos(Entity entity) {
-        Vec3d cameraPos = MC.gameRenderer.getCamera().getPos();
-        double x = (entity.prevX + (entity.getX() - entity.prevX) * MC.getTickDelta()) - cameraPos.x;
-        double y = (entity.prevY + (entity.getY() - entity.prevY) * MC.getTickDelta()) - cameraPos.y;
-        double z = (entity.prevZ + (entity.getZ() - entity.prevZ) * MC.getTickDelta()) - cameraPos.z;
-
-        return new Vec3d(x, y, z);
     }
 
     private static MatrixStack getMatrix() {
