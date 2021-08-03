@@ -14,7 +14,6 @@ Packetfly (just doesnt work) - 1.17 & 1.16
 Freecam - 1.17
 Blink - 1.17
 AutoSign - 1.17 & check others
-remove fakeplayer module (this is already a command)
 MapTooltips - 1.17
 Fix HotBarReplenish shift clicking in inventory
 Make FullBright not change gamma setting

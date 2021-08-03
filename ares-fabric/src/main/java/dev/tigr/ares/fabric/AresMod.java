@@ -9,7 +9,6 @@ import dev.tigr.ares.fabric.impl.modules.combat.*;
 import dev.tigr.ares.fabric.impl.modules.exploit.*;
 import dev.tigr.ares.fabric.impl.modules.hud.elements.*;
 import dev.tigr.ares.fabric.impl.modules.misc.*;
-import dev.tigr.ares.fabric.impl.modules.misc.FakePlayer;
 import dev.tigr.ares.fabric.impl.modules.movement.*;
 import dev.tigr.ares.fabric.impl.modules.player.*;
 import dev.tigr.ares.fabric.impl.modules.render.*;
@@ -102,7 +101,6 @@ public class AresMod extends Ares {
                 AutoTool.class,
                 ChatSuffix.class,
                 DiscordPresence.class,
-                FakePlayer.class,
                 MsgOnToggle.class,
                 PortalChat.class,
                 ReloadSoundSystem.class,
