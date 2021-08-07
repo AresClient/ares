@@ -7,11 +7,13 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
+import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
+import dev.tigr.ares.fabric.utils.CopiedOtherClientPlayerEntity;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 
@@ -26,7 +28,7 @@ public class Freecam extends Module {
     private final Setting<Float> speed = register(new FloatSetting("Speed", 1, 0.1f, 4));
     private final Setting<Boolean> cancelPackets = register(new BooleanSetting("Cancel Packets", true));
 
-    public OtherClientPlayerEntity clone;
+    public CopiedOtherClientPlayerEntity clone;
     private Entity ride = null;
 
     public Freecam() {
@@ -45,10 +47,9 @@ public class Freecam extends Module {
             ride = MC.player.getVehicle();
             MC.player.stopRiding();
         }
-        clone = new OtherClientPlayerEntity(MC.world, MC.getSession().getProfile());
-        clone.copyFrom(MC.player);
-        clone.setId(-68);
+        clone = new CopiedOtherClientPlayerEntity(MC.world, MC.player);
         MC.world.addEntity(clone.getId(), clone);
+        MC.chunkCullingEnabled = false;
     }
 
     @Override
@@ -59,6 +60,7 @@ public class Freecam extends Module {
     @Override
     public void onMotion() {
         MC.player.noClip = true;
+        MC.player.setPose(EntityPose.STANDING);
     }
 
     @EventHandler
@@ -66,8 +68,12 @@ public class Freecam extends Module {
         if(event.getEntity() == MC.player) event.setCancelled(true);
     });
 
+    @EventHandler
+    public EventListener<ChangePoseEvent> changePoseEvent = new EventListener<>(event -> event.setPose(EntityPose.STANDING));
+
     @Override
     public void onDisable() {
+        MC.chunkCullingEnabled = true;
         MC.player.setVelocity(0, 0, 0);
         MC.player.noClip = false;
         if(clone != null) {

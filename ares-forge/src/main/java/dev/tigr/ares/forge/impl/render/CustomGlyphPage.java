@@ -2,9 +2,12 @@ package dev.tigr.ares.forge.impl.render;
 
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.font.AbstractGlyphPage;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureUtil;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -62,7 +65,6 @@ public class CustomGlyphPage extends AbstractGlyphPage {
 
     @Override
     public double drawChar(char c, double x, double y, Color color) {
-        GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         Glyph glyph = characterGlyphMap.get(c);
         if(glyph == null) return 0;
 
@@ -75,45 +77,32 @@ public class CustomGlyphPage extends AbstractGlyphPage {
         // calculate scaled width and height
         double scaledWidth = glyph.getWidth() * glyphSize;
         double scaledHeight = glyph.getHeight() * glyphSize;
+        
+        BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
+        bufferBuilder.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION_TEX_COLOR);
+        bufferBuilder.pos(x + scaledWidth, y, 0).tex(texX + texWidth, texY).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y, 0).tex(texX, texY).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y + scaledHeight, 0).tex(texX, texY + texHeight).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x, y + scaledHeight, 0).tex(texX, texY + texHeight).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + scaledWidth, y + scaledHeight, 0).tex(texX + texWidth, texY + texHeight).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
+        bufferBuilder.pos(x + scaledWidth, y, 0).tex(texX + texWidth, texY).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).endVertex();
 
+        GlStateManager.bindTexture(texture.getGlTextureId());
+        GlStateManager.color(1, 1, 1, 1);
+        GlStateManager.disableOutlineMode();
         GlStateManager.enableBlend();
         GlStateManager.blendFunc(770, 771);
         GlStateManager.disableDepth();
-        GlStateManager.disableAlpha();
         GlStateManager.enableTexture2D();
-        GlStateManager.disableLighting();
         GlStateManager.disableCull();
         GL11.glEnable(GL11.GL_LINE_SMOOTH);
         GlStateManager.glLineWidth(1);
         GlStateManager.shadeModel(GL11.GL_SMOOTH);
 
-        GlStateManager.bindTexture(texture.getGlTextureId());
-        glBegin(GL_TRIANGLES);
-        {
-            glTexCoord2d(texX + texWidth, texY);
-            glVertex2d(x + scaledWidth, y);
-
-            glTexCoord2d(texX, texY);
-            glVertex2d(x, y);
-
-            glTexCoord2d(texX, texY + texHeight);
-            glVertex2d(x, y + scaledHeight);
-
-            glTexCoord2d(texX, texY + texHeight);
-            glVertex2d(x, y + scaledHeight);
-
-            glTexCoord2d(texX + texWidth, texY + texHeight);
-            glVertex2d(x + scaledWidth, y + scaledHeight);
-
-            glTexCoord2d(texX + texWidth, texY);
-            glVertex2d(x + scaledWidth, y);
-        }
-        glEnd();
+        Tessellator.getInstance().draw();
 
         GlStateManager.disableBlend();
-        GlStateManager.enableAlpha();
         GlStateManager.enableDepth();
-        GlStateManager.enableTexture2D();
 
         return glyph.getWidth() * glyphSize;
     }

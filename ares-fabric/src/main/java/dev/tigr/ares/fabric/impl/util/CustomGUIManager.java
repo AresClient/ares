@@ -118,7 +118,7 @@ public class CustomGUIManager extends Screen implements IGUIManager {
     @Override
     public void openGUI(Class<? extends GUI> clazz) {
         set(clazz);
-        MC.openScreen(this);
+        MC.setScreen(this);
     }
 
     private void set(Class<? extends GUI> clazz) {

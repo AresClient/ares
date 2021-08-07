@@ -3,9 +3,9 @@ package dev.tigr.ares.fabric.impl.modules.movement;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.utils.CopiedOtherClientPlayerEntity;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 
@@ -18,7 +18,7 @@ import java.util.Queue;
 @Module.Info(name = "Blink", description = "Choke packets sent to server so you can move without anyone seeing", category = Category.MOVEMENT, alwaysListening = true)
 public class Blink extends Module {
     private final Queue<PlayerMoveC2SPacket> queue = new LinkedList<>();
-    private OtherClientPlayerEntity clone;
+    private CopiedOtherClientPlayerEntity clone;
 
     @EventHandler
     public EventListener<PacketEvent.Sent> onPacketSent = new EventListener<>(event -> {
@@ -31,9 +31,7 @@ public class Blink extends Module {
     @Override
     public void onEnable() {
         if(MC.player != null) {
-            clone = new OtherClientPlayerEntity(MC.world, MC.getSession().getProfile());
-            clone.copyFrom(MC.player);
-            clone.setId(-69);
+            clone = new CopiedOtherClientPlayerEntity(MC.world, MC.player);
             MC.world.addEntity(clone.getId(), clone);
         }
     }

@@ -39,7 +39,7 @@ public class CustomUtils implements IUtils {
 
     @Override
     public void openHUDEditor() {
-        MC.openScreen(new EditHudGui(MC.currentScreen));
+        MC.setScreen(new EditHudGui(MC.currentScreen));
     }
 
     @Override

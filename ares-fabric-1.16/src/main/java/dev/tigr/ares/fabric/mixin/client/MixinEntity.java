@@ -5,7 +5,10 @@ import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
 import dev.tigr.ares.fabric.event.movement.EntityPushEvent;
 import dev.tigr.ares.fabric.event.movement.PlayerTurnEvent;
 import dev.tigr.ares.fabric.event.movement.SlowDownEvent;
+import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
+import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.MovementType;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
@@ -56,6 +59,15 @@ public class MixinEntity {
         if(Ares.EVENT_MANAGER.post(new SlowDownEvent()).isCancelled()) {
             cir.setReturnValue(1.0f);
             cir.cancel();
+        }
+    }
+
+    @Inject(method = "setPose", at = @At("HEAD"), cancellable = true)
+    public void setPose(EntityPose pose, CallbackInfo ci) {
+        ChangePoseEvent event = Ares.EVENT_MANAGER.post(new ChangePoseEvent(pose));
+        if(event.getPose() != pose) {
+            entity.getDataTracker().set(((EntityAccessor) entity).getPose(), event.getPose());
+            ci.cancel();
         }
     }
 }

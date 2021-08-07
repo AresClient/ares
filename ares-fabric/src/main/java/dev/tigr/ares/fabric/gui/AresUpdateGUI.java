@@ -29,7 +29,7 @@ public class AresUpdateGUI extends Screen implements Wrapper {
     public void init() {
         addDrawableChild(new ButtonWidget(this.width / 2 - 50 - 105, this.height / 6 + 96, 100, 20, new LiteralText("Download"), button -> openLink("https://aresclient.org/download")));
         addDrawableChild(new ButtonWidget(this.width / 2 - 50, this.height / 6 + 96, 100, 20, new LiteralText("View Changelog"), button -> openLink("https://aresclient.org/changelogs/" + UpdateHelper.getLatestVersion() + ".txt")));
-        addDrawableChild(new ButtonWidget(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, new LiteralText("Skip"), button -> MC.openScreen(new AresMainMenu())));
+        addDrawableChild(new ButtonWidget(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, new LiteralText("Skip"), button -> MC.setScreen(new AresMainMenu())));
     }
 
     @Override

@@ -38,7 +38,7 @@ public class AutoReconnect extends Module {
     public EventListener<OpenScreenEvent> openScreenEvent = new EventListener<>(Priority.HIGHEST, event -> {
         if(getEnabled() && event.getScreen() instanceof DisconnectedScreen && !(event.getScreen() instanceof Gui) && CONNECT_SCREEN_CONSTRUCTOR != null) {
             event.setCancelled(true);
-            MC.openScreen(new Gui((DisconnectedScreen) event.getScreen()));
+            MC.setScreen(new Gui((DisconnectedScreen) event.getScreen()));
         }
     });
 
@@ -70,7 +70,7 @@ public class AutoReconnect extends Module {
                     ConnectScreen connectScreen = (ConnectScreen) CONNECT_SCREEN_CONSTRUCTOR.newInstance(this);
                     MC.disconnect();
                     MC.setCurrentServerEntry(serverInfo);
-                    MC.openScreen(connectScreen);
+                    MC.setScreen(connectScreen);
                     ((ConnectScreenAccessor) connectScreen).connect(MC, ServerAddress.parse(serverInfo.address));
                 } catch(InstantiationException | IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();

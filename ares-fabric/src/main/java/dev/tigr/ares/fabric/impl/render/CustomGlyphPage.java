@@ -88,7 +88,6 @@ public class CustomGlyphPage extends AbstractGlyphPage {
 
             RenderSystem.disableBlend();
             RenderSystem.enableDepthTest();
-            RenderSystem.enableTexture();
         }
 
         return glyph.getWidth() * glyphSize;

@@ -57,21 +57,21 @@ public class MixinMinecraftClient {
     }
 
     boolean checkupdate = true;
-    @Inject(method = "openScreen", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     public void openScreen(Screen screen, CallbackInfo ci) {
         // open update gui if update, else open main menu
         if(screen instanceof TitleScreen && !(screen instanceof AresMainMenu)) {
             ci.cancel();
             if(checkupdate && UpdateHelper.shouldUpdate()) {
-                MC.openScreen(new AresUpdateGUI());
+                MC.setScreen(new AresUpdateGUI());
                 checkupdate = false;
             }
-            else MC.openScreen(new AresMainMenu());
+            else MC.setScreen(new AresMainMenu());
         }
 
         // open chat gui if chat
         if(screen instanceof ChatScreen && screen.getClass() == ChatScreen.class && !MC.player.isSleeping()) {
-            MC.openScreen(new AresChatGUI(((ChatScreenAccessor) screen).getOriginalChatText()));
+            MC.setScreen(new AresChatGUI(((ChatScreenAccessor) screen).getOriginalChatText()));
             ci.cancel();
         }
 

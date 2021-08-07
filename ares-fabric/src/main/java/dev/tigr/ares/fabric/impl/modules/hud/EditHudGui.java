@@ -95,7 +95,7 @@ public class EditHudGui extends Screen implements Wrapper {
 
     @Override
     public boolean charTyped(char typedChar, int keyCode) {
-        if(keyCode == 27) MC.openScreen(prevScreen);
+        if(keyCode == 27) MC.setScreen(prevScreen);
         return super.charTyped(typedChar, keyCode);
     }
 

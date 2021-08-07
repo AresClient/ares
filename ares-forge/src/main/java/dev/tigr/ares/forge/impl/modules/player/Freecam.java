@@ -49,6 +49,7 @@ public class Freecam extends Module {
         clone.copyLocationAndAnglesFrom(MC.player);
         MC.world.spawnEntity(clone);
         MC.player.noClip = true;
+        MC.renderChunksMany = false;
     }
 
     @Override
@@ -60,6 +61,7 @@ public class Freecam extends Module {
 
     @Override
     public void onDisable() {
+        MC.renderChunksMany = true;
         MC.player.setVelocity(0, 0, 0);
         MC.player.noClip = false;
         if(clone != null) {

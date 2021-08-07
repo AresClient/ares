@@ -25,6 +25,7 @@
     "render.MixinLayerCape",
     "render.MixinLayerElytra",
     "render.MixinModelPlayer",
+    "render.MixinRenderGlobal",
     "render.MixinRenderLivingBase"
   ]
 }

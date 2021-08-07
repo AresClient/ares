@@ -27,7 +27,7 @@ public class MixinKeyBinding {
                 if(keyName.equalsIgnoreCase(setting.getValue())) setting.invoke();
             }
 
-            if(String.valueOf((char)key.getCode()).equalsIgnoreCase(Command.PREFIX.getValue())) MinecraftClient.getInstance().openScreen(new AresChatGUI(""));
+            if(String.valueOf((char)key.getCode()).equalsIgnoreCase(Command.PREFIX.getValue())) MinecraftClient.getInstance().setScreen(new AresChatGUI(""));
         }
     }
 
