@@ -6,7 +6,6 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
 import net.minecraft.client.render.*;
 import net.minecraft.util.math.Matrix4f;
-import org.lwjgl.opengl.GL20;
 
 import static dev.tigr.ares.Wrapper.*;
 
@@ -126,7 +125,7 @@ public class CustomRenderer implements IRenderer {
      * @param color  color of the line
      */
     public void drawLine(double startX, double startY, double startZ, double endX, double endY, double endZ, int weight, Color color) {
-        GL20.glLineWidth(weight);
+        RenderSystem.lineWidth(weight);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f model = getModel();
 
@@ -135,7 +134,7 @@ public class CustomRenderer implements IRenderer {
         bufferBuilder.vertex(model, (float) startX, (float) startY, (float) startZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         bufferBuilder.vertex(model, (float) endX, (float) endY, (float) endZ).color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha()).next();
         draw();
-        GL20.glLineWidth(1);
+        RenderSystem.lineWidth(1);
     }
 
     /**
@@ -151,7 +150,7 @@ public class CustomRenderer implements IRenderer {
 
         boolean first = true;
         double firstX = 0, firstY = 0, prevX = 0, prevY = 0, x, y;
-        GL20.glLineWidth(weight);
+        RenderSystem.lineWidth(weight);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         Matrix4f model = getModel();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
@@ -180,7 +179,7 @@ public class CustomRenderer implements IRenderer {
             }
         }
         draw();
-        GL20.glLineWidth(1);
+        RenderSystem.lineWidth(1);
     }
 
     @Override

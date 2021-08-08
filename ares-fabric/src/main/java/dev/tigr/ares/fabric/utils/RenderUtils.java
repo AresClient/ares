@@ -10,7 +10,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.*;
-import org.lwjgl.opengl.GL20;
 
 /**
  * @author Tigermouthbear 8/11/20
@@ -128,33 +127,75 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void renderBoundingBox(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha, float lineThickness) {
-        GL20.glLineWidth(lineThickness);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.disableCull();
+        RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
+        RenderSystem.lineWidth(lineThickness);
 
         Matrix4f model = getModel();
+        Matrix3f normal = getNormal();
+        Vec3f normalVec = getNormal(minX, minY, minZ, maxX, maxY, maxZ);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(VertexFormat.DrawMode.DEBUG_LINE_STRIP, VertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
 
-        buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).next();
-        buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).next();
+         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, minY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, maxX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, maxZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
+         buffer.vertex(model, minX, maxY, minZ).color(red, green, blue, alpha).normal(normal, normalVec.getX(), normalVec.getY(), normalVec.getZ()).next();
 
         tessellator.draw();
-        GL20.glLineWidth(1);
+        RenderSystem.enableCull();
+        RenderSystem.lineWidth(1);
+    }
+
+    private static Vec3f getNormal(float x1, float y1, float z1, float x2, float y2, float z2) {
+        Vec3f normal = new Vec3f(x2 - x1, y2 - y1, z2 - z1);
+        normal.normalize();
+        return normal;
     }
 
     public static void renderFilledBox(Box box, Color color) {
@@ -255,5 +296,9 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
 
     private static Matrix4f getModel() {
         return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
+    }
+
+    private static Matrix3f getNormal() {
+        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getNormal();
     }
 }

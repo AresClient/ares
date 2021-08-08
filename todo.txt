@@ -1,10 +1,8 @@
 AutoArmor - 1.17, 1.16, & check 1.12
-NoSwing - 1.17
 MidClickFriend - 1.17 & 1.16
 EntitySpeed - 1.17 & 1.16
-AutoSign - 1.17 & check others
 MapTooltips - 1.17
-fix line width (GUI, BlockHighlight) - 1.17
+Outline ESP - 1.17
 rainbow outline doesnt work on moduleList - 1.17 & 1.16
 distance tracers
 baritone doesnt work
