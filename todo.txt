@@ -9,7 +9,6 @@ Move *server not responding* to HUD - All
 Packetfly (just doesnt work) - 1.17 & 1.16
 AutoSign - 1.17 & check others
 MapTooltips - 1.17
-Make FullBright not change gamma setting
 fix line width (GUI, BlockHighlight) - 1.17
 rainbow outline doesnt work on moduleList - 1.17 & 1.16
 baritone doesnt work

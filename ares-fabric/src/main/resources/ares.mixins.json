@@ -49,6 +49,7 @@
     "render.MixinGameRenderer",
     "render.MixinInGameHud",
     "render.MixinInGameOverlayRenderer",
+    "render.MixinLightmapTextureManager",
     "render.MixinLivingEntityRenderer",
     "render.MixinPlayerEntityRenderer",
     "render.MixinPlayerListHud",

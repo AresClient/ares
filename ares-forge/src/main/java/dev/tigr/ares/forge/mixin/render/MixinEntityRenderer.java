@@ -5,12 +5,14 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.render.CameraClipEvent;
 import dev.tigr.ares.forge.event.events.movement.PlayerTurnEvent;
 import dev.tigr.ares.forge.event.events.player.AntiHitboxEvent;
+import dev.tigr.ares.forge.event.events.render.GammaEvent;
 import dev.tigr.ares.forge.event.events.render.HurtCamEvent;
 import dev.tigr.ares.forge.event.events.render.SetupFogEvent;
 import dev.tigr.simpleevents.event.Result;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.RayTraceResult;
@@ -52,8 +54,13 @@ public class MixinEntityRenderer {
         else return worldClient.rayTraceBlocks(start, end);
     }
 
-    @Inject(method = "setupFog", at = @At(value = "HEAD"), cancellable = true)
+    @Inject(method = "setupFog", at = @At("HEAD"), cancellable = true)
     public void setupFog(int startCoords, float partialTicks, CallbackInfo callbackInfo) {
         if(Ares.EVENT_MANAGER.post(new SetupFogEvent()).isCancelled()) callbackInfo.cancel();
+    }
+
+    @Redirect(method = "updateLightmap", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;gammaSetting:F"))
+    public float getGammaSetting(GameSettings gameSettings) {
+        return Ares.EVENT_MANAGER.post(new GammaEvent(gameSettings.gammaSetting)).getGamma();
     }
 }

@@ -4,6 +4,9 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
+import dev.tigr.ares.fabric.event.render.GammaEvent;
+import dev.tigr.simpleevents.listener.EventHandler;
+import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.potion.Potions;
 
 /**
@@ -11,38 +14,22 @@ import net.minecraft.potion.Potions;
  */
 @Module.Info(name = "FullBright", description = "Lets you see everything with full brightness", category = Category.RENDER)
 public class FullBright extends Module {
-    private final Setting<visionMode> mode = register(new EnumSetting<>("Mode", visionMode.GAMMA));
-    private double prevGamma = -1;
-
-    @Override
-    public void onEnable() {
-        prevGamma = MC.options.gamma;
-    }
+    private final Setting<VisionMode> mode = register(new EnumSetting<>("Mode", VisionMode.GAMMA));
 
     @Override
     public void onDisable() {
-        if(prevGamma == -1)
-            return;
-
-        MC.options.gamma = prevGamma;
-        prevGamma = -1;
-        if(MC.player != null) Potions.NIGHT_VISION.getEffects().forEach(statusEffectInstance -> MC.player.removeStatusEffect(statusEffectInstance.getEffectType()));
+        if(mode.getValue() == VisionMode.NIGHTVISION && MC.player != null) Potions.NIGHT_VISION.getEffects().forEach(statusEffectInstance -> MC.player.removeStatusEffect(statusEffectInstance.getEffectType()));
     }
 
     @Override
     public void onTick() {
-        switch(mode.getValue()) {
-            case NIGHTVISION:
-                Potions.NIGHT_VISION.getEffects().forEach(statusEffectInstance -> MC.player.applyStatusEffect(statusEffectInstance));
-                break;
-
-            default:
-            case GAMMA:
-                if(MC.options.gamma <= 100d)
-                    MC.options.gamma++;
-                break;
-        }
+        if(mode.getValue() == VisionMode.NIGHTVISION) Potions.NIGHT_VISION.getEffects().forEach(statusEffectInstance -> MC.player.addStatusEffect(statusEffectInstance));
     }
 
-    enum visionMode {NIGHTVISION, GAMMA}
+    @EventHandler
+    public EventListener<GammaEvent> gammaEvent = new EventListener<>(event -> {
+        if(mode.getValue() == VisionMode.GAMMA) event.setGamma(100F);
+    });
+
+    enum VisionMode {NIGHTVISION, GAMMA}
 }
