@@ -44,7 +44,7 @@ public abstract class HudElement extends Module {
         Ares.EVENT_MANAGER.register(this);
     }
 
-    void onClick(int mouseX, int mouseY, int mouseButton) {
+    protected void onClick(int mouseX, int mouseY, int mouseButton) {
         if(mouseButton == 0 && isMouseOver(mouseX, mouseY)) {
             isDragging = true;
             diffX = mouseX - getX();
@@ -52,7 +52,7 @@ public abstract class HudElement extends Module {
         }
     }
 
-    void onEditDraw(int mouseX, int mouseY, GuiScreen screen) {
+    protected void onEditDraw(int mouseX, int mouseY, GuiScreen screen) {
         if(isDragging) {
             setX(mouseX - diffX);
             setY(mouseY - diffY);

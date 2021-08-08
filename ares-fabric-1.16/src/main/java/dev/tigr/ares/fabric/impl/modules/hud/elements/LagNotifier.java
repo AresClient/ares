@@ -6,10 +6,12 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
+import net.minecraft.client.gui.screen.Screen;
 
 /**
  * @author nwroot
@@ -18,7 +20,7 @@ import dev.tigr.simpleevents.listener.EventListener;
 public class LagNotifier extends HudElement {
     private final Setting<Integer> maxTicks = register(new IntegerSetting("Max Ticks", 40, 10, 100));
     private final Setting<Boolean> hudDraw = register(new BooleanSetting("Draw Overlay", true));
-    private final Setting<Boolean> chatMessage = register(new BooleanSetting("Chat Message", true));
+    private final Setting<Boolean> chatMessage = register(new BooleanSetting("Chat Message", false));
     private final Setting<Boolean> reconnectMessage = register(new BooleanSetting("Reconnect Message", true));
     
     private int currentTick = 0;
@@ -26,13 +28,14 @@ public class LagNotifier extends HudElement {
     private boolean serverLagging = false;
     
     public LagNotifier() {
-        super(100, 100, 10, 10);
+        super(0, 0, 0, 0);
+        background.setVisibility(() -> false);
     }
     
     public void draw() {
         if(serverLagging && hudDraw.getValue()) {
-            String str = "Server is not responding! (" + Integer.toString(currentTick - lastPacketTick) + ")";
-            drawString(str, getX(), getY(), new Color(Integer.parseInt("FFFFFF", 16)));
+            String str = TextColor.RED + "Server is not responding! (" + (currentTick - lastPacketTick) + ")";
+            drawString(str, ((double) MC.getWindow().getScaledWidth() / 2d) - (FONT_RENDERER.getStringWidth(str) / 2d), 5, Color.RED);
             
             setWidth((int) FONT_RENDERER.getStringWidth(str));
             setHeight(FONT_RENDERER.getFontHeight());
@@ -44,16 +47,29 @@ public class LagNotifier extends HudElement {
         currentTick++;
         if(currentTick - lastPacketTick >= maxTicks.getValue() && !serverLagging) {
             serverLagging = true;
-            if(chatMessage.getValue()) UTILS.printMessage("Server is not responding!");
+            if(chatMessage.getValue()) UTILS.printMessage(TextColor.RED + "Server is not responding!");
         }
     }
     
     @EventHandler
     public EventListener<PacketEvent.Receive> packetReceiveEvent = new EventListener<>(event -> {
         if(serverLagging && reconnectMessage.getValue()) {
-            UTILS.printMessage("Received a server packet after " + Integer.toString(currentTick - lastPacketTick) + " client ticks");
+            UTILS.printMessage(TextColor.RED + "Received a server packet after " + (currentTick - lastPacketTick) + " client ticks");
         }
         lastPacketTick = currentTick;
         serverLagging = false;
     });
+
+    @Override
+    protected void onClick(double mouseX, double mouseY, int mouseButton) {
+    }
+
+    @Override
+    protected void onEditDraw(double mouseX, double mouseY, Screen screen) {
+    }
+
+    @Override
+    public boolean isMouseOver(double mouseX, double mouseY) {
+        return false;
+    }
 }

@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(LightmapTextureManager.class)
 public class MixinLightmapTextureManager {
-    @Redirect(method = "update", at = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;gamma:D"))
+    @Redirect(method = "update", at = @At(value = "FIELD", target = "Lnet/minecraft/client/option/GameOptions;gamma:D"))
     public double getGamma(GameOptions gameOptions) {
         return Ares.EVENT_MANAGER.post(new GammaEvent(gameOptions.gamma)).getGamma();
     }

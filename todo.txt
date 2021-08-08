@@ -3,7 +3,6 @@ NoSwing - 1.17
 MidClickFriend - 1.17 & 1.16
 EntitySpeed - 1.17 & 1.16
 BoatFly (Follows player control even after player leaves) - All
-Move *server not responding* to HUD - All
 Packetfly (just doesnt work) - 1.17 & 1.16
 AutoSign - 1.17 & check others
 MapTooltips - 1.17
