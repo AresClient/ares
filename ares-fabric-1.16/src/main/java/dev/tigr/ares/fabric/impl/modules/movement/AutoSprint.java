@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.impl.modules.movement;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 
 /**
  * @author Tigermouthbear
@@ -12,8 +13,7 @@ public class AutoSprint extends Module {
 
     @Override
     public void onMotion() {
-        //UTILS.printMessage(String.valueOf(Math.sqrt(MC.player.getVelocity().x * MC.player.getVelocity().x + MC.player.getVelocity().z * MC.player.getVelocity().z)));
-        if(MC.player.input.movementForward != 0 || MC.player.input.movementSideways != 0) {
+        if(!Freecam.INSTANCE.getEnabled() && (MC.player.input.movementForward != 0 || MC.player.input.movementSideways != 0)) {
             MC.player.setSprinting(true);
 
             if(!MC.player.isOnGround()) return;
