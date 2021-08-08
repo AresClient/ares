@@ -15,7 +15,7 @@ import net.minecraft.network.play.server.SPacketPlayerPosLook;
 public class NoForceLook extends Module {
     @EventHandler
     public EventListener<PacketEvent.Receive> packetReceiveEvent = new EventListener<>(event -> {
-        if(event.getPacket() instanceof SPacketPlayerPosLook) {
+        if(MC.player != null && event.getPacket() instanceof SPacketPlayerPosLook) {
             SPacketPlayerPosLook packet = (SPacketPlayerPosLook) event.getPacket();
 
             ReflectionHelper.setPrivateValue(SPacketPlayerPosLook.class, packet, MC.player.rotationPitch, "pitch", "field_148937_e");

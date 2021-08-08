@@ -159,7 +159,7 @@ public class PacketFly extends Module {
 
     @EventHandler
     public EventListener<PacketEvent.Receive> onPacketReceive = new EventListener<>(event -> {
-        if(event.getPacket() instanceof PlayerPositionLookS2CPacket) {
+        if(MC.player != null && event.getPacket() instanceof PlayerPositionLookS2CPacket) {
             PlayerPositionLookS2CPacket packet = (PlayerPositionLookS2CPacket) event.getPacket();
 
             serverX = packet.getX();

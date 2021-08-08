@@ -16,7 +16,7 @@ import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
 public class NoForceLook extends Module {
     @EventHandler
     public EventListener<PacketEvent.Receive> packetReceiveEvent = new EventListener<>(event -> {
-        if(event.getPacket() instanceof PlayerPositionLookS2CPacket) {
+        if(MC.player != null && event.getPacket() instanceof PlayerPositionLookS2CPacket) {
             PlayerPositionLookS2CPacket packet = (PlayerPositionLookS2CPacket) event.getPacket();
 
             ((PlayerPositionLookS2CPacketAccessor) packet).setPitch(MC.player.pitch);

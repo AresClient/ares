@@ -54,9 +54,23 @@ public class BoatFly extends Module {
         packets.clear();
     }
 
+    @Override
+    public void onTick() {
+        if(MC.player.getRidingEntity() != boat) {
+            if(boat != null) boat.noClip = false;
+            boat = null;
+            packets.clear();
+        }
+    }
+
     @EventHandler
     public EventListener<BoatMoveEvent> boatMoveEvent = new EventListener<>(event -> {
-        if(boat == null || boat != event.getBoat()) boat = event.getBoat();
+        if(boat != event.getBoat() && MC.player != null && MC.player.getRidingEntity() == event.getBoat()) {
+            if(boat != null) boat.noClip = false;
+            boat = event.getBoat();
+            packets.clear();
+        }
+        if(boat == null) return;
 
         event.y = 0;
 
