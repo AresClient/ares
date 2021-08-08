@@ -6,6 +6,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
+import net.minecraft.client.input.Input;
 import net.minecraft.util.math.MathHelper;
 
 /**
@@ -25,8 +26,8 @@ public class AutoWalk extends Module {
     @Override
     public void onMotion() {
         if(mode.getValue() == Mode.BASIC) {
-            if(pathing) startPathing();
-            MC.player.forwardSpeed = 1;
+            if(pathing) stopPathing();
+            MC.options.keyForward.setPressed(true);
         }
 
         if(mode.getValue() == Mode.SMART && !pathing) startPathing();
@@ -35,6 +36,7 @@ public class AutoWalk extends Module {
     @Override
     public void onDisable() {
         if(mode.getValue() == Mode.SMART) stopPathing();
+        else MC.options.keyForward.setPressed(false);
     }
 
     private void startPathing() {

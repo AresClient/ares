@@ -25,7 +25,7 @@ public class AutoWalk extends Module {
     @Override
     public void onMotion() {
         if(mode.getValue() == Mode.BASIC) {
-            if(pathing) startPathing();
+            if(pathing) stopPathing();
             MC.player.moveForward = 1;
         }
 

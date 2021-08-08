@@ -1,8 +1,6 @@
 AutoArmor - 1.17, 1.16, & check 1.12
-HoleFiller - 1.17
 NoSwing - 1.17
 MidClickFriend - 1.17 & 1.16
-AutoWalk - 1.17
 EntitySpeed - 1.17 & 1.16
 BoatFly (Follows player control even after player leaves) - All
 Move *server not responding* to HUD - All

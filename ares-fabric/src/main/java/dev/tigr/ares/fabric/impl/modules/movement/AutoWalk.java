@@ -16,31 +16,29 @@ public class AutoWalk extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.BASIC));
     private boolean pathing = false;
 
-    /*@Override
+    @Override
     public void onEnable() {
         if(mode.getValue() == Mode.SMART) startPathing();
     }
 
-     */
-
     @Override
     public void onMotion() {
         if(mode.getValue() == Mode.BASIC) {
-            //if(pathing) stopPathing();
-            MC.player.forwardSpeed = 1;
+            if(pathing) stopPathing();
+            MC.options.keyForward.setPressed(true);
         }
 
-        //if(mode.getValue() == Mode.SMART && !pathing) startPathing();
+        if(mode.getValue() == Mode.SMART && !pathing) startPathing();
     }
 
-    /*
     @Override
     public void onDisable() {
         if(mode.getValue() == Mode.SMART) stopPathing();
+        else MC.options.keyForward.setPressed(false);
     }
 
     private void startPathing() {
-        GoalXZ goal = null;
+        /*GoalXZ goal = null;
         switch(getDirection()) {
             case NORTH:
                 goal = new GoalXZ((int) MC.player.getX(), -border);
@@ -70,14 +68,14 @@ public class AutoWalk extends Module {
 
         BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(goal);
         pathing = true;
+
+         */
     }
 
     private void stopPathing() {
-        BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
+        //BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
         pathing = false;
     }
-
-     */
 
     private Direction getDirection() {
         int dir = MathHelper.floor((double) (MC.player.getYaw() * 8.0F / 360.0F) + 0.5D) & 7;
@@ -89,7 +87,7 @@ public class AutoWalk extends Module {
         return mode.getValue().name();
     }
 
-    enum Mode {/*SMART,*/ BASIC}
+    enum Mode {SMART, BASIC}
 
     enum Direction {SOUTH, SOUTHWEST, WEST, NORTHWEST, NORTH, NORTHEAST, EAST, SOUTHEAST}
 }
