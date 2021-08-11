@@ -7,6 +7,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.render.IRenderer;
+import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.ShaderEffectAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.WorldRendererAccessor;
 import dev.tigr.ares.fabric.utils.RenderUtils;
@@ -67,13 +68,19 @@ public class ESP extends Module {
             if(outlineRadius != null) outlineRadius.set(4 / 5f);
         });
 
-        for(Entity entity: MC.world.getEntities())
-            entity.setGlowing(WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()));
+        for(Entity entity: MC.world.getEntities()) {
+            boolean flag = WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue());
+            entity.setGlowing(flag);
+            ((EntityAccessor) entity).setFlag(6, flag);
+        }
     }
 
     @Override
     public void onDisable() {
-        for(Entity entity: MC.world.getEntities()) entity.setGlowing(false);
+        for(Entity entity: MC.world.getEntities()) {
+            entity.setGlowing(false);
+            ((EntityAccessor) entity).setFlag(6, false);
+        }
     }
 
     @Override

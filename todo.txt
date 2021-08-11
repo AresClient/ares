@@ -2,7 +2,7 @@ AutoArmor - 1.17, 1.16, & check 1.12
 MidClickFriend - 1.17 & 1.16
 EntitySpeed - 1.17 & 1.16
 MapTooltips - 1.17
-Outline ESP - 1.17
 rainbow outline doesnt work on moduleList - 1.17 & 1.16
 mixin accessors for forge
 fix GUI settings scissor
+improve nametag scaling and add armor rendering on fabric
