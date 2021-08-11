@@ -328,6 +328,7 @@ public class WorldUtils {
     public static boolean isPassive(Entity entity) {
         if(entity instanceof EntityIronGolem && ((EntityIronGolem) entity).getRevengeTarget() == null) return true;
         else if(entity instanceof EntityWolf && (!((EntityWolf) entity).isAngry() || ((EntityWolf) entity).getOwner() == MC.player)) return true;
+        else if(entity instanceof EntityEnderman) return !((EntityEnderman) entity).isScreaming();
         else return entity instanceof EntityAmbientCreature || entity instanceof EntityAgeable || entity instanceof EntitySquid;
     }
 

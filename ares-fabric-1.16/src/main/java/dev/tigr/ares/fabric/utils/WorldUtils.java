@@ -416,6 +416,7 @@ public class WorldUtils implements Wrapper {
     public static boolean isPassive(Entity entity) {
         if(entity instanceof IronGolemEntity && ((IronGolemEntity) entity).getAngryAt() == null) return true;
         else if(entity instanceof WolfEntity && (!((WolfEntity) entity).isAttacking() || ((WolfEntity) entity).getOwner() == MC.player)) return true;
+        else if(entity instanceof EndermanEntity) return !((EndermanEntity) entity).isAngry();
         else return entity instanceof AmbientEntity || entity instanceof PassiveEntity || entity instanceof SquidEntity;
     }
 
