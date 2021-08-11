@@ -27,6 +27,11 @@ public class Color {
         this.a = a;
     }
 
+    public static Color fromDistance(float distance) {
+        float fraction = distance > 50 ? 1 : distance / 50;
+        return fraction > 0.5d ? new Color(1 - (fraction - 0.5f) * 2, 1, 0, 1) : new Color(1, fraction * 2, 0, 1);
+    }
+
     public static int HSBtoRGB(float hue, float saturation, float brightness) {
         if(saturation == 0)
             return convert(brightness, brightness, brightness, 0);

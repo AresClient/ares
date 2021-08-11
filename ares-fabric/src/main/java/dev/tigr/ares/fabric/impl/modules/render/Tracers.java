@@ -17,6 +17,7 @@ import net.minecraft.entity.player.PlayerEntity;
  */
 @Module.Info(name = "Tracers", description = "Render lines showing entities in render distance", category = Category.RENDER)
 public class Tracers extends Module {
+    private final Setting<Boolean> distance = register(new BooleanSetting("Distance", true));
     private final Setting<Boolean> players = register(new BooleanSetting("Players", true));
     private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true)).setVisibility(players::getValue);
     private final Setting<Boolean> teammates = register(new BooleanSetting("Teammates", true)).setVisibility(players::getValue);
@@ -32,7 +33,7 @@ public class Tracers extends Module {
             if(entity instanceof PlayerEntity && FriendManager.isFriend(((PlayerEntity) entity).getGameProfile().getName()))
                 RenderUtils.drawTracer(entity, IRenderer.rainbow());
             else
-                RenderUtils.drawTracer(entity, Color.WHITE);
+                RenderUtils.drawTracer(entity, distance.getValue() ? Color.fromDistance(entity.distanceTo(MC.player)) : Color.WHITE);
         }
         RenderUtils.end3d();
     }

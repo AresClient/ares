@@ -4,6 +4,5 @@ EntitySpeed - 1.17 & 1.16
 MapTooltips - 1.17
 Outline ESP - 1.17
 rainbow outline doesnt work on moduleList - 1.17 & 1.16
-distance tracers
 mixin accessors for forge
 fix GUI settings scissor
