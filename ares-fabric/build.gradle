@@ -33,8 +33,9 @@ dependencies {
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 
     // fabritone
-    //implementation "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
-    //include "com.gitlab.CDAGaming:fabritone:fabritone~1.16.x-Fabric-SNAPSHOT"
+    implementation "cabaletta:baritone-api-fabric:1.7.0"
+    shadow "cabaletta:baritone-api-fabric:1.7.0"
+    shadow "cabaletta:baritone-standalone-fabric:1.7.0"
 }
 
 processResources {

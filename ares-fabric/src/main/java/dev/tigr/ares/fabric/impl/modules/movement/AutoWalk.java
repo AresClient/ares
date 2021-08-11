@@ -1,5 +1,7 @@
 package dev.tigr.ares.fabric.impl.modules.movement;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.pathing.goals.GoalXZ;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -9,11 +11,10 @@ import net.minecraft.util.math.MathHelper;
 /**
  * @author Tigermouthbear
  */
-// TODO: BARITONE FOR FABRIC
 @Module.Info(name = "AutoWalk", description = "Automatically walk in a direction", category = Category.MOVEMENT)
 public class AutoWalk extends Module {
     private static final int border = 30000000;
-    private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.BASIC));
+    private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.SMART));
     private boolean pathing = false;
 
     @Override
@@ -38,7 +39,7 @@ public class AutoWalk extends Module {
     }
 
     private void startPathing() {
-        /*GoalXZ goal = null;
+        GoalXZ goal = null;
         switch(getDirection()) {
             case NORTH:
                 goal = new GoalXZ((int) MC.player.getX(), -border);
@@ -68,12 +69,10 @@ public class AutoWalk extends Module {
 
         BaritoneAPI.getProvider().getPrimaryBaritone().getCustomGoalProcess().setGoalAndPath(goal);
         pathing = true;
-
-         */
     }
 
     private void stopPathing() {
-        //BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
+        BaritoneAPI.getProvider().getPrimaryBaritone().getPathingBehavior().cancelEverything();
         pathing = false;
     }
 

@@ -1,15 +1,17 @@
 package dev.tigr.ares.fabric.impl.modules.movement;
 
+import baritone.api.BaritoneAPI;
+import baritone.api.event.events.ChatEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
+import dev.tigr.ares.core.util.render.TextColor;
 
 /**
  * @author Tigermouthbear
  */
-// TODO: BARITONE FOR 1.17
-@Module.Info(name = "Baritone", description = "*DISABLED* Allows you to change the settings for baritone", category = Category.MOVEMENT, enabled = true, visible = false, alwaysListening = true)
+@Module.Info(name = "Baritone", description = "Allows you to change the settings for baritone", category = Category.MOVEMENT, enabled = true, visible = false, alwaysListening = true)
 public class Baritone extends Module {
     private final Setting<Boolean> allowSprint = register(new BooleanSetting("Allow Sprint", true));
     private final Setting<Boolean> allowBreak = register(new BooleanSetting("Allow Break", true));
@@ -22,40 +24,30 @@ public class Baritone extends Module {
     private final Setting<Boolean> renderGoal = register(new BooleanSetting("Render Goal", true));
     private final Setting<Boolean> enterPortal = register(new BooleanSetting("Avoid Portals", false));
 
-    /*private static <T> void setVal(Settings.Setting<T> setting, T val) {
-        ReflectionHelper.setPrivateValue(Settings.Setting.class, setting, val, "value");
-    }
-
-    private static <T> boolean getVal(Settings.Setting<T> setting) {
-        return ReflectionHelper.getPrivateValue(Settings.Setting.class, setting, "value");
-    }
-
     public static <T> void executeCommand(String args) {
-        boolean enabled = getVal(BaritoneAPI.getSettings().chatControl);
-        setVal(BaritoneAPI.getSettings().chatControl, true);
+        boolean enabled = BaritoneAPI.getSettings().chatControl.value;
+        BaritoneAPI.getSettings().chatControl.value = true;
 
         ChatEvent chatEvent = new ChatEvent(args);
         BaritoneAPI.getProvider().getPrimaryBaritone().getGameEventHandler().onSendChatMessage(chatEvent);
         if(!chatEvent.isCancelled())
-            UTILS.printMessage("Invalid Command! You can view a list possible commands at https://github.com/cabaletta/baritone/blob/master/USAGE.md");
+            UTILS.printMessage(TextColor.RED + "Invalid Command!\n You can view a list possible commands at " + TextColor.BLUE + "https://github.com/cabaletta/baritone/blob/master/USAGE.md");
 
-        setVal(BaritoneAPI.getSettings().chatControl, enabled);
+        BaritoneAPI.getSettings().chatControl.value = enabled;
     }
 
     @Override
     public void onTick() {
-        setVal(BaritoneAPI.getSettings().allowSprint, allowSprint.getValue());
-        setVal(BaritoneAPI.getSettings().allowBreak, allowBreak.getValue());
-        setVal(BaritoneAPI.getSettings().allowParkour, allowParkour.getValue());
-        setVal(BaritoneAPI.getSettings().allowParkourPlace, allowParkourPlace.getValue());
-        setVal(BaritoneAPI.getSettings().allowInventory, allowInventory.getValue());
-        setVal(BaritoneAPI.getSettings().allowDownward, allowDownward.getValue());
-        setVal(BaritoneAPI.getSettings().freeLook, freeLook.getValue());
-        setVal(BaritoneAPI.getSettings().renderGoal, renderGoal.getValue());
-        setVal(BaritoneAPI.getSettings().enterPortal, enterPortal.getValue());
+        BaritoneAPI.getSettings().allowSprint.value = allowSprint.getValue();
+        BaritoneAPI.getSettings().allowBreak.value = allowBreak.getValue();
+        BaritoneAPI.getSettings().allowParkour.value = allowParkour.getValue();
+        BaritoneAPI.getSettings().allowParkourPlace.value = allowParkourPlace.getValue();
+        BaritoneAPI.getSettings().allowInventory.value = allowInventory.getValue();
+        BaritoneAPI.getSettings().allowDownward.value = allowDownward.getValue();
+        BaritoneAPI.getSettings().freeLook.value = freeLook.getValue();
+        BaritoneAPI.getSettings().renderGoal.value = renderGoal.getValue();
+        BaritoneAPI.getSettings().enterPortal.value = enterPortal.getValue();
     }
-
-     */
 
     @Override
     public void onDisable() {
