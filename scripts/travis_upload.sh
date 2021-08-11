@@ -12,7 +12,7 @@ for filename in $TRAVIS_BUILD_DIR/build/*.jar; do
   if grep -q "forge" <<< "$filename"; then
     FORGE_PATH="$filename"
   fi
-  if grep -q "fabric" <<< "$filename"; then
+  if grep -q "fabric" <<< "$filename" && grep -qv "1.16" <<< "$filename"; then
     FABRIC_PATH="$filename"
   fi
 done

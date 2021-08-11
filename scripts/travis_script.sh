@@ -4,5 +4,5 @@
 if [ "$TRAVIS_BRANCH" != "master" ] || [ "$TRAVIS_PULL_REQUEST" = "true" ]; then
   ./gradlew check
 else
-  ./gradlew buildAll
+  ./gradlew build
 fi
