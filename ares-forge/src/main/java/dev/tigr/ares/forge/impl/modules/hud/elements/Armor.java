@@ -3,7 +3,7 @@ package dev.tigr.ares.forge.impl.modules.hud.elements;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.forge.impl.modules.hud.HudElement;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 
 /**
  * @author Tigermouthbear

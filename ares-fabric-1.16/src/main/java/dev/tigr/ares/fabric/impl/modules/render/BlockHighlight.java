@@ -6,7 +6,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -42,7 +42,9 @@ public class BlockHighlight extends Module {
             Box bb = RenderUtils.getBoundingBox(pos);
             if(bb == null) return;
 
-            RenderUtils.renderBlock(pos, new Color(0,0,0,0), color, width.getValue(), expand.getValue());
+            RenderUtils.prepare3d();
+            RenderUtils.cubeLines(bb, color, width.getValue());
+            RenderUtils.end3d();
         }
     }
 }

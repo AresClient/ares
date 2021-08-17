@@ -7,8 +7,9 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.shader.Shader;
@@ -25,7 +26,7 @@ import java.util.List;
 @Module.Info(name = "ESP", description = "See outlines of players through walls", category = Category.RENDER)
 public class ESP extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.BOX));
-    private final Setting<Color> color = register(new EnumSetting<>("Color", Color.RED)).setVisibility(() -> mode.getValue() == Mode.BOX);
+    private final Setting<Colors> color = register(new EnumSetting<>("Color", Colors.RED)).setVisibility(() -> mode.getValue() == Mode.BOX);
 
     private final Setting<Boolean> players = register(new BooleanSetting("Players", true));
     private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true)).setVisibility(players::getValue);
@@ -42,7 +43,7 @@ public class ESP extends Module {
         RenderUtils.prepare3d();
 
         for(Entity entity: WorldUtils.getTargets(players.getValue(), false, teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()))
-            RenderGlobal.drawSelectionBoundingBox(entity.getEntityBoundingBox(), color.getValue().r, color.getValue().g, color.getValue().b, 1);
+            RenderUtils.cubeLines(entity.getEntityBoundingBox(), new Color(color.getValue().r, color.getValue().g, color.getValue().b, 1f));
 
         if(friends.getValue()) renderFriends();
 
@@ -50,11 +51,9 @@ public class ESP extends Module {
     }
 
     private void renderFriends() {
-        dev.tigr.ares.core.util.render.Color color = IRenderer.rainbow();
         for(EntityPlayer player: MC.world.playerEntities) {
-            if(FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUniqueID().equals(MC.player.getUniqueID())) {
-                RenderGlobal.drawSelectionBoundingBox(player.getEntityBoundingBox(), color.getRed(), color.getBlue(), color.getGreen(), 1);
-            }
+            if(FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUniqueID().equals(MC.player.getUniqueID()))
+                RenderUtils.cubeLines(player.getEntityBoundingBox(), IRenderer.rainbow());
         }
     }
 
@@ -86,7 +85,7 @@ public class ESP extends Module {
 
     enum Mode {BOX, OUTLINE}
 
-    enum Color {
+    enum Colors {
         RED(1, 0, 0),
         BLUE(0, 0, 1),
         BLACK(0, 0, 0),
@@ -97,7 +96,7 @@ public class ESP extends Module {
         public float g;
         public float b;
 
-        Color(float r, float g, float b) {
+        Colors(float r, float g, float b) {
             this.r = r;
             this.g = g;
             this.b = b;

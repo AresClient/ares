@@ -6,7 +6,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.event.events.render.RenderNametagsEvent;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.renderer.GlStateManager;

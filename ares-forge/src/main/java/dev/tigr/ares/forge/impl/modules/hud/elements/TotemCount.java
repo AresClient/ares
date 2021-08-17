@@ -4,7 +4,7 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.forge.impl.modules.hud.HudElement;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 

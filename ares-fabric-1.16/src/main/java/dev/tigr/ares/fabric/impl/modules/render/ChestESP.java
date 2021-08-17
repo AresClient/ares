@@ -3,7 +3,7 @@ package dev.tigr.ares.fabric.impl.modules.render;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.entity.*;
 import net.minecraft.util.math.Box;
 
@@ -25,13 +25,13 @@ public class ChestESP extends Module {
             Box bb = RenderUtils.getBoundingBox(tileEntity.getPos());
             if(bb == null) continue;
             if(tileEntity instanceof ChestBlockEntity || tileEntity instanceof BarrelBlockEntity)
-                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), CHEST, CHEST);
+                RenderUtils.cube(bb, CHEST, CHEST);
             else if(tileEntity instanceof EnderChestBlockEntity)
-                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), ENDER_CHEST, ENDER_CHEST);
+                RenderUtils.cube(bb, ENDER_CHEST, ENDER_CHEST);
             else if(tileEntity instanceof DispenserBlockEntity || tileEntity instanceof FurnaceBlockEntity || tileEntity instanceof HopperBlockEntity || tileEntity instanceof BlastFurnaceBlockEntity)
-                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), DISPENSER, DISPENSER);
+                RenderUtils.cube(bb, DISPENSER, DISPENSER);
             else if(tileEntity instanceof ShulkerBoxBlockEntity)
-                RenderUtils.renderBlockNoPrepare(tileEntity.getPos(), SHULKER, SHULKER);
+                RenderUtils.cube(bb, SHULKER, SHULKER);
         }
         RenderUtils.end3d();
     }

@@ -17,7 +17,7 @@ import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -236,10 +236,10 @@ public class BedAura extends Module {
                 renderBox = null;
                 return;
             }
-            RenderUtils.renderBlock(renderBox
-                            .offset(-MC.gameRenderer.getCamera().getPos().x, -MC.gameRenderer.getCamera().getPos().y, -MC.gameRenderer.getCamera().getPos().z),
-                    fillColor, outlineColor, lineThickness.getValue()
-            );
+
+            RenderUtils.prepare3d();
+            RenderUtils.cube(renderBox, fillColor, outlineColor, lineThickness.getValue());
+            RenderUtils.end3d();
         }
     }
 

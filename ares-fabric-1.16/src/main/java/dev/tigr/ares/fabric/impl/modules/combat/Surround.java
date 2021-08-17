@@ -11,7 +11,7 @@ import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -240,22 +240,23 @@ public class Surround extends Module {
         }
 
         RenderUtils.prepare3d();
+
         for (BlockPos pos : getPositions()) {
-            Box render = new Box(pos).offset(
-                    -MC.gameRenderer.getCamera().getPos().x,
-                    -MC.gameRenderer.getCamera().getPos().y,
-                    -MC.gameRenderer.getCamera().getPos().z
-            );
-            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond()) {
-                RenderUtils.renderFilledBox(render, changeColor);
-            } else if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
-                RenderUtils.renderFilledBox(render, airColor);
-            } else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue()) {
-                RenderUtils.renderFilledBox(render, blockColor);
-            } else if(renderFinished.getValue()) {
-                RenderUtils.renderFilledBox(render, bedrockColor);
-            }
+            Box render = new Box(pos);
+
+            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond())
+                RenderUtils.cubeFill(render, changeColor);
+
+            else if(MC.world.getBlockState(pos).getMaterial().isReplaceable())
+                RenderUtils.cubeFill(render, airColor);
+
+            else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue())
+                RenderUtils.cubeFill(render, blockColor);
+
+            else if(renderFinished.getValue())
+                RenderUtils.cubeFill(render, bedrockColor);
         }
+
         RenderUtils.end3d();
     }
 }

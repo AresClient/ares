@@ -4,6 +4,7 @@
   "package": "dev.tigr.ares.forge.mixin",
   "refmap": "mixins.ares.refmap.json",
   "mixins": [
+    "accessor.BufferBuilderAccessor",
     "client.MixinBlockLiquid",
     "client.MixinBlockSoulsand",
     "client.MixinEntity",

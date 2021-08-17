@@ -6,3 +6,5 @@ rainbow outline doesnt work on moduleList - 1.17 & 1.16
 mixin accessors for forge
 fix GUI settings scissor
 improve nametag scaling and add armor rendering on fabric
+interpolate entity bounding boxes for ESP
+Color picker for GUI

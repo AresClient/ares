@@ -3,10 +3,13 @@ package dev.tigr.ares.forge.impl.modules.render;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
+import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.utils.HoleType;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -25,6 +28,27 @@ public class HoleESP extends Module {
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 4, 1, 10));
     private final Setting<Integer> maxY = register(new IntegerSetting("MaxY", 256, 5, 256));
 
+    private final Setting<Boolean> bedrockColor = register(new BooleanSetting("Bedrock Color", false));
+    private final Setting<Float> bedrockRed = register(new FloatSetting("BR.Red", 0, 0, 1)).setVisibility(bedrockColor::getValue);
+    private final Setting<Float> bedrockGreen = register(new FloatSetting("BR.Green", 1, 0, 1)).setVisibility(bedrockColor::getValue);
+    private final Setting<Float> bedrockBlue = register(new FloatSetting("BR.Blue", 0.58f, 0, 1)).setVisibility(bedrockColor::getValue);
+    private final Setting<Float> bedrockFillAlpha = register(new FloatSetting("BR.Fill", 0.24f, 0, 1)).setVisibility(bedrockColor::getValue);
+    private final Setting<Float> bedrockBoxAlpha = register(new FloatSetting("BR.Line", 1.0f, 0, 1)).setVisibility(bedrockColor::getValue);
+
+    private final Setting<Boolean> obbyColor = register(new BooleanSetting("Obsidian Color", false)).setVisibility(() -> mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyRed = register(new FloatSetting("OB.Red", 1, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyGreen = register(new FloatSetting("OB.Green", 0.38f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyBlue = register(new FloatSetting("OB.Blue", 0.41f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyFillAlpha = register(new FloatSetting("OB.Fill", 0.24f, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+    private final Setting<Float> obbyBoxAlpha = register(new FloatSetting("OB.Line", 1, 0, 1)).setVisibility(() -> obbyColor.getValue() && mode.getValue() != Mode.BEDROCKONLY);
+
+    private final Setting<Boolean> otherColor = register(new BooleanSetting("Other Color", false)).setVisibility(() -> mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherRed = register(new FloatSetting("OTH.Red", 0.48f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherGreen = register(new FloatSetting("OTH.Green", 0.56f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherBlue = register(new FloatSetting("OTH.Blue", 0.64f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherFillAlpha = register(new FloatSetting("OTH.Fill", 0.24f, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+    private final Setting<Float> otherBoxAlpha = register(new FloatSetting("OTH.Line", 1, 0, 1)).setVisibility(() -> otherColor.getValue() && mode.getValue() == Mode.ALL);
+
     @Override
     public void onTick() {
         if(MC.player.ticksExisted % delay.getValue() != 0) return;
@@ -35,7 +59,10 @@ public class HoleESP extends Module {
 
             HoleType type = WorldUtils.isHole(pos);
 
-            if((type == HoleType.OTHER && mode.getValue() != Mode.ALL) || type == HoleType.NONE) continue;
+            if((type == HoleType.OTHER && mode.getValue() != Mode.ALL)
+                    || type == HoleType.NONE
+                    || (type == HoleType.OBBY && mode.getValue() == Mode.BEDROCKONLY))
+                continue;
 
             holes.put(pos, type);
         }
@@ -43,37 +70,39 @@ public class HoleESP extends Module {
 
     @Override
     public void onRender3d() {
-        if(holes != null) {
-            RenderUtils.prepare3d();
+        Color bedrockFillColor = new Color(bedrockRed.getValue(), bedrockGreen.getValue(), bedrockBlue.getValue(), bedrockFillAlpha.getValue());
+        Color bedrockOutlineColor = new Color(bedrockRed.getValue(), bedrockGreen.getValue(), bedrockBlue.getValue(), bedrockBoxAlpha.getValue());
+        Color obbyFillColor = new Color(obbyRed.getValue(), obbyGreen.getValue(), obbyBlue.getValue(), obbyFillAlpha.getValue());
+        Color obbyOutlineColor = new Color(obbyRed.getValue(), obbyGreen.getValue(), obbyBlue.getValue(), obbyBoxAlpha.getValue());
+        Color otherFillColor = new Color(otherRed.getValue(), otherGreen.getValue(), otherBlue.getValue(), otherFillAlpha.getValue());
+        Color otherOutlineColor = new Color(otherRed.getValue(), otherGreen.getValue(), otherBlue.getValue(), otherBoxAlpha.getValue());
 
-            for(BlockPos pos: holes.keySet()) {
-                HoleType type = holes.get(pos);
-                AxisAlignedBB bb = RenderUtils.getBoundingBox(pos);
+        RenderUtils.prepare3d();
 
-                switch(type) {
-                    case BEDROCK:
-                        //green
-                        RenderGlobal.renderFilledBox(bb, 0, 0.93f, 0, 0.2f);
-                        RenderGlobal.drawSelectionBoundingBox(bb, 0, 0.55f, 0, 0.2f);
-                        break;
+        for(BlockPos pos: holes.keySet()) {
+            AxisAlignedBB bb = RenderUtils.getBoundingBox(pos);
 
-                    case OBBY:
-                        //yellow
-                        RenderGlobal.renderFilledBox(bb, 0.93f, 0.93f, 0, 0.2f);
-                        RenderGlobal.drawSelectionBoundingBox(bb, 0.93f, 0.93f, 0, 0.2f);
-                        break;
+            switch(holes.get(pos)) {
+                case BEDROCK:
+                    //green
+                    RenderUtils.cube(bb, bedrockFillColor, bedrockOutlineColor);
+                    break;
 
-                    default:
-                        RenderGlobal.renderFilledBox(bb, 1, 1, 1, 0.2f);
-                        RenderGlobal.drawSelectionBoundingBox(bb, 1, 1, 1, 0.2f);
-                }
+                case OBBY:
+                    //yellow
+                    RenderUtils.cube(bb, obbyFillColor, obbyOutlineColor);
+                    break;
+
+                default:
+                    RenderUtils.cube(bb, otherFillColor, otherOutlineColor);
             }
-
-            RenderUtils.end3d();
         }
+
+        RenderUtils.end3d();
     }
 
     enum Mode {
+        BEDROCKONLY,
         OBBYANDBEDROCK,
         ALL
     }

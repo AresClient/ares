@@ -3,7 +3,7 @@ package dev.tigr.ares.forge.impl.modules.render;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.tileentity.*;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -21,21 +21,17 @@ public class ChestESP extends Module {
     @Override
     public void onRender3d() {
         RenderUtils.prepare3d();
-
         MC.world.loadedTileEntityList.forEach(tileEntity -> {
             AxisAlignedBB bb = RenderUtils.getBoundingBox(tileEntity.getPos());
-            if(tileEntity instanceof TileEntityChest) drawBox(bb, CHEST);
-            else if(tileEntity instanceof TileEntityEnderChest) drawBox(bb, ENDER_CHEST);
+            if(tileEntity instanceof TileEntityChest)
+                RenderUtils.cube(bb, CHEST, CHEST);
+            else if(tileEntity instanceof TileEntityEnderChest)
+                RenderUtils.cube(bb, ENDER_CHEST, ENDER_CHEST);
             else if(tileEntity instanceof TileEntityDispenser || tileEntity instanceof TileEntityFurnace || tileEntity instanceof TileEntityHopper)
-                drawBox(bb, DISPENSER);
-            else if(tileEntity instanceof TileEntityShulkerBox) drawBox(bb, SHULKER);
+                RenderUtils.cube(bb, DISPENSER, DISPENSER);
+            else if(tileEntity instanceof TileEntityShulkerBox)
+                RenderUtils.cube(bb, SHULKER, SHULKER);
         });
-
         RenderUtils.end3d();
-    }
-
-    private void drawBox(AxisAlignedBB bb, Color color) {
-        RenderGlobal.renderFilledBox(bb, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-        RenderGlobal.drawSelectionBoundingBox(bb, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 }

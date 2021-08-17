@@ -13,10 +13,11 @@ import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -204,6 +205,9 @@ public class BedAura extends Module {
     // draw target
     @Override
     public void onRender3d() {
+        Color fillColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), fillAlpha.getValue());
+        Color outlineColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), boxAlpha.getValue());
+
         if(target != null) {
             if(MC.world.getBlockState(target.getFirst()).getBlock() instanceof BlockBed) {
                 switch (target.getSecond()) {
@@ -239,8 +243,7 @@ public class BedAura extends Module {
                 return;
             }
             RenderUtils.prepare3d();
-            RenderGlobal.renderFilledBox(renderBox, colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), fillAlpha.getValue());
-            RenderGlobal.drawSelectionBoundingBox(renderBox, colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), boxAlpha.getValue());
+            RenderUtils.cube(renderBox, fillColor, outlineColor);
             RenderUtils.end3d();
         }
     }

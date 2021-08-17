@@ -12,12 +12,13 @@ import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.event.events.client.EntityEvent;
 import dev.tigr.ares.forge.event.events.player.DestroyBlockEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -97,11 +98,11 @@ public class CrystalAura extends Module {
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true)).setVisibility(() -> page.getValue() == Page.BREAK);
 
     //Render Page
-    private final Setting<Integer> colorRed = register(new IntegerSetting("Red", 237, 0, 255)).setVisibility(() -> page.getValue() == Page.RENDER);
-    private final Setting<Integer> colorGreen = register(new IntegerSetting("Green", 0, 0, 255)).setVisibility(() -> page.getValue() == Page.RENDER);
-    private final Setting<Integer> colorBlue = register(new IntegerSetting("Blue", 0, 0, 255)).setVisibility(() -> page.getValue() == Page.RENDER);
-    private final Setting<Integer> fillAlpha = register(new IntegerSetting("Fill Alpha", 30, 0, 100)).setVisibility(() -> page.getValue() == Page.RENDER);
-    private final Setting<Integer> boxAlpha = register(new IntegerSetting("Box Alpha", 69, 0, 100)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Float> colorRed = register(new FloatSetting("Red", 0.69f, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Float> colorGreen = register(new FloatSetting("Green", 0, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Float> colorBlue = register(new FloatSetting("Blue", 0, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
+    private final Setting<Float> boxAlpha = register(new FloatSetting("Box Alpha", 1f, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
 
     enum Mode { DAMAGE, DISTANCE }
     enum BreakMode { OWN, SMART, ALL }
@@ -358,18 +359,15 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
-            float red = (float) colorRed.getValue() / 255;
-            float green = (float) colorGreen.getValue() / 255;
-            float blue = (float) colorBlue.getValue() / 255;
-            float fAlpha = (float) fillAlpha.getValue() / 100;
-            float bAlpha = (float) boxAlpha.getValue() / 100;
-            RenderUtils.prepare3d();
+            Color fillColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), fillAlpha.getValue());
+            Color outlineColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), boxAlpha.getValue());
+
             AxisAlignedBB bb = RenderUtils.getBoundingBox(target);
             if(bb != null) {
-                RenderGlobal.renderFilledBox(bb, red, green, blue, fAlpha);
-                RenderGlobal.drawSelectionBoundingBox(bb, red, green, blue, bAlpha);
+                RenderUtils.prepare3d();
+                RenderUtils.cube(bb, fillColor, outlineColor);
+                RenderUtils.end3d();
             }
-            RenderUtils.end3d();
         }
     }
 

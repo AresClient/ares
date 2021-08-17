@@ -10,6 +10,7 @@ public class Color {
     public static final Color WHITE = new Color(1, 1, 1, 1);
     public static final Color RED = new Color(1, 0, 0, 1);
     public static final Color GREEN = new Color(0, 1, 0, 1);
+    public static final Color COLORLESS = new Color(0,0,0,0);
 
     private float r;
     private float g;
@@ -117,5 +118,43 @@ public class Color {
                 (((int) (getRed() * 255 + 0.5) & 0xFF) << 16) |
                 (((int) (getGreen() * 255 + 0.5) & 0xFF) << 8) |
                 (((int) (getBlue() * 255 + 0.5) & 0xFF));
+    }
+
+    public Color asTransparent() {
+        return new Color(r,g,b,0);
+    }
+
+    public Color getColorBetween(Color color) {
+        return getColorBetween(new Color(r, g, b, a), color);
+    }
+
+    public static Color rainbow() {
+        float hue = (System.currentTimeMillis() % (320 * 32)) / (320f * 32);
+        return new Color(Color.HSBtoRGB(hue, 1, 1));
+    }
+
+    public static Color rainbow(int speed, float offset, float saturation, float brightness) {
+        float hue = ((System.currentTimeMillis() % ((speed *10) *speed)) / ((speed *10f) *speed)) -offset;
+        float hue2 = hue;
+        if(hue<0) hue2 = 1f + hue;
+        return new Color(Color.HSBtoRGB(hue2, saturation, brightness));
+    }
+
+    public static Color getTransparent(Color color) {
+        return color.asTransparent();
+    }
+
+    public static Color getTransparent(boolean colorless, Color color) {
+        if(colorless) return COLORLESS;
+        else return color.asTransparent();
+    }
+
+    public static Color getColorBetween(Color color1, Color color2) {
+        float
+                r = (color1.getRed() + color2.getRed()) /2,
+                g = (color1.getGreen() + color2.getGreen()) /2,
+                b = (color1.getBlue() + color2.getBlue()) /2,
+                a = (color1.getAlpha() + color2.getAlpha()) /2;
+        return new Color(r,g,b,a);
     }
 }

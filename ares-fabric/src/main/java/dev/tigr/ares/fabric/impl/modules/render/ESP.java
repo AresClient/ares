@@ -6,11 +6,12 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.ShaderEffectAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.WorldRendererAccessor;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.client.gl.GlUniform;
 import net.minecraft.entity.Entity;
@@ -22,7 +23,7 @@ import net.minecraft.entity.player.PlayerEntity;
 @Module.Info(name = "ESP", description = "See outlines of players through walls", category = Category.RENDER)
 public class ESP extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.BOX));
-    private final Setting<Color> color = register(new EnumSetting<>("Color", Color.RED)).setVisibility(() -> mode.getValue() == Mode.BOX);
+    private final Setting<Colors> color = register(new EnumSetting<>("Color", Colors.RED)).setVisibility(() -> mode.getValue() == Mode.BOX);
 
     private final Setting<Boolean> players = register(new BooleanSetting("Players", true));
     private final Setting<Boolean> friends = register(new BooleanSetting("Friends", true)).setVisibility(players::getValue);
@@ -39,13 +40,7 @@ public class ESP extends Module {
         RenderUtils.prepare3d();
 
         for(Entity entity: WorldUtils.getTargets(players.getValue(), false, teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()))
-            RenderUtils.renderEntityBoxNoPrepare(
-                    entity,
-                    new dev.tigr.ares.core.util.render.Color(0,0,0,0),
-                    new dev.tigr.ares.core.util.render.Color(color.getValue().r, color.getValue().g, color.getValue().b, 1f),
-                    2f,
-                    0
-            );
+            RenderUtils.cubeLines(entity.getBoundingBox(), new Color(color.getValue().r, color.getValue().g, color.getValue().b, 1f));
 
         if(friends.getValue()) renderFriends();
 
@@ -55,7 +50,7 @@ public class ESP extends Module {
     private void renderFriends() {
         for(PlayerEntity player: MC.world.getPlayers()) {
             if(FriendManager.isFriend(player.getGameProfile().getName()) && !player.getUuid().equals(MC.player.getUuid()))
-                RenderUtils.renderEntityBoxNoPrepare(player, new dev.tigr.ares.core.util.render.Color(0,0,0,0), IRenderer.rainbow());
+                RenderUtils.cubeLines(player.getBoundingBox(), IRenderer.rainbow());
         }
     }
 
@@ -90,7 +85,7 @@ public class ESP extends Module {
 
     enum Mode {BOX, OUTLINE}
 
-    enum Color {
+    enum Colors {
         RED(1, 0, 0),
         BLUE(0, 0, 1),
         BLACK(0, 0, 0),
@@ -101,7 +96,7 @@ public class ESP extends Module {
         public float g;
         public float b;
 
-        Color(float r, float g, float b) {
+        Colors(float r, float g, float b) {
             this.r = r;
             this.g = g;
             this.b = b;

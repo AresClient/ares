@@ -9,11 +9,12 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 
@@ -103,7 +104,10 @@ public class Search extends Module {
             else color = IRenderer.rainbow().setA(0.3f);
 
             for(BlockPos pos: new ArrayList<>(blocks)) {
-                RenderUtils.renderBlockNoPrepare(pos, color, color, 2f, 0f);
+                Box bb = RenderUtils.getBoundingBox(pos);
+
+                if(bb != null)
+                    RenderUtils.cube(bb, color, color, 2f);
             }
 
             RenderUtils.end3d();

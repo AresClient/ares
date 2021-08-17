@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "accessors.AbstractBlockAccessor",
+    "accessors.BufferBuilderAccessor",
     "accessors.ChatMessageC2SPacketAccessor",
     "accessors.ChatScreenAccessor",
     "accessors.ClientPlayerInteractionManagerAccessor",

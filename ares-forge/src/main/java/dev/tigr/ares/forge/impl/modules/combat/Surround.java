@@ -8,9 +8,10 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.core.util.Timer;
+import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -190,6 +191,11 @@ public class Surround extends Module {
     // draw blocks
     @Override
     public void onRender3d() {
+        Color airColor = new Color(1,0,0,renderAlpha.getValue().floatValue() /100);
+        Color changeColor = new Color(1,1,0,renderAlpha.getValue().floatValue() /100);
+        Color blockColor = new Color(0,0,1,renderAlpha.getValue().floatValue() /100);
+        Color bedrockColor = new Color(0,1,0,renderAlpha.getValue().floatValue() /100);
+
         for(Map.Entry<BlockPos, Pair<Timer, Boolean>> entry: renderChange.entrySet()) {
             if(entry.getValue().getSecond() && entry.getValue().getFirst().passedTicks(6) && !MC.world.getBlockState(entry.getKey()).getMaterial().isReplaceable()) {
                 entry.getValue().setSecond(false);
@@ -197,18 +203,23 @@ public class Surround extends Module {
         }
 
         RenderUtils.prepare3d();
+
         for (BlockPos pos : getPositions()) {
             AxisAlignedBB render = new AxisAlignedBB(pos);
-            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond()) {
-                RenderGlobal.renderFilledBox(render, 1,1,0,renderAlpha.getValue().floatValue() /100);
-            } else if(MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
-                RenderGlobal.renderFilledBox(render, 1,0,0,renderAlpha.getValue().floatValue() /100);
-            } else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue()) {
-                RenderGlobal.renderFilledBox(render, 0,0,1,renderAlpha.getValue().floatValue() /100);
-            } else if(renderFinished.getValue()) {
-                RenderGlobal.renderFilledBox(render, 0,1,0,renderAlpha.getValue().floatValue() /100);
-            }
+
+            if(renderChange.containsKey(pos) && renderChange.get(pos).getSecond())
+                RenderUtils.cubeFill(render, changeColor);
+
+            else if(MC.world.getBlockState(pos).getMaterial().isReplaceable())
+                RenderUtils.cubeFill(render, airColor);
+
+            else if(MC.world.getBlockState(pos).getBlock() != Blocks.BEDROCK && renderFinished.getValue())
+                RenderUtils.cubeFill(render, blockColor);
+
+            else if(renderFinished.getValue())
+                RenderUtils.cubeFill(render, bedrockColor);
         }
+
         RenderUtils.end3d();
     }
 }

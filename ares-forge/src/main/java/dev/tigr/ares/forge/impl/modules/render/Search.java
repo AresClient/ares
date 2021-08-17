@@ -9,7 +9,7 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.init.Blocks;
@@ -103,13 +103,15 @@ public class Search extends Module {
 
             for(BlockPos pos: blocks) {
                 AxisAlignedBB bb = RenderUtils.getBoundingBox(pos);
-                RenderGlobal.renderFilledBox(bb, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-                RenderGlobal.drawSelectionBoundingBox(bb, color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+
+                if(bb != null)
+                    RenderUtils.cube(bb, color, color, 2f);
             }
 
             RenderUtils.end3d();
 
-            if(tracers.getValue()) for(BlockPos pos: blocks) RenderUtils.drawTracer(new Vec3d(pos).add(0.5, 0.5, 0.5), color);
+            if(tracers.getValue())
+                for(BlockPos pos: blocks) RenderUtils.drawTracer(new Vec3d(pos).add(0.5, 0.5, 0.5), color);
         }
     }
 }

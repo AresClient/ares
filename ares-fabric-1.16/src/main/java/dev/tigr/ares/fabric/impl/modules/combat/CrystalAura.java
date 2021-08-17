@@ -18,7 +18,7 @@ import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.RenderUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -390,25 +390,15 @@ public class CrystalAura extends Module {
     @Override
     public void onRender3d() {
         if(target != null) {
-            Color fillColor = new Color(
-                    colorRed.getValue(),
-                    colorGreen.getValue(),
-                    colorBlue.getValue(),
-                    fillAlpha.getValue()
-            );
-            Color outlineColor = new Color(
-                    colorRed.getValue(),
-                    colorGreen.getValue(),
-                    colorBlue.getValue(),
-                    boxAlpha.getValue()
-            );
-            RenderUtils.renderBlock(
-                    target,
-                    fillColor,
-                    outlineColor,
-                    lineThickness.getValue(),
-                    expandRender.getValue()
-            );
+            Color fillColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), fillAlpha.getValue());
+            Color outlineColor = new Color(colorRed.getValue(), colorGreen.getValue(), colorBlue.getValue(), boxAlpha.getValue());
+
+            Box bb = RenderUtils.getBoundingBox(target);
+            if(bb != null) {
+                RenderUtils.prepare3d();
+                RenderUtils.cube(bb, fillColor, outlineColor, lineThickness.getValue());
+                RenderUtils.end3d();
+            }
         }
     }
 

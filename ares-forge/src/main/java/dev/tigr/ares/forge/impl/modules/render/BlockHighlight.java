@@ -5,7 +5,8 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.forge.utils.RenderUtils;
+import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -25,6 +26,8 @@ public class BlockHighlight extends Module {
 
     @Override
     public void onRender3d() {
+        Color color = new Color(red.getValue(), green.getValue(), blue.getValue(), alpha.getValue());
+
         if(onBreak.getValue() && !MC.gameSettings.keyBindAttack.isKeyDown()) return;
 
         BlockPos pos = MC.objectMouseOver.getBlockPos();
@@ -33,8 +36,7 @@ public class BlockHighlight extends Module {
             AxisAlignedBB bb = RenderUtils.getBoundingBox(MC.objectMouseOver.getBlockPos());
 
             RenderUtils.prepare3d();
-            GL11.glLineWidth(width.getValue());
-            RenderGlobal.drawSelectionBoundingBox(bb, red.getValue(), green.getValue(), blue.getValue(), alpha.getValue());
+            RenderUtils.cubeLines(bb, color, width.getValue());
             RenderUtils.end3d();
         }
     }
