@@ -93,8 +93,8 @@ mixin {
         Field reobfTasksField = org.spongepowered.asm.gradle.plugins.MixinExtension.class.getDeclaredField("reobfTasks")
         reobfTasksField.setAccessible(true)
         reobfTasksField.get(mixin).each { reobfTask ->
-            reobfTask.handle.actions.remove(0)
-            reobfTask.handle.doFirst {
+            reobfTask.actions.remove(0)
+            reobfTask.doFirst {
                 def compileTask = project.tasks[sourceSets.main.compileJavaTaskName]
                 def tsrg = project.file("${compileTask.temporaryDir}/${compileTask.name}-mappings.tsrg")
                 if(tsrg.exists()) {
