@@ -16,6 +16,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -377,5 +378,10 @@ public class WorldUtils {
         MC.player.motionX = MC.player.motionY = MC.player.motionZ = 0;
         MC.player.setPosition(xPos, MC.player.posY, zPos);
         MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, MC.player.posY, zPos, MC.player.onGround));
+    }
+
+    public static boolean canBreakBlock(BlockPos blockPos) {
+        final IBlockState blockState = MC.world.getBlockState(blockPos);
+        return blockState.getBlockHardness(MC.world, blockPos) != -1;
     }
 }

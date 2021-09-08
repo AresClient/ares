@@ -2,7 +2,6 @@ package dev.tigr.ares.fabric.utils.render;
 
 import dev.tigr.ares.core.util.render.Color;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 
 public class Vertex {
     public double x, y, z;

@@ -156,6 +156,7 @@ public class AresMod extends Ares {
                 FakeRotation.class,
                 Freecam.class,
                 NoForceLook.class,
+                PacketMine.class,
                 RotationLock.class,
                 Scaffold.class,
 
