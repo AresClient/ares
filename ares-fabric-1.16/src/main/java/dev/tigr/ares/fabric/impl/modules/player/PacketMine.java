@@ -188,10 +188,11 @@ public class PacketMine extends Module {
             }
         }
 
-        Box bb = RenderUtils.getBoundingBox(currentPos);
-        if(bb != null) RenderUtils.cube(bb, cFill, cLine);
+        if(currentPos != null) {
+            Box bb = RenderUtils.getBoundingBox(currentPos);
+            if(bb != null) RenderUtils.cube(bb, cFill, cLine);
+        }
 
         RenderUtils.end3d();
     }
-
 }
