@@ -465,4 +465,9 @@ public class WorldUtils implements Wrapper {
         MC.player.updatePosition(xPos, MC.player.getY(), zPos);
         MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY(), MC.player.getZ(), MC.player.isOnGround()));
     }
+
+    public static boolean canBreakBlock(BlockPos blockPos) {
+        final BlockState blockState = MC.world.getBlockState(blockPos);
+        return blockState.getHardness(MC.world, blockPos) != -1;
+    }
 }
