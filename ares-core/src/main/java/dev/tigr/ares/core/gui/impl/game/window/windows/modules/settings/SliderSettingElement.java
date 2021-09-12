@@ -30,8 +30,9 @@ public class SliderSettingElement<T extends NumberSetting<?>> extends SettingEle
     public void draw(int mouseX, int mouseY, float partialTicks) {
         super.draw(mouseX, mouseY, partialTicks);
 
-        if(sliderPos == -1)
-            sliderPos = (int) (((setting.getValue().doubleValue() - setting.getMin().doubleValue()) / (setting.getMax().doubleValue() - setting.getMin().doubleValue())) * getWidth());
+        int sP = (int)(((setting.getValue().doubleValue() - setting.getMin().doubleValue()) / (setting.getMax().doubleValue() - setting.getMin().doubleValue())) * getWidth());
+
+        if(sliderPos == -1) sliderPos = sP;
 
         // set value based on mouse drag
         if(dragging) {
@@ -44,6 +45,9 @@ public class SliderSettingElement<T extends NumberSetting<?>> extends SettingEle
             else if(setting instanceof DoubleSetting) ((DoubleSetting) setting).setValue(val);
             else if(setting instanceof IntegerSetting) ((IntegerSetting) setting).setValue((int) val);
         }
+
+        // determine if the value has been modified from another method and update slider to correct position if it has
+        else if(sliderPos != sP) sliderPos = sP;
 
         // draw slider background based on value
         RENDERER.drawRect(getRenderX(), getRenderY(), sliderPos, getHeight(), ((ModuleElement) getParent()).getColor().getValue().setA(0.5f));

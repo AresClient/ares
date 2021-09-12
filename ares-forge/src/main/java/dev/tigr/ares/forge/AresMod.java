@@ -167,6 +167,7 @@ public class AresMod extends Ares {
                 Capes.class,
                 Chams.class,
                 ChestESP.class,
+                CustomFOV.class,
                 DebugCrosshair.class,
                 ESP.class,
                 ExtraTab.class,
