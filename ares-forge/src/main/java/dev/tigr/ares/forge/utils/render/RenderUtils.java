@@ -15,6 +15,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Quaternion;
 
 import static dev.tigr.ares.Wrapper.MC;
 import static org.lwjgl.opengl.GL11.*;
@@ -183,5 +184,26 @@ public class RenderUtils {
                 - (double) ReflectionHelper.getPrivateValue(RenderManager.class, MC.getRenderManager(), "renderPosZ", "field_78723_d"));
 
         return new Vec3d(x, y, z);
+    }
+
+    public static Quaternion newQuaternion(float x, float y, float z, boolean degrees) {
+        if (degrees) {
+            x *= 0.017453292F;
+            y *= 0.017453292F;
+            z *= 0.017453292F;
+        }
+
+        float f = (float)Math.sin(0.5F * x);
+        float g = (float)Math.cos(0.5F * x);
+        float h = (float)Math.sin(0.5F * y);
+        float i = (float)Math.cos(0.5F * y);
+        float j = (float)Math.sin(0.5F * z);
+        float k = (float)Math.cos(0.5F * z);
+        float x1 = f * i * k + g * h * j;
+        float y1 = g * h * k - f * i * j;
+        float z1 = f * h * k + g * i * j;
+        float w1 = g * i * k - f * h * j;
+
+        return new Quaternion(x1, y1, z1, w1);
     }
 }

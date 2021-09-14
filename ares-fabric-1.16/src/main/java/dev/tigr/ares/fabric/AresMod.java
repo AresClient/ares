@@ -155,6 +155,7 @@ public class AresMod extends Ares {
                 ESP.class,
                 ExtraTab.class,
                 FullBright.class,
+                HandView.class,
                 HoleESP.class,
                 MapTooltips.class,
                 MobOwner.class,
