@@ -7,11 +7,14 @@ import dev.tigr.ares.forge.event.events.movement.PlayerTurnEvent;
 import dev.tigr.ares.forge.event.events.player.AntiHitboxEvent;
 import dev.tigr.ares.forge.event.events.render.GammaEvent;
 import dev.tigr.ares.forge.event.events.render.HurtCamEvent;
+import dev.tigr.ares.forge.event.events.render.RenderHeldItemEvent;
 import dev.tigr.ares.forge.event.events.render.SetupFogEvent;
+import dev.tigr.ares.forge.utils.Reimplementations;
 import dev.tigr.simpleevents.event.Result;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.renderer.EntityRenderer;
+import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.AxisAlignedBB;
@@ -62,5 +65,14 @@ public class MixinEntityRenderer {
     @Redirect(method = "updateLightmap", at = @At(value = "FIELD", target = "Lnet/minecraft/client/settings/GameSettings;gammaSetting:F"))
     public float getGammaSetting(GameSettings gameSettings) {
         return Ares.EVENT_MANAGER.post(new GammaEvent(gameSettings.gammaSetting)).getGamma();
+    }
+
+    @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/ItemRenderer;renderItemInFirstPerson(F)V"))
+    public void renderItem(ItemRenderer itemRenderer, float partialTicks) {
+        if(Ares.EVENT_MANAGER.post(new RenderHeldItemEvent.Invoke()).isCancelled()) {
+            Reimplementations.renderItemInFirstPerson(itemRenderer, partialTicks);
+        } else {
+            itemRenderer.renderItemInFirstPerson(partialTicks);
+        }
     }
 }

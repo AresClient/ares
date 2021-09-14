@@ -5,6 +5,7 @@
   "refmap": "mixins.ares.refmap.json",
   "mixins": [
     "accessor.BufferBuilderAccessor",
+    "accessor.ItemRendererAccessor",
     "client.MixinBlockLiquid",
     "client.MixinBlockSoulsand",
     "client.MixinEntity",
@@ -22,6 +23,7 @@
     "render.MixinEntityRenderer",
     "render.MixinGuiNewChat",
     "render.MixinGuiPlayerTabOverlay",
+    "render.MixinItemRenderer",
     "render.MixinLayerArmorBase",
     "render.MixinLayerCape",
     "render.MixinLayerElytra",
