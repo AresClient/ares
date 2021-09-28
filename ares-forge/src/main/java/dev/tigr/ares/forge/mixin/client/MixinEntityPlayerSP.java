@@ -7,12 +7,15 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
 import dev.tigr.ares.forge.event.events.movement.MovePlayerEvent;
 import dev.tigr.ares.forge.event.events.movement.PlayerJumpEvent;
+import dev.tigr.ares.forge.event.events.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.forge.event.events.player.PlayerDismountEvent;
+import dev.tigr.ares.forge.utils.Reimplementations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.MoverType;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -42,6 +45,15 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer {
         if(!event.isCancelled()) {
             if(event.getShouldDo()) super.move(type, event.getX(), event.getY(), event.getZ());
             else super.move(type, x, y, z);
+        }
+    }
+
+    @Inject(method = "move", at = @At("HEAD"), cancellable = true)
+    public void move(MoverType type, double x, double y, double z, CallbackInfo ci) {
+        if(Ares.EVENT_MANAGER.post(new WalkOffLedgeEvent()).isCancelled()) {
+            ci.cancel();
+            Vec3d vec = Reimplementations.onSneakMove(x, y, z);
+            super.move(type, vec.x, vec.y, vec.z);
         }
     }
 
