@@ -3,9 +3,11 @@ package dev.tigr.ares.fabric.impl.modules.combat;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.TextColor;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +37,15 @@ public class BurrowDetect extends Module {
     }
 
     private boolean isInBurrow(PlayerEntity playerEntity) {
-        BlockPos playerPos = new BlockPos(getMiddlePosition(playerEntity.getX()), playerEntity.getY(), getMiddlePosition(playerEntity.getZ()));
+        BlockPos pos = new BlockPos(getMiddlePosition(playerEntity.getX()), playerEntity.getY(), getMiddlePosition(playerEntity.getZ()));
+        BlockPos playerPos = WorldUtils.roundBlockPos(new Vec3d(pos.getX(), playerEntity.getY(), pos.getZ()));
 
         return MC.world.getBlockState(playerPos).getBlock() == Blocks.OBSIDIAN
                 || MC.world.getBlockState(playerPos).getBlock() == Blocks.ENDER_CHEST
+                || MC.world.getBlockState(playerPos).getBlock() == Blocks.CRYING_OBSIDIAN
+                || MC.world.getBlockState(playerPos).getBlock() == Blocks.NETHERITE_BLOCK
+                || MC.world.getBlockState(playerPos).getBlock() == Blocks.ANCIENT_DEBRIS
+                || MC.world.getBlockState(playerPos).getBlock() == Blocks.RESPAWN_ANCHOR
                 || MC.world.getBlockState(playerPos).getBlock() == Blocks.ANVIL;
     }
 

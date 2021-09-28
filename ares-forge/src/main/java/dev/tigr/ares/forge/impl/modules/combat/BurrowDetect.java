@@ -3,9 +3,11 @@ package dev.tigr.ares.forge.impl.modules.combat;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.TextColor;
+import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +41,8 @@ public class BurrowDetect extends Module {
     }
 
     private boolean isInBurrow(EntityPlayer entityPlayer){
-        BlockPos playerPos = new BlockPos(getMiddlePosition(entityPlayer.posX), entityPlayer.posY, getMiddlePosition(entityPlayer.posZ));
+        BlockPos pos = new BlockPos(getMiddlePosition(entityPlayer.posX), entityPlayer.posY, getMiddlePosition(entityPlayer.posZ));
+        BlockPos playerPos = WorldUtils.roundBlockPos(new Vec3d(pos.getX(), entityPlayer.posY, pos.getZ()));
 
         return MC.world.getBlockState(playerPos).getBlock() == Blocks.OBSIDIAN
                 || MC.world.getBlockState(playerPos).getBlock() == Blocks.ENDER_CHEST

@@ -77,7 +77,7 @@ public class Scaffold extends Module {
             }
             if(towerDelayTimer.passedMillis(towerClipDelay.getValue())) {
                 // Pretend that we are jumping to the server and then update player position to meet where the server thinks the player is instantly.
-                WorldUtils.fakeJump();
+                WorldUtils.fakeJumpSequence(1,4);
                 MC.player.updatePosition(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ());
                 shouldResetTower = true;
             }

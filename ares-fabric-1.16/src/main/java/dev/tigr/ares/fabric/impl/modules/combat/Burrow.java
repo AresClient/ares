@@ -153,7 +153,7 @@ public class Burrow extends Module {
         switchToBlock();
 
         if (fakeJump.getValue()) {
-            WorldUtils.fakeJump();
+            WorldUtils.fakeJumpSequence(1,4);
             runSequence();
         }
 
