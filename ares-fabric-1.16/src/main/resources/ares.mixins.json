@@ -41,6 +41,7 @@
     "client.MixinLivingEntity",
     "client.MixinMinecraftClient",
     "client.MixinPlayerEntity",
+    "render.MixinAbstractButtonWidget",
     "render.MixinArmorFeatureRenderer",
     "render.MixinBackgroundRenderer",
     "render.MixinCamera",
@@ -52,8 +53,12 @@
     "render.MixinInGameOverlayRenderer",
     "render.MixinLightmapTextureManager",
     "render.MixinLivingEntityRenderer",
+    "render.MixinMultiplayerScreen",
     "render.MixinPlayerEntityRenderer",
     "render.MixinPlayerListHud",
-    "render.MixinScreen"
+    "render.MixinScreen",
+    "render.MixinSelectWorldScreen",
+    "render.MixinSliderWidget",
+    "render.MixinTitleScreen"
   ]
 }

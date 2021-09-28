@@ -7,7 +7,6 @@ import dev.tigr.ares.fabric.AresMod;
 import dev.tigr.ares.fabric.event.client.OpenScreenEvent;
 import dev.tigr.ares.fabric.event.player.InteractEvent;
 import dev.tigr.ares.fabric.gui.AresChatGUI;
-import dev.tigr.ares.fabric.gui.AresMainMenu;
 import dev.tigr.ares.fabric.gui.AresUpdateGUI;
 import dev.tigr.ares.fabric.impl.modules.exploit.AirInteract;
 import dev.tigr.ares.fabric.mixin.accessors.ChatScreenAccessor;
@@ -59,14 +58,11 @@ public class MixinMinecraftClient {
     boolean checkupdate = true;
     @Inject(method = "openScreen", at = @At("HEAD"), cancellable = true)
     public void openScreen(Screen screen, CallbackInfo ci) {
-        // open update gui if update, else open main menu
-        if(screen instanceof TitleScreen && !(screen instanceof AresMainMenu)) {
+        // open update gui if update
+        if(screen instanceof TitleScreen && checkupdate && UpdateHelper.shouldUpdate()) {
             ci.cancel();
-            if(checkupdate && UpdateHelper.shouldUpdate()) {
-                MC.openScreen(new AresUpdateGUI());
-                checkupdate = false;
-            }
-            else MC.openScreen(new AresMainMenu());
+            MC.openScreen(new AresUpdateGUI());
+            checkupdate = false;
         }
 
         // open chat gui if chat

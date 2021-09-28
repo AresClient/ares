@@ -21,7 +21,7 @@ import static dev.tigr.ares.core.Ares.MONO_FONT;
 @Module.Info(name = "ClickGui", description = "Opens Ares Gui", category = Category.PLAYER, bind = "SEMICOLON", alwaysListening = true)
 public class ClickGUIMod extends Module {
     private static Color color = new Color(0, 0, 0, 1);
-    private static ClickGUIMod INSTANCE;
+    public static ClickGUIMod INSTANCE;
 
     enum Font {
         MONO(MONO_FONT), ARIAL(ARIAL_FONT);
@@ -38,6 +38,8 @@ public class ClickGUIMod extends Module {
     private final Setting<Float> green = register(new FloatSetting("Green", 0.03f, 0, 1));
     private final Setting<Float> blue = register(new FloatSetting("Blue", 0.03f, 0, 1));
     private final Setting<Boolean> rainbow = register(new BooleanSetting("Rainbow", false));
+    public final Setting<Boolean> customMenu = register(new BooleanSetting("Custom Menu", true));
+    public final Setting<Boolean> customButtons = register(new BooleanSetting("Custom Buttons", true));
 
     public ClickGUIMod() {
         INSTANCE = this;

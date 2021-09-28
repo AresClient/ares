@@ -9,7 +9,6 @@ import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.UpdateHelper;
 import dev.tigr.ares.forge.event.events.render.CrosshairRenderEvent;
 import dev.tigr.ares.forge.gui.AresChatGUI;
-import dev.tigr.ares.forge.gui.AresMainMenu;
 import dev.tigr.ares.forge.gui.AresUpdateGUI;
 import net.minecraft.client.gui.GuiChat;
 import net.minecraft.client.gui.GuiMainMenu;
@@ -61,7 +60,7 @@ public class ForgeEvents implements Wrapper {
             if(!showed && UpdateHelper.shouldUpdate()) {
                 event.setGui(new AresUpdateGUI());
                 showed = true;
-            } else event.setGui(new AresMainMenu());
+            }
         }
 
         // open chat screen if needed

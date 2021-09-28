@@ -21,14 +21,22 @@
     "client.MixinWorld",
     "render.MixinAbstractClientPlayer",
     "render.MixinEntityRenderer",
+    "render.MixinGuiButton",
+    "render.MixinGuiListWorldSelectionEntry",
+    "render.MixinGuiMainMenu",
+    "render.MixinGuiMultiplayer",
     "render.MixinGuiNewChat",
+    "render.MixinGuiOptionSlider",
     "render.MixinGuiPlayerTabOverlay",
+    "render.MixinGuiScreenOptionsSoundsButton",
+    "render.MixinGuiWorldSelection",
     "render.MixinItemRenderer",
     "render.MixinLayerArmorBase",
     "render.MixinLayerCape",
     "render.MixinLayerElytra",
     "render.MixinModelPlayer",
     "render.MixinRenderGlobal",
-    "render.MixinRenderLivingBase"
+    "render.MixinRenderLivingBase",
+    "render.MixinServerListEntryNormal"
   ]
 }

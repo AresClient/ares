@@ -47,6 +47,7 @@
     "render.MixinBackgroundRenderer",
     "render.MixinCamera",
     "render.MixinCapeFeatureRenderer",
+    "render.MixinClickableWidget",
     "render.MixinElytraFeatureRenderer",
     "render.MixinGameRenderer",
     "render.MixinHeldItemRenderer",
@@ -54,8 +55,12 @@
     "render.MixinInGameOverlayRenderer",
     "render.MixinLightmapTextureManager",
     "render.MixinLivingEntityRenderer",
+    "render.MixinMultiplayerScreen",
     "render.MixinPlayerEntityRenderer",
     "render.MixinPlayerListHud",
-    "render.MixinScreen"
+    "render.MixinScreen",
+    "render.MixinSelectWorldScreen",
+    "render.MixinSliderWidget",
+    "render.MixinTitleScreen"
   ]
 }

@@ -50,4 +50,9 @@ public class CustomUtils implements IUtils {
     public AbstractAccount createAccount(String email, String password) throws IOException, AuthenticationException {
         return new CustomAccount(email, password);
     }
+
+    @Override
+    public void shutdown() {
+        MC.scheduleStop();
+    }
 }

@@ -5,6 +5,7 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.util.global.UpdateHelper;
 import dev.tigr.ares.core.util.render.TextColor;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -29,7 +30,7 @@ public class AresUpdateGUI extends Screen implements Wrapper {
     public void init() {
         addButton(new ButtonWidget(this.width / 2 - 50 - 105, this.height / 6 + 96, 100, 20, new LiteralText("Download"), button -> openLink("https://aresclient.org/download")));
         addButton(new ButtonWidget(this.width / 2 - 50, this.height / 6 + 96, 100, 20, new LiteralText("View Changelog"), button -> openLink("https://aresclient.org/changelogs/" + UpdateHelper.getLatestVersion() + ".txt")));
-        addButton(new ButtonWidget(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, new LiteralText("Skip"), button -> MC.openScreen(new AresMainMenu())));
+        addButton(new ButtonWidget(this.width / 2 - 50 + 105, this.height / 6 + 96, 100, 20, new LiteralText("Skip"), button -> MC.openScreen(new TitleScreen())));
     }
 
     @Override

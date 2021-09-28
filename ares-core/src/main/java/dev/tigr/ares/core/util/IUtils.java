@@ -20,4 +20,6 @@ public interface IUtils {
     AbstractAccount createAccount(String email, String password, String uuid) throws IOException;
 
     AbstractAccount createAccount(String email, String password) throws IOException, AuthenticationException;
+
+    void shutdown();
 }
