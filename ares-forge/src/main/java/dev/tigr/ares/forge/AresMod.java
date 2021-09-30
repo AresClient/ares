@@ -81,6 +81,7 @@ public class AresMod extends Ares {
                 TotemPopCounter.class,
 
                 // exploit
+                BowNuker.class,
                 CoordTpExploit.class,
                 FastPlace.class,
                 InstantMine.class,
@@ -142,7 +143,7 @@ public class AresMod extends Ares {
                 NoSlowDown.class,
                 PacketFly.class,
                 SafeWalk.class,
-                Strafe.class,
+                Speed.class,
                 Timer.class,
                 Velocity.class,
 

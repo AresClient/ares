@@ -6,6 +6,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureType;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityIronGolem;
 import net.minecraft.entity.monster.EntityPigZombie;
@@ -14,6 +15,7 @@ import net.minecraft.entity.passive.EntitySquid;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.block.state.IBlockState;
@@ -34,6 +36,55 @@ import static dev.tigr.ares.Wrapper.MC;
  * @author Tigermouthbear
  */
 public class WorldUtils {
+
+    // gs code, prob in osiris idk
+    public static double[] forward(final double speed) {
+        float forward = MC.player.movementInput.moveForward;
+        float side = MC.player.movementInput.moveStrafe;
+        float yaw = MC.player.prevRotationYaw + (MC.player.rotationYaw - MC.player.prevRotationYaw) * MC.getRenderPartialTicks();
+        if (forward != 0.0f) {
+            if (side > 0.0f) {
+                yaw += ((forward > 0.0f) ? -45 : 45);
+            } else if (side < 0.0f) {
+                yaw += ((forward > 0.0f) ? 45 : -45);
+            }
+            side = 0.0f;
+            if (forward > 0.0f) {
+                forward = 1.0f;
+            } else if (forward < 0.0f) {
+                forward = -1.0f;
+            }
+        }
+        final double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+        final double cos = Math.cos(Math.toRadians(yaw + 90.0f));
+        final double posX = forward * speed * cos + side * speed * sin;
+        final double posZ = forward * speed * sin - side * speed * cos;
+        return new double[]{posX, posZ};
+    }
+
+    public static double[] forward(final double speed, float strafe, float yaw) {
+        float forward = MC.player.movementInput.moveForward;
+        float side = strafe;
+        if (forward != 0.0f) {
+            if (side > 0.0f) {
+                yaw += ((forward > 0.0f) ? -45 : 45);
+            } else if (side < 0.0f) {
+                yaw += ((forward > 0.0f) ? 45 : -45);
+            }
+            side = 0.0f;
+            if (forward > 0.0f) {
+                forward = 1.0f;
+            } else if (forward < 0.0f) {
+                forward = -1.0f;
+            }
+        }
+        final double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+        final double cos = Math.cos(Math.toRadians(yaw + 90.0f));
+        final double posX = forward * speed * cos + side * speed * sin;
+        final double posZ = forward * speed * sin - side * speed * cos;
+        return new double[]{posX, posZ};
+    }
+
     public static boolean placeBlockMainHand(BlockPos pos) {
         return placeBlockMainHand(pos, true);
     }
@@ -123,7 +174,7 @@ public class WorldUtils {
 
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
         MC.playerController.processRightClickBlock(MC.player, MC.world, neighbor, side2, hitVec, hand);
-        MC.player.swingArm(hand);
+        MC.player.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.STOP_SNEAKING));
 
         return true;
@@ -347,10 +398,10 @@ public class WorldUtils {
 
     // must be done onTick - put this here because there may be other uses for fakeJump elsewhere, but it can just be put right into burrow if not.
     public static void fakeJump() {
-        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.40, MC.player.posZ, true));
-        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.75, MC.player.posZ, true));
-        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.01, MC.player.posZ, true));
-        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.15, MC.player.posZ, true));
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.41999998688698D, MC.player.posZ, true));
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.7531999805211997D, MC.player.posZ, true));
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.00133597911214D, MC.player.posZ, true));
+        MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.16610926093821D, MC.player.posZ, true));
     }
 
     public static BlockPos roundBlockPos(Vec3d vec) {
