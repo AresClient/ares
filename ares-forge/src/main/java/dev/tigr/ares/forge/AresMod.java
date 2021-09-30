@@ -142,7 +142,7 @@ public class AresMod extends Ares {
                 NoSlowDown.class,
                 PacketFly.class,
                 SafeWalk.class,
-                Strafe.class,
+                Speed.class,
                 Timer.class,
                 Velocity.class,
 
