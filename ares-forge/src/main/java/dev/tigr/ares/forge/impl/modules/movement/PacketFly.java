@@ -3,9 +3,12 @@ package dev.tigr.ares.forge.impl.modules.movement;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.network.play.client.CPacketPlayer;
+
+import java.util.Set;
 
 /**
  * @author  Doogie13
@@ -15,15 +18,24 @@ import net.minecraft.network.play.client.CPacketPlayer;
 public class PacketFly extends Module {
 
     private final Setting<bound> bounds = register(new EnumSetting<>("Bounds", bound.ALTERNATE));
+    private final Setting<Boolean> stable = register(new BooleanSetting("Stablilise", false));
 
     @Override
     public void onDisable() {
-
+        MC.player.capabilities.isFlying = false;
+        MC.player.capabilities.setFlySpeed(0.05f);
     }
 
     @Override
     public void onMotion() {
         MC.player.setVelocity(0, 0, 0);
+
+        if (stable.getValue()) {
+
+            MC.player.capabilities.isFlying = true;
+            MC.player.capabilities.setFlySpeed(0);
+
+        }
 
         double x = MC.player.posX;
         double y = MC.player.posY;
