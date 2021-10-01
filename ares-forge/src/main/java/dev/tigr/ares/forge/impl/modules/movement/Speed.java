@@ -3,6 +3,7 @@ package dev.tigr.ares.forge.impl.modules.movement;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
@@ -22,14 +23,16 @@ public class Speed extends Module {
 
     public final Setting<Float> jump = register(new FloatSetting("Jump Height", 0.42f, 0.38f, 0.44f));
     private final Setting<mode> modeSetting = register(new EnumSetting<mode>("Mode", mode.STRAFE));
+    private final Setting<Boolean> forceJump = register(new BooleanSetting("Jump", true)).setVisibility(() -> modeSetting.getValue().equals(mode.STRAFE));
     private final Setting<Float> speedVal = register(new FloatSetting("Strafe Speed", 0.38f, 0.2f, 0.6f)).setVisibility(() -> modeSetting.getValue() == mode.STRAFE);
+    private final Setting<Float> groundVal = register(new FloatSetting("Ground Speed", 1f, 1f, 2f)).setVisibility(() -> modeSetting.getValue() == mode.STRAFE);
     private final Setting<Float> yportSpeed = register(new FloatSetting("YPort Speed", 1.75f, 0.1f, 3)).setVisibility(() -> !(modeSetting.getValue() == mode.STRAFE));
     float speedF;
     boolean lastOG;
 
     public void onTick() {
 
-        if (((MC.player.moveForward != 0 || MC.player.moveStrafing != 0) && MC.player.onGround)) {
+        if (((MC.player.moveForward != 0 || MC.player.moveStrafing != 0) && MC.player.onGround) && !(!forceJump.getValue() && modeSetting.getValue().equals(mode.STRAFE))) {
 
             if (MC.player.isPotionActive(MobEffects.JUMP_BOOST)) {
                 {
@@ -63,7 +66,7 @@ public class Speed extends Module {
             speedF *= getFric();
 
             double[] dir = WorldUtils.forward(Math.max(speedVal.getValue() * speedF * (getBaseMoveSpeed() / 0.2873), 0.2873));
-            double[] gDir = WorldUtils.forward(0.2873);
+            double[] gDir = WorldUtils.forward(0.2873 * groundVal.getValue());
 
             if (!MC.player.onGround) {
                 MC.player.motionX = dir[0];
