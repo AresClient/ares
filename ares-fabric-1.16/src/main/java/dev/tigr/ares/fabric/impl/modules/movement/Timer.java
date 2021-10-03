@@ -14,6 +14,13 @@ import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 public class Timer extends Module {
     private final Setting<Integer> tps = register(new IntegerSetting("TPS", 25, 1, 160));
 
+    public static Timer INSTANCE;
+
+    public Timer() {
+        INSTANCE = this;
+    }
+
+
     @Override
     public void onTick() {
         ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / tps.getValue());

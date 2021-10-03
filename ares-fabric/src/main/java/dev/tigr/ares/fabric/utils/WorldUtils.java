@@ -4,6 +4,8 @@ import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import io.netty.buffer.Unpooled;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -154,6 +156,54 @@ public class WorldUtils implements Wrapper {
 
     public static boolean canReplace(BlockPos pos) {
         return NONSOLID_BLOCKS.contains(MC.world.getBlockState(pos).getBlock()) && MC.world.getOtherEntities(null, new Box(pos)).stream().noneMatch(Entity::collides);
+    }
+
+    // gs code, prob in osiris idk
+    public static double[] forward(final double speed) {
+        float forward = MC.player.input.movementForward;
+        float side = MC.player.input.movementSideways;
+        float yaw = MC.player.prevYaw + (MC.player.getYaw() - MC.player.prevYaw) * ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).getTickTime();
+        if (forward != 0.0f) {
+            if (side > 0.0f) {
+                yaw += ((forward > 0.0f) ? -45 : 45);
+            } else if (side < 0.0f) {
+                yaw += ((forward > 0.0f) ? 45 : -45);
+            }
+            side = 0.0f;
+            if (forward > 0.0f) {
+                forward = 1.0f;
+            } else if (forward < 0.0f) {
+                forward = -1.0f;
+            }
+        }
+        final double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+        final double cos = Math.cos(Math.toRadians(yaw + 90.0f));
+        final double posX = forward * speed * cos + side * speed * sin;
+        final double posZ = forward * speed * sin - side * speed * cos;
+        return new double[]{posX, posZ};
+    }
+
+    public static double[] forward(final double speed, float strafe, float yaw) {
+        float forward = MC.player.input.movementForward;
+        float side = strafe;
+        if (forward != 0.0f) {
+            if (side > 0.0f) {
+                yaw += ((forward > 0.0f) ? -45 : 45);
+            } else if (side < 0.0f) {
+                yaw += ((forward > 0.0f) ? 45 : -45);
+            }
+            side = 0.0f;
+            if (forward > 0.0f) {
+                forward = 1.0f;
+            } else if (forward < 0.0f) {
+                forward = -1.0f;
+            }
+        }
+        final double sin = Math.sin(Math.toRadians(yaw + 90.0f));
+        final double cos = Math.cos(Math.toRadians(yaw + 90.0f));
+        final double posX = forward * speed * cos + side * speed * sin;
+        final double posZ = forward * speed * sin - side * speed * cos;
+        return new double[]{posX, posZ};
     }
 
     public static void moveEntityWithSpeed(Entity entity, double speed, boolean shouldMoveY) {
