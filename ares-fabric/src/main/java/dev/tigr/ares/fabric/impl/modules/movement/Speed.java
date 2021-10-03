@@ -31,7 +31,8 @@ public class Speed extends Module {
         if (MC.player == null || MC.world == null)
             return;
 
-        if (((MC.player.getMovementSpeed() != 0) && MC.player.isOnGround()) && !(!forceJump.getValue() && modeSetting.getValue().equals(mode.STRAFE))) {
+        if (((MC.options.keyForward.isPressed() || MC.options.keyBack.isPressed() || MC.options.keyLeft.isPressed() || MC.options.keyRight.isPressed())
+                && MC.player.isOnGround()) && !(!forceJump.getValue() && modeSetting.getValue().equals(mode.STRAFE))) {
 
             if (MC.player.getActiveStatusEffects().containsValue(MC.player.getStatusEffect(StatusEffect.byRawId(8)))) {
                 {
