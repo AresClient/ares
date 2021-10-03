@@ -1,5 +1,6 @@
 package dev.tigr.ares.installer;
 
+import net.fabricmc.installer.LoaderVersion;
 import net.fabricmc.installer.client.ClientInstaller;
 import net.fabricmc.installer.client.ProfileInstaller;
 import net.fabricmc.installer.util.InstallerProgress;
@@ -39,7 +40,7 @@ public class LoaderInstaller {
         }
         if(loaderVersion == null) return false;
 
-        String profileName = ClientInstaller.install(minecraftFolder.toPath(), gameVersion, loaderVersion, InstallerProgress.CONSOLE);
+        String profileName = ClientInstaller.install(minecraftFolder.toPath(), gameVersion, new LoaderVersion(loaderVersion), InstallerProgress.CONSOLE);
         ProfileInstaller.setupProfile(minecraftFolder.toPath(), profileName, gameVersion);
         return true;
     }
