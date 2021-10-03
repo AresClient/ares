@@ -2,6 +2,8 @@ package dev.tigr.ares.forge.impl.modules.player;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.ClickType;
@@ -15,6 +17,8 @@ import java.util.Map;
  */
 @Module.Info(name = "HotbarReplenish", description = "Automatically replenishes the itemstacks on your hotbar", category = Category.PLAYER)
 public class HotbarReplenish extends Module {
+    private final Setting<Integer> pollRate = register(new IntegerSetting("Poll Rate", 2,0, 20));
+
     private final Map<Integer, Item> hotbar = new HashMap<>();
 
     private boolean clickBlank = false;
@@ -34,7 +38,7 @@ public class HotbarReplenish extends Module {
             enable = false;
         }
 
-        if(MC.currentScreen instanceof GuiContainer || MC.player.ticksExisted % 2 != 0) return;
+        if(MC.currentScreen instanceof GuiContainer || MC.player.ticksExisted % pollRate.getValue() != 0) return;
 
         if(clickBlank) {
             int index = InventoryUtils.getBlank();

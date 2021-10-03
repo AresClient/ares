@@ -484,11 +484,20 @@ public class WorldUtils implements Wrapper {
         return entity instanceof PlayerEntity && entity.isInvisibleTo(MC.player) && !entity.isOnGround() && !entity.collides();
     }
 
-    public static void fakeJump() {
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.40, MC.player.getZ(), true));
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.75, MC.player.getZ(), true));
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.01, MC.player.getZ(), true));
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ(), true));
+    // Full sequence of packets sent from MC.player.jump()
+    public static void fakeJumpSequence(int firstPacket, int lastPacket) {
+        if(firstPacket <= 0 && lastPacket >= 0) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY(), MC.player.getZ(), true));
+        if(firstPacket <= 1 && lastPacket >= 1) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.41999998688698, MC.player.getZ(), true));
+        if(firstPacket <= 2 && lastPacket >= 2) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.7531999805212, MC.player.getZ(), true));
+        if(firstPacket <= 3 && lastPacket >= 3) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.00133597911214, MC.player.getZ(), true));
+        if(firstPacket <= 4 && lastPacket >= 4) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.16610926093821, MC.player.getZ(), true));
+        if(firstPacket <= 5 && lastPacket >= 5) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.24918707874468, MC.player.getZ(), true));
+        if(firstPacket <= 6 && lastPacket >= 6) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.17675927506424, MC.player.getZ(), true));
+        if(firstPacket <= 7 && lastPacket >= 7) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 1.02442408821369, MC.player.getZ(), true));
+        if(firstPacket <= 8 && lastPacket >= 8) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.79673560066871, MC.player.getZ(), true));
+        if(firstPacket <= 9 && lastPacket >= 9) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.49520087700593, MC.player.getZ(), true));
+        if(firstPacket <= 10 && lastPacket >= 10) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + 0.1212968405392, MC.player.getZ(), true));
+        if(firstPacket <= 11 && lastPacket >= 11) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY(), MC.player.getZ(), true));
     }
 
     public static BlockPos roundBlockPos(Vec3d vec) {

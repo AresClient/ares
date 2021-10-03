@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.ItemRenderer;
 import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * This just holds methods taken from minecraft which had to be modified and are used with mixins
@@ -30,10 +31,10 @@ public class Reimplementations implements Wrapper {
         boolean flag = true;
         boolean flag1 = true;
 
-        if (abstractclientplayer.isHandActive()) {
+        if(abstractclientplayer.isHandActive()) {
             ItemStack itemstack = abstractclientplayer.getActiveItemStack();
 
-            if (itemstack.getItem() instanceof net.minecraft.item.ItemBow) {
+            if(itemstack.getItem() instanceof net.minecraft.item.ItemBow) {
                 EnumHand enumhand1 = abstractclientplayer.getActiveHand();
                 flag = enumhand1 == EnumHand.MAIN_HAND;
                 flag1 = !flag;
@@ -45,7 +46,7 @@ public class Reimplementations implements Wrapper {
         ((IItemRenderer)itemRenderer).doRotateArm(partialTicks);
         GlStateManager.enableRescaleNormal();
 
-        if (flag) {
+        if(flag) {
             GlStateManager.pushMatrix(); // Save a backup of current matrices
 
             RenderHeldItemEvent.Cancelled e = Ares.EVENT_MANAGER.post(new RenderHeldItemEvent.Cancelled(EnumHand.MAIN_HAND));
@@ -62,7 +63,7 @@ public class Reimplementations implements Wrapper {
             GlStateManager.popMatrix(); // Use saved backup to get rid of transformations from main hand
         }
 
-        if (flag1) {
+        if(flag1) {
             GlStateManager.pushMatrix();
 
             RenderHeldItemEvent.Cancelled e = Ares.EVENT_MANAGER.post(new RenderHeldItemEvent.Cancelled(EnumHand.OFF_HAND));
@@ -81,5 +82,44 @@ public class Reimplementations implements Wrapper {
 
         GlStateManager.disableRescaleNormal();
         RenderHelper.disableStandardItemLighting();
+    }
+
+    public static Vec3d onSneakMove(double x1, double y1, double z1) {
+        double x = x1;
+        double y = y1;
+        double z = z1;
+
+        if(MC.player.onGround && !MC.player.noClip) {
+            double d5;
+            for(d5 = 0.05D; x != 0.0D && MC.world.getCollisionBoxes(MC.player, MC.player.getEntityBoundingBox().offset(x, -MC.player.stepHeight, 0.0D)).isEmpty();) {
+                if(x < d5 && x >= -d5) x = 0.0D;
+
+                else if(x > 0.0D) x -= d5;
+
+                else x += d5;
+            }
+            for(; z != 0.0D && MC.world.getCollisionBoxes(MC.player, MC.player.getEntityBoundingBox().offset(0.0D, -MC.player.stepHeight, z)).isEmpty();) {
+                if(z < d5 && z >= -d5) z = 0.0D;
+
+                else if(z > 0.0D) z -= d5;
+
+                else z += d5;
+            }
+            for(; x != 0.0D && z != 0.0D && MC.world.getCollisionBoxes(MC.player, MC.player.getEntityBoundingBox().offset(x, -MC.player.stepHeight, z)).isEmpty();) {
+                if(x < d5 && x >= -d5) x = 0.0D;
+
+                else if(x > 0.0D) x -= d5;
+
+                else x += d5;
+
+                if(z < d5 && z >= -d5) z = 0.0D;
+
+                else if(z > 0.0D) z -= d5;
+
+                else z += d5;
+            }
+        }
+
+        return new Vec3d(x, y, z);
     }
 }

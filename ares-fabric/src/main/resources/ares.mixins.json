@@ -59,6 +59,7 @@
     "render.MixinPlayerEntityRenderer",
     "render.MixinPlayerListHud",
     "render.MixinScreen",
+    "render.MixinScreenHandler",
     "render.MixinSelectWorldScreen",
     "render.MixinSliderWidget",
     "render.MixinTitleScreen"

@@ -2,9 +2,15 @@ package dev.tigr.ares.fabric.impl.modules.player;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.fabric.event.client.ClickSlotEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
+import dev.tigr.simpleevents.listener.EventHandler;
+import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.HashMap;
@@ -16,6 +22,8 @@ import java.util.Map;
  */
 @Module.Info(name = "HotbarReplenish", description = "Automatically replenishes the itemstacks on your hotbar", category = Category.PLAYER)
 public class HotbarReplenish extends Module {
+    private final Setting<Integer> pollRate = register(new IntegerSetting("Poll Rate", 2,0, 20));
+
     private final Map<Integer, Item> hotbar = new HashMap<>();
 
     private boolean clickBlank = false;
@@ -35,7 +43,7 @@ public class HotbarReplenish extends Module {
             enable = false;
         }
 
-        if(MC.currentScreen instanceof GenericContainerScreen || TICKS % 2 != 0) return;
+        if(MC.currentScreen instanceof GenericContainerScreen || TICKS % pollRate.getValue() != 0) return;
 
         if(clickBlank) {
             int index = InventoryUtils.getBlank();
@@ -74,4 +82,16 @@ public class HotbarReplenish extends Module {
             }
         }
     }
+
+    @EventHandler
+    private final EventListener<ClickSlotEvent> clickSlotEventListener = new EventListener<>(event -> {
+        if(event.getActionType() == SlotActionType.QUICK_MOVE) {
+            int i;
+            if(event.getSlotId() > 35) i = event.getSlotId() -36;
+            else return;
+
+            hotbar.remove(i);
+            hotbar.put(i, Items.AIR);
+        }
+    });
 }

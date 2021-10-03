@@ -147,7 +147,7 @@ public class Burrow extends Module {
         switchToBlock();
 
         if (fakeJump.getValue()) {
-            WorldUtils.fakeJump();
+            WorldUtils.fakeJumpSequence(1,4);
             runSequence();
         }
 
@@ -160,7 +160,7 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true);
+        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true, true);
 
         MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
 
