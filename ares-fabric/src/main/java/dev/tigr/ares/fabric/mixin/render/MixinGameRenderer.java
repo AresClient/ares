@@ -3,7 +3,6 @@ package dev.tigr.ares.fabric.mixin.render;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.fabric.event.player.AntiHitboxEvent;
-import dev.tigr.ares.fabric.event.player.CanHandCollideWaterEvent;
 import dev.tigr.ares.fabric.event.render.HurtCamEvent;
 import dev.tigr.ares.fabric.event.render.RenderHeldItemEvent;
 import dev.tigr.ares.fabric.utils.Reimplementations;
@@ -21,7 +20,6 @@ import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -32,12 +30,6 @@ import java.util.function.Predicate;
  */
 @Mixin(GameRenderer.class)
 public class MixinGameRenderer {
-    @ModifyArg(method = "updateTargetedEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;raycast(DFZ)Lnet/minecraft/util/hit/HitResult;"), index = 2)
-    public boolean liquidInteract(boolean includeFluids) {
-        if(Ares.EVENT_MANAGER.post(new CanHandCollideWaterEvent()).getResult() == Result.ALLOW) return true;
-        else return includeFluids;
-    }
-
     @Redirect(method = "updateTargetedEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/projectile/ProjectileUtil;raycast(Lnet/minecraft/entity/Entity;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Vec3d;Lnet/minecraft/util/math/Box;Ljava/util/function/Predicate;D)Lnet/minecraft/util/hit/EntityHitResult;"))
     public EntityHitResult updateTargetedEntity(Entity entity, Vec3d vec3d, Vec3d vec3d1, Box box, Predicate<Entity> predicate, double d) {
         if(Ares.EVENT_MANAGER.post(new AntiHitboxEvent()).getResult() == Result.ALLOW) return null;
