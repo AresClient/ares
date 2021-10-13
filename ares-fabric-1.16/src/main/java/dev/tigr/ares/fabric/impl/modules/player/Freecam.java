@@ -7,6 +7,7 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
+import dev.tigr.ares.fabric.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -15,7 +16,6 @@ import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 
 /**
  * @author Tigermouthbear
@@ -37,8 +37,13 @@ public class Freecam extends Module {
 
     @EventHandler
     public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        if((event.getPacket() instanceof PlayerMoveC2SPacket || event.getPacket() instanceof PlayerInputC2SPacket) && cancelPackets.getValue())
+        if((event.getPacket() instanceof PlayerInputC2SPacket) && cancelPackets.getValue())
             event.setCancelled(true);
+    });
+
+    @EventHandler
+    private final EventListener<SendMovementPacketsEvent.Pre> onMovementPacketSent = new EventListener<>(event -> {
+        if(cancelPackets.getValue()) event.setCancelled(true);
     });
 
     @Override

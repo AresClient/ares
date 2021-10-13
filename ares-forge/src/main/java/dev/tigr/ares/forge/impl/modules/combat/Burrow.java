@@ -8,9 +8,9 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.forge.impl.modules.movement.NoBlockPush;
 import dev.tigr.ares.forge.utils.HoleType;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
@@ -21,6 +21,8 @@ import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.BlockPos;
 
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Makrennel
  * Built in Timer for FastMode TPS adapted from Timer Module
@@ -30,7 +32,6 @@ public class Burrow extends Module {
     private final Setting<Boolean> holeOnly = register(new BooleanSetting("Hole Only", false));
     private final Setting<Boolean> toggleSurround = register(new BooleanSetting("Toggle Surround On", false));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
-    private final Setting<Boolean> preventBlockPush = register(new BooleanSetting("Prevent Block Push", true));
 
     private final Setting<Boolean> fakeJump = register(new BooleanSetting("FakeJump", true));
     private final Setting<Double> height = register(new DoubleSetting("Trigger Height", 1.12, 1.0, 1.3)).setVisibility(() -> !fakeJump.getValue());
@@ -45,6 +46,8 @@ public class Burrow extends Module {
     enum RubberbandMode { Jump, Packet }
     enum CurrBlock {Obsidian, EnderChest, EnchantingTable, Anvil}
 
+    int key = Priorities.Rotation.BURROW;
+    
     private BlockPos playerPos;
 
     float oldYaw;
@@ -55,18 +58,18 @@ public class Burrow extends Module {
     //get the Block value of all three options selected
     private Block getCurrBlock(){
         Block index = null;
-        if (blockToUse.getValue() == CurrBlock.Obsidian) {index = Blocks.OBSIDIAN;}
-        else if (blockToUse.getValue() == CurrBlock.EnderChest) {index = Blocks.ENDER_CHEST;}
-        else if (blockToUse.getValue() == CurrBlock.EnchantingTable) {index = Blocks.ENCHANTING_TABLE;}
-        else if (blockToUse.getValue() == CurrBlock.Anvil) {index = Blocks.ANVIL;}
+        if(blockToUse.getValue() == CurrBlock.Obsidian) {index = Blocks.OBSIDIAN;}
+        else if(blockToUse.getValue() == CurrBlock.EnderChest) {index = Blocks.ENDER_CHEST;}
+        else if(blockToUse.getValue() == CurrBlock.EnchantingTable) {index = Blocks.ENCHANTING_TABLE;}
+        else if(blockToUse.getValue() == CurrBlock.Anvil) {index = Blocks.ANVIL;}
         return index;
     }
     private Block getBackBlock(){
         Block index = null;
-        if (backupBlock.getValue() == CurrBlock.Obsidian) {index = Blocks.OBSIDIAN;}
-        else if (backupBlock.getValue() == CurrBlock.EnderChest) {index = Blocks.ENDER_CHEST;}
-        else if (backupBlock.getValue() == CurrBlock.EnchantingTable) {index = Blocks.ENCHANTING_TABLE;}
-        else if (backupBlock.getValue() == CurrBlock.Anvil) {index = Blocks.ANVIL;}
+        if(backupBlock.getValue() == CurrBlock.Obsidian) {index = Blocks.OBSIDIAN;}
+        else if(backupBlock.getValue() == CurrBlock.EnderChest) {index = Blocks.ENDER_CHEST;}
+        else if(backupBlock.getValue() == CurrBlock.EnchantingTable) {index = Blocks.ENCHANTING_TABLE;}
+        else if(backupBlock.getValue() == CurrBlock.Anvil) {index = Blocks.ANVIL;}
         return index;
     }
 
@@ -75,8 +78,8 @@ public class Burrow extends Module {
         //main block
         int newSelection = InventoryUtils.findBlockInHotbar(getCurrBlock());
         //backup block to use when either is unavailable
-        if (newSelection == -1) newSelection = InventoryUtils.findBlockInHotbar(getBackBlock());
-        if (newSelection != -1) MC.player.connection.sendPacket(new CPacketHeldItemChange(newSelection));
+        if(newSelection == -1) newSelection = InventoryUtils.findBlockInHotbar(getBackBlock());
+        if(newSelection != -1) MC.player.connection.sendPacket(new CPacketHeldItemChange(newSelection));
         else toggle();
     }
 
@@ -85,29 +88,24 @@ public class Burrow extends Module {
         playerPos = new BlockPos(MC.player.posX, MC.player.posY, MC.player.posZ);
 
         //determine if player is already burrowed
-        if (MC.world.getBlockState(playerPos).getBlock() == getCurrBlock() || MC.world.getBlockState(playerPos).getBlock() == getBackBlock()) {
+        if(MC.world.getBlockState(playerPos).getBlock() == getCurrBlock() || MC.world.getBlockState(playerPos).getBlock() == getBackBlock()) {
             UTILS.printMessage(TextColor.BLUE + "Already Burrowed!");
             setEnabled(false);
             return;
         }
 
         //toggles off if player is not in hole and set to hole only
-        if (WorldUtils.isHole(MC.player.getPosition()) == HoleType.NONE && holeOnly.getValue()) {
+        if(WorldUtils.isHole(MC.player.getPosition()) == HoleType.NONE && holeOnly.getValue()) {
             UTILS.printMessage(TextColor.RED + "Not in a hole!");
             setEnabled(false);
             return;
         }
 
         //checks that player has the blocks needed available
-        if (InventoryUtils.amountBlockInHotbar(getCurrBlock()) <= 0 && InventoryUtils.amountBlockInHotbar(getBackBlock()) <= 0) {
+        if(InventoryUtils.amountBlockInHotbar(getCurrBlock()) <= 0 && InventoryUtils.amountBlockInHotbar(getBackBlock()) <= 0) {
             UTILS.printMessage(TextColor.RED + "No Burrow Blocks Found!");
             setEnabled(false);
             return;
-        }
-
-        //toggles on NoBurrowPush
-        if(preventBlockPush.getValue()) {
-            NoBlockPush.INSTANCE.setEnabled(true);
         }
 
         //toggles Surround with snap turned off (snap breaks burrow)
@@ -117,13 +115,13 @@ public class Burrow extends Module {
         }
 
         //jump if not Instant mode
-        if (!fakeJump.getValue()) {
+        if(!fakeJump.getValue()) {
             MC.player.jump();
         }
     }
     public void onTick() {
         //turns on Timer if Fast Mode is set to Timer
-        if (!fakeJump.getValue() && useTimer.getValue()) {
+        if(!fakeJump.getValue() && useTimer.getValue()) {
             ReflectionHelper.setPrivateValue(net.minecraft.util.Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), 1000.0F / timerTPS.getValue(), "tickLength", "field_194149_e");
         }
         //run the main sequence
@@ -134,25 +132,24 @@ public class Burrow extends Module {
         if(!fakeJump.getValue() && useTimer.getValue()) {
             ReflectionHelper.setPrivateValue(net.minecraft.util.Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), 1000.0F / 20.0F, "tickLength", "field_194149_e");
         }
-        if (rotate.getValue()) {
-            MC.player.connection.sendPacket(new CPacketPlayer.Rotation(oldYaw, oldPitch, MC.player.onGround));
-        }
+        
+        ROTATIONS.setCompletedAction(key, true);
     }
     public void run() {
-        if (MC.player == null || MC.world == null) return;
+        if(MC.player == null || MC.world == null) return;
 
         oldYaw = MC.player.rotationYaw;
         oldPitch = MC.player.rotationPitch;
 
         switchToBlock();
 
-        if (fakeJump.getValue()) {
+        if(fakeJump.getValue()) {
             WorldUtils.fakeJumpSequence(1,4);
             runSequence();
         }
 
-        if (!fakeJump.getValue()) {
-            if (MC.player.posY >= playerPos.getY() + height.getValue()) {
+        if(!fakeJump.getValue()) {
+            if(MC.player.posY >= playerPos.getY() + height.getValue()) {
                 runSequence();
             }
         }
@@ -160,12 +157,12 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true, true);
+        WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, playerPos, true, true);
 
         MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
 
         //tries to produce a rubberband
-        if (rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
+        if(rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
             MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + fakeClipHeight.getValue(), MC.player.posZ, false));
         } else MC.player.jump();
 

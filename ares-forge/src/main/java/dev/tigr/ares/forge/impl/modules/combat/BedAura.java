@@ -10,6 +10,7 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
@@ -49,6 +50,7 @@ import java.util.stream.Collectors;
 
 import static dev.tigr.ares.forge.impl.modules.combat.CrystalAura.getDamage;
 import static dev.tigr.ares.forge.impl.modules.combat.CrystalAura.rayTrace;
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear 2/6/21
@@ -91,12 +93,23 @@ public class BedAura extends Module {
     private AxisAlignedBB renderBox = null;
     private final Timer renderTimer = new Timer();
 
+    int key = Priorities.Rotation.BED_AURA;
+
+    @Override
+    public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
+    }
+
     @Override
     public void onTick() {
         if(!MC.world.provider.getDimensionType().equals(DimensionType.OVERWORLD)) run();
     }
 
     private void run() {
+        int delay = placeDelay.getValue() -2;
+        if(!(delay <= 0) && !logicTimer.passedTicks(delay) && placed.isEmpty()) ROTATIONS.setCompletedAction(key, true);
+
+        // remove bed poses from world if not a bed anymore
         placed.removeIf(pos -> !(MC.world.getBlockState(pos).getBlock() instanceof BlockBed));
 
         // reset rotations
@@ -170,9 +183,9 @@ public class BedAura extends Module {
 
     private void placeRotated(BlockPos pos, EnumFacing direction) {
         float yaw = direction.getHorizontalAngle();
-        MC.player.connection.sendPacket(new CPacketPlayer.Rotation(yaw, MC.player.rotationPitch, MC.player.onGround));
-        WorldUtils.placeBlock(EnumHand.MAIN_HAND, pos, false, oneDotFifteen.getValue());
-        rotations = new double[] { yaw, MC.player.rotationPitch };
+        if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.rotationPitch, key, key, true, false);
+        else MC.player.connection.sendPacket(new CPacketPlayer.Rotation(yaw, MC.player.rotationPitch, MC.player.onGround));
+        WorldUtils.placeBlock(false, -1, -1, false, false, EnumHand.MAIN_HAND, pos, oneDotFifteen.getValue(), false);
     }
 
     private void explode() {
@@ -186,21 +199,9 @@ public class BedAura extends Module {
             placed.remove(pos);
         }
 
-        // spoof rotations
-        rotations = WorldUtils.calculateLookAt(vec.x, vec.y, vec.z, MC.player);
-
         // reset timer
         logicTimer.reset();
     }
-
-    @EventHandler
-    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        // rotation spoofing
-        if(event.getPacket() instanceof CPacketPlayer && rotations != null) {
-            ReflectionHelper.setPrivateValue(CPacketPlayer.class, event.getPacket(), (float) rotations[1], "pitch", "field_149473_f");
-            ReflectionHelper.setPrivateValue(CPacketPlayer.class, event.getPacket(), (float) rotations[0], "yaw", "field_149476_e");
-        }
-    });
 
     // draw target
     @Override

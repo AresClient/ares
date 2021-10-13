@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.event.events.movement.PlayerJumpEvent;
@@ -20,6 +21,8 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Tigermouthbear
  * Tower added by Makrennel 3/31/21
@@ -29,20 +32,24 @@ public class Scaffold extends Module {
     private final Setting<Integer> radius = register(new IntegerSetting("Radius", 0, 0, 6));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> down = register(new BooleanSetting("Down", false));
+    private final Setting<Boolean> airplace = register(new BooleanSetting("AirPlace", false));
     private final Setting<Boolean> tower = register(new BooleanSetting("Tower", true)).setVisibility(() -> radius.getValue() <= 0);
     private final Setting<Boolean> packetTower = register(new BooleanSetting("Packet Tower", false)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0);
     private final Setting<Integer> towerJumpVelocity = register(new IntegerSetting("Jump Velocity", 42, 37, 60)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && !packetTower.getValue());
-    private final Setting<Integer> towerReturnVelocity = register(new IntegerSetting("Return Velocity", 30, 20, 60)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && !packetTower.getValue());
+    private final Setting<Integer> towerReturnVelocity = register(new IntegerSetting("Return Velocity", 20, 0, 40)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && !packetTower.getValue());
     private final Setting<Integer> towerClipDelay = register(new IntegerSetting("Clip Delay", 128, 1, 500)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && packetTower.getValue());
     private final Setting<Boolean> towerReturnPacket = register(new BooleanSetting("Packet Return To Ground", false)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && packetTower.getValue());
     private final Setting<Integer> returnDelay = register(new IntegerSetting("Return Delay", 7, 0, 12)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && packetTower.getValue() && towerReturnPacket.getValue());
 
-    private Timer towerDelayTimer = new Timer();
+    private final Timer towerDelayTimer = new Timer();
     private boolean shouldResetTower;
+
+    int key = Priorities.Rotation.SCAFFOLD;
 
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> {
-        if(!down.getValue() && !MC.player.isSprinting()) event.setCancelled(true);
+        if(MC.player == null || MC.world == null || (down.getValue() && MC.player.isSprinting())) return;
+        event.setCancelled(true);
     });
 
     @EventHandler
@@ -53,7 +60,48 @@ public class Scaffold extends Module {
     });
 
     @Override
+    public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
+    }
+
+    @Override
     public void onTick() {
+        if(MC.player == null || MC.world == null) return;
+
+        //Release Rotations
+        if(rotate.getValue()) {
+            boolean flagCurrent = true;
+            if(MC.gameSettings.keyBindSprint.isPressed() && down.getValue()) {
+                BlockPos under = new BlockPos(MC.player.posX, MC.player.posY - 2, MC.player.posZ);
+
+                if (MC.world.getBlockState(under).getMaterial().isReplaceable())
+                    flagCurrent = false;
+            }
+
+            if(radius.getValue() == 0) {
+                BlockPos under = new BlockPos(MC.player.posX, MC.player.posY - 1, MC.player.posZ);
+
+                if (MC.world.getBlockState(under).getMaterial().isReplaceable())
+                    flagCurrent = false;
+            }
+
+            if(radius.getValue() > 0) {
+                ArrayList<BlockPos> blocks = new ArrayList<>();
+                for (int x = -radius.getValue(); x <= radius.getValue(); x++) {
+                    for (int z = -radius.getValue(); z <= radius.getValue(); z++) {
+                        blocks.add(new BlockPos(MC.player.posX + x, MC.player.posY - 1, MC.player.posZ + z));
+                    }
+                }
+
+                for (BlockPos x : blocks) {
+                    if (MC.world.getBlockState(x).getMaterial().isReplaceable())
+                        flagCurrent = false;
+                }
+            }
+
+            if(ROTATIONS.isKeyCurrent(key) && flagCurrent) ROTATIONS.setCompletedAction(key, true);
+        }
+
         if(tower.getValue() && MC.gameSettings.keyBindJump.isKeyDown() && radius.getValue() <= 0 && !packetTower.getValue()) {
             if(MC.player.onGround)
                 MC.player.setVelocity(MC.player.motionX *0.3,towerJumpVelocity.getValue().doubleValue() /100, MC.player.motionZ *0.3);
@@ -86,6 +134,8 @@ public class Scaffold extends Module {
 
     @Override
     public void onMotion() {
+        if(MC.player == null || MC.world == null) return;
+
         int oldSlot = MC.player.inventory.currentItem;
         int newSlot = InventoryUtils.getBlockInHotbar();
 
@@ -122,7 +172,8 @@ public class Scaffold extends Module {
 
             BlockPos under = new BlockPos(MC.player.posX, MC.player.posY - 2, MC.player.posZ);
 
-            if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under, rotate.getValue());
+            if(MC.world.getBlockState(under).getMaterial().isReplaceable())
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
 
             MC.player.inventory.currentItem = oldSlot;
 
@@ -133,7 +184,8 @@ public class Scaffold extends Module {
         if(radius.getValue() == 0) {
             BlockPos under = new BlockPos(MC.player.posX, MC.player.posY - 1, MC.player.posZ);
 
-            if(MC.world.getBlockState(under).getMaterial().isReplaceable()) WorldUtils.placeBlockMainHand(under, rotate.getValue());
+            if(MC.world.getBlockState(under).getMaterial().isReplaceable())
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
 
             MC.player.inventory.currentItem = oldSlot;
 
@@ -150,7 +202,7 @@ public class Scaffold extends Module {
 
         for(BlockPos x: blocks) {
             if(MC.world.getBlockState(x).getMaterial().isReplaceable()) {
-                WorldUtils.placeBlockMainHand(x, rotate.getValue());
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, x, airplace.getValue());
                 break;
             }
         }

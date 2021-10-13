@@ -23,7 +23,6 @@ public class BlockHighlight extends Module {
     private final Setting<Float> blue = register(new FloatSetting("Blue", 0, 0, 1));
     private final Setting<Float> alpha = register(new FloatSetting("Alpha", 0.8f, 0, 1));
     private final Setting<Float> width = register(new FloatSetting("Width", 2, 0, 10));
-    private final Setting<Float> expand = register(new FloatSetting("Scale", 0f, -0.12f, 0.06f));
 
     @Override
     public void onRender3d() {

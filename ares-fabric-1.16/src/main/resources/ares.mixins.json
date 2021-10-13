@@ -8,6 +8,7 @@
     "accessors.BufferBuilderAccessor",
     "accessors.ChatMessageC2SPacketAccessor",
     "accessors.ChatScreenAccessor",
+    "accessors.ClientPlayerEntityAccessor",
     "accessors.ClientPlayerInteractionManagerAccessor",
     "accessors.DisconnectedScreenAccessor",
     "accessors.DrawableHelperAccessor",

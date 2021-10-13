@@ -10,17 +10,14 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.event.client.PacketEvent;
-import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
-import dev.tigr.simpleevents.listener.EventHandler;
-import dev.tigr.simpleevents.listener.EventListener;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
@@ -47,6 +44,7 @@ import java.util.stream.Collectors;
 
 import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.getDamage;
 import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear 2/6/21
@@ -81,12 +79,18 @@ public class BedAura extends Module {
     enum Target { CLOSEST, MOST_DAMAGE }
 
     private final Timer logicTimer = new Timer();
-    private double[] rotations = null;
     public Pair<BlockPos, Direction> target = null;
     private final Stack<BlockPos> placed = new Stack<>();
 
     private Box renderBox = null;
     private final Timer renderTimer = new Timer();
+
+    int key = Priorities.Rotation.BED_AURA;
+
+    @Override
+    public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
+    }
 
     @Override
     public void onTick() {
@@ -94,11 +98,11 @@ public class BedAura extends Module {
     }
 
     private void run() {
+        int delay = placeDelay.getValue() -2;
+        if(!(delay <= 0) && !logicTimer.passedTicks(delay) && placed.isEmpty()) ROTATIONS.setCompletedAction(key, true);
+
         // remove bed poses from world if not a bed anymore
         placed.removeIf(pos -> !(MC.world.getBlockState(pos).getBlock() instanceof BedBlock));
-
-        // reset rotations
-        if(rotations != null) rotations = null;
 
         // cleanup render
         if(renderTimer.passedSec(3)) {
@@ -168,9 +172,9 @@ public class BedAura extends Module {
 
     private void placeRotated(BlockPos pos, Direction direction) {
         float yaw = direction.asRotation();
-        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, MC.player.getPitch(), MC.player.isOnGround()));
+        if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.getPitch(), key, key, true, false);
+        else MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, MC.player.getPitch(), MC.player.isOnGround()));
         WorldUtils.placeBlockNoRotate(Hand.MAIN_HAND, pos);
-        rotations = new double[] { yaw, MC.player.getPitch() };
     }
 
     private void explode() {
@@ -180,21 +184,9 @@ public class BedAura extends Module {
         Vec3d vec = new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
         MC.interactionManager.interactBlock(MC.player, MC.world, Hand.MAIN_HAND, new BlockHitResult(vec, Direction.UP, pos, true));
 
-        // spoof rotations
-        rotations = WorldUtils.calculateLookAt(vec.x, vec.y, vec.z, MC.player);
-
         // reset timer
         logicTimer.reset();
     }
-
-    @EventHandler
-    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        // rotation spoofing
-        if(event.getPacket() instanceof PlayerMoveC2SPacket && rotations != null) {
-            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch((float) rotations[1]);
-            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw((float) rotations[0]);
-        }
-    });
 
     // draw target
     @Override

@@ -9,3 +9,8 @@ improve nametag scaling and add armor rendering on fabric
 interpolate entity bounding boxes for ESP
 Color picker for GUI
 PacketMine - Figure out how best to manage other modules with PacketMine instance w/ and w/o the queue
+Rotations - yawsteps
+Make all modules / rotations freecam compatible
+CA - strict directions / raytracing
+Change Mixin redirects to injects
+Rewrite targeting utils

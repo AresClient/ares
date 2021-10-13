@@ -9,8 +9,8 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.event.events.client.EntityEvent;
@@ -18,13 +18,12 @@ import dev.tigr.ares.forge.event.events.player.DestroyBlockEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -37,7 +36,6 @@ import net.minecraft.item.ItemAppleGold;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemPotion;
 import net.minecraft.network.play.client.CPacketHeldItemChange;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.network.play.server.SPacketSoundEffect;
@@ -50,6 +48,8 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear
@@ -123,6 +123,10 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<EntityEnderCrystal, Integer> lostCrystals = new LinkedHashMap<>();
     private EntityPlayer targetPlayer;
 
+    final int key = Priorities.Rotation.CRYSTAL_AURA;
+    final int generalPriority = Priorities.Rotation.CRYSTAL_AURA;
+    final int yawstepPriority = Priorities.Rotation.YAW_STEP;
+
     public CrystalAura() {
         INSTANCE = this;
     }
@@ -139,11 +143,21 @@ public class CrystalAura extends Module {
     }
 
     @Override
+    public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
+    }
+
+    @Override
     public void onTick() {
         run();
     }
 
     private void run() {
+        //Ensure it doesn't spam illegal place and break interactions without being rotated
+        if(rotateMode.getValue() == Rotations.PACKET) {
+            if(!ROTATIONS.isKeyCurrent(key) && !ROTATIONS.isCompletedAction() && ROTATIONS.getCurrentPriority() > key) return;
+        }
+
         // Break modes on a separate thread, otherwise the smart break damage calculations hold up the onTick function for all modules.
         EXECUTOR.execute(() -> {
             for(Entity entity : MC.world.getLoadedEntityList()) {
@@ -194,19 +208,14 @@ public class CrystalAura extends Module {
             return;
 
         // rotations
-        /*
-        There is no point in performing this more than once per tick - movement packets are only sent on tick anyways.
-        So instead of performing this on place / on break, rotate onTick towards a position. This will also help to
-        smoothen the rotation out somewhat while moving (which, in absence of yawsteps, will help somewhat) and by
-        using a reset delay of 10 ticks (may need adjustment) we can avoid micro resets of the rotation of the player
-        in between place/breaks which should help alleviate rubberbanding problems with NCP's fly check. -Makrennel
-         */
         if(rotations != null && rotationTimer.passedTicks(10)) {
             rotatePos = null;
             rotations = null;
+            ROTATIONS.setCompletedAction(key, true);
             rotationTimer.reset();
         } else if(rotatePos != null) {
             rotations = WorldUtils.calculateLookAt(rotatePos.getX() + 0.5, rotatePos.getY() + 0.5, rotatePos.getZ() + 0.5, MC.player);
+            if(rotateMode.getValue() == Rotations.PACKET) ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, generalPriority, false, false);
         }
 
         // cleanup render
@@ -344,17 +353,6 @@ public class CrystalAura extends Module {
         }
     });
 
-    @EventHandler
-    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        // rotation spoofing
-        if(event.getPacket() instanceof CPacketPlayer && rotations != null && rotateMode.getValue() == Rotations.PACKET) {
-            ReflectionHelper.setPrivateValue(CPacketPlayer.class, (CPacketPlayer) event.getPacket(), (float) rotations[1], "pitch", "field_149473_f");
-            ReflectionHelper.setPrivateValue(CPacketPlayer.class, (CPacketPlayer) event.getPacket(), (float) rotations[0], "yaw", "field_149476_e");
-            MC.player.rotationYawHead = (float) rotations[0];
-            MC.player.renderYawOffset = (float) rotations[0];
-        }
-    });
-
     // draw target
     @Override
     public void onRender3d() {
@@ -386,13 +384,19 @@ public class CrystalAura extends Module {
         if (event.getPacket() instanceof SPacketSoundEffect) {
             final SPacketSoundEffect packet = (SPacketSoundEffect) event.getPacket();
             if(packet.getCategory() == SoundCategory.BLOCKS && packet.getSound() == SoundEvents.ENTITY_GENERIC_EXPLODE) {
-                for(Entity e : MC.world.getLoadedEntityList()) {
-                    if(e instanceof EntityEnderCrystal) {
-                        if(e.getDistanceSq(packet.getX(), packet.getY(), packet.getZ()) <= 36) {
-                            //Remove from all these lists because we can be sure it has broken if the packet was received
-                            spawnedCrystals.remove(e);
-                            lostCrystals.remove(e);
-                        }
+                //Get all End Crystals within box
+                List<EntityEnderCrystal> crystalList =
+                        new ArrayList<>(MC.world.getEntitiesWithinAABB(
+                                EntityEnderCrystal.class,
+                                new AxisAlignedBB(
+                                        new BlockPos(packet.getX(), packet.getY(), packet.getZ())
+                                ).grow(6,6,6)
+                        ));
+                for(EntityEnderCrystal c: crystalList) {
+                    if(c.getDistanceSq(packet.getX(), packet.getY(), packet.getZ()) <= 36) {
+                        //Remove from all these lists because we can be sure it has broken if the packet was received
+                        spawnedCrystals.remove(c);
+                        lostCrystals.remove(c);
                     }
                 }
             }

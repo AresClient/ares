@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Tigermouthbear
  * Ported to Fabric by Makrennel 5/13/21
@@ -33,13 +36,16 @@ public class HopperAura extends Module {
     private final Set<BlockPos> hoppersPlaced = new HashSet<BlockPos>() {
     };
     private final Setting<Double> distance = register(new DoubleSetting("Distance", 5.0D, 1.0D, 10.0D));
-    private final Setting<Boolean> lockRotations = register(new BooleanSetting("LockRotations", false));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
+    private final Setting<Boolean> lockRotations = register(new BooleanSetting("Lock Rotations", false));
     private final Setting<Boolean> breakOwn = register(new BooleanSetting("Break Own", false));
 
+    final int key = Priorities.Rotation.HOPPER_AURA;
+    
     @EventHandler
     public EventListener<PacketEvent.Sent> packetSentListener = new EventListener<>(event -> {
         if(event.getPacket() instanceof PlayerInteractBlockC2SPacket) {
-            if (MC.player.inventory.getMainHandStack().getItem() == Items.HOPPER) {
+            if(MC.player.inventory.getMainHandStack().getItem() == Items.HOPPER) {
                 hoppersPlaced.add(((BlockHitResult) MC.crosshairTarget).getBlockPos().offset(((BlockHitResult) MC.crosshairTarget).getSide()));
             }
         }
@@ -62,7 +68,10 @@ public class HopperAura extends Module {
                     if(newSelection == -1) newSelection = InventoryUtils.findItemInHotbar(Items.IRON_PICKAXE);
                     if(newSelection != -1) MC.player.inventory.selectedSlot = newSelection;
                     else return;
-                    if(lockRotations.getValue()) WorldUtils.lookAtBlock(hopperPos);
+
+                    double[] rotations = WorldUtils.calculateLookAt(hopperPos.getX() +0.5, hopperPos.getY() +0.5, hopperPos.getZ() +0.5, WorldUtils.getPlayer());
+                    if(rotate.getValue() && !lockRotations.getValue()) ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, key, false, false);
+                    else if(rotate.getValue() && lockRotations.getValue()) WorldUtils.lookAtBlock(hopperPos);
 
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, hopper.getPos(), Direction.UP));
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, hopper.getPos(), Direction.UP));
@@ -74,6 +83,7 @@ public class HopperAura extends Module {
 
     @Override
     public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
         hoppersPlaced.clear();
     }
 }

@@ -6,6 +6,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.impl.modules.exploit.SecretClose;
 import dev.tigr.ares.forge.utils.InventoryUtils;
@@ -25,6 +26,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Tigermouthbear
  */
@@ -43,6 +46,8 @@ public class Auto32k extends Module {
     private int solidBlock;
     private int dispenser;
     private int redstone;
+
+    final int key = Priorities.Rotation.AUTO_32K;
 
     static boolean isSuperWeapon(ItemStack item) {
         if(item == null) {
@@ -84,6 +89,11 @@ public class Auto32k extends Module {
         }
 
         return -1;
+    }
+
+    @Override
+    public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
     }
 
     @Override
@@ -184,11 +194,11 @@ public class Auto32k extends Module {
         if(mode.getValue() == PlaceMode.HOPPER_ONLY) {
             //Place hopper
             MC.player.inventory.currentItem = hopper;
-            WorldUtils.placeBlockMainHand(basePos, rotate.getValue());
+            WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, basePos);
 
             //Place shulker
             MC.player.inventory.currentItem = shulker;
-            WorldUtils.placeBlockMainHand(new BlockPos(basePos.getX(), basePos.getY() + 1, basePos.getZ()), rotate.getValue());
+            WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, new BlockPos(basePos.getX(), basePos.getY() + 1, basePos.getZ()));
 
             endSequence();
         } else if(mode.getValue() == PlaceMode.DISPENSER) {
@@ -218,7 +228,7 @@ public class Auto32k extends Module {
             }
             if(MC.world.getBlockState(block).getMaterial().isReplaceable()) {
                 MC.player.inventory.currentItem = solidBlock;
-                WorldUtils.placeBlockMainHand(block, rotate.getValue());
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, block);
             }
             //End Place block
 
@@ -242,7 +252,7 @@ public class Auto32k extends Module {
             }
             if(MC.world.getBlockState(block).getMaterial().isReplaceable()) {
                 MC.player.inventory.currentItem = dispenser;
-                WorldUtils.placeBlockMainHand(block, rotate.getValue());
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, block);
                 MC.player.inventory.currentItem = shulker;
                 MC.playerController.processRightClickBlock(MC.player, MC.world, block, EnumFacing.UP, new Vec3d(block.getX(), block.getY(), block.getZ()), EnumHand.MAIN_HAND);
                 tickCount++;
@@ -274,7 +284,7 @@ public class Auto32k extends Module {
             }
             if(MC.world.getBlockState(block).getMaterial().isReplaceable()) {
                 MC.player.inventory.currentItem = InventoryUtils.findItemInHotbar(Item.getItemById(152));
-                WorldUtils.placeBlockMainHand(block, rotate.getValue());
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, block);
                 tickCount++;
                 return;
             }
@@ -282,7 +292,7 @@ public class Auto32k extends Module {
 
             //Place hopper
             MC.player.inventory.currentItem = hopper;
-            WorldUtils.placeBlockMainHand(basePos, rotate.getValue());
+            WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, basePos);
 
             MC.player.inventory.currentItem = shulker;
 

@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -22,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Tigermouthbear
  */
@@ -31,8 +34,12 @@ public class HopperAura extends Module {
     };
     private final int[] picks = {278, 285, 274, 270, 257};
     private final Setting<Double> distance = register(new DoubleSetting("Distance", 5.0D, 1.0D, 10.0D));
-    private final Setting<Boolean> lockRotations = register(new BooleanSetting("LockRotations", false));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
+    private final Setting<Boolean> lockRotations = register(new BooleanSetting("Lock Rotations", false));
     private final Setting<Boolean> breakOwn = register(new BooleanSetting("Break Own", false));
+
+    final int key = Priorities.Rotation.HOPPER_AURA;
+
     @EventHandler
     public EventListener<PlayerInteractEvent.RightClickBlock> rightClickBlockEvent = new EventListener<>(event -> {
         if(MC.player.inventory.getStackInSlot(MC.player.inventory.currentItem).getItem().equals(Item.getItemById(154))) {
@@ -57,7 +64,9 @@ public class HopperAura extends Module {
                         if(slot != -1) {
                             MC.player.inventory.currentItem = slot;
 
-                            if(lockRotations.getValue()) WorldUtils.lookAtBlock(hopperPos);
+                            double[] rotations = WorldUtils.calculateLookAt(hopperPos.getX() +0.5, hopperPos.getY() +0.5, hopperPos.getZ() +0.5, WorldUtils.getPlayer());
+                            if(rotate.getValue() && !lockRotations.getValue()) ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, key, false, false);
+                            else if(rotate.getValue() && lockRotations.getValue()) WorldUtils.lookAtBlock(hopperPos);
 
                             MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, hopper.getPos(), EnumFacing.UP));
                             MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, hopper.getPos(), EnumFacing.UP));
@@ -71,6 +80,7 @@ public class HopperAura extends Module {
 
     @Override
     public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
         hoppersPlaced.clear();
     }
 }

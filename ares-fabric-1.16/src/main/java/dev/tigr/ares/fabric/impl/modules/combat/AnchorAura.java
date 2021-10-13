@@ -9,16 +9,15 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
-import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
@@ -29,7 +28,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.Items;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -46,6 +44,7 @@ import java.util.stream.Collectors;
 
 import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.getDamage;
 import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear 2/6/20
@@ -86,6 +85,8 @@ public class AnchorAura extends Module {
     private double[] rotations = null;
     public BlockPos target = null;
     private Stack<BlockPos> placed = new Stack<>();
+
+    int key = Priorities.Rotation.ANCHOR_AURA;
 
     @Override
     public void onTick() {
@@ -141,7 +142,7 @@ public class AnchorAura extends Module {
         }
 
         // place
-        WorldUtils.placeBlockMainHand(pos, shouldRotate());
+        WorldUtils.placeBlockMainHand(shouldRotate(), key, key, false, false, pos);
         placed.add(pos);
 
         // set render pos
@@ -175,6 +176,7 @@ public class AnchorAura extends Module {
 
         // spoof rotations
         rotations = WorldUtils.calculateLookAt(vec.x, vec.y, vec.z, MC.player);
+        ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, key, false, false);
 
         // reset timer
         breakTimer.reset();
@@ -186,15 +188,6 @@ public class AnchorAura extends Module {
         if(antiSurround.getValue()) {
             BlockPos pos = event.getPos().down();
             if(isPartOfHole(pos) && canAnchorBePlacedHere(pos)) placeAnchor(pos);
-        }
-    });
-
-    @EventHandler
-    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        // rotation spoofing
-        if(event.getPacket() instanceof PlayerMoveC2SPacket && rotations != null && rotateMode.getValue() == Rotations.PACKET) {
-            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch((float) rotations[1]);
-            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw((float) rotations[0]);
         }
     });
 

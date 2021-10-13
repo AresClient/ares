@@ -15,9 +15,4 @@ import net.minecraft.entity.player.EntityPlayer;
 public class SafeWalk extends Module {
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> event.setCancelled(true));
-
-    @Override
-    public void onMotion() {
-
-    }
 }

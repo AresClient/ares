@@ -1,6 +1,8 @@
 package dev.tigr.ares.forge.utils;
 
+import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
+import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
@@ -20,23 +22,25 @@ import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static dev.tigr.ares.Wrapper.MC;
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear
  */
-public class WorldUtils {
+public class WorldUtils implements Wrapper {
+    public static EntityPlayer getPlayer() {
+        if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
+        return MC.player;
+    }
 
-    // gs code, prob in osiris idk
+    // gs code, prob in osiris idk - Doogie
     public static double[] forward(final double speed) {
         float forward = MC.player.movementInput.moveForward;
         float side = MC.player.movementInput.moveStrafe;
@@ -83,37 +87,37 @@ public class WorldUtils {
         final double posZ = forward * speed * sin - side * speed * cos;
         return new double[]{posX, posZ};
     }
+    // /Doogie
 
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(pos, true);
+        return placeBlockMainHand(false, -1, -1, false, false, pos);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
-        return placeBlockMainHand(pos, rotate, false);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, true);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace) {
-        return placeBlock(EnumHand.MAIN_HAND, pos, rotate, airPlace, false);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, false);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
-        return placeBlock(EnumHand.MAIN_HAND, pos, rotate, airPlace, ignoreEntity);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
+        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, EnumHand.MAIN_HAND, pos, airPlace, ignoreEntity);
     }
-
     public static boolean placeBlockNoRotate(EnumHand hand, BlockPos pos) {
-        return placeBlock(hand, pos, false, false, false);
+        return placeBlock(false, -1, -1, false, false, hand, pos, true, false);
     }
 
     public static boolean placeBlock(EnumHand hand, BlockPos pos) {
-        placeBlock(hand, pos, true, false);
+        placeBlock(false, -1, -1, false, false, hand, pos, true);
         return true;
     }
-    public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate) {
-        placeBlock(hand, pos, rotate, false);
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos) {
+        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, false);
         return true;
     }
-    public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean airPlace) {
-        placeBlock(hand, pos, rotate, airPlace, false);
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos, Boolean airPlace) {
+        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, false);
         return true;
     }
-    public static boolean placeBlock(EnumHand hand, BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
             if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
@@ -169,7 +173,9 @@ public class WorldUtils {
                 MC.player.rotationPitch + MathHelper
                         .wrapDegrees(pitch - MC.player.rotationPitch)};
 
-        if (rotate) MC.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0], rotations[1], MC.player.onGround));
+        if(rotate)
+            if(!ROTATIONS.setCurrentRotation(new Vec2f(rotations[0], rotations[1]), rotationKey, rotationPriority, instantRotation, instantBypassesCurrent))
+                return false;
 
         MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
         MC.playerController.processRightClickBlock(MC.player, MC.world, neighbor, side2, hitVec, hand);
@@ -374,6 +380,25 @@ public class WorldUtils {
         if(passive && isPassive(entity)) return true;
         if(hostile && isHostile(entity)) return true;
         return bots && isBot(entity);
+    }
+
+    public static boolean isValidTarget(EntityPlayer player) {
+        return isValidTarget(player, -1, false);
+    }
+    public static boolean isValidTarget(EntityPlayer player, double distance) {
+        return isValidTarget(player, distance, true);
+    }
+    public static boolean isValidTarget(EntityPlayer player, double distance, boolean doDistance) {
+        return !FriendManager.isFriend(player.getGameProfile().getName())
+                && !player.isDead
+                && !(player.getHealth() <= 0)
+                && !shouldDistance(player, distance, doDistance)
+                && player != MC.player;
+    }
+
+    private static boolean shouldDistance(EntityPlayer entity, double distance, boolean doDistance) {
+        if(doDistance) return MC.player.getDistanceSq(entity) > (distance * distance);
+        else return false;
     }
 
     public static boolean isPassive(Entity entity) {

@@ -6,7 +6,6 @@ import dev.tigr.ares.fabric.mixin.accessors.BufferBuilderAccessor;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.util.math.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 

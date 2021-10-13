@@ -4,6 +4,7 @@ import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import io.netty.buffer.Unpooled;
@@ -36,47 +37,54 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Tigermouthbear 9/26/20
  */
 public class WorldUtils implements Wrapper {
+    public static PlayerEntity getPlayer() {
+        if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
+        return MC.player;
+    }
+
     public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(pos, true);
+        return placeBlockMainHand(false, -1, -1, false, false, pos);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate) {
-        return placeBlockMainHand(pos, rotate, true);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, true);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace) {
-        return placeBlockMainHand(pos, rotate, airPlace, false);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, false);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
-        return placeBlockMainHand(pos, rotate, airPlace, ignoreEntity, null);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, ignoreEntity, null);
     }
-    public static boolean placeBlockMainHand(BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
-        return placeBlock(Hand.MAIN_HAND, pos, rotate, airPlace, ignoreEntity, overrideSide);
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
+        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, Hand.MAIN_HAND, pos, airPlace, ignoreEntity, overrideSide);
     }
     public static boolean placeBlockNoRotate(Hand hand, BlockPos pos) {
-        return placeBlock(hand, pos, false, true, false);
+        return placeBlock(false, -1, -1, false, false, hand, pos, true, false);
     }
 
     public static boolean placeBlock(Hand hand, BlockPos pos) {
-        placeBlock(hand, pos, true, false);
+        placeBlock(false, -1, -1, false, false, hand, pos, true);
         return true;
     }
-    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate) {
-        placeBlock(hand, pos, rotate, false);
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos) {
+        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, false);
         return true;
     }
-    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean airPlace) {
-        placeBlock(hand, pos, rotate, airPlace, false);
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace) {
+        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, false);
         return true;
     }
-    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity) {
-        placeBlock(hand, pos, rotate, airPlace, ignoreEntity, null);
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
+        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, ignoreEntity, null);
         return true;
     }
 
-    public static boolean placeBlock(Hand hand, BlockPos pos, Boolean rotate, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
             if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
@@ -139,7 +147,10 @@ public class WorldUtils implements Wrapper {
                 MC.player.getPitch() + MathHelper
                         .wrapDegrees(pitch - MC.player.getPitch())};
 
-        if(rotate) MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(rotations[0], rotations[1], MC.player.isOnGround()));
+        // Rotate using rotation manager and specified settings
+        if(rotate)
+            if(!ROTATIONS.setCurrentRotation(new Vec2f((float)rotations[0], (float)rotations[1]), rotationKey, rotationPriority, instantRotation, instantBypassesCurrent))
+                return false;
 
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
         MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
@@ -158,7 +169,7 @@ public class WorldUtils implements Wrapper {
         return NONSOLID_BLOCKS.contains(MC.world.getBlockState(pos).getBlock()) && MC.world.getOtherEntities(null, new Box(pos)).stream().noneMatch(Entity::collides);
     }
 
-    // gs code, prob in osiris idk
+    //gs code, prob in osiris idk - Doogie
     public static double[] forward(final double speed) {
         float forward = MC.player.input.movementForward;
         float side = MC.player.input.movementSideways;
@@ -205,6 +216,7 @@ public class WorldUtils implements Wrapper {
         final double posZ = forward * speed * sin - side * speed * cos;
         return new double[]{posX, posZ};
     }
+    // /Doogie
 
     public static void moveEntityWithSpeed(Entity entity, double speed, boolean shouldMoveY) {
         float yaw = (float) Math.toRadians(MC.player.getYaw());

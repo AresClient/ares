@@ -6,6 +6,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.BlockState;
@@ -28,6 +29,8 @@ public class HoleFiller extends Module {
     private final Setting<Boolean> skipNearby = register(new BooleanSetting("Skip closest", true));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
+
+    int key = Priorities.Rotation.HOLE_FILLER;
 
     @Override
     public void onTick() {
@@ -60,7 +63,7 @@ public class HoleFiller extends Module {
                 }
                 MC.player.getInventory().selectedSlot = slot;
 
-                WorldUtils.placeBlockMainHand(hole, rotate.getValue());
+                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, hole);
                 MC.player.getInventory().selectedSlot = first;
                 return;
             }

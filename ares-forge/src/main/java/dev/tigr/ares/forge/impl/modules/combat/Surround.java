@@ -7,19 +7,23 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
+import net.minecraft.block.BlockAir;
 import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.*;
+
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear
@@ -42,6 +46,8 @@ public class Surround extends Module {
     enum Boss {NONE, BOSSPLUS, BOSS}
 
     private LinkedHashMap<BlockPos, Pair<Timer, Boolean>> renderChange = new LinkedHashMap<>();
+
+    int key = Priorities.Rotation.SURROUND;
 
     private BlockPos lastPos = new BlockPos(0, -100, 0);
     private int ticks = 0;
@@ -75,6 +81,19 @@ public class Surround extends Module {
             lastPos = WorldUtils.roundBlockPos(MC.player.getPositionVector());
         }
 
+        // Check if a location is still needing placing and release rotations if nowhere is
+        boolean flagCurrent = true;
+        for(BlockPos pos: getPositions()) {
+            if(placeOnCrystal.getValue())
+                if(!bossList().contains(pos))
+                    if(MC.world.getBlockState(pos).getBlock() instanceof BlockAir)
+                        flagCurrent = false;
+
+            if(MC.world.getBlockState(pos) instanceof BlockAir && !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith))
+                flagCurrent = false;
+        }
+        if(ROTATIONS.isKeyCurrent(key) && flagCurrent) ROTATIONS.setCompletedAction(key, true);
+
         if(MC.player.onGround || !onlyGround.getValue()) {
             if(delay.getValue() != 0 && ticks++ % delay.getValue() != 0) return;
 
@@ -105,7 +124,11 @@ public class Surround extends Module {
                         renderChange.putIfAbsent(pos, new Pair<>(new Timer(), false));
 
                     MC.player.inventory.currentItem = obbyIndex;
-                    if(WorldUtils.placeBlockMainHand(pos, rotate.getValue(), air.getValue(), placeOnCrystal.getValue())) {
+
+                    boolean bossPos = false;
+                    if(bossList().contains(pos)) bossPos = true;
+
+                    if(WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() <= 0, false, pos, air.getValue(), !bossPos && placeOnCrystal.getValue())) {
                         if(renderChange.containsKey(pos)) {
                             renderChange.get(pos).setSecond(true);
                             renderChange.get(pos).getFirst().reset();
@@ -132,28 +155,39 @@ public class Surround extends Module {
     // returns list of places blocks should be placed at
     private List<BlockPos> getPositions() {
         List<BlockPos> positions = new ArrayList<>();
+
         if(!onlyGround.getValue()) add(positions, lastPos.down());
         add(positions, lastPos.north());
         add(positions, lastPos.east());
         add(positions, lastPos.south());
         add(positions, lastPos.west());
-        if(boss.getValue() != Boss.NONE) {
-            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north(2));
-            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east(2));
-            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south(2));
-            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west(2));
-        }
+
+        if(boss.getValue() != Boss.NONE)
+            for(BlockPos pos: bossList())
+                add(positions, pos);
+
+        return positions;
+    }
+
+    private List<BlockPos> bossList() {
+        List<BlockPos> positions = new ArrayList<>();
+
+        if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north(2));
+        if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east(2));
+        if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south(2));
+        if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west(2));
+
         if(boss.getValue() == Boss.BOSSPLUS) {
-            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK
-                    || MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.north().east());
-            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK
-                    || MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.east().south());
-            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK
-                    || MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.south().west());
-            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK
-                    || MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK) add(positions, lastPos.west().north());
-            //Yeah, boss is cringe but some stupid people from some russian server unironically want it - Makrennel
+            if(MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK || MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK)
+                add(positions, lastPos.north().east());
+            if(MC.world.getBlockState(lastPos.east()).getBlock() != Blocks.BEDROCK || MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK)
+                add(positions, lastPos.east().south());
+            if(MC.world.getBlockState(lastPos.south()).getBlock() != Blocks.BEDROCK || MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK)
+                add(positions, lastPos.south().west());
+            if(MC.world.getBlockState(lastPos.west()).getBlock() != Blocks.BEDROCK || MC.world.getBlockState(lastPos.north()).getBlock() != Blocks.BEDROCK)
+                add(positions, lastPos.west().north());
         }
+
         return positions;
     }
 
@@ -186,6 +220,7 @@ public class Surround extends Module {
         doSnap = true;
         hasCentered = false;
         renderChange.clear();
+        ROTATIONS.setCompletedAction(key, true);
     }
 
     // draw blocks

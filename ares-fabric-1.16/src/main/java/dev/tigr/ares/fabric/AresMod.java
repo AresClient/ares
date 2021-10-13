@@ -120,7 +120,6 @@ public class AresMod extends Ares {
                 IceSpeed.class,
                 InventoryMove.class,
                 Jesus.class,
-                NoBlockPush.class,
                 NoClip.class,
                 NoSlowDown.class,
                 PacketFly.class,
@@ -141,6 +140,7 @@ public class AresMod extends Ares {
                 NoForceLook.class,
                 PacketMine.class,
                 RotationLock.class,
+                RotationManager.class,
                 Scaffold.class,
 
                 // render

@@ -8,8 +8,8 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.fabric.impl.modules.movement.NoBlockPush;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import dev.tigr.ares.fabric.utils.HoleType;
@@ -20,6 +20,8 @@ import net.minecraft.block.Blocks;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.math.BlockPos;
 
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+
 /**
  * @author Makrennel
  */
@@ -28,7 +30,6 @@ public class Burrow extends Module {
     private final Setting<Boolean> holeOnly = register(new BooleanSetting("Hole Only", false));
     private final Setting<Boolean> toggleSurround = register(new BooleanSetting("Toggle Surround On", false));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
-    private final Setting<Boolean> preventBlockPush = register(new BooleanSetting("Prevent Block Push", true));
 
     private final Setting<Boolean> fakeJump = register(new BooleanSetting("FakeJump", true));
     private final Setting<Double> height = register(new DoubleSetting("Trigger Height", 1.12, 1.0, 1.3)).setVisibility(() -> !fakeJump.getValue());
@@ -42,6 +43,8 @@ public class Burrow extends Module {
 
     enum RubberbandMode { Jump, Packet }
     enum CurrBlock {Obsidian, EnderChest, CryingObsidian, NetheriteBlock, AncientDebris, EnchantingTable, RespawnAnchor, Anvil}
+
+    int key = Priorities.Rotation.BURROW;
 
     private BlockPos playerPos;
 
@@ -111,11 +114,6 @@ public class Burrow extends Module {
             return;
         }
 
-        //toggles on NoBurrowPush
-        if(preventBlockPush.getValue()) {
-            NoBlockPush.INSTANCE.setEnabled(true);
-        }
-
         //toggles Surround with snap turned off (snap breaks burrow)
         if(toggleSurround.getValue()) {
             Surround.INSTANCE.setEnabled(true);
@@ -140,9 +138,8 @@ public class Burrow extends Module {
         if(!fakeJump.getValue() && useTimer.getValue()) {
             ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / 20.0F);
         }
-        if (rotate.getValue()) {
-            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(oldYaw, oldPitch, MC.player.isOnGround()));
-        }
+
+        ROTATIONS.setCompletedAction(key, true);
     }
     public void run() {
         if (MC.player == null || MC.world == null) return;
@@ -166,7 +163,7 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        WorldUtils.placeBlockMainHand(playerPos, rotate.getValue(), true, true);
+        WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, playerPos, true, true);
 
         MC.player.inventory.selectedSlot = oldSelection;
 

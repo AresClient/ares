@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.event.movement.BlockPushEvent;
 import dev.tigr.ares.fabric.event.movement.EntityPushEvent;
 import dev.tigr.ares.fabric.mixin.accessors.EntityVelocityUpdateS2CPacketAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.ExplosionS2CPacketAccessor;
@@ -22,9 +23,10 @@ public class Velocity extends Module {
     private final Setting<Float> vertical = register(new FloatSetting("Vertical", 0, 0, 1));
 
     @EventHandler
-    public EventListener<EntityPushEvent> entityPushEvent = new EventListener<>(event -> {
-        if(event.getEntity() == MC.player) event.setCancelled(true);
-    });
+    public EventListener<EntityPushEvent> entityPushEvent = new EventListener<>(event -> event.setCancelled(true));
+
+    @EventHandler
+    public EventListener<BlockPushEvent> onBurrowPush = new EventListener<>(event -> event.setCancelled(true));
 
     @EventHandler
     public EventListener<PacketEvent.Receive> packetReceiveEvent = new EventListener<>(event -> {

@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
+import dev.tigr.ares.forge.event.events.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -26,18 +27,25 @@ public class Freecam extends Module {
     private final Setting<Boolean> cancelPackets = register(new BooleanSetting("Cancel Packets", true));
 
     public EntityOtherPlayerMP clone;
-    @EventHandler
-    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        if((event.getPacket() instanceof CPacketPlayer || event.getPacket() instanceof CPacketInput) && cancelPackets.getValue())
-            event.setCancelled(true);
-    });
-    @EventHandler
-    public EventListener<LivingEvent.LivingUpdateEvent> livingUpdateEvent = new EventListener<>(event -> MC.player.noClip = true);
     private Entity ride = null;
 
     public Freecam() {
         INSTANCE = this;
     }
+
+    @EventHandler
+    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
+        if((event.getPacket() instanceof CPacketInput) && cancelPackets.getValue())
+            event.setCancelled(true);
+    });
+
+    @EventHandler
+    private final EventListener<SendMovementPacketsEvent.Pre> onMovementPacketSent = new EventListener<>(event -> {
+        if(cancelPackets.getValue()) event.setCancelled(true);
+    });
+
+    @EventHandler
+    public EventListener<LivingEvent.LivingUpdateEvent> livingUpdateEvent = new EventListener<>(event -> MC.player.noClip = true);
 
     @Override
     public void onEnable() {

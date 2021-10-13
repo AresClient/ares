@@ -5,6 +5,7 @@
   "refmap": "mixins.ares.refmap.json",
   "mixins": [
     "accessor.BufferBuilderAccessor",
+    "accessor.EntityPlayerSPAccessor",
     "accessor.ItemRendererAccessor",
     "client.MixinBlockLiquid",
     "client.MixinBlockSoulsand",

@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
+import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
 import dev.tigr.ares.forge.event.events.movement.EntityPushEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -19,9 +20,13 @@ import net.minecraft.network.play.server.SPacketExplosion;
 public class Velocity extends Module {
 
     @EventHandler
+    public EventListener<BlockPushEvent> onBurrowPush = new EventListener<>(event -> event.setCancelled(true));
+
+    @EventHandler
     public EventListener<EntityPushEvent> entityPushEvent = new EventListener<>(event -> {
         if(event.getEntity() == MC.player) event.setCancelled(true);
     });
+
     @EventHandler
     public EventListener<PacketEvent.Receive> packetReceiveEvent = new EventListener<>(event -> {
         if(event.getPacket() instanceof SPacketEntityVelocity) {

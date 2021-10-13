@@ -9,13 +9,13 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.client.EntityEvent;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
-import dev.tigr.ares.fabric.mixin.accessors.PlayerMoveC2SPacketAccessor;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
@@ -39,7 +39,6 @@ import net.minecraft.item.Items;
 import net.minecraft.item.PotionItem;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -54,6 +53,8 @@ import net.minecraft.world.explosion.Explosion;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear
@@ -108,7 +109,6 @@ public class CrystalAura extends Module {
     private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0f, 1f)).setVisibility(() -> page.getValue() == Page.RENDER);
     private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0f, 1f)).setVisibility(() -> page.getValue() == Page.RENDER);
     private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2.4f, 0f, 10f)).setVisibility(() -> page.getValue() == Page.RENDER);
-    private final Setting<Float> expandRender = register(new FloatSetting("Box Scale", 0f, -0.12f, 0.12f)).setVisibility(() -> page.getValue() == Page.RENDER);
 
     enum Mode { DAMAGE, DISTANCE }
     enum BreakMode { OWN, SMART, ALL }
@@ -129,6 +129,10 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<EndCrystalEntity, Integer> lostCrystals = new LinkedHashMap<>();
     private Entity targetPlayer;
 
+    final int key = Priorities.Rotation.CRYSTAL_AURA;
+    final int generalPriority = Priorities.Rotation.CRYSTAL_AURA;
+    final int yawstepPriority = Priorities.Rotation.YAW_STEP;
+
     public CrystalAura() {
         INSTANCE = this;
     }
@@ -147,11 +151,21 @@ public class CrystalAura extends Module {
     }
 
     @Override
+    public void onDisable() {
+        ROTATIONS.setCompletedAction(key, true);
+    }
+
+    @Override
     public void onTick() {
         run();
     }
 
     private void run() {
+        //Ensure it doesn't spam illegal place and break interactions without being rotated
+        if(rotateMode.getValue() == Rotations.PACKET) {
+            if(!ROTATIONS.isKeyCurrent(key) && !ROTATIONS.isCompletedAction() && ROTATIONS.getCurrentPriority() > key) return;
+        }
+
         // Break modes on a separate thread, otherwise the smart break damage calculations hold up the onTick function for all modules.
         EXECUTOR.execute(() -> {
             for(Entity entity : MC.world.getEntities()) {
@@ -202,19 +216,14 @@ public class CrystalAura extends Module {
             return;
 
         // rotations
-        /*
-        There is no point in performing this more than once per tick - movement packets are only sent on tick anyways.
-        So instead of performing this on place / on break, rotate onTick towards a position. This will also help to
-        smoothen the rotation out somewhat while moving (which, in absence of yawsteps, will help somewhat) and by
-        using a reset delay of 10 ticks (may need adjustment) we can avoid micro resets of the rotation of the player
-        in between place/breaks which should help alleviate rubberbanding problems with NCP's fly check. -Makrennel
-         */
         if(rotations != null && rotationTimer.passedTicks(10)) {
             rotatePos = null;
             rotations = null;
+            ROTATIONS.setCompletedAction(key, true);
             rotationTimer.reset();
         } else if(rotatePos != null) {
             rotations = WorldUtils.calculateLookAt(rotatePos.getX() + 0.5, rotatePos.getY() + 0.5, rotatePos.getZ() + 0.5, MC.player);
+            if(rotateMode.getValue() == Rotations.PACKET) ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, generalPriority, false, false);
         }
 
         // cleanup render
@@ -355,17 +364,6 @@ public class CrystalAura extends Module {
         if(antiSurround.getValue()) {
             BlockPos pos = event.getPos().down();
             if(isPartOfHole(pos) && canCrystalBePlacedHere(pos)) placeCrystal(shouldOffhand(), pos);
-        }
-    });
-
-    @EventHandler
-    public EventListener<PacketEvent.Sent> packetSentEvent = new EventListener<>(event -> {
-        // rotation spoofing
-        if(event.getPacket() instanceof PlayerMoveC2SPacket && rotations != null && rotateMode.getValue() == Rotations.PACKET) {
-            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setPitch((float) rotations[1]);
-            ((PlayerMoveC2SPacketAccessor) event.getPacket()).setYaw((float) rotations[0]);
-            MC.player.headYaw = (float) rotations[0];
-            MC.player.bodyYaw = (float) rotations[0];
         }
     });
 

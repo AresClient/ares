@@ -21,7 +21,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -38,6 +37,7 @@ public abstract class MixinEntity implements Wrapper {
 
     @Shadow public abstract Vec3d getRotationVec(float tickDelta);
 
+    @Shadow public float prevPitch;
     private final Entity entity = ((Entity) (Object) this);
 
     @Inject(method = "changeLookDirection", at = @At("HEAD"), cancellable = true)
@@ -63,9 +63,9 @@ public abstract class MixinEntity implements Wrapper {
         }
     }
 
-    @Redirect(method = "pushAwayFrom", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;addVelocity(DDD)V", ordinal = 0))
-    public void pushEntity(Entity entity, double x, double y, double z) {
-        if(!Ares.EVENT_MANAGER.post(new EntityPushEvent(entity)).isCancelled()) entity.addVelocity(x, y, z);
+    @Inject(method = "pushAwayFrom", at = @At("HEAD"), cancellable = true)
+    public void pushEntity(Entity entity, CallbackInfo ci) {
+        if(Ares.EVENT_MANAGER.post(new EntityPushEvent()).isCancelled()) ci.cancel();
     }
 
     @Inject(method = "getVelocityMultiplier", at = @At("HEAD"), cancellable = true)

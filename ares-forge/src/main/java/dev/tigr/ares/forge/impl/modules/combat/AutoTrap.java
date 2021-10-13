@@ -1,6 +1,5 @@
 package dev.tigr.ares.forge.impl.modules.combat;
 
-import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -8,13 +7,20 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.entity.EntityOtherPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+
+import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
  * @author Tigermouthbear
@@ -22,35 +28,72 @@ import net.minecraft.util.math.BlockPos;
 @Module.Info(name = "AutoTrap", description = "Automatically trap people in holes", category = Category.COMBAT)
 public class AutoTrap extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.FULL));
-    private final Setting<Double> range = register(new DoubleSetting("Range", 8.0D, 0.0D, 15.0D));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
-    private final Setting<Integer> delay = register(new IntegerSetting("Delay(ms)", 100, 0, 500));
+    private final Setting<Double> range = register(new DoubleSetting("Range", 5.5D, 0, 8));
+    private final Setting<Double> targetRange = register(new DoubleSetting("Target Range", 4, 0, 7));
+    private final Setting<Integer> delay = register(new IntegerSetting("Delay", 2, 0, 10));
+    private final Setting<Integer> blocksPerTick = register(new IntegerSetting("Blocks Per Tick", 8, 0, 20)).setVisibility(() -> delay.getValue() == 0);
 
     private final Timer delayTimer = new Timer();
 
+    int key = Priorities.Rotation.AUTO_TRAP;
+
+    int blocksPlaced = 0;
+
+    @Override
+    public void onDisable() {
+        if(rotate.getValue()) ROTATIONS.setCompletedAction(key, true);
+    }
+
     @Override
     public void onTick() {
-        if (delayTimer.passedMillis(delay.getValue())) {
-            for (EntityPlayer player : MC.world.playerEntities) {
-                if (FriendManager.isFriend(player.getGameProfile().getName()) || MC.player == player) continue;
+        //Flag rotations off if there are no placements needing completion
+        boolean flagCurrent = true;
+        for(EntityPlayer player: MC.world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(MC.player.getPosition()).grow(targetRange.getValue())))
+            if(isPlayerValidTarget(player))
+                for(BlockPos pos: getPos(player))
+                    if(isPosInRange(pos)
+                            && MC.world.getBlockState(pos).getMaterial().isReplaceable()
+                            && !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith))
+                        flagCurrent = false;
 
-                if (MC.player.getDistance(player) <= range.getValue()) {
-                    for (BlockPos pos : getPos(player)) {
-                        if (MC.world.getBlockState(pos).getMaterial().isReplaceable()) {
-                            if (
-                                    MC.world.getEntitiesWithinAABBExcludingEntity(
-                                            null,
-                                            new AxisAlignedBB(pos)
-                                    ).isEmpty()
-                            ) {
+        if(ROTATIONS.isKeyCurrent(key) && flagCurrent) ROTATIONS.setCompletedAction(key, true);
+
+        int oldSlot = MC.player.inventory.currentItem;
+
+        if(delayTimer.passedMillis(delay.getValue())) {
+            for(EntityPlayer player: MC.world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(MC.player.getPosition()).grow(targetRange.getValue()))) {
+                if(isPlayerValidTarget(player)) {
+
+                    int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
+                    if(delay.getValue() == 0) {
+                        if(newSlot == -1) return;
+                        else MC.player.inventory.currentItem = newSlot;
+                    }
+                    for(BlockPos pos : getPos(player)) {
+                        if(MC.world.getBlockState(pos).getMaterial().isReplaceable() && isPosInRange(pos)) {
+                            if(MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).isEmpty()) {
                                 //place block
-                                int oldSlot = MC.player.inventory.currentItem;
-                                int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
-                                if (newSlot == -1) return;
-                                else MC.player.inventory.currentItem = newSlot;
-                                WorldUtils.placeBlockMainHand(pos, rotate.getValue());
-                                MC.player.inventory.currentItem = oldSlot;
+                                if(delay.getValue() != 0) {
+                                    if(newSlot == -1) return;
+                                    else MC.player.inventory.currentItem = newSlot;
+                                }
+
+                                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
+
+                                if(delay.getValue() != 0) MC.player.inventory.currentItem = oldSlot;
+
                                 delayTimer.reset();
+
+                                if(delay.getValue() == 0) {
+                                    blocksPlaced++;
+                                    if(blocksPlaced < blocksPerTick.getValue()) continue;
+                                    else {
+                                        MC.player.inventory.currentItem = oldSlot;
+                                        blocksPlaced = 0;
+                                        return;
+                                    }
+                                }
                                 return;
                             }
                         }
@@ -58,6 +101,16 @@ public class AutoTrap extends Module {
                 }
             }
         }
+
+        MC.player.inventory.currentItem = oldSlot;
+    }
+
+    private boolean isPosInRange(BlockPos pos) {
+        return pos.distanceSqToCenter(MC.player.posX, MC.player.posY, MC.player.posZ) <= range.getValue() * range.getValue();
+    }
+
+    private boolean isPlayerValidTarget(EntityPlayer player) {
+        return (MC.player.getDistanceSq(player) <= targetRange.getValue() * targetRange.getValue()) && WorldUtils.isValidTarget(player);
     }
 
     private BlockPos[] getPos(EntityPlayer player) {
