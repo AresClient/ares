@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
+import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
@@ -19,24 +20,30 @@ import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 @Module.Info(name = "Speedometer", description = "Shows your speed", category = Category.HUD)
 public class Speedometer extends HudElement {
     private final Setting<Boolean> rainbow = register(new BooleanSetting("Rainbow", false));
+    private final Setting<Boolean> average = register(new BooleanSetting("Average", true));
+    private final Setting<Integer> tickInterval = register(new IntegerSetting("Update Interval", 10, 1, 50));
     private final Setting<SpeedUnits> speedUnit = register(new EnumSetting<>("Unit", SpeedUnits.KILOMETERS_PH));
-    
+
     enum SpeedUnits {
         METERS_PS,
         MILES_PH,
         KILOMETERS_PH
     }
 
+    private double speedTotal = 0;
     private double speed = 0;
-    
+
     public Speedometer() {
         super(150, 60, 0, 0); // FONT_RENDERER.getFontHeight() is broken when initializing on Fabric
     }
 
     @Override
     public void onTick() {
-        if(MC.player.age % 10 != 0) return;
-        
+        if(MC.player == null || MC.world == null) return;
+
+        if(!average.getValue() && TICKS % tickInterval.getValue() != 0) return;
+
+        double localSpeed;
         if(!MC.player.isAlive()) {
             speed = 0;
             return;
@@ -47,7 +54,14 @@ public class Speedometer extends HudElement {
 
         double xMove = MC.player.getPos().x - MC.player.prevX;
         double zMove = MC.player.getPos().z - MC.player.prevZ;
-        speed = Math.sqrt(xMove * xMove + zMove * zMove) / tps;
+        localSpeed = Math.sqrt(xMove * xMove + zMove * zMove) / tps;
+        speedTotal += localSpeed;
+
+        if(!average.getValue()) speed = localSpeed;
+        else if(TICKS % tickInterval.getValue() == 0) {
+            speed = speedTotal / tickInterval.getValue();
+            speedTotal = 0;
+        }
     }
 
     public void draw() {

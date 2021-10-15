@@ -21,19 +21,19 @@ import java.util.Set;
  */
 @Module.Info(name = "Speedometer", description = "Shows your speed", category = Category.HUD)
 public class Speedometer extends HudElement {
-
     private final Setting<Boolean> rainbow = register(new BooleanSetting("Rainbow", false));
+    private final Setting<Boolean> average = register(new BooleanSetting("Average", true));
+    private final Setting<Integer> tickInterval = register(new IntegerSetting("Update Interval", 10, 1, 50));
     private final Setting<SpeedUnits> speedUnit = register(new EnumSetting<>("Unit", SpeedUnits.KILOMETERS_PH));
     
     enum SpeedUnits {
         METERS_PS,
         MILES_PH,
-        KILOMETERS_PH,
-        MOTION
+        KILOMETERS_PH
     }
 
+    private double speedTotal = 0;
     private double speed = 0;
-    private double speedc = 0;
 
     public Speedometer() {
         super(150, 60, 0, FONT_RENDERER.getFontHeight());
@@ -41,19 +41,24 @@ public class Speedometer extends HudElement {
 
     @Override
     public void onTick() {
+        if(MC.player == null || MC.world == null) return;
+
+        if(!average.getValue() && TICKS % tickInterval.getValue() != 0) return;
+
+        double localSpeed;
 
         float tickLength = ReflectionHelper.getPrivateValue(Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), "tickLength", "field_194149_e");
         double tps = tickLength / 1000;
 
         double xMove = MC.player.posX - MC.player.prevPosX;
         double zMove = MC.player.posZ - MC.player.prevPosZ;
-        speed = Math.sqrt(xMove * xMove + zMove * zMove) / tps;
+        localSpeed = Math.sqrt(xMove * xMove + zMove * zMove) / tps;
+        speedTotal += localSpeed;
 
-        if (!(MC.player.ticksExisted % 2 == 0))
-            speedc = (speed + speedc) / 2;
-        else {
-            speed = speedc;
-            speedc = speed;
+        if(!average.getValue()) speed = localSpeed;
+        else if(TICKS % tickInterval.getValue() == 0) {
+            speed = speedTotal / tickInterval.getValue();
+            speedTotal = 0;
         }
     }
 
@@ -66,11 +71,9 @@ public class Speedometer extends HudElement {
             case MILES_PH:
                 str = Utils.roundDouble(speed * 2.23694, 1) + " MPH";
                 break;
-            case KILOMETERS_PH:
+            default:
                 str = Utils.roundDouble(speed * 3.6, 1) + " KM/H";
                 break;
-            default: // guarantee initialisation of "str"
-                str = Utils.roundDouble(speed / 20, 1) + " BPT";
         }
 
         drawString(str, getX(), getY(), rainbow.getValue() ? IRenderer.rainbow() : Color.WHITE);
