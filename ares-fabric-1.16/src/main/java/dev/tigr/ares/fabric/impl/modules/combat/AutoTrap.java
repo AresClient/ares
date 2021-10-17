@@ -10,7 +10,8 @@ import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
@@ -78,7 +79,7 @@ public class AutoTrap extends Module {
                                     else MC.player.inventory.selectedSlot = newSlot;
                                 }
 
-                                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
+                                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
 
                                 if(delay.getValue() != 0) MC.player.inventory.selectedSlot = oldSlot;
 
@@ -109,7 +110,7 @@ public class AutoTrap extends Module {
     }
 
     private boolean isPlayerValidTarget(PlayerEntity player) {
-        return (MC.player.squaredDistanceTo(player) <= targetRange.getValue() * targetRange.getValue()) && WorldUtils.isValidTarget(player);
+        return (MC.player.squaredDistanceTo(player) <= targetRange.getValue() * targetRange.getValue()) && PlayerUtils.isValidTarget(player);
     }
 
     private BlockPos[] getPos(Entity player) {

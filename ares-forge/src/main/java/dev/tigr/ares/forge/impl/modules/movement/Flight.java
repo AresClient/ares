@@ -5,7 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.EntityUtils;
 
 /**
  * @author Tigermouthbear
@@ -27,7 +27,7 @@ public class Flight extends Module {
 
             case VELOCITY:
                 MC.player.setVelocity(0, 0, 0);
-                WorldUtils.moveEntityWithSpeed(MC.player, speed.getValue() / 20, true);
+                EntityUtils.moveEntityWithSpeed(MC.player, speed.getValue() / 20, true);
                 break;
 
             case JETPACK:

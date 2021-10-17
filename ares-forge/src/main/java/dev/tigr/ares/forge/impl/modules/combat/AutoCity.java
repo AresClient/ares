@@ -9,7 +9,7 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.impl.modules.exploit.InstantMine;
 import dev.tigr.ares.forge.utils.Comparators;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.PlayerUtils;
 import net.minecraft.block.BlockAir;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -82,7 +82,7 @@ public class AutoCity extends Module {
 
                     // rotate
                     if (rotate.getValue()) {
-                        double[] rotations = WorldUtils.calculateLookAt(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
+                        double[] rotations = PlayerUtils.calculateLookFromPlayer(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
                         MC.player.connection.sendPacket(new CPacketPlayer.Rotation((float) rotations[0], (float) rotations[1], MC.player.onGround));
                     }
 

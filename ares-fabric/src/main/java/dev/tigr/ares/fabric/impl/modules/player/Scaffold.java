@@ -12,6 +12,7 @@ import dev.tigr.ares.fabric.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.fabric.event.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
@@ -124,7 +125,7 @@ public class Scaffold extends Module {
             }
             if(towerDelayTimer.passedMillis(towerClipDelay.getValue())) {
                 // Pretend that we are jumping to the server and then update player position to meet where the server thinks the player is instantly.
-                WorldUtils.fakeJumpSequence(1,4);
+                SelfUtils.fakeJump(1,4);
                 MC.player.setPosition(MC.player.getX(), MC.player.getY() + 1.15, MC.player.getZ());
                 shouldResetTower = true;
             }
@@ -168,7 +169,7 @@ public class Scaffold extends Module {
             BlockPos under = new BlockPos(MC.player.getX(), MC.player.getY() - 2, MC.player.getZ());
 
             if(MC.world.getBlockState(under).getMaterial().isReplaceable())
-                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
+                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
 
             MC.player.getInventory().selectedSlot = oldSlot;
 
@@ -180,7 +181,7 @@ public class Scaffold extends Module {
             BlockPos under = new BlockPos(MC.player.getX(), MC.player.getY() - 1, MC.player.getZ());
 
             if(MC.world.getBlockState(under).getMaterial().isReplaceable())
-                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
+                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
 
             MC.player.getInventory().selectedSlot = oldSlot;
 
@@ -197,7 +198,7 @@ public class Scaffold extends Module {
 
         for(BlockPos x: blocks) {
             if(MC.world.getBlockState(x).getMaterial().isReplaceable()) {
-                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, x, airplace.getValue());
+                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, x, airplace.getValue());
                 break;
             }
         }

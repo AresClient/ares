@@ -11,6 +11,7 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.ShaderEffectAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.WorldRendererAccessor;
+import dev.tigr.ares.fabric.utils.entity.EntityUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.client.gl.GlUniform;
@@ -64,7 +65,7 @@ public class ESP extends Module {
         });
 
         for(Entity entity: MC.world.getEntities()) {
-            boolean flag = WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue());
+            boolean flag = EntityUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue());
             entity.setGlowing(flag);
             ((EntityAccessor) entity).setFlag(6, flag);
         }

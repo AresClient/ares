@@ -9,7 +9,7 @@ import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
 import dev.tigr.ares.fabric.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.EntityUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.network.OtherClientPlayerEntity;
@@ -60,7 +60,7 @@ public class Freecam extends Module {
 
     @Override
     public void onTick() {
-        WorldUtils.moveEntityWithSpeed(MC.player, speed.getValue(), true);
+        EntityUtils.moveEntityWithSpeed(MC.player, speed.getValue(), true);
     }
 
     @Override

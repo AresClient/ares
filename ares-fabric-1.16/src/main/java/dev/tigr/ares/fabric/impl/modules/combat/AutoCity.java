@@ -9,6 +9,7 @@ import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.exploit.InstantMine;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.PickaxeItem;
@@ -76,7 +77,7 @@ public class AutoCity extends Module {
 
                     // rotate
                     if (rotate.getValue()) {
-                        double[] rotations = WorldUtils.calculateLookAt(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
+                        double[] rotations = PlayerUtils.calculateLookFromPlayer(target.getX() + 0.5, target.getY() + 0.5, target.getZ() + 0.5, MC.player);
                         MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly((float) rotations[0], (float) rotations[1], MC.player.isOnGround()));
                     }
 

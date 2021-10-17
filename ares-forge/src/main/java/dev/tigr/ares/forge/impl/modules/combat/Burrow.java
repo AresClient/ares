@@ -14,6 +14,7 @@ import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.utils.HoleType;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
@@ -144,7 +145,7 @@ public class Burrow extends Module {
         switchToBlock();
 
         if(fakeJump.getValue()) {
-            WorldUtils.fakeJumpSequence(1,4);
+            SelfUtils.fakeJump(1,4);
             runSequence();
         }
 
@@ -157,7 +158,7 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, playerPos, true, true);
+        SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, playerPos, true, true);
 
         MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
 

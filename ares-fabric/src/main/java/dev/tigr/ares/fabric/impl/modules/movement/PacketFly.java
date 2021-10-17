@@ -5,10 +5,8 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-
-import java.util.Set;
 
 /**
  * @author  Doogie13
@@ -62,7 +60,7 @@ public class PacketFly extends Module {
 
         }
         if ((MC.options.keyForward.isPressed() || MC.options.keyBack.isPressed() || MC.options.keyLeft.isPressed() || MC.options.keyRight.isPressed()) && (!MC.player.isOnGround() || MC.player.verticalCollision)) {
-            double[] dir = WorldUtils.forward(0.0624);
+            double[] dir = SelfUtils.getMovement(0.0624);
 
             x += dir[0];
             z += dir[1];

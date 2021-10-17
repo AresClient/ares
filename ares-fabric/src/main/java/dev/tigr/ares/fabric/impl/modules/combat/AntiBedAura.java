@@ -8,6 +8,7 @@ import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.fabric.utils.HoleType;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.block.Block;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
@@ -45,7 +46,7 @@ public class AntiBedAura extends Module {
                     MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
                 }
             }
-            WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, true, false, MC.player.getBlockPos().up());
+            SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, false, MC.player.getBlockPos().up());
             MC.player.getInventory().selectedSlot = prev;
         }
     }

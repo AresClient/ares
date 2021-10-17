@@ -16,7 +16,9 @@ import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.MathUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.AirBlock;
 import net.minecraft.block.BedBlock;
@@ -31,7 +33,6 @@ import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -42,9 +43,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.getDamage;
-import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.fabric.utils.MathUtils.getDamage;
 
 /**
  * @author Tigermouthbear 2/6/21
@@ -53,12 +53,12 @@ import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS
 public class BedAura extends Module {
     // TODO: Simpler 1.15+ mode which focuses on placing on player rather than calculating. Better rotations. Antisuicide / max self damage. Smart Break?
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
-    private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
+    private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DISTANCE));
 //    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
     private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 12, 0, 15));
     private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 1, 0, 15));
-    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
+    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 20));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
     private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9));
@@ -75,7 +75,6 @@ public class BedAura extends Module {
     private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0, 1)).setVisibility(showRenderOptions::getValue);
     private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
 
-    enum Mode { DAMAGE, DISTANCE }
     enum Target { CLOSEST, MOST_DAMAGE }
 
     private final Timer logicTimer = new Timer();
@@ -175,7 +174,7 @@ public class BedAura extends Module {
         float yaw = direction.asRotation();
         if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.pitch, key, key, true, false);
         else MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(yaw, MC.player.pitch, MC.player.isOnGround()));
-        WorldUtils.placeBlockNoRotate(Hand.MAIN_HAND, pos);
+        SelfUtils.placeBlockNoRotate(Hand.MAIN_HAND, pos);
     }
 
     private void explode() {
@@ -250,10 +249,21 @@ public class BedAura extends Module {
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
 
             for(BlockPos pos: blocks) {
-                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer) < minDamage.getValue())
+                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer, false) < minDamage.getValue())
                     continue;
 
-                double score = getScore(pos, targetedPlayer);
+                double score = -1;
+
+                if(calcMode.getValue() == MathUtils.DmgCalcMode.DAMAGE || oneDotTwelve.getValue())
+                    score = MathUtils.getScore(
+                            new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
+                            targetedPlayer, calcMode.getValue(), false
+                    );
+                else if(calcMode.getValue() == MathUtils.DmgCalcMode.DISTANCE)
+                    score = MathUtils.getDistanceScoreBed(
+                            new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
+                            targetedPlayer
+                    );
 
                 // find best place for bed part
                 if(target == null || (score < bestScore && score != -1)) {
@@ -306,28 +316,6 @@ public class BedAura extends Module {
         return null;
     }
 
-    // utils
-    private double getScore(BlockPos pos, Entity player) {
-        double score;
-        if(placeMode.getValue() == Mode.DISTANCE) {
-            score = Math.abs(player.getY() - pos.up().getY())
-                    + Math.abs(player.getX() - pos.getX())
-                    + Math.abs(player.getZ() - pos.getZ());
-
-            if(rayTrace(
-                    new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5),
-                    new Vec3d(player.getPos().x,
-                            player.getPos().y,
-                            player.getPos().z))
-
-                    == HitResult.Type.BLOCK) score = -1;
-        } else {
-            score = 200 - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), player);
-        }
-
-        return score;
-    }
-
     private List<Entity> getTargets() {
         List<Entity> targets = new ArrayList<>();
 
@@ -346,7 +334,7 @@ public class BedAura extends Module {
     }
 
     private boolean isValidTarget(Entity entity) {
-        return WorldUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
+        return PlayerUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 
     private List<BlockPos> getPlaceableBlocks(Entity player) {

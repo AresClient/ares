@@ -7,7 +7,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.StringSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
@@ -75,7 +75,7 @@ public class AutoSign extends Module {
 
             // place sign
             MC.player.inventory.currentItem = sign;
-            WorldUtils.placeBlockMainHand(pos);
+            SelfUtils.placeBlockMainHand(pos);
 
             return true;
         }

@@ -11,6 +11,8 @@ import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
@@ -59,7 +61,7 @@ public class FireworkAura extends Module {
                         setEnabled(false);
                         UTILS.printMessage(TextColor.RED + "No Blocks Found");
                     } else MC.player.getInventory().selectedSlot = newSelection;
-                    WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, trapPos);
+                    SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, trapPos);
                     MC.player.getInventory().selectedSlot = oldSelection;
                     delayTimer.reset();
                     trapTimer.reset();
@@ -78,7 +80,7 @@ public class FireworkAura extends Module {
 
                     // rotate
                     if(rotate.getValue()) {
-                        double[] rotations = WorldUtils.calculateLookAt(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, MC.player);
+                        double[] rotations = PlayerUtils.calculateLookFromPlayer(playerPos.getX() + 0.5, playerPos.getY(), playerPos.getZ() + 0.5, MC.player);
                         ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, key, false, false);
                     }
                     // place

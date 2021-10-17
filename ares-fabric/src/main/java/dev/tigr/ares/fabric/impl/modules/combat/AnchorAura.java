@@ -16,7 +16,9 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.MathUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -31,7 +33,6 @@ import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
@@ -42,8 +43,7 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.getDamage;
-import static dev.tigr.ares.fabric.impl.modules.combat.CrystalAura.rayTrace;
+import static dev.tigr.ares.fabric.utils.MathUtils.getDamage;
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
@@ -54,12 +54,12 @@ public class AnchorAura extends Module {
     //TODO: Chain delays so that break delay starts after placing has finished and vice versa? Give every anchor placed a seperate timer so they're guaranteed to break with correct timing?
     // As it stands the way break delay is handled right now makes it basically useless because either the anchor is broken right after it is placed, or it just spams anchors everywhere.
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
-    private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
+    private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DAMAGE));
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
     private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 7, 0, 15));
     private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 5, 0, 15));
-    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
+    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 20));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
@@ -75,7 +75,6 @@ public class AnchorAura extends Module {
     private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2f, 0f, 10f)).setVisibility(showRenderOptions::getValue);
     private final Setting<Float> expandRender = register(new FloatSetting("Box Scale", 0f, -0.12f, 0.06f)).setVisibility(showRenderOptions::getValue);
 
-    enum Mode { DAMAGE, DISTANCE }
     enum Target { CLOSEST, MOST_DAMAGE }
     enum Rotations { PACKET, REAL, NONE }
 
@@ -142,7 +141,7 @@ public class AnchorAura extends Module {
         }
 
         // place
-        WorldUtils.placeBlockMainHand(shouldRotate(), key, key, false, false, pos);
+        SelfUtils.placeBlockMainHand(shouldRotate(), key, key, false, false, pos);
         placed.add(pos);
 
         // set render pos
@@ -175,7 +174,7 @@ public class AnchorAura extends Module {
         MC.interactionManager.interactBlock(MC.player, MC.world, Hand.MAIN_HAND, new BlockHitResult(vec, Direction.UP, pos, true));
 
         // spoof rotations
-        rotations = WorldUtils.calculateLookAt(vec.x, vec.y, vec.z, MC.player);
+        rotations = PlayerUtils.calculateLookFromPlayer(vec.x, vec.y, vec.z, MC.player);
         ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, key, false, false);
 
         // reset timer
@@ -216,7 +215,7 @@ public class AnchorAura extends Module {
 
     private boolean canBreakAnchor(BlockPos pos) {
         return MC.player.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) <= breakRange.getValue() * breakRange.getValue() // check range
-        && !(MC.player.getHealth() - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), MC.player) <= 1 && preventSuicide.getValue()); // check suicide
+        && !(MC.player.getHealth() - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5), MC.player, false) <= 1 && preventSuicide.getValue()); // check suicide
     }
 
     private BlockPos getBestPlacement() {
@@ -228,12 +227,15 @@ public class AnchorAura extends Module {
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
 
             for(BlockPos pos: blocks) {
-                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer) < minDamage.getValue())
+                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer, false) < minDamage.getValue())
                     continue;
 
                 if(!MC.world.canPlace(Blocks.OBSIDIAN.getDefaultState(), pos, ShapeContext.absent())) continue;
 
-                double score = getScore(pos, targetedPlayer);
+                double score = MathUtils.getScore(
+                        new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
+                        targetedPlayer, calcMode.getValue(), false
+                );
 
                 if(target == null || (score < bestScore && score != -1)) {
                     target = pos;
@@ -242,28 +244,6 @@ public class AnchorAura extends Module {
             }
         }
         return target;
-    }
-
-    // utils
-    private double getScore(BlockPos pos, Entity player) {
-        double score;
-        if(placeMode.getValue() == Mode.DISTANCE) {
-            score = Math.abs(player.getY() - pos.up().getY())
-                    + Math.abs(player.getX() - pos.getX())
-                    + Math.abs(player.getZ() - pos.getZ());
-
-            if(rayTrace(
-                    new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5),
-                    new Vec3d(player.getPos().x,
-                            player.getPos().y,
-                            player.getPos().z))
-
-                    == HitResult.Type.BLOCK) score = -1;
-        } else {
-            score = 200 - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), player);
-        }
-
-        return score;
     }
 
     private List<Entity> getTargets() {
@@ -284,7 +264,7 @@ public class AnchorAura extends Module {
     }
 
     private boolean isValidTarget(Entity entity) {
-        return WorldUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
+        return PlayerUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 
     private List<BlockPos> getPlaceableBlocks(Entity player) {

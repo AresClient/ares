@@ -9,6 +9,8 @@ import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.entity.BlockEntity;
@@ -69,9 +71,9 @@ public class HopperAura extends Module {
                     if(newSelection != -1) MC.player.getInventory().selectedSlot = newSelection;
                     else return;
 
-                    double[] rotations = WorldUtils.calculateLookAt(hopperPos.getX() +0.5, hopperPos.getY() +0.5, hopperPos.getZ() +0.5, WorldUtils.getPlayer());
+                    double[] rotations = PlayerUtils.calculateLookFromPlayer(hopperPos.getX() +0.5, hopperPos.getY() +0.5, hopperPos.getZ() +0.5, SelfUtils.getPlayer());
                     if(rotate.getValue() && !lockRotations.getValue()) ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, key, false, false);
-                    else if(rotate.getValue() && lockRotations.getValue()) WorldUtils.lookAtBlock(hopperPos);
+                    else if(rotate.getValue() && lockRotations.getValue()) SelfUtils.lookAtBlock(hopperPos);
 
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, hopper.getPos(), Direction.UP));
                     MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, hopper.getPos(), Direction.UP));

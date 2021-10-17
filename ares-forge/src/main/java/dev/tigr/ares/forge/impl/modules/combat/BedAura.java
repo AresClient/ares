@@ -12,21 +12,17 @@ import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.global.Utils;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.Comparators;
 import dev.tigr.ares.forge.utils.InventoryUtils;
+import dev.tigr.ares.forge.utils.MathUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import dev.tigr.ares.forge.utils.render.RenderUtils;
-import dev.tigr.ares.forge.utils.WorldUtils;
-import dev.tigr.simpleevents.listener.EventHandler;
-import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.BlockAir;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.ClickType;
@@ -48,8 +44,8 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.forge.impl.modules.combat.CrystalAura.getDamage;
-import static dev.tigr.ares.forge.impl.modules.combat.CrystalAura.rayTrace;
+import static dev.tigr.ares.forge.utils.MathUtils.getDamage;
+import static dev.tigr.ares.forge.utils.MathUtils.rayTrace;
 import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
 /**
@@ -60,18 +56,18 @@ public class BedAura extends Module {
     // TODO: Simpler 1.15+ mode which focuses on placing on player rather than calculating. Better rotations. Antisuicide / max self damage. Smart Break? Automatic fire remover for 1.12 placements (can't place foot of bed on fire block)
     // TODO: Forge Only (from my testing) fix Bedaura consistently getting stuck trying to break bed if on 0 tick break delay
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
-    private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE));
-//    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
+    private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DISTANCE));
+    //    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false));
-    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 0, 0, 15));
-    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 2, 0, 15));
-    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15));
+    private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 12, 0, 15));
+    private final Setting<Integer> breakDelay = register(new IntegerSetting("Break Delay", 1, 0, 15));
+    private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 20));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
     private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9));
     private final Setting<Boolean> silentSwitch = register(new BooleanSetting("Silent Switch", true)).setVisibility(() -> Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0);
     private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
-    private final Setting<Boolean> oneDotFifteen = register(new BooleanSetting("1.15", false));
+    private final Setting<Boolean> oneDotTwelve = register(new BooleanSetting("1.12", false));
 
 
     private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
@@ -82,7 +78,6 @@ public class BedAura extends Module {
     private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(showRenderOptions::getValue);
     private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0, 1)).setVisibility(showRenderOptions::getValue);
 
-    enum Mode { DAMAGE, DISTANCE }
     enum Target { CLOSEST, MOST_DAMAGE }
 
     private final Timer logicTimer = new Timer();
@@ -185,7 +180,7 @@ public class BedAura extends Module {
         float yaw = direction.getHorizontalAngle();
         if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.rotationPitch, key, key, true, false);
         else MC.player.connection.sendPacket(new CPacketPlayer.Rotation(yaw, MC.player.rotationPitch, MC.player.onGround));
-        WorldUtils.placeBlock(false, -1, -1, false, false, EnumHand.MAIN_HAND, pos, oneDotFifteen.getValue(), false);
+        SelfUtils.placeBlock(false, -1, -1, false, false, EnumHand.MAIN_HAND, pos, !oneDotTwelve.getValue(), false);
     }
 
     private void explode() {
@@ -263,10 +258,21 @@ public class BedAura extends Module {
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
 
             for(BlockPos pos: blocks) {
-                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer) < minDamage.getValue())
+                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer, false) < minDamage.getValue())
                     continue;
 
-                double score = getScore(pos, targetedPlayer);
+                double score = -1;
+
+                if(calcMode.getValue() == MathUtils.DmgCalcMode.DAMAGE || oneDotTwelve.getValue())
+                    score = MathUtils.getScore(
+                            new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
+                            targetedPlayer, calcMode.getValue(), false
+                    );
+                else if(calcMode.getValue() == MathUtils.DmgCalcMode.DISTANCE)
+                    score = MathUtils.getDistanceScoreBed(
+                            new Vec3d(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5),
+                            targetedPlayer
+                    );
 
                 // find best place for bed part
                 if(target == null || (score < bestScore && score != -1)) {
@@ -288,57 +294,35 @@ public class BedAura extends Module {
         IBlockState south = MC.world.getBlockState(pos.south());
         IBlockState west = MC.world.getBlockState(pos.west());
 
-        if((oneDotFifteen.getValue() ? north.getMaterial().isReplaceable() : north.getBlock() instanceof BlockAir)
+        if((!oneDotTwelve.getValue() ? north.getMaterial().isReplaceable() : north.getBlock() instanceof BlockAir)
                 && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.north())).stream().noneMatch(Entity::canBeCollidedWith)) {
-            if(oneDotFifteen.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
                     && MC.world.getBlockState(pos.north().down()).isFullCube())
                 return new Pair<>(pos.north(), EnumFacing.SOUTH);
         }
 
-        if((oneDotFifteen.getValue() ? east.getMaterial().isReplaceable() : east.getBlock() instanceof BlockAir)
+        if((!oneDotTwelve.getValue() ? east.getMaterial().isReplaceable() : east.getBlock() instanceof BlockAir)
                 && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.east())).stream().noneMatch(Entity::canBeCollidedWith)) {
-            if(oneDotFifteen.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
                     && MC.world.getBlockState(pos.east().down()).isFullCube())
                 return new Pair<>(pos.east(), EnumFacing.WEST);
         }
 
-        if((oneDotFifteen.getValue() ? south.getMaterial().isReplaceable() : south.getBlock() instanceof BlockAir)
+        if((!oneDotTwelve.getValue() ? south.getMaterial().isReplaceable() : south.getBlock() instanceof BlockAir)
                 && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.south())).stream().noneMatch(Entity::canBeCollidedWith)) {
-            if(oneDotFifteen.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
                     && MC.world.getBlockState(pos.south().down()).isFullCube())
                 return new Pair<>(pos.south(), EnumFacing.NORTH);
         }
 
-        if((oneDotFifteen.getValue() ? west.getMaterial().isReplaceable() : west.getBlock() instanceof BlockAir)
+        if((!oneDotTwelve.getValue() ? west.getMaterial().isReplaceable() : west.getBlock() instanceof BlockAir)
                 && MC.world.getEntitiesWithinAABB(Entity.class, new AxisAlignedBB(pos.west())).stream().noneMatch(Entity::canBeCollidedWith)) {
-            if(oneDotFifteen.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
+            if(!oneDotTwelve.getValue() || MC.world.getBlockState(pos.down()).isFullCube()
                     && MC.world.getBlockState(pos.west().down()).isFullCube())
                 return new Pair<>(pos.west(), EnumFacing.EAST);
         }
 
         return null;
-    }
-
-    // utils
-    private double getScore(BlockPos pos, EntityPlayer player) {
-        double score;
-        if(placeMode.getValue() == Mode.DISTANCE) {
-            score = Math.abs(player.posY - pos.up().getY())
-                    + Math.abs(player.posX - pos.getX())
-                    + Math.abs(player.posZ - pos.getZ());
-
-            if(rayTrace(
-                    new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5),
-                    new Vec3d(player.getPositionVector().x,
-                            player.getPositionVector().y,
-                            player.getPositionVector().z))
-
-                    == RayTraceResult.Type.BLOCK) score = -1;
-        } else {
-            score = 200 - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), player);
-        }
-
-        return score;
     }
 
     private List<EntityPlayer> getTargets() {
@@ -380,7 +364,7 @@ public class BedAura extends Module {
     }
 
     private boolean canBedBePlacedHere(BlockPos pos) {
-        if(!oneDotFifteen.getValue()) {
+        if(oneDotTwelve.getValue()) {
             return (MC.world.getBlockState(pos).getMaterial().isReplaceable() && MC.world.getBlockState(pos.down()).isFullCube())
                     && (MC.world.getBlockState(pos.north()).getBlock() instanceof BlockAir && MC.world.getBlockState(pos.north().down()).isFullCube()
                     || MC.world.getBlockState(pos.east()).getBlock() instanceof BlockAir && MC.world.getBlockState(pos.east().down()).isFullCube()

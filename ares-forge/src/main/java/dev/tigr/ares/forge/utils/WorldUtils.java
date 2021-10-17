@@ -1,228 +1,36 @@
 package dev.tigr.ares.forge.utils;
 
 import dev.tigr.ares.Wrapper;
-import dev.tigr.ares.core.feature.FriendManager;
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
+import dev.tigr.ares.forge.utils.entity.EntityUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityAgeable;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.EnumCreatureType;
-import net.minecraft.entity.monster.EntityEnderman;
-import net.minecraft.entity.monster.EntityIronGolem;
-import net.minecraft.entity.monster.EntityPigZombie;
-import net.minecraft.entity.passive.EntityAmbientCreature;
-import net.minecraft.entity.passive.EntitySquid;
-import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
-import net.minecraft.network.play.client.CPacketAnimation;
-import net.minecraft.network.play.client.CPacketEntityAction;
-import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.Wrapper.MC;
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-
 /**
  * @author Tigermouthbear
  */
 public class WorldUtils implements Wrapper {
-    public static EntityPlayer getPlayer() {
-        if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
-        return MC.player;
+    /** Positional Getters */
+
+    public static BlockPos roundBlockPos(Vec3d vec) {
+        return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
     }
 
-    // gs code, prob in osiris idk - Doogie
-    public static double[] forward(final double speed) {
-        float forward = MC.player.movementInput.moveForward;
-        float side = MC.player.movementInput.moveStrafe;
-        float yaw = MC.player.prevRotationYaw + (MC.player.rotationYaw - MC.player.prevRotationYaw) * MC.getRenderPartialTicks();
-        if (forward != 0.0f) {
-            if (side > 0.0f) {
-                yaw += ((forward > 0.0f) ? -45 : 45);
-            } else if (side < 0.0f) {
-                yaw += ((forward > 0.0f) ? 45 : -45);
-            }
-            side = 0.0f;
-            if (forward > 0.0f) {
-                forward = 1.0f;
-            } else if (forward < 0.0f) {
-                forward = -1.0f;
-            }
-        }
-        final double sin = Math.sin(Math.toRadians(yaw + 90.0f));
-        final double cos = Math.cos(Math.toRadians(yaw + 90.0f));
-        final double posX = forward * speed * cos + side * speed * sin;
-        final double posZ = forward * speed * sin - side * speed * cos;
-        return new double[]{posX, posZ};
+
+    /** Entity List Getters */
+
+    public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
+        return MC.world.loadedEntityList.stream().filter(entity -> EntityUtils.isTarget(entity, players, friends, teammates, passive, hostile, nametagged, bots)).collect(Collectors.toList());
     }
 
-    public static double[] forward(final double speed, float strafe, float yaw) {
-        float forward = MC.player.movementInput.moveForward;
-        float side = strafe;
-        if (forward != 0.0f) {
-            if (side > 0.0f) {
-                yaw += ((forward > 0.0f) ? -45 : 45);
-            } else if (side < 0.0f) {
-                yaw += ((forward > 0.0f) ? 45 : -45);
-            }
-            side = 0.0f;
-            if (forward > 0.0f) {
-                forward = 1.0f;
-            } else if (forward < 0.0f) {
-                forward = -1.0f;
-            }
-        }
-        final double sin = Math.sin(Math.toRadians(yaw + 90.0f));
-        final double cos = Math.cos(Math.toRadians(yaw + 90.0f));
-        final double posX = forward * speed * cos + side * speed * sin;
-        final double posZ = forward * speed * sin - side * speed * cos;
-        return new double[]{posX, posZ};
-    }
-    // /Doogie
 
-    public static boolean placeBlockMainHand(BlockPos pos) {
-        return placeBlockMainHand(false, -1, -1, false, false, pos);
-    }
-    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos) {
-        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, true);
-    }
-    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace) {
-        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, false);
-    }
-    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
-        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, EnumHand.MAIN_HAND, pos, airPlace, ignoreEntity);
-    }
-    public static boolean placeBlockNoRotate(EnumHand hand, BlockPos pos) {
-        return placeBlock(false, -1, -1, false, false, hand, pos, true, false);
-    }
-
-    public static boolean placeBlock(EnumHand hand, BlockPos pos) {
-        placeBlock(false, -1, -1, false, false, hand, pos, true);
-        return true;
-    }
-    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos) {
-        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, false);
-        return true;
-    }
-    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos, Boolean airPlace) {
-        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, false);
-        return true;
-    }
-    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
-        // make sure place is empty if ignoreEntity is not true
-        if(ignoreEntity) {
-            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
-                return false;
-        } else if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
-                    !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith))
-            return false;
-
-        Vec3d eyesPos = new Vec3d(MC.player.posX,
-                MC.player.posY + MC.player.getEyeHeight(),
-                MC.player.posZ);
-
-        Vec3d hitVec = null;
-        BlockPos neighbor = null;
-        EnumFacing side2 = null;
-        for(EnumFacing side: EnumFacing.values()) {
-            neighbor = pos.offset(side);
-            side2 = side.getOpposite();
-
-            // check if neighbor can be right clicked
-            if(!MC.world.getBlockState(neighbor).getBlock().canCollideCheck(MC.world.getBlockState(neighbor), false)) {
-                neighbor = null;
-                side2 = null;
-                continue;
-            }
-
-            hitVec = new Vec3d(neighbor).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getDirectionVec()).scale(0.5));
-            break;
-        }
-
-        // Air place if no neighbour was found
-        if(airPlace) {
-            if (hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-            if (neighbor == null) neighbor = pos;
-            if (side2 == null) side2 = EnumFacing.UP;
-        } else if(hitVec == null || neighbor == null || side2 == null) {
-            return false;
-        }
-
-        // place block
-        double diffX = hitVec.x - eyesPos.x;
-        double diffY = hitVec.y - eyesPos.y;
-        double diffZ = hitVec.z - eyesPos.z;
-
-        double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
-
-        float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
-        float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
-
-        float[] rotations = {
-                MC.player.rotationYaw
-                        + MathHelper.wrapDegrees(yaw - MC.player.rotationYaw),
-                MC.player.rotationPitch + MathHelper
-                        .wrapDegrees(pitch - MC.player.rotationPitch)};
-
-        if(rotate)
-            if(!ROTATIONS.setCurrentRotation(new Vec2f(rotations[0], rotations[1]), rotationKey, rotationPriority, instantRotation, instantBypassesCurrent))
-                return false;
-
-        MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.START_SNEAKING));
-        MC.playerController.processRightClickBlock(MC.player, MC.world, neighbor, side2, hitVec, hand);
-        MC.player.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
-        MC.player.connection.sendPacket(new CPacketEntityAction(MC.player, CPacketEntityAction.Action.STOP_SNEAKING));
-
-        return true;
-    }
-
-    //Credit to KAMI for code below
-    public static double[] calculateLookAt(double px, double py, double pz, EntityPlayer me) {
-        double dirx = me.posX - px;
-        double diry = me.posY + me.getEyeHeight() - py;
-        double dirz = me.posZ - pz;
-
-        double len = Math.sqrt(dirx * dirx + diry * diry + dirz * dirz);
-
-        dirx /= len;
-        diry /= len;
-        dirz /= len;
-
-        double pitch = Math.asin(diry);
-        double yaw = Math.atan2(dirz, dirx);
-
-        //to degree
-        pitch = pitch * 180.0d / Math.PI;
-        yaw = yaw * 180.0d / Math.PI;
-
-        yaw += 90f;
-
-        return new double[]{yaw, pitch};
-    }
-    //End credit to Kami
-
-    public static void rotate(float yaw, float pitch) {
-        MC.player.rotationYaw = yaw;
-        MC.player.rotationPitch = pitch;
-    }
-
-    public static void rotate(double[] rotations) {
-        MC.player.rotationYaw = (float) rotations[0];
-        MC.player.rotationPitch = (float) rotations[1];
-    }
-
-    public static void lookAtBlock(BlockPos blockToLookAt) {
-        rotate(calculateLookAt(blockToLookAt.getX(), blockToLookAt.getY(), blockToLookAt.getZ(), MC.player));
-    }
+    /** BlockPos / BlockEntity List Getters */
 
     public static List<BlockPos> getBlocksInReachDistance() {
         List<BlockPos> cube = new ArrayList<>();
@@ -234,47 +42,12 @@ public class WorldUtils implements Wrapper {
         return cube.stream().filter(pos -> MC.player.getDistanceSq(pos) <= 18.0625).collect(Collectors.toList());
     }
 
-    public static void moveEntityWithSpeed(Entity entity, double speed, boolean shouldMoveY) {
-        float yaw = (float) Math.toRadians(MC.player.rotationYaw);
 
-        if(MC.gameSettings.keyBindForward.isKeyDown()) {
-            entity.motionX = -(MathHelper.sin(yaw) * speed);
-            entity.motionZ = MathHelper.cos(yaw) * speed;
-        } else if(MC.gameSettings.keyBindBack.isKeyDown()) {
-            entity.motionX = MathHelper.sin(yaw) * speed;
-            entity.motionZ = -(MathHelper.cos(yaw) * speed);
-        }
+    /** State Utils */
 
-        if(MC.gameSettings.keyBindLeft.isKeyDown()) {
-            entity.motionZ = MathHelper.sin(yaw) * speed;
-            entity.motionX = MathHelper.cos(yaw) * speed;
-        } else if(MC.gameSettings.keyBindRight.isKeyDown()) {
-            entity.motionZ = -(MathHelper.sin(yaw) * speed);
-            entity.motionX = -(MathHelper.cos(yaw) * speed);
-        }
-
-        if(shouldMoveY) {
-            if(MC.gameSettings.keyBindJump.isKeyDown()) {
-                entity.motionY = speed;
-            } else if(MC.gameSettings.keyBindSneak.isKeyDown()) {
-                entity.motionY = -speed;
-            }
-        }
-
-        //strafe
-        if(MC.gameSettings.keyBindForward.isKeyDown() && MC.gameSettings.keyBindLeft.isKeyDown()) {
-            entity.motionX = (MathHelper.cos(yaw) * speed) - (MathHelper.sin(yaw) * speed);
-            entity.motionZ = (MathHelper.cos(yaw) * speed) + (MathHelper.sin(yaw) * speed);
-        } else if(MC.gameSettings.keyBindLeft.isKeyDown() && MC.gameSettings.keyBindBack.isKeyDown()) {
-            entity.motionX = (MathHelper.cos(yaw) * speed) + (MathHelper.sin(yaw) * speed);
-            entity.motionZ = -(MathHelper.cos(yaw) * speed) + (MathHelper.sin(yaw) * speed);
-        } else if(MC.gameSettings.keyBindBack.isKeyDown() && MC.gameSettings.keyBindRight.isKeyDown()) {
-            entity.motionX = -(MathHelper.cos(yaw) * speed) + (MathHelper.sin(yaw) * speed);
-            entity.motionZ = -(MathHelper.cos(yaw) * speed) - (MathHelper.sin(yaw) * speed);
-        } else if(MC.gameSettings.keyBindRight.isKeyDown() && MC.gameSettings.keyBindForward.isKeyDown()) {
-            entity.motionX = -(MathHelper.cos(yaw) * speed) - (MathHelper.sin(yaw) * speed);
-            entity.motionZ = (MathHelper.cos(yaw) * speed) - (MathHelper.sin(yaw) * speed);
-        }
+    public static boolean canBreakBlock(BlockPos blockPos) {
+        final IBlockState blockState = MC.world.getBlockState(blockPos);
+        return blockState.getBlockHardness(MC.world, blockPos) != -1;
     }
 
     public static HoleType isHole(BlockPos pos) {
@@ -349,6 +122,9 @@ public class WorldUtils implements Wrapper {
         return HoleType.NONE;
     }
 
+
+    /** Others */
+
     public static String vectorToString(Vec3d vector, boolean... includeY) {
         boolean reallyIncludeY = includeY.length <= 0 || includeY[0];
         StringBuilder builder = new StringBuilder();
@@ -364,107 +140,9 @@ public class WorldUtils implements Wrapper {
         return builder.toString();
     }
 
-    public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
-        return MC.world.loadedEntityList.stream().filter(entity -> isTarget(entity, players, friends, teammates, passive, hostile, nametagged, bots)).collect(Collectors.toList());
-    }
 
-    public static boolean isTarget(Entity entity, boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
-        if(!(entity instanceof EntityLivingBase) || entity == MC.player) return false;
 
-        if(players && entity instanceof EntityPlayer) {
-            if(FriendManager.isFriend(((EntityPlayer) entity).getGameProfile().getName())) return friends;
-            if(entity.getTeam() == MC.player.getTeam() && MC.player.getTeam() != null) return teammates;
-            return true;
-        }
-        if(!nametagged && entity.hasCustomName()) return false;
-        if(passive && isPassive(entity)) return true;
-        if(hostile && isHostile(entity)) return true;
-        return bots && isBot(entity);
-    }
 
-    public static boolean isValidTarget(EntityPlayer player) {
-        return isValidTarget(player, -1, false);
-    }
-    public static boolean isValidTarget(EntityPlayer player, double distance) {
-        return isValidTarget(player, distance, true);
-    }
-    public static boolean isValidTarget(EntityPlayer player, double distance, boolean doDistance) {
-        return !FriendManager.isFriend(player.getGameProfile().getName())
-                && !player.isDead
-                && !(player.getHealth() <= 0)
-                && !shouldDistance(player, distance, doDistance)
-                && player != MC.player;
-    }
 
-    private static boolean shouldDistance(EntityPlayer entity, double distance, boolean doDistance) {
-        if(doDistance) return MC.player.getDistanceSq(entity) > (distance * distance);
-        else return false;
-    }
 
-    public static boolean isPassive(Entity entity) {
-        if(entity instanceof EntityIronGolem && ((EntityIronGolem) entity).getRevengeTarget() == null) return true;
-        else if(entity instanceof EntityWolf && (!((EntityWolf) entity).isAngry() || ((EntityWolf) entity).getOwner() == MC.player)) return true;
-        else if(entity instanceof EntityEnderman) return !((EntityEnderman) entity).isScreaming();
-        else return entity instanceof EntityAmbientCreature || entity instanceof EntityAgeable || entity instanceof EntitySquid;
-    }
-
-    public static boolean isHostile(Entity entity) {
-        if(entity instanceof EntityIronGolem) return ((EntityIronGolem) entity).getRevengeTarget() == MC.player && ((EntityIronGolem) entity).getRevengeTarget() != null;
-        else if(entity instanceof EntityWolf) return ((EntityWolf) entity).isAngry() && ((EntityWolf) entity).getOwner() != MC.player;
-        else if(entity instanceof EntityPigZombie) return ((EntityPigZombie) entity).isAngry() || ((EntityPigZombie) entity).isArmsRaised();
-        else if(entity instanceof EntityEnderman) return ((EntityEnderman) entity).isScreaming();
-        return entity.isCreatureType(EnumCreatureType.MONSTER, false);
-    }
-
-    public static boolean isBot(Entity entity) {
-        return entity instanceof EntityPlayer && entity.isInvisibleToPlayer(MC.player) && !entity.onGround && entity.isAirBorne && !entity.canBeCollidedWith();
-    }
-
-    // Full sequence of packets sent from MC.player.jump()
-    public static void fakeJumpSequence(int firstPacket, int lastPacket) {
-        if(firstPacket <= 0 && lastPacket >= 0) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY, MC.player.posZ, true));
-        if(firstPacket <= 1 && lastPacket >= 1) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.41999998688698, MC.player.posZ, true));
-        if(firstPacket <= 2 && lastPacket >= 2) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.7531999805212, MC.player.posZ, true));
-        if(firstPacket <= 3 && lastPacket >= 3) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.00133597911214, MC.player.posZ, true));
-        if(firstPacket <= 4 && lastPacket >= 4) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.16610926093821, MC.player.posZ, true));
-        if(firstPacket <= 5 && lastPacket >= 5) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.24918707874468, MC.player.posZ, true));
-        if(firstPacket <= 6 && lastPacket >= 6) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.17675927506424, MC.player.posZ, true));
-        if(firstPacket <= 7 && lastPacket >= 7) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 1.02442408821369, MC.player.posZ, true));
-        if(firstPacket <= 8 && lastPacket >= 8) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.79673560066871, MC.player.posZ, true));
-        if(firstPacket <= 9 && lastPacket >= 9) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.49520087700593, MC.player.posZ, true));
-        if(firstPacket <= 10 && lastPacket >= 10) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY + 0.1212968405392, MC.player.posZ, true));
-        if(firstPacket <= 11 && lastPacket >= 11) MC.player.connection.sendPacket(new CPacketPlayer.Position(MC.player.posX, MC.player.posY, MC.player.posZ, true));
-    }
-
-    public static BlockPos roundBlockPos(Vec3d vec) {
-        return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
-    }
-
-    public static void snapPlayer() {
-        BlockPos lastPos = MC.player.onGround ? roundBlockPos(MC.player.getPositionVector()) : MC.player.getPosition();
-        snapPlayer(lastPos);
-    }
-    public static void snapPlayer(BlockPos lastPos) {
-        double xPos = MC.player.getPositionVector().x;
-        double zPos = MC.player.getPositionVector().z;
-
-        if(Math.abs((lastPos.getX() + 0.5) - MC.player.getPositionVector().x) >= 0.2) {
-            int xDir = (lastPos.getX() + 0.5) - MC.player.getPositionVector().x > 0 ? 1 : -1;
-            xPos += 0.3 * xDir;
-        }
-
-        if(Math.abs((lastPos.getZ() + 0.5) - MC.player.getPositionVector().z) >= 0.2) {
-            int zDir = (lastPos.getZ() + 0.5) - MC.player.getPositionVector().z > 0 ? 1 : -1;
-            zPos += 0.3 * zDir;
-        }
-
-        MC.player.motionX = MC.player.motionY = MC.player.motionZ = 0;
-        MC.player.setPosition(xPos, MC.player.posY, zPos);
-        MC.player.connection.sendPacket(new CPacketPlayer.Position(xPos, MC.player.posY, zPos, MC.player.onGround));
-    }
-
-    public static boolean canBreakBlock(BlockPos blockPos) {
-        final IBlockState blockState = MC.world.getBlockState(blockPos);
-        return blockState.getBlockHardness(MC.world, blockPos) != -1;
-    }
 }

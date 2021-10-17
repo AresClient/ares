@@ -9,6 +9,7 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -63,7 +64,7 @@ public class HoleFiller extends Module {
                 }
                 MC.player.inventory.selectedSlot = slot;
 
-                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, hole);
+                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, hole);
                 MC.player.inventory.selectedSlot = first;
                 return;
             }

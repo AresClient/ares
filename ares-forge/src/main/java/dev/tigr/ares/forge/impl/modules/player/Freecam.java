@@ -7,13 +7,12 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.forge.event.events.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.EntityUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.play.client.CPacketInput;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraftforge.event.entity.living.LivingEvent;
 
 /**
@@ -64,7 +63,7 @@ public class Freecam extends Module {
     public void onTick() {
         MC.player.noClip = true;
         MC.player.setVelocity(0, 0, 0);
-        WorldUtils.moveEntityWithSpeed(MC.player, speed.getValue(), true);
+        EntityUtils.moveEntityWithSpeed(MC.player, speed.getValue(), true);
     }
 
     @Override

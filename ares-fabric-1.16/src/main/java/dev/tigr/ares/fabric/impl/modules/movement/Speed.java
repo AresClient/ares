@@ -6,13 +6,10 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
-import dev.tigr.ares.fabric.utils.WorldUtils;
-import net.minecraft.client.MinecraftClient;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.potion.Potion;
 
 @Module.Info(name = "Speed", description = "Increase speed of the player", category = Category.MOVEMENT)
 public class Speed extends Module {
@@ -68,8 +65,8 @@ public class Speed extends Module {
 
             speedF *= getFric();
 
-            double[] dir = WorldUtils.forward(Math.max(speedVal.getValue() * speedF * (getBaseMoveSpeed() / 0.2873), 0.2873));
-            double[] gDir = WorldUtils.forward(0.2873 * groundVal.getValue());
+            double[] dir = SelfUtils.getMovement(Math.max(speedVal.getValue() * speedF * (getBaseMoveSpeed() / 0.2873), 0.2873));
+            double[] gDir = SelfUtils.getMovement(0.2873 * groundVal.getValue());
 
             if (!MC.player.isOnGround()) {
                 MC.player.setVelocity(dir[0], MC.player.getVelocity().y, dir[1]);

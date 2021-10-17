@@ -5,7 +5,7 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.EntityUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraftforge.event.entity.living.LivingEvent;
@@ -26,7 +26,7 @@ public class EntitySpeed extends Module {
             MC.player.getRidingEntity().setVelocity(0, fly.getValue() ? 0 : MC.player.getRidingEntity().motionY, 0);
 
             if(onGround.getValue()) MC.player.getRidingEntity().distanceWalkedModified = speed.getValue().intValue();
-            WorldUtils.moveEntityWithSpeed(MC.player.getRidingEntity(), speed.getValue(), fly.getValue());
+            EntityUtils.moveEntityWithSpeed(MC.player.getRidingEntity(), speed.getValue(), fly.getValue());
         }
     });
 }

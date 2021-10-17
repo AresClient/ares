@@ -6,7 +6,7 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.fabric.event.client.UpdateLivingEntityEvent;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.EntityUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 
@@ -27,7 +27,7 @@ public class EntitySpeed extends Module {
             MC.player.getRootVehicle().setVelocity(0, fly.getValue() ? 0 : MC.player.getRootVehicle().getVelocity().y, 0);
 
             if(onGround.getValue()) MC.player.getRootVehicle().distanceTraveled = speed.getValue().intValue();
-            WorldUtils.moveEntityWithSpeed(MC.player.getVehicle(), speed.getValue(), fly.getValue());
+            EntityUtils.moveEntityWithSpeed(MC.player.getVehicle(), speed.getValue(), fly.getValue());
         }
     });
 }

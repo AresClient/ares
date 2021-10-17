@@ -9,6 +9,7 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
+import dev.tigr.ares.forge.utils.entity.EntityUtils;
 import dev.tigr.ares.forge.utils.render.RenderUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -70,7 +71,7 @@ public class ESP extends Module {
         });
 
         for(Entity entity: MC.world.loadedEntityList)
-            entity.setGlowing(WorldUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()));
+            entity.setGlowing(EntityUtils.isTarget(entity, players.getValue(), friends.getValue(), teammates.getValue(), passive.getValue(), hostile.getValue(), nametagged.getValue(), bots.getValue()));
     }
 
     @Override

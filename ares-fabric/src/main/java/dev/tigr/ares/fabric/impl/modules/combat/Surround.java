@@ -13,6 +13,7 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -78,7 +79,7 @@ public class Surround extends Module {
     @Override
     public void onTick() {
         if(onGroundCenter.passedTicks(centerDelay.getValue()) && snap.getValue() && doSnap && !hasCentered && MC.player.isOnGround()) {
-            WorldUtils.snapPlayer(lastPos);
+            SelfUtils.snapPlayer(lastPos);
             hasCentered = true;
         }
 
@@ -138,7 +139,7 @@ public class Surround extends Module {
                     boolean bossPos = false;
                     if(bossList().contains(pos)) bossPos = true;
 
-                    if(WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() <= 0, false, pos, air.getValue(), !bossPos && placeOnCrystal.getValue())) {
+                    if(SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() <= 0, false, pos, air.getValue(), !bossPos && placeOnCrystal.getValue())) {
                         if(renderChange.containsKey(pos)) {
                             renderChange.get(pos).setSecond(true);
                             renderChange.get(pos).getFirst().reset();

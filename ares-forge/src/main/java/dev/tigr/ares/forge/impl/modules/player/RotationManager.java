@@ -8,7 +8,7 @@ import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.forge.event.events.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.forge.event.events.render.PlayerModelRenderEvent;
-import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.BlockAir;
@@ -139,9 +139,9 @@ public class RotationManager extends Module {
 
     //Method for getting the angle to a random neighbor's side (may be useful for pre-rotating as this is the same one from WorldUtils.placeBlock())
     public static Vec2f getPlaceSideAngle(BlockPos pos) {
-        Vec3d eyesPos = new Vec3d(WorldUtils.getPlayer().posX,
-                WorldUtils.getPlayer().posY + WorldUtils.getPlayer().getEyeHeight(),
-                WorldUtils.getPlayer().posZ);
+        Vec3d eyesPos = new Vec3d(SelfUtils.getPlayer().posX,
+                SelfUtils.getPlayer().posY + SelfUtils.getPlayer().getEyeHeight(),
+                SelfUtils.getPlayer().posZ);
 
         Vec3d hitVec = null;
         BlockPos neighbor;
@@ -173,6 +173,6 @@ public class RotationManager extends Module {
         float yaw = (float) Math.toDegrees(Math.atan2(diffZ, diffX)) - 90F;
         float pitch = (float) -Math.toDegrees(Math.atan2(diffY, diffXZ));
 
-        return new Vec2f(WorldUtils.getPlayer().rotationYaw + MathHelper.wrapDegrees(yaw - WorldUtils.getPlayer().rotationYaw), WorldUtils.getPlayer().rotationPitch + MathHelper.wrapDegrees(pitch - WorldUtils.getPlayer().rotationPitch));
+        return new Vec2f(SelfUtils.getPlayer().rotationYaw + MathHelper.wrapDegrees(yaw - SelfUtils.getPlayer().rotationYaw), SelfUtils.getPlayer().rotationPitch + MathHelper.wrapDegrees(pitch - SelfUtils.getPlayer().rotationPitch));
     }
 }

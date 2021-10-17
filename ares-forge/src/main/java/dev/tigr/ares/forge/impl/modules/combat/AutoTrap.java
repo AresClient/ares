@@ -10,10 +10,8 @@ import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.forge.utils.InventoryUtils;
-import dev.tigr.ares.forge.utils.WorldUtils;
-import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.entity.EntityOtherPlayerMP;
-import net.minecraft.client.entity.EntityPlayerSP;
+import dev.tigr.ares.forge.utils.entity.PlayerUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
@@ -79,7 +77,7 @@ public class AutoTrap extends Module {
                                     else MC.player.inventory.currentItem = newSlot;
                                 }
 
-                                WorldUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
+                                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
 
                                 if(delay.getValue() != 0) MC.player.inventory.currentItem = oldSlot;
 
@@ -110,7 +108,7 @@ public class AutoTrap extends Module {
     }
 
     private boolean isPlayerValidTarget(EntityPlayer player) {
-        return (MC.player.getDistanceSq(player) <= targetRange.getValue() * targetRange.getValue()) && WorldUtils.isValidTarget(player);
+        return (MC.player.getDistanceSq(player) <= targetRange.getValue() * targetRange.getValue()) && PlayerUtils.isValidTarget(player);
     }
 
     private BlockPos[] getPos(EntityPlayer player) {

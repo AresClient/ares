@@ -18,21 +18,16 @@ import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DestroyBlockEvent;
 import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.MathUtils;
+import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.network.OtherClientPlayerEntity;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.DamageUtil;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.decoration.EndCrystalEntity;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.Items;
@@ -41,14 +36,9 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.stat.Stats;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.explosion.Explosion;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -70,8 +60,8 @@ public class CrystalAura extends Module {
     //General Page
     private final Setting<Boolean> doSwitch = register(new BooleanSetting("Do Switch", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(() -> page.getValue() == Page.GENERAL && doSwitch.getValue());
-    private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DAMAGE)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Order> order = register(new EnumSetting<>("Order", Order.PLACE_BREAK)).setVisibility(() -> page.getValue() == Page.GENERAL);
@@ -85,9 +75,9 @@ public class CrystalAura extends Module {
     private final Setting<Integer> placeDelay = register(new IntegerSetting("Place Delay", 2, 0, 20)).setVisibility(() -> page.getValue() == Page.PLACE);
     private final Setting<Integer> placeOffhandDelay = register(new IntegerSetting("Offh. Place Delay", 2, 0, 20)).setVisibility(() -> page.getValue() == Page.PLACE);
     private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 15)).setVisibility(() -> page.getValue() == Page.PLACE);
-    private final Setting<Boolean> oneDotTwelve = register(new BooleanSetting("1.12-", false)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", true)).setVisibility(() -> page.getValue() == Page.PLACE);
     private final Setting<Boolean> antiSurround = register(new BooleanSetting("Anti-Surround", true)).setVisibility(() -> page.getValue() == Page.PLACE);
-    private final Setting<Mode> placeMode = register(new EnumSetting<>("Place Mode", Mode.DAMAGE)).setVisibility(() -> page.getValue() == Page.PLACE);
+    private final Setting<Boolean> predictMovement = register(new BooleanSetting("Predict Movement", true)).setVisibility(() -> page.getValue() == Page.PLACE);
 
     //Break Page
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10)).setVisibility(() -> page.getValue() == Page.BREAK);
@@ -110,7 +100,6 @@ public class CrystalAura extends Module {
     private final Setting<Float> boxAlpha = register(new FloatSetting("Line Alpha", 1f, 0f, 1f)).setVisibility(() -> page.getValue() == Page.RENDER);
     private final Setting<Float> lineThickness = register(new FloatSetting("Line Weight", 2.4f, 0f, 10f)).setVisibility(() -> page.getValue() == Page.RENDER);
 
-    enum Mode { DAMAGE, DISTANCE }
     enum BreakMode { OWN, SMART, ALL }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
@@ -141,7 +130,7 @@ public class CrystalAura extends Module {
     public String getInfo() {
         if (targetPlayer != null
                 && !targetPlayer.isRemoved()
-                && !WorldUtils.hasZeroHealth(targetPlayer)
+                && !PlayerUtils.hasZeroHealth(targetPlayer)
                 && !(MC.player.distanceTo(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)) {
             if(targetPlayer instanceof PlayerEntity) return ((PlayerEntity)targetPlayer).getGameProfile().getName();
             else if(targetPlayer instanceof OtherClientPlayerEntity) return targetPlayer.getDisplayName().asString();
@@ -178,7 +167,7 @@ public class CrystalAura extends Module {
                         if(lostCrystals.containsKey(c)) {
                             if(c.age < lostCrystals.get(c) + lostWindow.getValue() + retryAfter.getValue()) continue;
                         }
-                        if(getDamage(entity.getPos(), targetPlayer) >= (minDamage.getValue() / 2) && !spawnedCrystals.containsKey(c)) {
+                        if(MathUtils.getDamage(entity.getPos(), targetPlayer, predictMovement.getValue()) >= (minDamage.getValue() / 2) && !spawnedCrystals.containsKey(c)) {
                             //add crystal to spawned list so that it can be broken.
                             spawnedCrystals.put(c, new AtomicInteger(0));
                             lostCrystals.remove(c);
@@ -222,7 +211,7 @@ public class CrystalAura extends Module {
             ROTATIONS.setCompletedAction(key, true);
             rotationTimer.reset();
         } else if(rotatePos != null) {
-            rotations = WorldUtils.calculateLookAt(rotatePos.getX() + 0.5, rotatePos.getY() + 0.5, rotatePos.getZ() + 0.5, MC.player);
+            rotations = PlayerUtils.calculateLookFromPlayer(rotatePos.getX() + 0.5, rotatePos.getY() + 0.5, rotatePos.getZ() + 0.5, MC.player);
             if(rotateMode.getValue() == Rotations.PACKET) ROTATIONS.setCurrentRotation((float) rotations[0], (float) rotations[1], key, generalPriority, false, false);
         }
 
@@ -420,7 +409,7 @@ public class CrystalAura extends Module {
 
     private boolean canBreakCrystal(EndCrystalEntity crystal) {
         return MC.player.distanceTo(crystal) <= breakRange.getValue() // check range
-                && !(MC.player.getHealth() - getDamage(crystal.getPos(), MC.player) <= 1 && preventSuicide.getValue()) // check suicide
+                && !(MC.player.getHealth() - MathUtils.getDamage(crystal.getPos(), MC.player, false) <= 1 && preventSuicide.getValue()) // check suicide
                 && crystal.age >= breakAge.getValue(); // check that the crystal has been in the world for the minimum age specified
     }
 
@@ -450,13 +439,17 @@ public class CrystalAura extends Module {
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
 
             for(BlockPos pos: blocks) {
-                if(!targetsBlocks.contains(pos) || (double) getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), targetedPlayer) < minDamage.getValue())
-                    continue;
+                Vec3d calcPos = new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
 
-                double score = getScore(pos, targetedPlayer);
-                if (target != null) {
-                    targetPlayer = targetedPlayer;
-                } else targetPlayer = null;
+                if(!targetsBlocks.contains(pos)
+                        || (double) MathUtils.getDamage(calcPos, targetedPlayer, predictMovement.getValue()) < minDamage.getValue()
+                        || preventSuicide.getValue() && MC.player.getHealth() - MathUtils.getDamage(calcPos, MC.player, false) <= 1
+                ) continue;
+
+                double score = MathUtils.getScore(calcPos, targetedPlayer, calcMode.getValue(), predictMovement.getValue());
+
+                if(target != null) targetPlayer = targetedPlayer;
+                else targetPlayer = null;
 
                 if(target == null || (score < bestScore && score != -1)) {
                     target = pos;
@@ -465,28 +458,6 @@ public class CrystalAura extends Module {
             }
         }
         return target;
-    }
-
-    // utils
-    private double getScore(BlockPos pos, Entity player) {
-        double score;
-        if(placeMode.getValue() == Mode.DISTANCE) {
-            score = Math.abs(player.getY() - pos.up().getY())
-                    + Math.abs(player.getX() - pos.getX())
-                    + Math.abs(player.getZ() - pos.getZ());
-
-            if(rayTrace(
-                    new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5),
-                    new Vec3d(player.getPos().x,
-                            player.getPos().y,
-                            player.getPos().z))
-
-                    == HitResult.Type.BLOCK) score = -1;
-        } else {
-            score = 200 - getDamage(new Vec3d(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5), player);
-        }
-
-        return score;
     }
 
     private List<Entity> getTargets() {
@@ -507,7 +478,7 @@ public class CrystalAura extends Module {
     }
 
     private boolean isValidTarget(Entity entity) {
-        return WorldUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
+        return PlayerUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 
     private List<BlockPos> getPlaceableBlocks(Entity player) {
@@ -528,7 +499,7 @@ public class CrystalAura extends Module {
 
     private boolean canCrystalBePlacedHere(BlockPos pos) {
         BlockPos boost = pos.add(0, 1, 0);
-        if(!oneDotTwelve.getValue()) {
+        if(oneDotThirteen.getValue()) {
             return (MC.world.getBlockState(pos).getBlock() == Blocks.BEDROCK
                     || MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN)
                     && MC.world.getBlockState(boost).getBlock() == Blocks.AIR
@@ -545,94 +516,10 @@ public class CrystalAura extends Module {
     }
 
     private boolean isCrystalLost(EndCrystalEntity entity) {
-        if(lostCrystals.containsKey(entity)) {
+        if(spawnedCrystals.containsKey(entity) && preventSuicide.getValue())
+            return MC.player.getHealth() - MathUtils.getDamage(entity.getPos(), MC.player, false) <= 1;
+        if(lostCrystals.containsKey(entity))
             return entity.age >= lostCrystals.get(entity) + lostWindow.getValue();
-        }
         return false;
-    }
-
-    // damage calculations
-    public static float getDamage(Vec3d vec3d, Entity entity) {
-        float f2 = 12.0f;
-        double d7 = Math.sqrt(entity.squaredDistanceTo(vec3d)) / f2;
-        if(d7 <= 1.0D) {
-            double d8 = entity.getX() - vec3d.x;
-            double d9 = entity.getEyeY() - vec3d.y;
-            double d10 = entity.getZ() - vec3d.z;
-            double d11 = Math.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
-            if(d11 != 0.0D) {
-                double d12 = Explosion.getExposure(vec3d, entity);
-                double d13 = (1.0D - d7) * d12;
-                float damage = transformForDifficulty((float)((int)((d13 * d13 + d13) / 2.0D * 7.0D * (double)f2 + 1.0D)));
-                if(entity instanceof PlayerEntity) {
-                    damage = DamageUtil.getDamageLeft(damage, (float)((PlayerEntity)entity).getArmor(), (float)((PlayerEntity)entity).getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
-                    damage = getReduction(((PlayerEntity)entity), damage, DamageSource.GENERIC);
-                }
-                return damage;
-            }
-        }
-        return 0.0f;
-    }
-
-    private static float transformForDifficulty(float f) {
-        if(MC.world.getDifficulty() == Difficulty.PEACEFUL) f = 0.0F;
-        if(MC.world.getDifficulty() == Difficulty.EASY) f = Math.min(f / 2.0F + 1.0F, f);
-        if(MC.world.getDifficulty() == Difficulty.HARD) f = f * 3.0F / 2.0F;
-        return f;
-    }
-
-    // get blast reduction off armor and potions
-    private static float getReduction(PlayerEntity player, float f, DamageSource damageSource) {
-        if (player.hasStatusEffect(StatusEffects.RESISTANCE) && damageSource != DamageSource.OUT_OF_WORLD) {
-            int i = (player.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
-            int j = 25 - i;
-            float f1 = f * (float)j;
-            float f2 = f;
-            f = Math.max(f1 / 25.0F, 0.0F);
-            float f3 = f2 - f;
-            if (f3 > 0.0F && f3 < 3.4028235E37F) {
-                if (player instanceof ServerPlayerEntity) {
-                    player.increaseStat(Stats.DAMAGE_RESISTED, Math.round(f3 * 10.0F));
-                } else if (damageSource.getAttacker() instanceof ServerPlayerEntity) {
-                    ((ServerPlayerEntity)damageSource.getAttacker()).increaseStat(Stats.DAMAGE_DEALT_RESISTED, Math.round(f3 * 10.0F));
-                }
-            }
-        }
-
-        if (f <= 0.0F) {
-            return 0.0F;
-        } else {
-            int k = EnchantmentHelper.getProtectionAmount(player.getArmorItems(), damageSource);
-            if (k > 0) {
-                f = DamageUtil.getInflictedDamage(f, (float)k);
-            }
-
-            return f;
-        }
-    }
-
-    // raytracing
-    public static HitResult.Type rayTrace(Vec3d start, Vec3d end) {
-        double minX = Math.min(start.x, end.x);
-        double minY = Math.min(start.y, end.y);
-        double minZ = Math.min(start.z, end.z);
-        double maxX = Math.max(start.x, end.x);
-        double maxY = Math.max(start.y, end.y);
-        double maxZ = Math.max(start.z, end.z);
-
-        for(double x = minX; x > maxX; x += 1) {
-            for(double y = minY; y > maxY; y += 1) {
-                for(double z = minZ; z > maxZ; z += 1) {
-                    BlockState blockState = MC.world.getBlockState(new BlockPos(x, y, z));
-
-                    if(blockState.getBlock() == Blocks.OBSIDIAN
-                            || blockState.getBlock() == Blocks.BEDROCK
-                            || blockState.getBlock() == Blocks.BARRIER)
-                        return HitResult.Type.BLOCK;
-                }
-            }
-        }
-
-        return HitResult.Type.MISS;
     }
 }
