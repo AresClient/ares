@@ -55,17 +55,13 @@ public class Speed extends Module {
                 return;
             else
                 MC.player.setVelocity(MC.player.getVelocity().x,-jump.getValue() - 0.25, MC.player.getVelocity().z);
-            //MC.player.motionY = -jump.getValue() - 0.25;
-
-/*          MC.player.motionX *= yportSpeed.getValue();
-            MC.player.motionZ *= yportSpeed.getValue();*/
             MC.player.setVelocity(MC.player.getVelocity().x * yportSpeed.getValue(), MC.player.getVelocity().y, MC.player.getVelocity().z * yportSpeed.getValue());
 
         } else if (modeSetting.getValue() == mode.STRAFE) {
 
             speedF *= getFric();
 
-            double[] dir = SelfUtils.getMovement(Math.max(speedVal.getValue() * speedF * (getBaseMoveSpeed() / 0.2873), 0.2873));
+            double[] dir = SelfUtils.getMovement(Math.max(speedVal.getValue() * speedF * (getBaseMoveSpeed() / 0.15321), 0.15321));
             double[] gDir = SelfUtils.getMovement(0.2873 * groundVal.getValue());
 
             if (!MC.player.isOnGround()) {
@@ -108,7 +104,7 @@ public class Speed extends Module {
     }
 
     public static double getBaseMoveSpeed() {
-        double baseSpeed = 0.2873;
+        double baseSpeed = 0.15321;
         if (MC.player.getActiveStatusEffects().containsValue(MC.player.getStatusEffect(StatusEffect.byRawId(1)))) {
             final int amplifier = MC.player.getStatusEffect(StatusEffect.byRawId(1)).getAmplifier();
             baseSpeed *= 1.0 + 0.2 * (amplifier + 1);
