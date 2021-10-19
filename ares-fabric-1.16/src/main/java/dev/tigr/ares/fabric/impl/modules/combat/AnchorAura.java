@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import com.google.common.collect.Streams;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -25,7 +24,6 @@ import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.client.network.OtherClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.EnchantedGoldenAppleItem;
@@ -209,8 +207,7 @@ public class AnchorAura extends Module {
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(-1, 0, 0))));
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(0, 0, 1))));
         entities.addAll(MC.world.getOtherEntities(MC.player, new Box(pos.add(0, 0, -1))));
-        return entities.stream().anyMatch(entity -> entity instanceof PlayerEntity
-                || entity instanceof OtherClientPlayerEntity);
+        return entities.stream().anyMatch(entity -> entity instanceof PlayerEntity);
     }
 
     private boolean canBreakAnchor(BlockPos pos) {
@@ -221,7 +218,7 @@ public class AnchorAura extends Module {
     private BlockPos getBestPlacement() {
         double bestScore = 69420;
         BlockPos target = null;
-        for(Entity targetedPlayer: getTargets()) {
+        for(PlayerEntity targetedPlayer: getTargets()) {
             // find best location to place
             List<BlockPos> targetsBlocks = getPlaceableBlocks(targetedPlayer);
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
@@ -246,28 +243,32 @@ public class AnchorAura extends Module {
         return target;
     }
 
-    private List<Entity> getTargets() {
-        List<Entity> targets = new ArrayList<>();
+    private List<PlayerEntity> getTargets() {
+        List<PlayerEntity> targets = new ArrayList<>();
 
         if(targetSetting.getValue() == Target.CLOSEST) {
-            targets.addAll(Streams.stream(MC.world.getEntities()).filter(this::isValidTarget).collect(Collectors.toList()));
+            targets.addAll(SelfUtils.getPlayersInRadius(targetRange()).stream().filter(this::isValidTarget).collect(Collectors.toList()));
             targets.sort(Comparators.entityDistance);
         } else if(targetSetting.getValue() == Target.MOST_DAMAGE) {
-            for(Entity entity: MC.world.getEntities()) {
-                if(!isValidTarget(entity))
+            for(PlayerEntity player: SelfUtils.getPlayersInRadius(targetRange())) {
+                if(!isValidTarget(player))
                     continue;
-                targets.add(entity);
+                targets.add(player);
             }
         }
 
         return targets;
     }
 
-    private boolean isValidTarget(Entity entity) {
-        return PlayerUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
+    private boolean isValidTarget(PlayerEntity player) {
+        return PlayerUtils.isValidTarget(player, targetRange());
     }
 
-    private List<BlockPos> getPlaceableBlocks(Entity player) {
+    private double targetRange() {
+        return Math.max(placeRange.getValue(), breakRange.getValue()) + 8;
+    }
+
+    private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
         List<BlockPos> square = new ArrayList<>();
 
         int range = (int) Utils.roundDouble(placeRange.getValue(), 0);
@@ -285,7 +286,7 @@ public class AnchorAura extends Module {
     }
 
     private boolean shouldRotate() {
-        if (rotateMode.getValue() == Rotations.NONE)
+        if(rotateMode.getValue() == Rotations.NONE)
             return false;
         else return true;
     }

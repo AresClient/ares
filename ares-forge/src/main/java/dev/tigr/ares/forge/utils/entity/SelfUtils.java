@@ -5,6 +5,7 @@ import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.MathUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketEntityAction;
@@ -12,6 +13,8 @@ import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.*;
+
+import java.util.List;
 
 import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 
@@ -23,6 +26,24 @@ public class SelfUtils implements Wrapper {
     public static EntityPlayer getPlayer() {
         if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
         return MC.player;
+    }
+
+    /** Entity List Getters */
+
+    public static List<EntityPlayer> getPlayersInRadius(double range) {
+        return WorldUtils.getPlayersInRadius(getPlayer().getPositionVector(), range);
+    }
+
+    public static List<EntityPlayer> getPlayersInBox(double expansion) {
+        return WorldUtils.getPlayersInBox(getPlayer().getPosition(), expansion);
+    }
+
+    public static List<EntityEnderCrystal> getEndCrystalsInRadius(double range) {
+        return WorldUtils.getEndCrystalsInRadius(getPlayer().getPositionVector(), range);
+    }
+
+    public static List<EntityEnderCrystal> getEndCrystalsInBox(double expansion) {
+        return WorldUtils.getEndCrystalsInBox(getPlayer().getPosition(), expansion);
     }
 
 

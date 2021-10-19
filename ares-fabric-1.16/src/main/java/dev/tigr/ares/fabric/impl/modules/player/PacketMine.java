@@ -9,7 +9,9 @@ import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.event.player.DamageBlockEvent;
+import dev.tigr.ares.fabric.utils.MathUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
@@ -21,6 +23,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -112,9 +115,14 @@ public class PacketMine extends Module {
     private boolean removeOutOfDistance() {
         float reachSq = MC.interactionManager.getReachDistance() *MC.interactionManager.getReachDistance();
 
-        posQueue.removeIf(p -> MC.player.squaredDistanceTo(p.getX() + 0.5, p.getY() + 0.5, p.getZ() + 0.5) > reachSq);
+        posQueue.removeIf(p -> {
+            Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getPlayer().getPos(), p);
+            return SelfUtils.getEyePos().squaredDistanceTo(closest.getX(), closest.getY(), closest.getZ()) > reachSq;
+        });
 
-        if(MC.player.squaredDistanceTo(currentPos.getX() + 0.5, currentPos.getY() + 0.5, currentPos.getZ() + 0.5) > reachSq) {
+        Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getPlayer().getPos(), currentPos);
+
+        if(SelfUtils.getEyePos().squaredDistanceTo(closest.getX(), closest.getY(), closest.getZ()) > reachSq) {
             currentPos = null;
             hasMined = false;
             return true;
@@ -166,7 +174,12 @@ public class PacketMine extends Module {
 
     @EventHandler
     private final EventListener<DamageBlockEvent> onDamageBlock = new EventListener<>(event -> {
-        if(!getEnabled() || currentPos == event.getBlockPos() || !WorldUtils.canBreakBlock(event.getBlockPos())) return;
+        if(!getEnabled() || !WorldUtils.canBreakBlock(event.getBlockPos())) return;
+
+        if(currentPos == event.getBlockPos() && hasMined) {
+            normalMine();
+            return;
+        } else if(currentPos == event.getBlockPos()) return;
 
         addPos(event.getBlockPos());
         event.setCancelled(true);

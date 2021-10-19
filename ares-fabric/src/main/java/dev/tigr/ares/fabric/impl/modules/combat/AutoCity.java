@@ -43,7 +43,7 @@ public class AutoCity extends Module {
             InstantMine.INSTANCE.setEnabled(true);
         }
         // get targets
-        for(Entity playerEntity: WorldUtils.getPlayerTargets()) {
+        for(Entity playerEntity: WorldUtils.getPlayerTargets(range.getValue() +2)) {
             Vec3d posVec = playerEntity.getPos();
             BlockPos pos = new BlockPos(Math.floor(posVec.x), Math.floor(posVec.y), Math.floor(posVec.z));
             if(inCity(pos)) {

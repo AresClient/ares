@@ -2,6 +2,7 @@ package dev.tigr.ares.forge.utils.entity;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
+import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.MathUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
@@ -30,24 +31,24 @@ public class PlayerUtils implements Wrapper {
 
     /** Checks */
 
-    public static boolean isValidTarget(EntityPlayer player) {
-        return isValidTarget(player, -1, false);
-    }
-
     public static boolean isValidTarget(EntityPlayer player, double distance) {
-        return isValidTarget(player, distance, true);
-    }
-
-    public static boolean isValidTarget(EntityPlayer player, double distance, boolean doDistance) {
-        return !FriendManager.isFriend(player.getGameProfile().getName())
+        return !friendCheck(player)
                 && !player.isDead
-                && !(player.getHealth() <= 0)
-                && !shouldDistance(player, distance, doDistance)
-                && player != MC.player;
+                && !hasZeroHealth(player)
+                && isPlayerInRange(player, distance)
+                && player != MC.player
+                && player != Freecam.INSTANCE.clone;
     }
 
-    private static boolean shouldDistance(EntityPlayer entity, double distance, boolean doDistance) {
-        if(doDistance) return MC.player.getDistanceSq(entity) > (distance * distance);
-        else return false;
+    public static boolean isPlayerInRange(EntityPlayer player, double distance) {
+        return MathUtils.isInRange(SelfUtils.getPlayer().getPositionVector(), player.getPositionVector(), distance);
+    }
+
+    public static boolean hasZeroHealth(EntityPlayer player) {
+        return player.getHealth() <= 0;
+    }
+
+    public static boolean friendCheck(EntityPlayer player) {
+        return FriendManager.isFriend((player).getGameProfile().getName());
     }
 }

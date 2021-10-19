@@ -1,6 +1,7 @@
 package dev.tigr.ares.fabric.utils;
 
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -20,10 +21,78 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.RaycastContext;
 
+import java.util.Objects;
+
 /**
  * Split from WorldUtils 10/17/21 - Makrennel
  */
 public class MathUtils implements Wrapper {
+    public static double squaredDistanceBetween(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double
+                x = x1 - x2,
+                y = y1 - y2,
+                z = z1 - z2;
+
+        return x * x + y * y + z * z;
+    }
+
+    public static double squaredDistanceBetween(Vec3d pos1, Vec3d pos2) {
+        double
+                x = pos1.x - pos2.x,
+                y = pos1.y - pos2.y,
+                z = pos1.z - pos2.z;
+
+        return x * x + y * y + z * z;
+    }
+
+    public static Vec3d getClosestPointOfBlockPos(Vec3d pos, BlockPos blockPos) {
+        return getClosestPointOfBox(pos, MC.world.getBlockState(blockPos).isAir() ? new Box(blockPos) : Objects.requireNonNull(RenderUtils.getBoundingBox(blockPos)));
+    }
+
+    public static Vec3d getClosestPointOfBox(Vec3d pos, Box box) {
+        double[]
+                a = new double[] {pos.x, pos.y, pos.z},
+                b = new double[] {box.maxX, box.maxY, box.maxZ},
+                c = new double[] {box.minX, box.minY, box.minZ};
+
+        for(int i = 0; i <= 2; i++) {
+            if(a[i] > b[i]) a[i] = b[i];
+            if(a[i] < c[i]) a[i] = c[i];
+        }
+
+        return new Vec3d(a[0], a[1], a[2]);
+    }
+
+    public static Vec3d getClosestClickPointOfBlockPos(Vec3d pos, BlockPos blockPos) {
+        return getClosestClickPos(pos, MC.world.getBlockState(blockPos).isAir() ? new Box(blockPos) : Objects.requireNonNull(RenderUtils.getBoundingBox(blockPos)));
+    }
+
+    public static Vec3d getClosestClickPos(Vec3d pos, Box box) {
+        double[]
+                a = new double[] {pos.x, pos.y, pos.z},
+                b = new double[] {box.maxX, box.maxY, box.maxZ},
+                c = new double[] {box.minX, box.minY, box.minZ};
+
+        for(int i = 0; i <= 2; i++) {
+            if(a[i] > b[i]) a[i] = b[i];
+            if(a[i] < c[i]) a[i] = c[i];
+        }
+
+        for(int i = 0; i <= 2; i++) {
+            a[i] = a[i] - c[i];
+        }
+
+        return new Vec3d(a[0], a[1], a[2]);
+    }
+
+    public static boolean isInRange(Vec3d pos, Vec3d pos2, double range) {
+        return squaredDistanceBetween(pos, pos2) <= range * range;
+    }
+
+    public static boolean isInRangeClosestPoint(Vec3d pos, Box box, double range) {
+        return squaredDistanceBetween(pos, getClosestPointOfBox(pos, box)) <= range * range;
+    }
+
     public static double[] calculateAngle(Vec3d a, Vec3d b) {
         double
                 x = a.x - b.x,
@@ -68,7 +137,7 @@ public class MathUtils implements Wrapper {
     }
 
     // Calculate score based on the mode of calculation
-    public static double getScore(Vec3d pos, Entity player, DmgCalcMode dmgCalcMode, boolean predictMovement) {
+    public static double getScore(Vec3d pos, PlayerEntity player, DmgCalcMode dmgCalcMode, boolean predictMovement) {
         double score;
         if(dmgCalcMode == DmgCalcMode.DISTANCE) {
             score = Math.abs(player.getPos().y - pos.y) + Math.abs(player.getPos().x - pos.x) + Math.abs(player.getPos().z - pos.z);
@@ -82,7 +151,7 @@ public class MathUtils implements Wrapper {
     }
 
     //Ideally we want beds to place on the upper hitbox of the player on 1.15+ to force the player into crawl position
-    public static double getDistanceScoreBed(Vec3d pos, Entity player) {
+    public static double getDistanceScoreBed(Vec3d pos, PlayerEntity player) {
         double score = Math.abs(player.getPos().y + 1 - pos.y) + Math.abs(player.getPos().x - pos.x) + Math.abs(player.getPos().z - pos.z);
 
         if(MathUtils.rayTrace(pos, new Vec3d(player.getX(), player.getY() +1, player.getZ())) == HitResult.Type.BLOCK) score = -1;
@@ -91,22 +160,20 @@ public class MathUtils implements Wrapper {
     }
 
     // damage calculations
-    public static float getDamage(Vec3d vec3d, Entity entity, boolean predictMovement) {
+    public static float getDamage(Vec3d vec3d, PlayerEntity player, boolean predictMovement) {
         float f2 = 12.0f;
-        double d7 = Math.sqrt(entity.squaredDistanceTo(vec3d)) / f2;
+        double d7 = Math.sqrt(player.squaredDistanceTo(vec3d)) / f2;
         if(d7 <= 1.0D) {
-            double d8 = entity.getX() - vec3d.x;
-            double d9 = entity.getEyeY() - vec3d.y;
-            double d10 = entity.getZ() - vec3d.z;
+            double d8 = player.getX() - vec3d.x;
+            double d9 = player.getEyeY() - vec3d.y;
+            double d10 = player.getZ() - vec3d.z;
             double d11 = Math.sqrt(d8 * d8 + d9 * d9 + d10 * d10);
             if(d11 != 0.0D) {
-                double d12 = getExposure(vec3d, entity, predictMovement);
+                double d12 = getExposure(vec3d, player, predictMovement);
                 double d13 = (1.0D - d7) * d12;
                 float damage = transformForDifficulty((float)((int)((d13 * d13 + d13) / 2.0D * 7.0D * (double)f2 + 1.0D)));
-                if(entity instanceof PlayerEntity) {
-                    damage = DamageUtil.getDamageLeft(damage, (float)((PlayerEntity)entity).getArmor(), (float)((PlayerEntity)entity).getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
-                    damage = getReduction(((PlayerEntity)entity), damage, DamageSource.GENERIC);
-                }
+                damage = DamageUtil.getDamageLeft(damage, (float) player.getArmor(), (float) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
+                damage = getReduction(player, damage, DamageSource.GENERIC);
                 return damage;
             }
         }

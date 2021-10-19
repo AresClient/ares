@@ -1,6 +1,8 @@
 package dev.tigr.ares.fabric.utils;
 
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.EnchantmentHelper;
@@ -13,17 +15,84 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.RaycastContext;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Split from WorldUtils 10/17/21 - Makrennel
  */
 public class MathUtils implements Wrapper {
+    public static double squaredDistanceBetween(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double
+                x = x1 - x2,
+                y = y1 - y2,
+                z = z1 - z2;
+
+        return x * x + y * y + z * z;
+    }
+
+    public static double squaredDistanceBetween(Vec3d pos1, Vec3d pos2) {
+        double
+                x = pos1.x - pos2.x,
+                y = pos1.y - pos2.y,
+                z = pos1.z - pos2.z;
+
+        return x * x + y * y + z * z;
+    }
+
+    public static Vec3d getClosestPointOfBlockPos(Vec3d pos, BlockPos blockPos) {
+        return getClosestPointOfBox(pos, MC.world.getBlockState(blockPos).isAir() ? new Box(blockPos) : Objects.requireNonNull(RenderUtils.getBoundingBox(blockPos)));
+    }
+
+    public static Vec3d getClosestPointOfBox(Vec3d pos, Box box) {
+        double[]
+                a = new double[] {pos.x, pos.y, pos.z},
+                b = new double[] {box.maxX, box.maxY, box.maxZ},
+                c = new double[] {box.minX, box.minY, box.minZ};
+
+        for(int i = 0; i <= 2; i++) {
+            if(a[i] > b[i]) a[i] = b[i];
+            if(a[i] < c[i]) a[i] = c[i];
+        }
+
+        return new Vec3d(a[0], a[1], a[2]);
+    }
+
+    public static Vec3d getClosestClickPointOfBlockPos(Vec3d pos, BlockPos blockPos) {
+        return getClosestClickPos(pos, MC.world.getBlockState(blockPos).isAir() ? new Box(blockPos) : Objects.requireNonNull(RenderUtils.getBoundingBox(blockPos)));
+    }
+
+    public static Vec3d getClosestClickPos(Vec3d pos, Box box) {
+        double[]
+                a = new double[] {pos.x, pos.y, pos.z},
+                b = new double[] {box.maxX, box.maxY, box.maxZ},
+                c = new double[] {box.minX, box.minY, box.minZ};
+
+        for(int i = 0; i <= 2; i++) {
+            if(a[i] > b[i]) a[i] = b[i];
+            if(a[i] < c[i]) a[i] = c[i];
+        }
+
+        for(int i = 0; i <= 2; i++) {
+            a[i] = a[i] - c[i];
+        }
+
+        return new Vec3d(a[0], a[1], a[2]);
+    }
+
+    public static boolean isInRange(Vec3d pos, Vec3d pos2, double range) {
+        return squaredDistanceBetween(pos, pos2) <= range * range;
+    }
+
+    public static boolean isInRangeClosestPoint(Vec3d pos, Box box, double range) {
+        return squaredDistanceBetween(pos, getClosestPointOfBox(pos, box)) <= range * range;
+    }
+
     public static double[] calculateAngle(Vec3d a, Vec3d b) {
         double
                 x = a.x - b.x,

@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
-import com.google.common.collect.Streams;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -25,6 +24,7 @@ import net.minecraft.block.BedBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BedItem;
 import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.ItemStack;
@@ -243,7 +243,7 @@ public class BedAura extends Module {
     private Pair<BlockPos, Direction> getBestPlacement() {
         double bestScore = 69420;
         Pair<BlockPos, Direction> target = null;
-        for(Entity targetedPlayer: getTargets()) {
+        for(PlayerEntity targetedPlayer: getTargets()) {
             // find best location to place
             List<BlockPos> targetsBlocks = getPlaceableBlocks(targetedPlayer);
             List<BlockPos> blocks = getPlaceableBlocks(MC.player);
@@ -316,28 +316,32 @@ public class BedAura extends Module {
         return null;
     }
 
-    private List<Entity> getTargets() {
-        List<Entity> targets = new ArrayList<>();
+    private List<PlayerEntity> getTargets() {
+        List<PlayerEntity> targets = new ArrayList<>();
 
         if(targetSetting.getValue() == Target.CLOSEST) {
-            targets.addAll(Streams.stream(MC.world.getEntities()).filter(this::isValidTarget).collect(Collectors.toList()));
+            targets.addAll(SelfUtils.getPlayersInRadius(targetRange()).stream().filter(this::isValidTarget).collect(Collectors.toList()));
             targets.sort(Comparators.entityDistance);
         } else if(targetSetting.getValue() == Target.MOST_DAMAGE) {
-            for(Entity entity: MC.world.getEntities()) {
-                if(!isValidTarget(entity))
+            for(PlayerEntity player: SelfUtils.getPlayersInRadius(targetRange())) {
+                if(!isValidTarget(player))
                     continue;
-                targets.add(entity);
+                targets.add(player);
             }
         }
 
         return targets;
     }
 
-    private boolean isValidTarget(Entity entity) {
-        return PlayerUtils.isValidTarget(entity, Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
+    private boolean isValidTarget(PlayerEntity player) {
+        return PlayerUtils.isValidTarget(player, targetRange());
     }
 
-    private List<BlockPos> getPlaceableBlocks(Entity player) {
+    private double targetRange() {
+        return Math.max(placeRange.getValue(), breakRange.getValue()) + 8;
+    }
+
+    private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
         List<BlockPos> square = new ArrayList<>();
 
         int range = (int) Utils.roundDouble(placeRange.getValue(), 0);

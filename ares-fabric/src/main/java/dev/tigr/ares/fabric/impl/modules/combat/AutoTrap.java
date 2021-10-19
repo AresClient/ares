@@ -110,7 +110,7 @@ public class AutoTrap extends Module {
     }
 
     private boolean isPlayerValidTarget(PlayerEntity player) {
-        return (MC.player.squaredDistanceTo(player) <= targetRange.getValue() * targetRange.getValue()) && PlayerUtils.isValidTarget(player);
+        return (MC.player.squaredDistanceTo(player) <= targetRange.getValue() * targetRange.getValue()) && PlayerUtils.isValidTarget(player, targetRange.getValue());
     }
 
     private BlockPos[] getPos(Entity player) {

@@ -9,12 +9,15 @@ import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.entity.decoration.EndCrystalEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
+
+import java.util.List;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
@@ -26,6 +29,25 @@ public class SelfUtils implements Wrapper {
     public static PlayerEntity getPlayer() {
         if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
         return MC.player;
+    }
+
+
+    /** Entity List Getters */
+
+    public static List<PlayerEntity> getPlayersInRadius(double range) {
+        return WorldUtils.getPlayersInRadius(getPlayer().getPos(), range);
+    }
+
+    public static List<PlayerEntity> getPlayersInBox(double expansion) {
+        return WorldUtils.getPlayersInBox(getPlayer().getBlockPos(), expansion);
+    }
+
+    public static List<EndCrystalEntity> getEndCrystalsInRadius(double range) {
+        return WorldUtils.getEndCrystalsInRadius(getPlayer().getPos(), range);
+    }
+
+    public static List<EndCrystalEntity> getEndCrystalsInBox(double expansion) {
+        return WorldUtils.getEndCrystalsInBox(getPlayer().getBlockPos(), expansion);
     }
 
 

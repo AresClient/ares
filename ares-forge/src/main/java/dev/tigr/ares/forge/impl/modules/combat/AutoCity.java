@@ -9,6 +9,7 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.impl.modules.exploit.InstantMine;
 import dev.tigr.ares.forge.utils.Comparators;
+import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.ares.forge.utils.entity.PlayerUtils;
 import net.minecraft.block.BlockAir;
 import net.minecraft.entity.player.EntityPlayer;
@@ -45,10 +46,7 @@ public class AutoCity extends Module {
             InstantMine.INSTANCE.setEnabled(true);
         }
         // get targets
-        List<EntityPlayer> targets = MC.world.playerEntities.stream().filter(entityPlayer -> !FriendManager.isFriend(entityPlayer.getGameProfile().getName()) && entityPlayer != MC.player).collect(Collectors.toList());
-        targets.sort(Comparators.entityDistance);
-        
-        for(EntityPlayer playerEntity: targets) {
+        for(EntityPlayer playerEntity: WorldUtils.getPlayerTargets(range.getValue() +2)) {
             Vec3d posVec = playerEntity.getPositionVector();
             BlockPos pos = new BlockPos(Math.floor(posVec.x), Math.round(posVec.y), Math.floor(posVec.z));
             if(inCity(pos)) {

@@ -2,14 +2,19 @@ package dev.tigr.ares.fabric.utils;
 
 import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.fabric.utils.entity.EntityUtils;
 import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
+import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.decoration.EndCrystalEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
@@ -28,25 +33,61 @@ public class WorldUtils implements Wrapper {
         return new BlockPos(vec.x, (int) Math.round(vec.y), vec.z);
     }
 
+    public static Pair<Direction, Vec3d> getClosestVisibleSide(Vec3d pos, BlockPos blockPos) {
+        List<Direction> sides = getVisibleBlockSides(pos, blockPos);
+        if(sides == null) return null;
+
+        Vec3d center = Vec3d.ofCenter(blockPos);
+
+        Direction closestSide = null;
+        Vec3d closestPos = null;
+        for(Direction side: sides) {
+            Vec3d sidePos = center.add(Vec3d.of(side.getVector()).multiply(0.5));
+
+            if(closestPos == null || MathUtils.squaredDistanceBetween(pos, sidePos) < MathUtils.squaredDistanceBetween(pos, closestPos)) {
+                closestSide = side;
+                closestPos = sidePos;
+            }
+        }
+
+        return new Pair<>(closestSide, closestPos);
+    }
+
 
     /** Entity List Getters */
+
+    public static List<PlayerEntity> getPlayersInRadius(Vec3d center, double range) {
+        return getEntitiesInRadius(PlayerEntity.class, center, range);
+    }
+
+    public static List<PlayerEntity> getPlayersInBox(BlockPos center, double expansion) {
+        return getEntitiesInBox(PlayerEntity.class, center, expansion);
+    }
+
+    public static List<EndCrystalEntity> getEndCrystalsInRadius(Vec3d center, double range) {
+        return getEntitiesInRadius(EndCrystalEntity.class, center, range);
+    }
+
+    public static List<EndCrystalEntity> getEndCrystalsInBox(BlockPos center, double expansion) {
+        return getEntitiesInBox(EndCrystalEntity.class, center, expansion);
+    }
+
+    public static <T extends Entity> List<T> getEntitiesInRadius(Class<T> entityClass, Vec3d center, double range) {
+        return MC.world.getNonSpectatingEntities(entityClass, new Box(new BlockPos(center)).expand(range)).stream().filter(entity -> MathUtils.isInRangeClosestPoint(center, entity.getBoundingBox(), range)).collect(Collectors.toList());
+    }
+
+    public static <T extends Entity> List<T> getEntitiesInBox(Class<T> entityClass, BlockPos center, double expansion) {
+        return MC.world.getNonSpectatingEntities(entityClass, new Box(center).expand(expansion));
+    }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
         return StreamSupport.stream(MC.world.getEntities().spliterator(), false).filter(entity -> EntityUtils.isTarget(entity, players, friends, teammates, passive, hostile, nametagged, bots)).collect(Collectors.toList());
     }
 
-    public static List<Entity> getPlayerTargets() {
-        return getPlayerTargets(-1, false);
-    }
+    public static List<PlayerEntity> getPlayerTargets(double withinDistance) {
+        List<PlayerEntity> targets = new ArrayList<>();
 
-    public static List<Entity> getPlayerTargets(double withinDistance) {
-        return getPlayerTargets(withinDistance, true);
-    }
-
-    public static List<Entity> getPlayerTargets(double withinDistance, boolean doDistance) {
-        List<Entity> targets = new ArrayList<>();
-
-        targets.addAll(Streams.stream(MC.world.getEntities()).filter(entity -> PlayerUtils.isValidTarget(entity, withinDistance, doDistance)).collect(Collectors.toList()));
+        targets.addAll(SelfUtils.getPlayersInRadius(withinDistance).stream().filter(player -> PlayerUtils.isValidTarget(player, withinDistance)).collect(Collectors.toList()));
         targets.sort(Comparators.entityDistance);
 
         return targets;
@@ -79,6 +120,24 @@ public class WorldUtils implements Wrapper {
             Blocks.AIR, Blocks.LAVA, Blocks.WATER, Blocks.GRASS,
             Blocks.VINE, Blocks.SEAGRASS, Blocks.TALL_SEAGRASS,
             Blocks.SNOW, Blocks.TALL_GRASS, Blocks.FIRE, Blocks.VOID_AIR);
+
+    public static List<Direction> getVisibleBlockSides(Vec3d pos, BlockPos blockPos) {
+        List<Direction> sides = new ArrayList<>();
+
+        if(pos.y > blockPos.getY()) sides.add(Direction.UP);
+        else sides.add(Direction.DOWN);
+
+        if(pos.x < blockPos.getX()) sides.add(Direction.WEST);
+        if(pos.x > blockPos.getX() + 1) sides.add(Direction.EAST);
+
+        if(pos.z < blockPos.getZ()) sides.add(Direction.NORTH);
+        if(pos.z > blockPos.getZ() +1) sides.add(Direction.SOUTH);
+
+        sides.removeIf(side -> !MC.world.getBlockState(blockPos.offset(side)).getMaterial().isReplaceable());
+
+        if(!sides.isEmpty()) return sides;
+        else return null;
+    }
 
 
     /** State Utils */
