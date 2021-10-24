@@ -98,6 +98,7 @@ public class AresMod extends Ares {
                 SoundCoordLogger.class,
 
                 // misc
+                AntiGhostBlock.class,
                 AutoTool.class,
                 ChatSuffix.class,
                 DiscordPresence.class,

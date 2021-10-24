@@ -49,7 +49,8 @@ public class Scaffold extends Module {
 
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> {
-        if(MC.player != null && MC.world != null && !down.getValue() && !MC.player.isSprinting()) event.isSneaking = true;
+        if(MC.player == null || MC.world == null || (down.getValue() && MC.options.keySprint.isPressed())) return;
+        event.isSneaking = true;
     });
 
     @EventHandler

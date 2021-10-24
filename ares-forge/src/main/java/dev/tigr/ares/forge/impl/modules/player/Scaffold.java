@@ -49,7 +49,7 @@ public class Scaffold extends Module {
 
     @EventHandler
     public EventListener<WalkOffLedgeEvent> walkOffLedgeEvent = new EventListener<>(event -> {
-        if(MC.player == null || MC.world == null || (down.getValue() && MC.player.isSprinting())) return;
+        if(MC.player == null || MC.world == null || (down.getValue() && MC.gameSettings.keyBindSprint.isKeyDown())) return;
         event.setCancelled(true);
     });
 

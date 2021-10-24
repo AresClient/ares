@@ -112,6 +112,7 @@ public class AresMod extends Ares {
                 TextShadow.class,
 
                 // misc
+                AntiGhostBlock.class,
                 AutoTool.class,
                 BetterSign.class,
                 ChatSuffix.class,
