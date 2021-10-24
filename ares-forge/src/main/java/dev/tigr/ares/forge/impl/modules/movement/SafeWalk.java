@@ -5,8 +5,6 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.forge.event.events.movement.WalkOffLedgeEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraft.entity.MoverType;
-import net.minecraft.entity.player.EntityPlayer;
 
 /**
  * @author Tigermouthbear

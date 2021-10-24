@@ -5,14 +5,8 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.fabric.event.player.AntiHitboxEvent;
 import dev.tigr.ares.fabric.event.player.CanHandCollideWaterEvent;
 import dev.tigr.ares.fabric.event.render.HurtCamEvent;
-import dev.tigr.ares.fabric.event.render.RenderHeldItemEvent;
-import dev.tigr.ares.fabric.utils.Reimplementations;
 import dev.tigr.simpleevents.event.Result;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.EntityHitResult;
@@ -57,14 +51,5 @@ public class MixinGameRenderer {
     @Inject(method = "bobViewWhenHurt", at = @At("HEAD"), cancellable = true)
     public void hurtShake(CallbackInfo ci) {
         if(Ares.EVENT_MANAGER.post(new HurtCamEvent()).isCancelled()) ci.cancel();
-    }
-
-    @Redirect(method = "renderHand", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/item/HeldItemRenderer;renderItem(FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider$Immediate;Lnet/minecraft/client/network/ClientPlayerEntity;I)V"))
-    public void renderItem(HeldItemRenderer heldItemRenderer, float tickDelta, MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, ClientPlayerEntity player, int light) {
-        if(Ares.EVENT_MANAGER.post(new RenderHeldItemEvent.Invoke()).isCancelled()) {
-            Reimplementations.renderItem(heldItemRenderer, tickDelta, matrices, vertexConsumers, player, light);
-        } else {
-            heldItemRenderer.renderItem(tickDelta, matrices, vertexConsumers, player, light);
-        }
     }
 }

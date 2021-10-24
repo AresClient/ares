@@ -9,7 +9,6 @@ import dev.tigr.ares.fabric.event.movement.*;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.ClientPlayerEntityAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
-import dev.tigr.ares.fabric.utils.Reimplementations;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;

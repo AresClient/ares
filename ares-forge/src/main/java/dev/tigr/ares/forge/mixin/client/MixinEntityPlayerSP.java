@@ -9,7 +9,6 @@ import dev.tigr.ares.forge.event.events.movement.*;
 import dev.tigr.ares.forge.event.events.player.PlayerDismountEvent;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.mixin.accessor.EntityPlayerSPAccessor;
-import dev.tigr.ares.forge.utils.Reimplementations;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -17,8 +16,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.MoverType;
 import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.util.math.AxisAlignedBB;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -53,11 +50,46 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer implement
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     public void move(MoverType type, double x, double y, double z, CallbackInfo ci) {
-        if(Ares.EVENT_MANAGER.post(new WalkOffLedgeEvent()).isCancelled()) {
-            ci.cancel();
-            Vec3d vec = Reimplementations.onSneakMove(x, y, z);
-            super.move(type, vec.x, vec.y, vec.z);
+        if(!Ares.EVENT_MANAGER.post(new WalkOffLedgeEvent()).isCancelled()) return;
+
+        ci.cancel();
+
+        double x1 = x;
+        double y1 = y;
+        double z1 = z;
+
+        if(MC.player.onGround && !MC.player.noClip) {
+            double d5;
+            for(d5 = 0.05D; x1 != 0.0D && MC.world.getCollisionBoxes(MC.player, MC.player.getEntityBoundingBox().offset(x1, -MC.player.stepHeight, 0.0D)).isEmpty();) {
+                if(x1 < d5 && x1 >= -d5) x1 = 0.0D;
+
+                else if(x1 > 0.0D) x1 -= d5;
+
+                else x1 += d5;
+            }
+            for(; z1 != 0.0D && MC.world.getCollisionBoxes(MC.player, MC.player.getEntityBoundingBox().offset(0.0D, -MC.player.stepHeight, z1)).isEmpty();) {
+                if(z1 < d5 && z1 >= -d5) z1 = 0.0D;
+
+                else if(z1 > 0.0D) z1 -= d5;
+
+                else z1 += d5;
+            }
+            for(; x1 != 0.0D && z1 != 0.0D && MC.world.getCollisionBoxes(MC.player, MC.player.getEntityBoundingBox().offset(x1, -MC.player.stepHeight, z1)).isEmpty();) {
+                if(x1 < d5 && x1 >= -d5) x1 = 0.0D;
+
+                else if(x1 > 0.0D) x1 -= d5;
+
+                else x1 += d5;
+
+                if(z1 < d5 && z1 >= -d5) z1 = 0.0D;
+
+                else if(z1 > 0.0D) z1 -= d5;
+
+                else z1 += d5;
+            }
         }
+
+        super.move(type, x1, y1, z1);
     }
 
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)

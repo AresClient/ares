@@ -13,8 +13,8 @@ import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Quaternion;
 
-@Module.Info(name = "HandView", description = "Modifies the view of items held in the hands", category = Category.RENDER)
-public class HandView extends Module {
+@Module.Info(name = "ViewModel", description = "Modifies the view of items held in the hands", category = Category.RENDER)
+public class ViewModel extends Module {
     private final Setting<Boolean> separate = register(new BooleanSetting("Separate Hands", false));
 
     private final Setting<Boolean> translate = register(new BooleanSetting("Translation", true));

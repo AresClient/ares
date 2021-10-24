@@ -6,7 +6,7 @@
   "mixins": [
     "accessor.BufferBuilderAccessor",
     "accessor.EntityPlayerSPAccessor",
-    "accessor.ItemRendererAccessor",
+    "accessor.EntityRendererAccessor",
     "client.MixinBlockLiquid",
     "client.MixinBlockSoulsand",
     "client.MixinEntity",
@@ -39,8 +39,5 @@
     "render.MixinRenderGlobal",
     "render.MixinRenderLivingBase",
     "render.MixinServerListEntryNormal"
-  ],
-  "client": [
-    "accessor.EntityRendererAccessor"
   ]
 }

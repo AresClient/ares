@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.impl.modules.render;
+package dev.tigr.ares.fabric.impl.modules.render;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
@@ -7,14 +7,14 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
-import dev.tigr.ares.forge.event.events.render.RenderHeldItemEvent;
-import dev.tigr.ares.forge.utils.render.RenderUtils;
+import dev.tigr.ares.fabric.event.render.RenderHeldItemEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.Hand;
+import net.minecraft.util.math.Quaternion;
 
-@Module.Info(name = "HandView", description = "Modifies the view of items held in the hands", category = Category.RENDER)
-public class HandView extends Module {
+@Module.Info(name = "ViewModel", description = "Modifies the view of items held in the hands", category = Category.RENDER)
+public class ViewModel extends Module {
     private final Setting<Boolean> separate = register(new BooleanSetting("Separate Hands", false));
 
     private final Setting<Boolean> translate = register(new BooleanSetting("Translation", true));
@@ -46,21 +46,21 @@ public class HandView extends Module {
 
     @EventHandler
     private final EventListener<RenderHeldItemEvent.Cancelled> onHand = new EventListener<>(event -> {
-        if(event.getHand() == EnumHand.MAIN_HAND) {
-            if(translate.getValue()) event.translate(translateMainX.getValue(), translateMainY.getValue(), -translateMainZ.getValue());
-            if(scale.getValue()) event.scale(scaleMainX.getValue(), scaleMainY.getValue(), scaleMainZ.getValue());
-            if(rotation.getValue()) event.multiply(RenderUtils.newQuaternion(rotationMainX.getValue(), rotationMainY.getValue(), rotationMainZ.getValue(), true));
+        if(event.getHand() == Hand.MAIN_HAND) {
+            if(translate.getValue()) event.getMatrices().translate(translateMainX.getValue(), translateMainY.getValue(), -translateMainZ.getValue());
+            if(scale.getValue()) event.getMatrices().scale(scaleMainX.getValue(), scaleMainY.getValue(), scaleMainZ.getValue());
+            if(rotation.getValue()) event.getMatrices().multiply(new Quaternion(rotationMainX.getValue(), rotationMainY.getValue(), rotationMainZ.getValue(), true));
         }
         else {
             if(separate.getValue()) {
-                if(translate.getValue()) event.translate(translateOffX.getValue(), translateOffY.getValue(), -translateOffZ.getValue());
-                if(scale.getValue()) event.scale(scaleOffX.getValue(), scaleOffY.getValue(), scaleOffZ.getValue());
-                if(rotation.getValue()) event.multiply(RenderUtils.newQuaternion(rotationOffX.getValue(), rotationOffY.getValue(), rotationOffZ.getValue(), true));
+                if(translate.getValue()) event.getMatrices().translate(translateOffX.getValue(), translateOffY.getValue(), -translateOffZ.getValue());
+                if(scale.getValue()) event.getMatrices().scale(scaleOffX.getValue(), scaleOffY.getValue(), scaleOffZ.getValue());
+                if(rotation.getValue()) event.getMatrices().multiply(new Quaternion(rotationOffX.getValue(), rotationOffY.getValue(), rotationOffZ.getValue(), true));
             }
             else {
-                if(translate.getValue()) event.translate(translateMainX.getValue(), translateMainY.getValue(), -translateMainZ.getValue());
-                if(scale.getValue()) event.scale(scaleMainX.getValue(), scaleMainY.getValue(), scaleMainZ.getValue());
-                if(rotation.getValue()) event.multiply(RenderUtils.newQuaternion(rotationMainX.getValue(), rotationMainY.getValue(), rotationMainZ.getValue(), true));
+                if(translate.getValue()) event.getMatrices().translate(translateMainX.getValue(), translateMainY.getValue(), -translateMainZ.getValue());
+                if(scale.getValue()) event.getMatrices().scale(scaleMainX.getValue(), scaleMainY.getValue(), scaleMainZ.getValue());
+                if(rotation.getValue()) event.getMatrices().multiply(new Quaternion(rotationMainX.getValue(), rotationMainY.getValue(), rotationMainZ.getValue(), true));
             }
         }
     });

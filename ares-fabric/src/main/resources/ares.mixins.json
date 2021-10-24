@@ -18,7 +18,6 @@
     "accessors.EntityAccessor",
     "accessors.EntityVelocityUpdateS2CPacketAccessor",
     "accessors.ExplosionS2CPacketAccessor",
-    "accessors.HeldItemRendererAccessor",
     "accessors.KeyBindingAccessor",
     "accessors.MapTextureAccessor",
     "accessors.MatrixStackAccessor",
