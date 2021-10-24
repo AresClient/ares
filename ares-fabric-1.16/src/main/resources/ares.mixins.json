@@ -6,6 +6,7 @@
   "mixins": [
     "accessors.AbstractBlockAccessor",
     "accessors.BufferBuilderAccessor",
+    "accessors.CameraAccessor",
     "accessors.ChatMessageC2SPacketAccessor",
     "accessors.ChatScreenAccessor",
     "accessors.ClientPlayerEntityAccessor",

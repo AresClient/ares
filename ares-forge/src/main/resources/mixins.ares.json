@@ -39,5 +39,8 @@
     "render.MixinRenderGlobal",
     "render.MixinRenderLivingBase",
     "render.MixinServerListEntryNormal"
+  ],
+  "client": [
+    "accessor.EntityRendererAccessor"
   ]
 }
