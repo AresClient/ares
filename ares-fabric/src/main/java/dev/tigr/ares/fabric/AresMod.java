@@ -64,6 +64,7 @@ public class AresMod extends Ares {
                 KillAura.class,
                 Offhand.class,
                 OffhandGap.class,
+                SelfTrap.class,
                 Surround.class,
                 TotemPopCounter.class,
 

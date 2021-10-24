@@ -25,6 +25,7 @@ public final class Priorities {
                 YAW_STEP = 300, // Not to be used as a key
 
                 //400 and below - Defensive Modules
+                SELF_TRAP = 397,
                 ANTI_BED_AURA = 398,
                 SURROUND = 399,
                 BURROW = 400;
