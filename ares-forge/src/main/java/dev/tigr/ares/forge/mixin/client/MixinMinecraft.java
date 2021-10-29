@@ -2,14 +2,18 @@ package dev.tigr.ares.forge.mixin.client;
 
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
+import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.forge.event.events.player.InteractEvent;
 import dev.tigr.ares.forge.gui.AresChatGUI;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.multiplayer.PlayerControllerMP;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.profiler.Profiler;
 import org.lwjgl.input.Keyboard;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -20,6 +24,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft {
+    @Shadow @Final public Profiler profiler;
     private final Minecraft MC = ((Minecraft) (Object) this);
 
     @Redirect(method = "sendClickBlockToController", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/entity/EntityPlayerSP;isHandActive()Z"))
@@ -45,6 +50,13 @@ public abstract class MixinMinecraft {
             }
         } catch(Exception ignored) {
         }
+    }
+
+    @Inject(method = "runTick", at = @At(value = "INVOKE", target = "Lnet/minecraft/profiler/Profiler;endSection()V", ordinal = 0, shift = At.Shift.AFTER))
+    public void tick(CallbackInfo ci) {
+        profiler.startSection("aresTick");
+        if(MC.player != null && MC.world != null) Module.tick();
+        profiler.endSection();
     }
 
     @Inject(method = "run", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;displayCrashReport(Lnet/minecraft/crash/CrashReport;)V"))

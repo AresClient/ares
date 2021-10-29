@@ -19,7 +19,6 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.InputEvent;
-import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
 /**
@@ -83,11 +82,6 @@ public class ForgeEvents implements Wrapper {
             } catch(Throwable ignored) {
             }
         }
-    }
-
-    @SubscribeEvent
-    public void tickEvent(TickEvent.ClientTickEvent event) {
-        if(MC.player != null && MC.world != null) Module.tick();
     }
 
     @SubscribeEvent

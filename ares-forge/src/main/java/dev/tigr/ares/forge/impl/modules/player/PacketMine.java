@@ -354,7 +354,7 @@ public class PacketMine extends Module {
                 ((PlayerControllerMPAccessor) MC.playerController).setIsHittingBlock(false);
                 return false;
             } else {
-                ((PlayerControllerMPAccessor) MC.playerController).setCurBlockDamageMP(((PlayerControllerMPAccessor) MC.playerController).getCurBlockDamageMP() + iblockstate.getPlayerRelativeBlockHardness(MC.player, MC.player.world, posBlock));
+                ((PlayerControllerMPAccessor) MC.playerController).setCurBlockDamageMP(breakProgress);
                 if(((PlayerControllerMPAccessor) MC.playerController).getStepSoundTickCounter() % 4.0F == 0.0F) {
                     SoundType soundtype = block.getSoundType(iblockstate, MC.world, posBlock, MC.player);
                     MC.getSoundHandler().playSound(new PositionedSoundRecord(soundtype.getHitSound(), SoundCategory.NEUTRAL, (soundtype.getVolume() + 1.0F) / 8.0F, soundtype.getPitch() * 0.5F, posBlock));
