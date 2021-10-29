@@ -65,7 +65,7 @@ public class SelfTrap extends Module {
 
         int oldSlot = MC.player.inventory.currentItem;
 
-        if(delayTimer.passedMillis(delay.getValue())) {
+        if(delayTimer.passedTicks(delay.getValue())) {
             int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
             if(delay.getValue() == 0) {
                 if(newSlot == -1) return;

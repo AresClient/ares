@@ -69,7 +69,7 @@ public class FireworkAura extends Module {
             }
 
             // place fireworks
-            else if(delayTimer.passedMillis(delay.getValue())) {
+            else if(delayTimer.passedTicks(delay.getValue())) {
                 if(Math.sqrt(MC.player.squaredDistanceTo(playerPos.getX(), playerPos.getY(), playerPos.getZ())) <= range.getValue()) {
 
                     // switch

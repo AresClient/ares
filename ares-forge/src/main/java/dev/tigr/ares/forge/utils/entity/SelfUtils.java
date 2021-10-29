@@ -2,11 +2,19 @@ package dev.tigr.ares.forge.utils.entity;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
+import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.MathUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityEnderCrystal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Enchantments;
+import net.minecraft.init.MobEffects;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
@@ -65,6 +73,16 @@ public class SelfUtils implements Wrapper {
 
     /** Calculation */
 
+    public static Vec2f calculateLookAtVector(double x, double y, double z) {
+        double[] rotation = PlayerUtils.calculateLookFromPlayer(x, y, z, getPlayer());
+        return new Vec2f((float) rotation[0], (float) rotation[1]);
+    }
+
+    public static Vec2f calculateLookAtVector(Vec3d pos) {
+        double[] rotation = PlayerUtils.calculateLookFromPlayer(pos.x, pos.y, pos.z, getPlayer());
+        return new Vec2f((float) rotation[0], (float) rotation[1]);
+    }
+
     public static double[] calculateLookAt(double x, double y, double z) {
         return PlayerUtils.calculateLookFromPlayer(x, y, z, getPlayer());
     }
@@ -79,6 +97,53 @@ public class SelfUtils implements Wrapper {
                 sideways = MC.player.movementInput.moveStrafe,
                 yaw = MC.player.prevRotationYaw + (MC.player.rotationYaw - MC.player.prevRotationYaw) * MC.getRenderPartialTicks();
         return MathUtils.getMovement(speed, forward, sideways, yaw);
+    }
+
+    public static float calcBlockBreakingDelta(IBlockState state, int slot) {
+        float f = state.getBlockHardness(null, null);
+        if(f < 0.0F) return 0.0F;
+        else return getBlockBreakingSpeed(state, slot) / f / (InventoryUtils.canHarvestWithItemInSlot(state, slot) ? 30F : 100F);
+    }
+
+    public static float getBlockBreakingSpeed(IBlockState block, int slot) {
+        float f = 1.0F;
+        if(!MC.player.inventory.mainInventory.get(slot).isEmpty())
+            f *= MC.player.inventory.mainInventory.get(slot).getDestroySpeed(block);
+
+        if(f > 1.0F) {
+            ItemStack itemstack = MC.player.inventory.getStackInSlot(slot);
+            int i = EnchantmentHelper.getEnchantmentLevel(Enchantments.EFFICIENCY, itemstack);
+            if(i > 0 && !itemstack.isEmpty()) f += (float)(i * i + 1);
+        }
+
+        if(MC.player.isPotionActive(MobEffects.HASTE)) f *= 1.0F + (float)(MC.player.getActivePotionEffect(MobEffects.HASTE).getAmplifier() + 1) * 0.2F;
+
+        if(MC.player.isPotionActive(MobEffects.MINING_FATIGUE)) {
+            float f1;
+
+            switch (MC.player.getActivePotionEffect(MobEffects.MINING_FATIGUE).getAmplifier()) {
+                case 0:
+                    f1 = 0.3F;
+                    break;
+                case 1:
+                    f1 = 0.09F;
+                    break;
+                case 2:
+                    f1 = 0.0027F;
+                    break;
+                case 3:
+                default:
+                    f1 = 8.1E-4F;
+            }
+
+            f *= f1;
+        }
+
+        if(MC.player.isInsideOfMaterial(Material.WATER) && !EnchantmentHelper.getAquaAffinityModifier(MC.player)) f /= 5.0F;
+
+        if(!MC.player.onGround) f /= 5.0F;
+
+        return (f < 0 ? 0 : f);
     }
 
 
@@ -162,9 +227,9 @@ public class SelfUtils implements Wrapper {
     public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, EnumHand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
-            if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
+            if(!MC.world.getBlockState(pos).getMaterial().isReplaceable())
                 return false;
-        } else if (!MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
+        } else if(!MC.world.getBlockState(pos).getMaterial().isReplaceable() ||
                     !MC.world.getEntitiesWithinAABBExcludingEntity(null, new AxisAlignedBB(pos)).stream().noneMatch(Entity::canBeCollidedWith))
             return false;
 
@@ -192,9 +257,9 @@ public class SelfUtils implements Wrapper {
 
         // Air place if no neighbour was found
         if(airPlace) {
-            if (hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
-            if (neighbor == null) neighbor = pos;
-            if (side2 == null) side2 = EnumFacing.UP;
+            if(hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+            if(neighbor == null) neighbor = pos;
+            if(side2 == null) side2 = EnumFacing.UP;
         } else if(hitVec == null || neighbor == null || side2 == null) {
             return false;
         }

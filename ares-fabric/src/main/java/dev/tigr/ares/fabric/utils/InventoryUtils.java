@@ -2,9 +2,11 @@ package dev.tigr.ares.fabric.utils;
 
 import dev.tigr.ares.Wrapper;
 import net.minecraft.block.Block;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
+import net.minecraft.block.BlockState;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EntityGroup;
+import net.minecraft.item.*;
 import net.minecraft.util.math.BlockPos;
 
 /**
@@ -115,5 +117,50 @@ public class InventoryUtils implements Wrapper {
 
     public static int getSlotIndex(int index) {
         return index < 9 ? index + 36 : index;
+    }
+
+    public static int getWeapon() {
+        int index = -1;
+        double best = 0;
+        for(int i = 0; i < 9; i++) {
+            ItemStack stack = MC.player.getInventory().getStack(i);
+            if(stack.isEmpty()) continue;
+            double damage = -1;
+            Item item = stack.getItem();
+            if(item instanceof MiningToolItem)
+                damage = ((MiningToolItem) item).getAttackDamage() + (double) EnchantmentHelper.getAttackDamage(stack, EntityGroup.DEFAULT);
+            if(item instanceof SwordItem)
+                damage = ((SwordItem) item).getAttackDamage() + (double) EnchantmentHelper.getAttackDamage(stack, EntityGroup.DEFAULT);
+            if(damage > best) {
+                index = i;
+                best = damage;
+            }
+        }
+        return index;
+    }
+
+    public static int getTool(BlockPos pos) {
+        int index = -1;
+        double best = 0;
+        for(int i = 0; i < 9; i++) {
+            ItemStack stack = MC.player.getInventory().getStack(i);
+            if(stack.isEmpty()) continue;
+
+            float speed = stack.getMiningSpeedMultiplier(MC.world.getBlockState(pos));
+            if(speed <= 1) continue;
+
+            int efficiency = EnchantmentHelper.getLevel(Enchantments.EFFICIENCY, stack);
+            if(efficiency > 0) speed += Math.pow(efficiency, 2) + 1;
+
+            if(speed > best) {
+                index = i;
+                best = speed;
+            }
+        }
+        return index;
+    }
+
+    public static boolean canHarvestWithItemInSlot(BlockState state, int slot) {
+        return !state.isToolRequired() || MC.player.getInventory().getStack(slot).isSuitableFor(state);
     }
 }

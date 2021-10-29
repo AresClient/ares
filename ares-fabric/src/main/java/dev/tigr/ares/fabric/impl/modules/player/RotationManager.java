@@ -137,7 +137,7 @@ public class RotationManager extends Module {
             side2 = side.getOpposite();
 
             // check if neighbor can be right clicked aka it isnt air
-            if (MC.world.getBlockState(neighbor).isAir() || MC.world.getBlockState(neighbor).getBlock() instanceof FluidBlock) {
+            if(MC.world.getBlockState(neighbor).isAir() || MC.world.getBlockState(neighbor).getBlock() instanceof FluidBlock) {
                 neighbor = null;
                 side2 = null;
                 continue;

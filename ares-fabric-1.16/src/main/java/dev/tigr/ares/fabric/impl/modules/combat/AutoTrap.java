@@ -61,7 +61,7 @@ public class AutoTrap extends Module {
 
         int oldSlot = MC.player.inventory.selectedSlot;
 
-        if(delayTimer.passedMillis(delay.getValue())) {
+        if(delayTimer.passedTicks(delay.getValue())) {
             for(PlayerEntity player: MC.world.getNonSpectatingEntities(PlayerEntity.class, new Box(MC.player.getBlockPos()).expand(targetRange.getValue()))) {
                 if(isPlayerValidTarget(player)) {
 

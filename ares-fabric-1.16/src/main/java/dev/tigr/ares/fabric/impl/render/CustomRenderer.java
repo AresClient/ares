@@ -171,20 +171,17 @@ public class CustomRenderer implements IRenderer {
         double scaleHeight = (double) MC.getWindow().getHeight() / MC.getWindow().getScaledHeight();
 
         // enable gl scissor
-        GL11.glPushAttrib(GL11.GL_SCISSOR_BIT);
-        GL11.glScissor(
+        RenderSystem.enableScissor(
                 (int) (x * scaleWidth),
                 (MC.getWindow().getHeight()) - (int) ((y + height) * scaleHeight),
                 (int) (width * scaleWidth),
                 (int) (height * scaleHeight)
         );
-        GL11.glEnable(GL11.GL_SCISSOR_TEST);
     }
 
     @Override
     public void stopScissor() {
-        GL11.glDisable(GL11.GL_SCISSOR_TEST);
-        GL11.glPopAttrib();
+        RenderSystem.disableScissor();
     }
 
     @Override

@@ -31,7 +31,7 @@ public class Flight extends Module {
                 break;
 
             case JETPACK:
-                if(MC.gameSettings.keyBindJump.isKeyDown()) MC.player.motionY += speed.getValue() / 1000d;
+                if(MC.gameSettings.keyBindJump.isKeyDown()) MC.player.motionY += speed.getValue() / 50d;
                 break;
         }
     }

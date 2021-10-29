@@ -51,6 +51,10 @@ public class Vertex {
         return new Vec3d(x, y, z);
     }
 
+    public Vertex offset(double x, double y, double z) {
+        return new Vertex(this.x + x, this.y + y, this.z + z, r, g, b, a);
+    }
+
     public Color getColor() {
         return new Color(r, g, b, a);
     }

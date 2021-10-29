@@ -59,7 +59,7 @@ public class AutoTrap extends Module {
 
         int oldSlot = MC.player.inventory.currentItem;
 
-        if(delayTimer.passedMillis(delay.getValue())) {
+        if(delayTimer.passedTicks(delay.getValue())) {
             for(EntityPlayer player: MC.world.getEntitiesWithinAABB(EntityPlayer.class, new AxisAlignedBB(MC.player.getPosition()).grow(targetRange.getValue()))) {
                 if(isPlayerValidTarget(player)) {
 

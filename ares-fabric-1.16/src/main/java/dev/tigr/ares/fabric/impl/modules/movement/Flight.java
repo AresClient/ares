@@ -30,7 +30,7 @@ public class Flight extends Module {
                 break;
 
             case JETPACK:
-                if(MC.player.input.jumping) MC.player.addVelocity(0, speed.getValue() / 1000d, 0);
+                if(MC.options.keyJump.isPressed()) MC.player.setVelocity(MC.player.getVelocity().x, MC.player.getVelocity().y + speed.getValue() / 50d, MC.player.getVelocity().z);
                 break;
         }
     }

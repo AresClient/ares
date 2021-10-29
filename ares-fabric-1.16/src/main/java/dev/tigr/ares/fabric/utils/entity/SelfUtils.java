@@ -4,15 +4,23 @@ import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
+import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.MathUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
 import net.minecraft.block.ShapeContext;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.decoration.EndCrystalEntity;
+import net.minecraft.entity.effect.StatusEffectUtil;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
@@ -69,6 +77,16 @@ public class SelfUtils implements Wrapper {
 
     /** Calculation */
 
+    public static Vec2f calculateLookAtVector(double x, double y, double z) {
+        double[] rotation = PlayerUtils.calculateLookFromPlayer(x, y, z, getPlayer());
+        return new Vec2f((float) rotation[0], (float) rotation[1]);
+    }
+
+    public static Vec2f calculateLookAtVector(Vec3d pos) {
+        double[] rotation = PlayerUtils.calculateLookFromPlayer(pos.x, pos.y, pos.z, getPlayer());
+        return new Vec2f((float) rotation[0], (float) rotation[1]);
+    }
+
     public static double[] calculateLookAt(double x, double y, double z) {
         return PlayerUtils.calculateLookFromPlayer(x, y, z, getPlayer());
     }
@@ -83,6 +101,49 @@ public class SelfUtils implements Wrapper {
                 sideways = MC.player.input.movementSideways,
                 yaw = MC.player.prevYaw + (MC.player.yaw - MC.player.prevYaw) * ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).getTickTime();
         return MathUtils.getMovement(speed, forward, sideways, yaw);
+    }
+
+    public static float calcBlockBreakingDelta(BlockState state, int slot) {
+        float f = state.getHardness(null, null);
+        if(f == -1.0F) return 0.0F;
+        else return getBlockBreakingSpeed(state, slot) / f / (InventoryUtils.canHarvestWithItemInSlot(state, slot) ? 30F : 100F);
+    }
+
+    public static float getBlockBreakingSpeed(BlockState block, int slot) {
+        float f = MC.player.inventory.main.get(slot).getMiningSpeedMultiplier(block);
+        if(f > 1.0F) {
+            ItemStack itemStack = MC.player.inventory.getStack(slot);
+            int i = EnchantmentHelper.getLevel(Enchantments.EFFICIENCY, itemStack);
+            if(i > 0 && !itemStack.isEmpty()) f += (float)(i * i + 1);
+        }
+
+        if(StatusEffectUtil.hasHaste(MC.player)) f *= 1.0F + (float)(StatusEffectUtil.getHasteAmplifier(MC.player) + 1) * 0.2F;
+
+        if(MC.player.hasStatusEffect(StatusEffects.MINING_FATIGUE)) {
+            float k;
+            switch(MC.player.getStatusEffect(StatusEffects.MINING_FATIGUE).getAmplifier()) {
+                case 0:
+                    k = 0.3F;
+                    break;
+                case 1:
+                    k = 0.09F;
+                    break;
+                case 2:
+                    k = 0.0027F;
+                    break;
+                case 3:
+                default:
+                    k = 8.1E-4F;
+            }
+
+            f *= k;
+        }
+
+        if(MC.player.isSubmergedIn(FluidTags.WATER) && !EnchantmentHelper.hasAquaAffinity(MC.player)) f /= 5.0F;
+
+        if(!MC.player.isOnGround()) f /= 5.0F;
+
+        return f;
     }
 
 

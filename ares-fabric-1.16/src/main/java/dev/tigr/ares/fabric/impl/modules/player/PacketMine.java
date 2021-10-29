@@ -7,8 +7,13 @@ import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
+import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.player.DamageBlockEvent;
+import dev.tigr.ares.fabric.mixin.accessors.ClientPlayerInteractionManagerAccessor;
+import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.MathUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.ares.fabric.utils.entity.SelfUtils;
@@ -16,17 +21,23 @@ import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.block.AirBlock;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.FluidBlock;
+import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
+import net.minecraft.network.packet.s2c.play.BlockUpdateS2CPacket;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+
+import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
 /***
  * @author Makrennel 08/09/21
@@ -34,11 +45,15 @@ import java.util.LinkedHashSet;
  */
 @Module.Info(name = "PacketMine", description = "Mines using packets", category = Category.PLAYER, alwaysListening = true)
 public class PacketMine extends Module {
-    public PacketMine INSTANCE;
+    public static PacketMine MINER;
 
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.NORMAL));
-    private final Setting<Swing> swing = register(new EnumSetting<>("Swing Type", Swing.FULL));
-    private final Setting<Boolean> swingComplete = register(new BooleanSetting("Swing Till Done", true)).setVisibility(() -> mode.getValue() == Mode.UPDATE && swing.getValue() != Swing.NONE);
+    private final Setting<Boolean> spam = register(new BooleanSetting("Spam", true)).setVisibility(() -> mode.getValue() == Mode.NORMAL);
+    public final Setting<Boolean> queue = register(new BooleanSetting("Queue", true));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
+    private final Setting<Switch> autoSwitch = register(new EnumSetting<>("AutoSwitch", Switch.SILENT));
+    private final Setting<Swing> swing = register(new EnumSetting<>("Swing Type", Swing.PACKET));
+    private final Setting<Boolean> spamSwing = register(new BooleanSetting("Spam Swing", false)).setVisibility(() -> mode.getValue() == Mode.UPDATE && swing.getValue() != Swing.NONE);
 
     private final Setting<Boolean> color = register(new BooleanSetting("Color", false));
     private final Setting<Float> red = register(new FloatSetting("Red", 0, 0, 1)).setVisibility(color::getValue);
@@ -63,14 +78,35 @@ public class PacketMine extends Module {
 
     enum Mode { NORMAL, UPDATE }
     enum Swing { FULL, PACKET, NONE }
+    enum Switch { NORMAL, SILENT, NONE }
 
     public PacketMine() {
-        INSTANCE = this;
+        MINER = this;
     }
+
+    final int key = Priorities.Rotation.PACKET_MINE;
 
     private LinkedHashSet<BlockPos> posQueue = new LinkedHashSet<>();
     private BlockPos currentPos;
     private boolean hasMined;
+
+    private float breakProgress;
+
+    private int oldSelection = -1;
+    private int toolSlot = -1;
+    private boolean hasSwapped;
+
+    public void setTarget(BlockPos pos) {
+        LinkedHashSet<BlockPos> newQueue = new LinkedHashSet<>();
+        newQueue.add(pos);
+        if(currentPos != null) newQueue.add(currentPos);
+        newQueue.addAll(posQueue);
+        currentPos = null;
+        posQueue = newQueue;
+        hasMined = false;
+        breakProgress = 0;
+        hasSwapped = false;
+    }
 
     public void addPos(BlockPos pos) {
         posQueue.add(pos);
@@ -85,6 +121,9 @@ public class PacketMine extends Module {
 
     @Override
     public void onTick() {
+        //Release Rotation
+        releaseRotation();
+
         if(nullCheck()) return;
 
         // Check if currentPos is null and get the next queue element if it is
@@ -93,18 +132,21 @@ public class PacketMine extends Module {
         // Check if currentPos is still a breakable block and remove from the queue if it no longer is
         if(checkAndClearCurrent()) return;
 
+        //Perform switch
+        doSwitch();
+
         // Remove all targets out of distance
         if(removeOutOfDistance()) return;
 
-        // Send Start/Stop mining packets if mode is Normal
-        if(mode.getValue() == Mode.NORMAL && !hasMined) {
-            normalMine();
-        }
+        // Rotate
+        rotate();
 
-        // Perform update block function if mode is Update
-        if(mode.getValue() == Mode.UPDATE) {
-            updateMine();
-        }
+        // Perform mine
+        mine();
+
+        //Increment breakProgress if necessary
+        int tool = InventoryUtils.getTool(currentPos);
+        if(tool != -1) breakProgress = Math.min(breakProgress + SelfUtils.calcBlockBreakingDelta(MC.world.getBlockState(currentPos), tool), 1);
     }
 
     private boolean nullCheck() {
@@ -112,17 +154,46 @@ public class PacketMine extends Module {
         return posQueue.isEmpty() && currentPos == null;
     }
 
+    private void doSwitch() {
+        oldSelection = MC.player.inventory.selectedSlot;
+        toolSlot = InventoryUtils.getTool(currentPos);
+
+        if(autoSwitch.getValue() == Switch.SILENT && progressReady()) {
+            if(oldSelection != toolSlot && toolSlot != -1) {
+                MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(toolSlot));
+                hasSwapped = true;
+            }
+        }
+
+        else if(autoSwitch.getValue() == Switch.NORMAL) {
+            if(oldSelection != toolSlot && toolSlot != -1) MC.player.inventory.selectedSlot = toolSlot;
+        }
+    }
+
+    private void releaseRotation() {
+        if(currentPos == null && ROTATIONS.isKeyCurrent(key)) ROTATIONS.setCompletedAction(key, true);
+    }
+
+    private void rotate() {
+        if(rotate.getValue() && currentPos != null) {
+            ROTATIONS.setCurrentRotation(
+                    SelfUtils.calculateLookAtVector(MathUtils.getClosestPointOfBlockPos(SelfUtils.getEyePos(), currentPos)),
+                    key, key, false, false
+            );
+        }
+    }
+
     private boolean removeOutOfDistance() {
         float reachSq = MC.interactionManager.getReachDistance() *MC.interactionManager.getReachDistance();
 
         posQueue.removeIf(p -> {
-            Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getPlayer().getPos(), p);
-            return SelfUtils.getEyePos().squaredDistanceTo(closest.getX(), closest.getY(), closest.getZ()) > reachSq;
+            Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getEyePos(), p);
+            return MathUtils.squaredDistanceBetween(SelfUtils.getEyePos(), closest) > reachSq;
         });
 
-        Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getPlayer().getPos(), currentPos);
+        Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getEyePos(), currentPos);
 
-        if(SelfUtils.getEyePos().squaredDistanceTo(closest.getX(), closest.getY(), closest.getZ()) > reachSq) {
+        if(MathUtils.squaredDistanceBetween(SelfUtils.getEyePos(), closest) > reachSq) {
             currentPos = null;
             hasMined = false;
             return true;
@@ -136,6 +207,7 @@ public class PacketMine extends Module {
             Iterator<BlockPos> i = posQueue.iterator();
             currentPos = i.next();
             i.remove();
+            breakProgress = 0;
         }
     }
 
@@ -150,21 +222,26 @@ public class PacketMine extends Module {
         } else return false;
     }
 
-    private void normalMine() {
-        MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, currentPos, Direction.UP));
+    private void mine() {
+        Pair<Direction, Vec3d> closestVisibleSide = WorldUtils.getClosestVisibleSide(SelfUtils.getEyePos(), currentPos);
+        Direction side = null;
+        if(closestVisibleSide != null) side = closestVisibleSide.getFirst();
+        if(side == null) {
+            if(SelfUtils.getEyeY() > currentPos.getY()) side = Direction.UP;
+            else side = Direction.DOWN;
+        }
 
-        if(swing.getValue() == Swing.FULL) MC.player.swingHand(Hand.MAIN_HAND);
-        if(swing.getValue() == Swing.PACKET) MC.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
+        if((!hasMined && mode.getValue() == Mode.NORMAL) || (spam.getValue() && mode.getValue() == Mode.NORMAL)) {
+            MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, currentPos, side));
+            MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, currentPos, side));
+        }
 
-        MC.player.networkHandler.sendPacket(new PlayerActionC2SPacket(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, currentPos, Direction.UP));
+        if(mode.getValue() == Mode.UPDATE) {
+            if(autoSwitch.getValue() == Switch.SILENT) updateBlockBreakingProgress(currentPos, side);
+            else MC.interactionManager.updateBlockBreakingProgress(currentPos, side);
+        }
 
-        hasMined = true;
-    }
-
-    private void updateMine() {
-        MC.interactionManager.updateBlockBreakingProgress(currentPos, Direction.UP);
-
-        if(swingComplete.getValue() || !hasMined) {
+        if(!hasMined || (spamSwing.getValue() && mode.getValue() == Mode.UPDATE)) {
             if(swing.getValue() == Swing.FULL) MC.player.swingHand(Hand.MAIN_HAND);
             if(swing.getValue() == Swing.PACKET) MC.player.networkHandler.sendPacket(new HandSwingC2SPacket(Hand.MAIN_HAND));
         }
@@ -172,17 +249,57 @@ public class PacketMine extends Module {
         hasMined = true;
     }
 
+    private boolean progressReady() {
+        return breakProgress >= 1;
+    }
+
     @EventHandler
     private final EventListener<DamageBlockEvent> onDamageBlock = new EventListener<>(event -> {
         if(!getEnabled() || !WorldUtils.canBreakBlock(event.getBlockPos())) return;
 
-        if(currentPos == event.getBlockPos() && hasMined) {
-            normalMine();
-            return;
-        } else if(currentPos == event.getBlockPos()) return;
+        if(currentPos != null) {
+            if(currentPos.equals(event.getBlockPos()) && hasMined && mode.getValue() == Mode.NORMAL) {
+                hasMined = false;
+                event.setCancelled(true);
+                return;
+            } else if(currentPos.equals(event.getBlockPos())) return;
+        }
 
         addPos(event.getBlockPos());
+        if(!queue.getValue()) {
+            currentPos = null;
+            hasMined = false;
+        }
         event.setCancelled(true);
+    });
+
+    @EventHandler
+    private final EventListener<PacketEvent.Receive> onBlockUpdate = new EventListener<>(event -> {
+        if(event.getPacket() instanceof BlockUpdateS2CPacket) {
+            BlockUpdateS2CPacket p = (BlockUpdateS2CPacket) event.getPacket();
+            if(currentPos == null) return;
+            if(p.getState().getBlock() != Blocks.AIR) return;
+
+            if(currentPos.equals(p.getPos())) {
+                currentPos = null;
+                hasMined = false;
+                if(hasSwapped && oldSelection != -1) {
+                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(oldSelection));
+                    hasSwapped = false;
+                    oldSelection = -1;
+                    toolSlot = -1;
+                }
+
+                //Release Rotation
+                releaseRotation();
+            }
+            for(BlockPos blockPos: posQueue) {
+                if(blockPos.equals(p.getPos())) {
+                    posQueue.remove(blockPos);
+                    return;
+                }
+            }
+        }
     });
 
     @Override
@@ -203,9 +320,56 @@ public class PacketMine extends Module {
 
         if(currentPos != null) {
             Box bb = RenderUtils.getBoundingBox(currentPos);
-            if(bb != null) RenderUtils.cube(bb, cFill, cLine);
+            if(bb != null) RenderUtils.cube(bb.contract((1 - breakProgress) /2), cFill, cLine);
         }
 
         RenderUtils.end3d();
+    }
+    
+    private boolean updateBlockBreakingProgress(BlockPos pos, Direction direction) {
+        if(!hasSwapped || toolSlot == -1) ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).syncSelectedSlot();
+        else MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(toolSlot));
+        if(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getBlockBreakingCooldown() > 0) {
+            ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBlockBreakingCooldown(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getBlockBreakingCooldown() -1);
+            return true;
+        } else {
+            BlockState blockState2;
+            if(MC.interactionManager.getCurrentGameMode().isCreative() && MC.world.getWorldBorder().contains(pos)) {
+                ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBlockBreakingCooldown(5);
+                blockState2 = MC.world.getBlockState(pos);
+                MC.getTutorialManager().onBlockAttacked(MC.world, pos, blockState2, 1.0F);
+                ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).sendPlayerAction(PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, pos, direction);
+                MC.interactionManager.breakBlock(pos);
+                return true;
+            } else if(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getIsCurrentlyBreaking(pos)) {
+                blockState2 = MC.world.getBlockState(pos);
+                if(blockState2.isAir()) {
+                    ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBreakingBlock(false);
+                    return false;
+                } else {
+                    ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setCurrentBreakingProgress(breakProgress);
+                    if(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getBlockBreakingSoundCooldown() % 4.0F == 0.0F) {
+                        BlockSoundGroup blockSoundGroup = blockState2.getSoundGroup();
+                        MC.getSoundManager().play(new PositionedSoundInstance(blockSoundGroup.getHitSound(), SoundCategory.BLOCKS, (blockSoundGroup.getVolume() + 1.0F) / 8.0F, blockSoundGroup.getPitch() * 0.5F, pos));
+                    }
+
+                    ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBlockBreakingSoundCooldown(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getBlockBreakingSoundCooldown() +1);
+                    MC.getTutorialManager().onBlockAttacked(MC.world, pos, blockState2, MathHelper.clamp(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getCurrentBreakingProgress(), 0.0F, 1.0F));
+                    if(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getCurrentBreakingProgress() >= 1.0F) {
+                        ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBreakingBlock(false);
+                        ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).sendPlayerAction(PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, pos, direction);
+                        MC.interactionManager.breakBlock(pos);
+                        ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setCurrentBreakingProgress(0);
+                        ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBlockBreakingSoundCooldown(0);
+                        ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).setBlockBreakingCooldown(5);
+                    }
+
+                    MC.world.setBlockBreakingInfo(MC.player.getEntityId(), ((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getCurrentBreakingPos(), (int)(((ClientPlayerInteractionManagerAccessor) MC.interactionManager).getCurrentBreakingProgress() * 10.0F) - 1);
+                    return true;
+                }
+            } else {
+                return MC.interactionManager.attackBlock(pos, direction);
+            }
+        }
     }
 }
