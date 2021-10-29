@@ -30,9 +30,10 @@ import static dev.tigr.ares.forge.impl.modules.player.PacketMine.MINER;
  */
 @Module.Info(name = "AutoCity", description = "Automatically mines closest players surround", category = Category.COMBAT)
 public class AutoCity extends Module {
+    //TODO: fix skip queue
     private final Setting<Boolean> instant = register(new BooleanSetting("Instant", true));
     private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", false));
-    public final Setting<Boolean> skipQueue = register(new BooleanSetting("Skip Mine Queue", false)).setVisibility(MINER.queue::getValue);
+//    public final Setting<Boolean> skipQueue = register(new BooleanSetting("Skip Mine Queue", false)).setVisibility(MINER.queue::getValue);
 
     private boolean toggleInstant = false;
     
@@ -75,13 +76,13 @@ public class AutoCity extends Module {
                     // break
                     if(instant.getValue()) {
                         MC.player.inventory.currentItem = index;
-                        MC.playerController.onPlayerDamageBlock(new BlockPos(target.getX(), target.getY(), target.getZ()), EnumFacing.UP);
+                        MC.playerController.onPlayerDamageBlock(target, EnumFacing.UP);
                         MC.player.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
                     } else {
-                        if(skipQueue.getValue() && MINER.queue.getValue()) MINER.setTarget(target);
-                        else MINER.addPos(target);
+//                        if(skipQueue.getValue() && MINER.queue.getValue()) MINER.setTarget(target);
+//                        else
+                        MINER.addPos(target);
                     }
-
                 }
                 if(!toggleInstant) setEnabled(false);
                 return;
