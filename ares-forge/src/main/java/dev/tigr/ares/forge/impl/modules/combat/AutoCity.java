@@ -20,6 +20,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -32,6 +33,7 @@ import static dev.tigr.ares.forge.impl.modules.player.PacketMine.MINER;
 public class AutoCity extends Module {
     //TODO: fix skip queue
     private final Setting<Boolean> instant = register(new BooleanSetting("Instant", true));
+    private final Setting<Boolean> burrow = register(new BooleanSetting("Mine Burrow First", true));
     private final Setting<Boolean> oneDotThirteen = register(new BooleanSetting("1.13+", false));
 //    public final Setting<Boolean> skipQueue = register(new BooleanSetting("Skip Mine Queue", false)).setVisibility(MINER.queue::getValue);
 
@@ -47,10 +49,12 @@ public class AutoCity extends Module {
         for(EntityPlayer playerEntity: WorldUtils.getPlayerTargets(MC.playerController.getBlockReachDistance() +2)) {
             Vec3d posVec = playerEntity.getPositionVector();
             BlockPos pos = new BlockPos(Math.floor(posVec.x), Math.round(posVec.y), Math.floor(posVec.z));
-            if(inCity(pos)) {
+            if(inCity(pos) || (burrow.getValue() && inBurrow(pos))) {
                 // find block
-                List<BlockPos> blocks = Arrays.asList(pos.north(), pos.east(), pos.south(), pos.west());
+                List<BlockPos> blocks = new ArrayList<>(Arrays.asList(pos.north(), pos.east(), pos.south(), pos.west()));
                 blocks.sort(Comparators.blockDistance);
+                if(burrow.getValue()) blocks.add(0, pos);
+
                 BlockPos target = null;
                 for(BlockPos block: blocks) {
                     Vec3d closest = MathUtils.getClosestPointOfBlockPos(SelfUtils.getEyePos(), block);
@@ -99,6 +103,10 @@ public class AutoCity extends Module {
             InstantMine.INSTANCE.setEnabled(false);
         }
     }
+
+    private boolean inBurrow(BlockPos pos) {
+        return allBlocks(pos);
+    }
     
     private boolean inCity(BlockPos pos) {
         return allBlocks(pos.north(), pos.east(), pos.south(), pos.west());
@@ -114,6 +122,8 @@ public class AutoCity extends Module {
     }
 
     private boolean shouldBreakCheck(BlockPos pos, BlockPos target) {
+        if(burrow.getValue() && pos.equals(target))
+            return !MC.world.getBlockState(pos).getMaterial().isReplaceable();
         if(oneDotThirteen.getValue()) return true;
         else if(MC.world.getBlockState(pos.up()).getBlock() instanceof BlockAir) return true;
         else if(pos.equals(target.north())) {
