@@ -5,10 +5,8 @@ import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.math.Vec2f;
 
 /**
  * @author Tigermouthbear

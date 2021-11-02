@@ -1,6 +1,5 @@
 package dev.tigr.ares.fabric.utils;
 
-import com.google.common.collect.Streams;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.fabric.utils.entity.EntityUtils;
@@ -73,11 +72,11 @@ public class WorldUtils implements Wrapper {
     }
 
     public static <T extends Entity> List<T> getEntitiesInRadius(Class<T> entityClass, Vec3d center, double range) {
-        return MC.world.getNonSpectatingEntities(entityClass, new Box(new BlockPos(center)).expand(range)).stream().filter(entity -> MathUtils.isInRangeClosestPoint(center, entity.getBoundingBox(), range)).collect(Collectors.toList());
+        return getEntitiesInBox(entityClass, new BlockPos(center), range).stream().filter(entity -> MathUtils.isInRangeClosestPoint(center, entity.getBoundingBox(), range)).collect(Collectors.toList());
     }
 
     public static <T extends Entity> List<T> getEntitiesInBox(Class<T> entityClass, BlockPos center, double expansion) {
-        return MC.world.getNonSpectatingEntities(entityClass, new Box(center).expand(expansion));
+        return new ArrayList<>(MC.world.getNonSpectatingEntities(entityClass, new Box(center).expand(expansion)));
     }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {

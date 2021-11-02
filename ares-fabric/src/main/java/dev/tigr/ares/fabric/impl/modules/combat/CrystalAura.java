@@ -524,7 +524,7 @@ public class CrystalAura extends Module {
     private List<BlockPos> getPlaceableBlocks(PlayerEntity player) {
         List<BlockPos> square = new ArrayList<>();
 
-        int range = (int) Utils.roundDouble(placeRange.getValue(), 0);
+        int range = (int) Math.ceil(placeRange.getValue());
 
         BlockPos pos = player.getBlockPos();
         if(predictMovement.getValue()) pos.add(new Vec3i(player.getVelocity().x, player.getVelocity().y, player.getVelocity().z));
@@ -534,7 +534,7 @@ public class CrystalAura extends Module {
                 for(int z = -range; z <= range; z++)
                     square.add(pos.add(x, y, z));
 
-        return square.stream().filter(blockPos -> canCrystalBePlacedHere(blockPos) && MathUtils.isInRange(SelfUtils.getEyePos(), Vec3d.ofCenter(blockPos), range) && (!strictSides.getValue() || WorldUtils.getVisibleBlockSides(SelfUtils.getEyePos(), blockPos) != null)).collect(Collectors.toList());
+        return square.stream().filter(blockPos -> canCrystalBePlacedHere(blockPos) && MathUtils.isInRange(SelfUtils.getEyePos(), Vec3d.ofCenter(blockPos), Utils.roundDouble(placeRange.getValue(), 2)) && (!strictSides.getValue() || WorldUtils.getVisibleBlockSides(SelfUtils.getEyePos(), blockPos) != null)).collect(Collectors.toList());
     }
 
     private boolean canCrystalBePlacedHere(BlockPos pos) {

@@ -43,19 +43,19 @@ public class SelfUtils implements Wrapper {
     /** Entity List Getters */
 
     public static List<PlayerEntity> getPlayersInRadius(double range) {
-        return WorldUtils.getPlayersInRadius(getPlayer().getPos(), range);
+        return WorldUtils.getPlayersInRadius(getEyePos(), range);
     }
 
     public static List<PlayerEntity> getPlayersInBox(double expansion) {
-        return WorldUtils.getPlayersInBox(getPlayer().getBlockPos(), expansion);
+        return WorldUtils.getPlayersInBox(new BlockPos(getEyePos()), expansion);
     }
 
     public static List<EndCrystalEntity> getEndCrystalsInRadius(double range) {
-        return WorldUtils.getEndCrystalsInRadius(getPlayer().getPos(), range);
+        return WorldUtils.getEndCrystalsInRadius(getEyePos(), range);
     }
 
     public static List<EndCrystalEntity> getEndCrystalsInBox(double expansion) {
-        return WorldUtils.getEndCrystalsInBox(getPlayer().getBlockPos(), expansion);
+        return WorldUtils.getEndCrystalsInBox(new BlockPos(getEyePos()), expansion);
     }
 
 

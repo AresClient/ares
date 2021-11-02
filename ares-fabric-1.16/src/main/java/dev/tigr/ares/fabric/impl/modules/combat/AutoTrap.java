@@ -29,8 +29,7 @@ import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS
 public class AutoTrap extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.FULL));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
-    private final Setting<Double> range = register(new DoubleSetting("Range", 5.5D, 0, 8));
-    private final Setting<Double> targetRange = register(new DoubleSetting("Target Range", 4, 0, 7));
+    private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 8));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 2, 0, 10));
     private final Setting<Integer> blocksPerTick = register(new IntegerSetting("Blocks Per Tick", 8, 0, 20)).setVisibility(() -> delay.getValue() == 0);
 
@@ -49,7 +48,7 @@ public class AutoTrap extends Module {
     public void onTick() {
         //Flag rotations off if there are no placements needing completion
         boolean flagCurrent = true;
-        for(PlayerEntity player: MC.world.getNonSpectatingEntities(PlayerEntity.class, new Box(MC.player.getBlockPos()).expand(targetRange.getValue())))
+        for(PlayerEntity player: SelfUtils.getPlayersInRadius(range.getValue()))
             if(isPlayerValidTarget(player))
                 for(BlockPos pos: getPos(player))
                     if(isPosInRange(pos)
@@ -62,7 +61,7 @@ public class AutoTrap extends Module {
         int oldSlot = MC.player.inventory.selectedSlot;
 
         if(delayTimer.passedTicks(delay.getValue())) {
-            for(PlayerEntity player: MC.world.getNonSpectatingEntities(PlayerEntity.class, new Box(MC.player.getBlockPos()).expand(targetRange.getValue()))) {
+            for(PlayerEntity player: SelfUtils.getPlayersInRadius(range.getValue())) {
                 if(isPlayerValidTarget(player)) {
 
                     int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
@@ -110,7 +109,7 @@ public class AutoTrap extends Module {
     }
 
     private boolean isPlayerValidTarget(PlayerEntity player) {
-        return (MC.player.squaredDistanceTo(player) <= targetRange.getValue() * targetRange.getValue()) && PlayerUtils.isValidTarget(player, targetRange.getValue());
+        return (MC.player.squaredDistanceTo(player) <= range.getValue() * range.getValue()) && PlayerUtils.isValidTarget(player, range.getValue());
     }
 
     private BlockPos[] getPos(Entity player) {

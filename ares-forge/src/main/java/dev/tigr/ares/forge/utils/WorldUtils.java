@@ -69,11 +69,11 @@ public class WorldUtils implements Wrapper {
     }
 
     public static <T extends Entity> List<T> getEntitiesInRadius(Class<T> entityClass, Vec3d center, double range) {
-        return MC.world.getEntitiesWithinAABB(entityClass, new AxisAlignedBB(new BlockPos(center)).grow(range)).stream().filter(entity -> MathUtils.isInRangeClosestPoint(center, entity.getEntityBoundingBox(), range)).collect(Collectors.toList());
+        return getEntitiesInBox(entityClass, new BlockPos(center), range).stream().filter(entity -> MathUtils.isInRangeClosestPoint(center, entity.getEntityBoundingBox(), range)).collect(Collectors.toList());
     }
 
     public static <T extends Entity> List<T> getEntitiesInBox(Class<T> entityClass, BlockPos center, double expansion) {
-        return MC.world.getEntitiesWithinAABB(entityClass, new AxisAlignedBB(center).grow(expansion));
+        return new ArrayList<>(MC.world.getEntitiesWithinAABB(entityClass, new AxisAlignedBB(center).grow(expansion)));
     }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
