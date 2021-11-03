@@ -62,15 +62,15 @@ public class CrystalAura extends Module {
     enum Page { GENERAL, RENDER, BREAK, PLACE }
 
     //General Page
-    private final Setting<Boolean> doSwitch = register(new BooleanSetting("Do Switch", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
-    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(() -> page.getValue() == Page.GENERAL && doSwitch.getValue());
+    private final Setting<Switch> doSwitch = register(new EnumSetting<>("Switch", Switch.NORMAL)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(() -> page.getValue() == Page.GENERAL && doSwitch.getValue() == Switch.NORMAL);
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DAMAGE)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Rotations> rotateMode = register(new EnumSetting<>("Rotations", Rotations.PACKET)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Order> order = register(new EnumSetting<>("Order", Order.PLACE_BREAK)).setVisibility(() -> page.getValue() == Page.GENERAL);
-    private final Setting<Boolean> pauseOnEat = register(new BooleanSetting("Pause On Eat", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
-    private final Setting<Boolean> pauseOnPot = register(new BooleanSetting("Pause On Pot", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> pauseOnEat = register(new BooleanSetting("Pause On Eat", false)).setVisibility(() -> page.getValue() == Page.GENERAL);
+    private final Setting<Boolean> pauseOnPot = register(new BooleanSetting("Pause On Pot", false)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Boolean> pauseOnXP = register(new BooleanSetting("Pause On XP", false)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Boolean> pauseOnMine = register(new BooleanSetting("Pause On Mine", false)).setVisibility(() -> page.getValue() == Page.GENERAL);
 
@@ -105,6 +105,7 @@ public class CrystalAura extends Module {
     private final Setting<Float> fillAlpha = register(new FloatSetting("Fill Alpha", 0.24f, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
     private final Setting<Float> boxAlpha = register(new FloatSetting("Box Alpha", 1f, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
 
+    enum Switch { NORMAL, SILENT, NONE }
     enum BreakMode { OWN, SMART, ALL }
     enum Order { PLACE_BREAK, BREAK_PLACE }
     enum Target { CLOSEST, MOST_DAMAGE }
@@ -251,30 +252,49 @@ public class CrystalAura extends Module {
 
     private void placeCrystal(boolean offhand, BlockPos pos) {
         // switch to crystals if not holding
+        int oldSelection = MC.player.inventory.currentItem;
+        int slot = InventoryUtils.findItemInHotbar(Items.END_CRYSTAL);
         if(!offhand && MC.player.inventory.getCurrentItem().getItem() != Items.END_CRYSTAL) {
-            if(doSwitch.getValue()) {
-                int slot = InventoryUtils.findItemInHotbar(Items.END_CRYSTAL);
-                if (slot != -1) {
-                    MC.player.inventory.currentItem = slot;
-                    MC.player.connection.sendPacket(new CPacketHeldItemChange());
+            if(doSwitch.getValue() != Switch.NONE) {
+                if(slot != -1) {
+                    if(doSwitch.getValue() != Switch.SILENT)
+                        MC.player.inventory.currentItem = slot;
+                    MC.player.connection.sendPacket(new CPacketHeldItemChange(slot));
                 }
             } else return;
         }
 
-        // Get the best interaction point and side, as according to preferences
-        Vec3d interactPoint = new Vec3d(0.5, 0.5, 0.5);
-        EnumFacing interactSide = EnumFacing.UP;
+        Runnable switchBack = () -> {
+            if(!offhand && oldSelection != slot && doSwitch.getValue() == Switch.SILENT)
+                MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
+        };
 
+        // Get the best interaction point and side, as according to preferences
         Pair<EnumFacing, Vec3d> closestVisibleSide = WorldUtils.getClosestVisibleSide(SelfUtils.getEyePos(), pos);
 
-        if(interactAt.getValue() == InteractAt.CLOSEST_POINT) interactPoint = MathUtils.getClosestClickPointOfBlockPos(SelfUtils.getEyePos(), pos);
-        else if(interactAt.getValue() == InteractAt.STRICT_SIDE) {
-            if(closestVisibleSide == null || closestVisibleSide.getSecond() == null) return;
-            interactPoint = closestVisibleSide.getSecond();
+        Vec3d interactPoint;
+        switch(interactAt.getValue()) {
+            case CLOSEST_POINT:
+                interactPoint = MathUtils.getClosestClickPointOfBlockPos(SelfUtils.getEyePos(), pos);
+                break;
+            case STRICT_SIDE:
+                if(closestVisibleSide == null || closestVisibleSide.getSecond() == null) {
+                    switchBack.run();
+                    return;
+                }
+                interactPoint = closestVisibleSide.getSecond();
+                break;
+            default:
+                // On 1.12 Forge you send the packet with the pos within the blockPos itself (0 to 1) while on Fabric you send the position within the world (pos + (0 to 1))
+                interactPoint = new Vec3d(0.5,0.5,0.5);
         }
 
+        EnumFacing interactSide = EnumFacing.UP;
         if(strictSides.getValue()) {
-            if(closestVisibleSide == null || closestVisibleSide.getFirst() == null) return;
+            if(closestVisibleSide == null || closestVisibleSide.getFirst() == null) {
+                switchBack.run();
+                return;
+            }
             interactSide = closestVisibleSide.getFirst();
         }
 
@@ -288,6 +308,9 @@ public class CrystalAura extends Module {
 
         // set render pos
         target = pos;
+
+        // silent swap
+        switchBack.run();
     }
 
     private void explode(boolean offhand) {
@@ -544,7 +567,7 @@ public class CrystalAura extends Module {
                 for(int z = -range; z <= range; z++)
                     square.add(pos.add(x, y, z));
 
-        return square.stream().filter(blockPos -> canCrystalBePlacedHere(blockPos) && MathUtils.isInRange(SelfUtils.getEyePos(), MathUtils.ofCenterVec3i(blockPos), Utils.roundDouble(placeRange.getValue(), 2)) && (!strictSides.getValue() || WorldUtils.getVisibleBlockSides(SelfUtils.getEyePos(), blockPos) != null)).collect(Collectors.toList());
+        return square.stream().filter(blockPos -> canCrystalBePlacedHere(blockPos) && MathUtils.isInRange(SelfUtils.getEyePos(), MathUtils.ofCenterVec3i(blockPos), Utils.roundDouble(placeRange.getValue(), 2)) && (!strictSides.getValue() && interactAt.getValue() != InteractAt.STRICT_SIDE || WorldUtils.getVisibleBlockSides(SelfUtils.getEyePos(), blockPos) != null)).collect(Collectors.toList());
     }
 
     private boolean canCrystalBePlacedHere(BlockPos pos) {

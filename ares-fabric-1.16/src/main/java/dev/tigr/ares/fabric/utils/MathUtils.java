@@ -63,28 +63,6 @@ public class MathUtils implements Wrapper {
         return new Vec3d(a[0], a[1], a[2]);
     }
 
-    public static Vec3d getClosestClickPointOfBlockPos(Vec3d pos, BlockPos blockPos) {
-        return getClosestClickPos(pos, MC.world.getBlockState(blockPos).isAir() ? new Box(blockPos) : Objects.requireNonNull(RenderUtils.getBoundingBox(blockPos)));
-    }
-
-    public static Vec3d getClosestClickPos(Vec3d pos, Box box) {
-        double[]
-                a = new double[] {pos.x, pos.y, pos.z},
-                b = new double[] {box.maxX, box.maxY, box.maxZ},
-                c = new double[] {box.minX, box.minY, box.minZ};
-
-        for(int i = 0; i <= 2; i++) {
-            if(a[i] > b[i]) a[i] = b[i];
-            if(a[i] < c[i]) a[i] = c[i];
-        }
-
-        for(int i = 0; i <= 2; i++) {
-            a[i] = a[i] - c[i];
-        }
-
-        return new Vec3d(a[0], a[1], a[2]);
-    }
-
     public static boolean isInRange(Vec3d pos, Vec3d pos2, double range) {
         return squaredDistanceBetween(pos, pos2) <= range * range;
     }

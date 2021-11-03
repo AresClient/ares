@@ -38,11 +38,13 @@ public class WorldUtils implements Wrapper {
         EnumFacing closestSide = null;
         Vec3d closestPos = null;
         for(EnumFacing side: sides) {
-            Vec3d sidePos = center.add(MathUtils.ofVec3i(side.getDirectionVec())).scale(0.5);
+            Vec3d sidePos = center.add(MathUtils.ofVec3i(side.getDirectionVec()).scale(0.5));
+            Vec3d c2 = null;
+            if(closestSide != null) c2 = center.add(MathUtils.ofVec3i(closestSide.getDirectionVec()).scale(0.5));
 
-            if(closestPos == null || MathUtils.squaredDistanceBetween(pos, sidePos) < MathUtils.squaredDistanceBetween(pos, closestPos)) {
+            if(closestPos == null || MathUtils.squaredDistanceBetween(pos, sidePos) < MathUtils.squaredDistanceBetween(pos, c2)) {
                 closestSide = side;
-                closestPos = sidePos;
+                closestPos = new Vec3d(0.5,0.5,0.5).add(MathUtils.ofVec3i(closestSide.getDirectionVec()).scale(0.5));
             }
         }
 
