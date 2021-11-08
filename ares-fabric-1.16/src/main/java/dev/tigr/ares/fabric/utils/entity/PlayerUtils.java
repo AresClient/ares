@@ -4,7 +4,9 @@ import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.utils.MathUtils;
+import dev.tigr.ares.fabric.utils.WorldUtils;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 /**
@@ -50,5 +52,12 @@ public class PlayerUtils implements Wrapper {
 
     public static boolean friendCheck(PlayerEntity player) {
         return FriendManager.isFriend((player).getGameProfile().getName());
+    }
+
+    public static boolean isInBurrow(PlayerEntity playerEntity) {
+        BlockPos pos = new BlockPos(WorldUtils.getMiddlePosition(playerEntity.getX()), playerEntity.getY(), WorldUtils.getMiddlePosition(playerEntity.getZ()));
+        BlockPos playerPos = WorldUtils.roundBlockPos(new Vec3d(pos.getX(), playerEntity.getY(), pos.getZ()));
+
+        return WorldUtils.isBlastProofBlock(playerPos);
     }
 }

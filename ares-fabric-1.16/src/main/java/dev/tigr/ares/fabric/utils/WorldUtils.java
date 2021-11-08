@@ -53,6 +53,20 @@ public class WorldUtils implements Wrapper {
         return new Pair<>(closestSide, closestPos);
     }
 
+    //This converts a double position such as 12.9 or 12.13 to a "middle" value of 12.5
+    public static double getMiddlePosition(double positionIn) {
+        double positionFinal = Math.round(positionIn);
+
+        if(Math.round(positionIn) > positionIn){
+            positionFinal -= 0.5;
+        }
+        else if(Math.round(positionIn) <= positionIn){
+            positionFinal += 0.5;
+        }
+
+        return positionFinal;
+    }
+
 
     /** Entity List Getters */
 
@@ -225,6 +239,16 @@ public class WorldUtils implements Wrapper {
         if(isSolid) return HoleType.OTHER;
 
         return HoleType.NONE;
+    }
+
+    public static boolean isBlastProofBlock(BlockPos pos) {
+        return MC.world.getBlockState(pos).getBlock() == Blocks.OBSIDIAN
+                || MC.world.getBlockState(pos).getBlock() == Blocks.ENDER_CHEST
+                || MC.world.getBlockState(pos).getBlock() == Blocks.CRYING_OBSIDIAN
+                || MC.world.getBlockState(pos).getBlock() == Blocks.NETHERITE_BLOCK
+                || MC.world.getBlockState(pos).getBlock() == Blocks.ANCIENT_DEBRIS
+                || MC.world.getBlockState(pos).getBlock() == Blocks.RESPAWN_ANCHOR
+                || MC.world.getBlockState(pos).getBlock() == Blocks.ANVIL;
     }
 
 

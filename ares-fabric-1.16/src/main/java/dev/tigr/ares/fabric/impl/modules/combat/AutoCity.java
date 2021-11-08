@@ -121,7 +121,7 @@ public class AutoCity extends Module {
 
     private boolean shouldBreakCheck(BlockPos pos, BlockPos target) {
         if(burrow.getValue() && pos.equals(target))
-            return !MC.world.getBlockState(pos).getMaterial().isReplaceable();
+            return WorldUtils.isBlastProofBlock(pos);
         if(oneDotThirteen.getValue()) return true;
         else if(MC.world.getBlockState(pos.up()).isAir()) return true;
         else if(pos.equals(target.north())) {

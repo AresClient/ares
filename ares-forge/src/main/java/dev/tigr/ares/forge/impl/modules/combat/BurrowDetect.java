@@ -9,10 +9,10 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.PlayerUtils;
 import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -42,7 +42,7 @@ public class BurrowDetect extends Module {
     @Override
     public void onTick(){
         for(EntityPlayer entityPlayer: SelfUtils.getPlayersInRadius(radius.getValue()).stream().filter(entityPlayer -> entityPlayer != MC.player).collect(Collectors.toList())){
-            if(!burrowedPlayers.contains(entityPlayer) && isInBurrow(entityPlayer)){
+            if(!burrowedPlayers.contains(entityPlayer) && PlayerUtils.isInBurrow(entityPlayer)){
                 if(notification.getValue()) UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.GREEN + " has burrowed");
                 burrowedPlayers.add(entityPlayer);
             }
@@ -50,7 +50,7 @@ public class BurrowDetect extends Module {
 
         try {
             for(EntityPlayer entityPlayer : burrowedPlayers){
-                if(!isInBurrow(entityPlayer)){
+                if(!PlayerUtils.isInBurrow(entityPlayer)){
                     if(notification.getValue()) UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.RED + " is no longer burrowed");
                     burrowedPlayers.remove(entityPlayer);
                 }
@@ -68,9 +68,9 @@ public class BurrowDetect extends Module {
         RenderUtils.prepare3d();
 
         for(EntityPlayer player: burrowedPlayers) {
-            if(!isInBurrow(player)) continue;
+            if(!PlayerUtils.isInBurrow(player)) continue;
 
-            BlockPos pos = new BlockPos(getMiddlePosition(player.posX), player.posY, getMiddlePosition(player.posZ));
+            BlockPos pos = new BlockPos(WorldUtils.getMiddlePosition(player.posX), player.posY, WorldUtils.getMiddlePosition(player.posZ));
             BlockPos playerPos = WorldUtils.roundBlockPos(new Vec3d(pos.getX(), player.posY, pos.getZ()));
 
             AxisAlignedBB box = RenderUtils.getBoundingBox(playerPos);
@@ -78,28 +78,5 @@ public class BurrowDetect extends Module {
         }
 
         RenderUtils.end3d();
-    }
-
-    private boolean isInBurrow(EntityPlayer entityPlayer){
-        BlockPos pos = new BlockPos(getMiddlePosition(entityPlayer.posX), entityPlayer.posY, getMiddlePosition(entityPlayer.posZ));
-        BlockPos playerPos = WorldUtils.roundBlockPos(new Vec3d(pos.getX(), entityPlayer.posY, pos.getZ()));
-
-        return MC.world.getBlockState(playerPos).getBlock() == Blocks.OBSIDIAN
-                || MC.world.getBlockState(playerPos).getBlock() == Blocks.ENDER_CHEST
-                || MC.world.getBlockState(playerPos).getBlock() == Blocks.ANVIL;
-    }
-
-    //This converts a double position such as 12.9 or 12.13 to a "middle" value of 12.5
-    private double getMiddlePosition(double positionIn){
-        double positionFinal = Math.round(positionIn);
-
-        if (Math.round(positionIn) > positionIn){
-            positionFinal -= 0.5;
-        }
-        else if (Math.round(positionIn) <= positionIn){
-            positionFinal += 0.5;
-        }
-
-        return positionFinal;
     }
 }
