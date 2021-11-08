@@ -185,13 +185,13 @@ public class CustomRenderer implements IRenderer {
     @Override
     public void startScissor(double x, double y, double width, double height) {
         // calculate resolution for scissoring
-        double scaleWidth = (double) MC.getWindow().getWidth() / MC.getWindow().getScaledWidth();
-        double scaleHeight = (double) MC.getWindow().getHeight() / MC.getWindow().getScaledHeight();
+        double scaleWidth = (double) MC.getWindow().getFramebufferWidth() / MC.getWindow().getScaledWidth();
+        double scaleHeight = (double) MC.getWindow().getFramebufferHeight() / MC.getWindow().getScaledHeight();
 
         // enable gl scissor
         RenderSystem.enableScissor(
                 (int) (x * scaleWidth),
-                (MC.getWindow().getHeight()) - (int) ((y + height) * scaleHeight),
+                (MC.getWindow().getFramebufferHeight()) - (int) ((y + height) * scaleHeight),
                 (int) (width * scaleWidth),
                 (int) (height * scaleHeight)
         );
