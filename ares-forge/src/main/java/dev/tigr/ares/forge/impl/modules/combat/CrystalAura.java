@@ -356,6 +356,8 @@ public class CrystalAura extends Module {
 
     //Remove crystal if it hits limit of tries
     private void postBreak(EntityEnderCrystal crystal) {
+        if(spawnedCrystals.get(crystal) == null) return;
+
         if(spawnedCrystals.get(crystal).get() + 1 == maxBreakTries.getValue()) {
             lostCrystals.put(crystal, crystal.ticksExisted);
             spawnedCrystals.remove(crystal);

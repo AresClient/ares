@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -75,7 +76,11 @@ public class WorldUtils implements Wrapper {
     }
 
     public static <T extends Entity> List<T> getEntitiesInBox(Class<T> entityClass, BlockPos center, double expansion) {
-        return new ArrayList<>(MC.world.getEntitiesWithinAABB(entityClass, new AxisAlignedBB(center).grow(expansion)));
+        try {
+            return MC.world.getEntitiesWithinAABB(entityClass, new AxisAlignedBB(center).grow(expansion));
+        } catch(ConcurrentModificationException ignore) {}
+
+        return new ArrayList<>();
     }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {

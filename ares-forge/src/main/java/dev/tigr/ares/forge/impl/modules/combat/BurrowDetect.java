@@ -2,14 +2,18 @@ package dev.tigr.ares.forge.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,25 +23,27 @@ import java.util.stream.Collectors;
 
 @Module.Info(name = "BurrowDetect", description = "Sends a message in chat whenever a player is burrowed", category = Category.COMBAT)
 public class BurrowDetect extends Module {
+    private final Setting<Double> radius = register(new DoubleSetting("Radius", 20, 0, 100));
 
     private final List<EntityPlayer> burrowedPlayers = new ArrayList<>();
 
     @Override
     public void onTick(){
-
-        for (EntityPlayer entityPlayer : MC.world.playerEntities.stream().filter(entityPlayer -> entityPlayer != MC.player).collect(Collectors.toList())){
-            if (!burrowedPlayers.contains(entityPlayer) && isInBurrow(entityPlayer)){
+        for(EntityPlayer entityPlayer: SelfUtils.getPlayersInRadius(radius.getValue()).stream().filter(entityPlayer -> entityPlayer != MC.player).collect(Collectors.toList())){
+            if(!burrowedPlayers.contains(entityPlayer) && isInBurrow(entityPlayer)){
                 UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.GREEN + " has burrowed");
                 burrowedPlayers.add(entityPlayer);
             }
         }
 
-        for (EntityPlayer entityPlayer : burrowedPlayers){
-            if (!isInBurrow(entityPlayer)){
-                UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.RED + " is no longer burrowed");
-                burrowedPlayers.remove(entityPlayer);
+        try {
+            for(EntityPlayer entityPlayer : burrowedPlayers){
+                if(!isInBurrow(entityPlayer)){
+                    UTILS.printMessage(TextColor.BLUE + entityPlayer.getDisplayNameString() + TextColor.RED + " is no longer burrowed");
+                    burrowedPlayers.remove(entityPlayer);
+                }
             }
-        }
+        } catch(ConcurrentModificationException ignore) {}
     }
 
     private boolean isInBurrow(EntityPlayer entityPlayer){

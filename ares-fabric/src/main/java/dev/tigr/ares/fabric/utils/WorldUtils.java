@@ -20,6 +20,7 @@ import net.minecraft.world.chunk.WorldChunk;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -78,7 +79,11 @@ public class WorldUtils implements Wrapper {
     }
 
     public static <T extends Entity> List<T> getEntitiesInBox(Class<T> entityClass, BlockPos center, double expansion) {
-        return new ArrayList<>(MC.world.getNonSpectatingEntities(entityClass, new Box(center).expand(expansion)));
+        try {
+            return MC.world.getNonSpectatingEntities(entityClass, new Box(center).expand(expansion));
+        } catch(ConcurrentModificationException ignore) {}
+
+        return new ArrayList<>();
     }
 
     public static List<Entity> getTargets(boolean players, boolean friends, boolean teammates, boolean passive, boolean hostile, boolean nametagged, boolean bots) {
