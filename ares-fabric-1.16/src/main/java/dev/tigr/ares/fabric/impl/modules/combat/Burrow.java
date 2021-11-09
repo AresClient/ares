@@ -19,7 +19,9 @@ import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 
@@ -39,77 +41,68 @@ public class Burrow extends Module {
     private final Setting<RubberbandMode> rubberband = register(new EnumSetting<>("Rubberband", RubberbandMode.Packet)).setVisibility(() -> !fakeJump.getValue());
     private final Setting<Float> fakeClipHeight = register(new FloatSetting("Packet Height", 12, -60, 60)).setVisibility(() -> rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue());
 
-    private final Setting<CurrBlock> blockToUse = register(new EnumSetting<>("Block", CurrBlock.Obsidian));
-    private final Setting<CurrBlock> backupBlock = register(new EnumSetting<>("Backup", CurrBlock.EnderChest));
+    private final Setting<BlockItem> blockToUse = register(new EnumSetting<>("Block", BlockItem.Obsidian));
+    private final Setting<BlockItem> backupBlock = register(new EnumSetting<>("Backup", BlockItem.EnderChest));
 
     enum RubberbandMode { Jump, Packet }
-    enum CurrBlock {Obsidian, EnderChest, CryingObsidian, NetheriteBlock, AncientDebris, EnchantingTable, RespawnAnchor, Anvil}
+    enum BlockItem {
+        Obsidian(Blocks.OBSIDIAN),
+        EnderChest(Blocks.ENDER_CHEST),
+        CryingObsidian(Blocks.CRYING_OBSIDIAN),
+        NetheriteBlock(Blocks.NETHERITE_BLOCK),
+        AncientDebris(Blocks.ANCIENT_DEBRIS),
+        EnchantingTable(Blocks.ENCHANTING_TABLE),
+        RespawnAnchor(Blocks.RESPAWN_ANCHOR),
+        Anvil(Blocks.ANVIL);
+
+        final Block block;
+
+        BlockItem(Block block) {
+            this.block = block;
+        }
+    }
 
     int key = Priorities.Rotation.BURROW;
 
-    private BlockPos playerPos;
-
-    float oldYaw;
-    float oldPitch;
+    private BlockPos initialBlockPos;
+    private Vec3d initialPos;
 
     int oldSelection = -1;
-
-    //get the Block value of all three options selected
-    private Block getCurrBlock(){
-        Block index = null;
-        if (blockToUse.getValue() == CurrBlock.Obsidian) {index = Blocks.OBSIDIAN;}
-        else if (blockToUse.getValue() == CurrBlock.EnderChest) {index = Blocks.ENDER_CHEST;}
-        else if (blockToUse.getValue() == CurrBlock.CryingObsidian) {index = Blocks.CRYING_OBSIDIAN;}
-        else if (blockToUse.getValue() == CurrBlock.NetheriteBlock) {index = Blocks.NETHERITE_BLOCK;}
-        else if (blockToUse.getValue() == CurrBlock.AncientDebris) {index = Blocks.ANCIENT_DEBRIS;}
-        else if (blockToUse.getValue() == CurrBlock.RespawnAnchor) {index = Blocks.RESPAWN_ANCHOR;}
-        else if (blockToUse.getValue() == CurrBlock.EnchantingTable) {index = Blocks.ENCHANTING_TABLE;}
-        else if (blockToUse.getValue() == CurrBlock.Anvil) {index = Blocks.ANVIL;}
-        return index;
-    }
-    private Block getBackBlock(){
-        Block index = null;
-        if (backupBlock.getValue() == CurrBlock.Obsidian) {index = Blocks.OBSIDIAN;}
-        else if (backupBlock.getValue() == CurrBlock.EnderChest) {index = Blocks.ENDER_CHEST;}
-        else if (backupBlock.getValue() == CurrBlock.CryingObsidian) {index = Blocks.CRYING_OBSIDIAN;}
-        else if (backupBlock.getValue() == CurrBlock.NetheriteBlock) {index = Blocks.NETHERITE_BLOCK;}
-        else if (backupBlock.getValue() == CurrBlock.AncientDebris) {index = Blocks.ANCIENT_DEBRIS;}
-        else if (backupBlock.getValue() == CurrBlock.RespawnAnchor) {index = Blocks.RESPAWN_ANCHOR;}
-        else if (backupBlock.getValue() == CurrBlock.EnchantingTable) {index = Blocks.ENCHANTING_TABLE;}
-        else if (backupBlock.getValue() == CurrBlock.Anvil) {index = Blocks.ANVIL;}
-        return index;
-    }
 
     private void switchToBlock() {
         oldSelection = MC.player.inventory.selectedSlot;
         //main block
-        int newItem = InventoryUtils.findBlockInHotbar(getCurrBlock());
-        //backup block to use when either is unavailable
-        if (newItem == -1) newItem = InventoryUtils.findBlockInHotbar(getBackBlock());
-        if (newItem != -1) MC.player.inventory.selectedSlot = newItem;
-        else toggle();
+        int newSelection = InventoryUtils.findBlockInHotbar(blockToUse.getValue().block);
+        //backup block to use when main is unavailable
+        if(newSelection == -1) newSelection = InventoryUtils.findBlockInHotbar(backupBlock.getValue().block);
+        if(newSelection != -1) {
+            MC.player.inventory.selectedSlot = newSelection;
+            MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(newSelection));
+        }
+        else setEnabled(false);
     }
 
     @Override
     public void onEnable() {
-        playerPos = new BlockPos(MC.player.getX(), MC.player.getY(), MC.player.getZ());
+        initialBlockPos = SelfUtils.getBlockPosCorrected();
+        initialPos = SelfUtils.getPlayer().getPos();
 
         //determine if player is already burrowed
-        if (MC.world.getBlockState(playerPos).getBlock() == getCurrBlock() || MC.world.getBlockState(playerPos).getBlock() == getBackBlock()) {
+        if(MC.world.getBlockState(initialBlockPos).getBlock() == blockToUse.getValue().block || MC.world.getBlockState(initialBlockPos).getBlock() == backupBlock.getValue().block) {
             UTILS.printMessage(TextColor.BLUE + "Already Burrowed!");
             setEnabled(false);
             return;
         }
 
         //toggles off if player is not in hole and set to hole only
-        if (WorldUtils.isHole(MC.player.getBlockPos()) == HoleType.NONE && holeOnly.getValue()) {
+        if(WorldUtils.isHole(MC.player.getBlockPos()) == HoleType.NONE && holeOnly.getValue()) {
             UTILS.printMessage(TextColor.RED + "Not in a hole!");
             setEnabled(false);
             return;
         }
 
         //checks that player has the blocks needed available
-        if (InventoryUtils.amountBlockInHotbar(getCurrBlock()) <= 0 && InventoryUtils.amountBlockInHotbar(getBackBlock()) <= 0) {
+        if(InventoryUtils.amountBlockInHotbar(blockToUse.getValue().block) <= 0 && InventoryUtils.amountBlockInHotbar(backupBlock.getValue().block) <= 0) {
             UTILS.printMessage(TextColor.RED + "No Burrow Blocks Found!");
             setEnabled(false);
             return;
@@ -122,18 +115,20 @@ public class Burrow extends Module {
         }
 
         //jump if not Instant mode
-        if (!fakeJump.getValue()) {
+        if(!fakeJump.getValue()) {
             MC.player.jump();
         }
     }
+
     public void onTick() {
         //turns on Timer if Fast Mode is set to Timer
-        if (!fakeJump.getValue() && useTimer.getValue()) {
+        if(!fakeJump.getValue() && useTimer.getValue()) {
             ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(1000.0F / timerTPS.getValue());
         }
         //run the main sequence
         run();
     }
+
     public void onDisable() {
         //turns off Timer
         if(!fakeJump.getValue() && useTimer.getValue()) {
@@ -142,21 +137,19 @@ public class Burrow extends Module {
 
         ROTATIONS.setCompletedAction(key, true);
     }
-    public void run() {
-        if (MC.player == null || MC.world == null) return;
 
-        oldYaw = MC.player.yaw;
-        oldPitch = MC.player.pitch;
+    public void run() {
+        if(MC.player == null || MC.world == null) return;
 
         switchToBlock();
 
-        if (fakeJump.getValue()) {
-            SelfUtils.fakeJump(1,4);
+        if(fakeJump.getValue()) {
+            SelfUtils.fakeJump(0,4);
             runSequence();
         }
 
-        if (!fakeJump.getValue()) {
-            if (MC.player.getY() >= playerPos.getY() + height.getValue()) {
+        if(!fakeJump.getValue()) {
+            if(MC.player.getY() >= initialPos.y + height.getValue()) {
                 runSequence();
             }
         }
@@ -164,13 +157,14 @@ public class Burrow extends Module {
 
     private void runSequence(){
         //place block where the player was before jumping
-        SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, playerPos, true, true);
+        SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, initialBlockPos, true, true);
 
         MC.player.inventory.selectedSlot = oldSelection;
+        MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(oldSelection));
 
         //tries to produce a rubberband
-        if (rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
-            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(MC.player.getX(), MC.player.getY() + fakeClipHeight.getValue(), MC.player.getZ(), false));
+        if(rubberband.getValue() == RubberbandMode.Packet || fakeJump.getValue()) {
+            MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.PositionOnly(initialPos.x, initialPos.y + fakeClipHeight.getValue(), initialPos.z, false));
         } else MC.player.jump();
 
         //disable module
