@@ -48,7 +48,7 @@ public class HoleFiller extends Module {
         if(nearest == null) return;
 
         for(BlockPos hole: holes) {
-            if(hole == nearest && skipNearby.getValue()) continue;
+            if(hole.equals(nearest) && skipNearby.getValue()) continue;
 
             if(
                     MC.world.getOtherEntities(

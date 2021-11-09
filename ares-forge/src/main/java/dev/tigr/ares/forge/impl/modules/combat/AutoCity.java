@@ -114,7 +114,7 @@ public class AutoCity extends Module {
 
     private boolean inPlayerCity(BlockPos pos) {
         BlockPos current = MC.player.getPosition();
-        return pos.north() == current || pos.east() == current || pos.south() == current || pos.west() == current;
+        return pos.north().equals(current) || pos.east().equals(current) || pos.south().equals(current) || pos.west().equals(current);
     }
     
     private boolean allBlocks(BlockPos... pos) {

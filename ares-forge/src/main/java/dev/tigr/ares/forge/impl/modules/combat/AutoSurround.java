@@ -7,6 +7,7 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.utils.HoleType;
 import dev.tigr.ares.forge.utils.WorldUtils;
+import dev.tigr.ares.forge.utils.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import net.minecraft.network.play.server.SPacketEntityStatus;
@@ -33,7 +34,7 @@ public class AutoSurround extends Module {
 
     @Override
     public void onTick() {
-        if(WorldUtils.isHole(MC.player.getPosition()) != HoleType.NONE && !Surround.INSTANCE.getEnabled() && hole.getValue())
+        if(WorldUtils.isHole(SelfUtils.getBlockPosCorrected()) != HoleType.NONE && !Surround.INSTANCE.getEnabled() && hole.getValue())
             Surround.INSTANCE.setEnabled(true);
         Surround.toggleCenter(holeSnap.getValue());
     }

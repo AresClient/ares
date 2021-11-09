@@ -104,7 +104,7 @@ public class Surround extends Module {
             if(!lastPos.equals(loc.onGround ? locRounded : loc.getPosition())) {
                 if(onlyGround.getValue() || !(loc.getPositionVector().y <= lastPos.getY() + 1.5)
                         || ((Math.floor(loc.getPositionVector().x) != lastPos.getX() || Math.floor(loc.getPositionVector().z) != lastPos.getZ()) && !(loc.getPositionVector().y <= lastPos.getY() + 0.75))
-                        || (!MC.world.getBlockState(lastPos).getMaterial().isReplaceable() && loc.getPosition() != lastPos)
+                        || (!MC.world.getBlockState(lastPos).getMaterial().isReplaceable() && !loc.getPosition().equals(lastPos))
                 ) {
                     setEnabled(false);
                     return;
