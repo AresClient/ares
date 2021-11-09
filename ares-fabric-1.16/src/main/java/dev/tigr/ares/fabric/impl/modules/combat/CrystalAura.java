@@ -60,7 +60,7 @@ public class CrystalAura extends Module {
 
     //General Page
     private final Setting<Switch> doSwitch = register(new EnumSetting<>("Switch", Switch.NORMAL)).setVisibility(() -> page.getValue() == Page.GENERAL);
-    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(() -> page.getValue() == Page.GENERAL && doSwitch.getValue() == Switch.NORMAL);
+    private final Setting<Boolean> noGappleSwitch = register(new BooleanSetting("No Gapple Switch", false)).setVisibility(() -> page.getValue() == Page.GENERAL && doSwitch.getValue() != Switch.NONE);
     private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DAMAGE)).setVisibility(() -> page.getValue() == Page.GENERAL);
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST)).setVisibility(() -> page.getValue() == Page.GENERAL);

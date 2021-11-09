@@ -54,11 +54,13 @@ import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 public class PacketMine extends Module {
     public static PacketMine MINER;
 
-    private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.NORMAL));
+    private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.UPDATE));
+    private final Setting<Boolean> clientUpdate = register(new BooleanSetting("Update Client", false)).setVisibility(() -> mode.getValue() == Mode.UPDATE);
     private final Setting<Boolean> spam = register(new BooleanSetting("Spam", true)).setVisibility(() -> mode.getValue() == Mode.NORMAL);
     public final Setting<Boolean> queue = register(new BooleanSetting("Queue", true));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Switch> autoSwitch = register(new EnumSetting<>("AutoSwitch", Switch.SILENT));
+    private final Setting<SilentOn> silentOn = register(new EnumSetting<>("Silent On", SilentOn.TICK)).setVisibility(() -> autoSwitch.getValue() == Switch.SILENT);
     private final Setting<Swing> swing = register(new EnumSetting<>("Swing Type", Swing.PACKET));
     private final Setting<Boolean> spamSwing = register(new BooleanSetting("Spam Swing", false)).setVisibility(() -> mode.getValue() == Mode.UPDATE && swing.getValue() != Swing.NONE);
 
@@ -86,6 +88,7 @@ public class PacketMine extends Module {
     enum Mode { NORMAL, UPDATE }
     enum Swing { FULL, PACKET, NONE }
     enum Switch { NORMAL, SILENT, NONE }
+    enum SilentOn { TICK, BLOCKUPDATE }
 
     public PacketMine() {
         MINER = this;
@@ -102,6 +105,8 @@ public class PacketMine extends Module {
     private int oldSelection = -1;
     private int toolSlot = -1;
     private boolean hasSwapped;
+    boolean nextTick = false;
+    boolean hasFinished = false;
 
     public void setTarget(BlockPos pos) {
         LinkedHashSet<BlockPos> newQueue = new LinkedHashSet<>();
@@ -139,7 +144,7 @@ public class PacketMine extends Module {
         // Check if currentPos is still a breakable block and remove from the queue if it no longer is
         if(checkAndClearCurrent()) return;
 
-        //Perform switch
+        // Perform switch
         doSwitch();
 
         // Remove all targets out of distance
@@ -150,6 +155,9 @@ public class PacketMine extends Module {
 
         // Perform mine
         mine();
+
+        // Silent swap tick mode
+        if(silentOn.getValue() == SilentOn.TICK && autoSwitch.getValue() == Switch.SILENT && (nextTick || mode.getValue() == Mode.UPDATE)) doSwitchBack();
 
         //Increment breakProgress if necessary
         int tool = InventoryUtils.getTool(currentPos);
@@ -162,6 +170,8 @@ public class PacketMine extends Module {
     }
 
     private void doSwitch() {
+        if(hasSwapped && oldSelection != -1) return;
+
         oldSelection = MC.player.inventory.currentItem;
         toolSlot = InventoryUtils.getTool(currentPos);
 
@@ -175,6 +185,19 @@ public class PacketMine extends Module {
         else if(autoSwitch.getValue() == Switch.NORMAL) {
             if(oldSelection != toolSlot && toolSlot != -1) MC.player.inventory.currentItem = toolSlot;
         }
+
+        if(mode.getValue() == Mode.NORMAL) nextTick = true;
+    }
+
+    private void doSwitchBack() {
+        if(hasSwapped && oldSelection != -1) {
+            MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
+            hasSwapped = false;
+            oldSelection = -1;
+            toolSlot = -1;
+        }
+
+        nextTick = false;
     }
 
     private void releaseRotation() {
@@ -249,6 +272,22 @@ public class PacketMine extends Module {
             else MC.playerController.onPlayerDamageBlock(currentPos, side);
         }
 
+        if(mode.getValue() == Mode.UPDATE) {
+            if(clientUpdate.getValue()) {
+                if(autoSwitch.getValue() == Switch.SILENT) onPlayerDamageBlock(currentPos, side);
+                else MC.playerController.onPlayerDamageBlock(currentPos, side);
+            } else {
+                if(!hasMined) {
+                    MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, currentPos, side));
+                    hasFinished = false;
+                }
+                else if(progressReady() && !hasFinished) {
+                    MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.STOP_DESTROY_BLOCK, currentPos, side));
+                    hasFinished = true;
+                }
+            }
+        }
+
         if(!hasMined || (spamSwing.getValue() && mode.getValue() == Mode.UPDATE)) {
             if(swing.getValue() == Swing.FULL) MC.player.swingArm(EnumHand.MAIN_HAND);
             if(swing.getValue() == Swing.PACKET) MC.player.connection.sendPacket(new CPacketAnimation(EnumHand.MAIN_HAND));
@@ -291,12 +330,8 @@ public class PacketMine extends Module {
             if(currentPos.equals(p.getBlockPosition())) {
                 currentPos = null;
                 hasMined = false;
-                if(hasSwapped && oldSelection != -1) {
-                    MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
-                    hasSwapped = false;
-                    oldSelection = -1;
-                    toolSlot = -1;
-                }
+
+                if(silentOn.getValue() == SilentOn.BLOCKUPDATE) doSwitchBack();
 
                 //Release Rotation
                 releaseRotation();
