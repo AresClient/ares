@@ -1,5 +1,5 @@
 language: java
-jdk: openjdk16
+jdk: openjdk17
 
 os: linux
 dist: bionic
