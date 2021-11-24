@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /***
  * @author Makrennel 08/09/21
@@ -135,7 +136,11 @@ public class PacketMine extends Module {
         pollQueueIfNull();
 
         // Check if currentPos is still a breakable block and remove from the queue if it no longer is
-        if(checkAndClearCurrent()) return;
+        if(checkAndClearCurrent()) {
+            if(autoSwitch.getValue() == Switch.NORMAL && posQueue.isEmpty())
+                doSwitchBack();
+            return;
+        }
 
         // Perform switch
         doSwitch();
@@ -170,13 +175,19 @@ public class PacketMine extends Module {
 
         if(autoSwitch.getValue() == Switch.SILENT && progressReady()) {
             if(oldSelection != toolSlot && toolSlot != -1) {
-                MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(toolSlot));
+                HOTBAR_TRACKER.connect();
+                HOTBAR_TRACKER.setSlot(toolSlot, true, -1);
+                HOTBAR_TRACKER.sendSlot();
                 hasSwapped = true;
             }
         }
 
         else if(autoSwitch.getValue() == Switch.NORMAL) {
-            if(oldSelection != toolSlot && toolSlot != -1) MC.player.inventory.selectedSlot = toolSlot;
+            if(oldSelection != toolSlot && toolSlot != -1) {
+                HOTBAR_TRACKER.connect();
+                HOTBAR_TRACKER.setSlot(toolSlot, false, oldSelection);
+                hasSwapped = true;
+            }
         }
 
         if(mode.getValue() == Mode.NORMAL) nextTick = true;
@@ -184,7 +195,8 @@ public class PacketMine extends Module {
 
     private void doSwitchBack() {
         if(hasSwapped && oldSelection != -1) {
-            MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(oldSelection));
+            HOTBAR_TRACKER.reset();
+            HOTBAR_TRACKER.disconnect();
             hasSwapped = false;
             oldSelection = -1;
             toolSlot = -1;
@@ -318,7 +330,11 @@ public class PacketMine extends Module {
                 currentPos = null;
                 hasMined = false;
 
-                if(silentOn.getValue() == SilentOn.BLOCKUPDATE) doSwitchBack();
+                if(autoSwitch.getValue() == Switch.NORMAL && posQueue.isEmpty())
+                    doSwitchBack();
+
+                if(autoSwitch.getValue() == Switch.SILENT && silentOn.getValue() == SilentOn.BLOCKUPDATE)
+                    doSwitchBack();
 
                 //Release Rotation
                 releaseRotation();

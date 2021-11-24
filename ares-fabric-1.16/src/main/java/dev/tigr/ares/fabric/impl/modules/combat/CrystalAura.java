@@ -35,7 +35,6 @@ import net.minecraft.item.Items;
 import net.minecraft.item.PotionItem;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -46,6 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * @author Tigermouthbear
@@ -142,8 +142,14 @@ public class CrystalAura extends Module {
     }
 
     @Override
+    public void onEnable() {
+        HOTBAR_TRACKER.connect();
+    }
+
+    @Override
     public void onDisable() {
         ROTATIONS.setCompletedAction(key, true);
+        HOTBAR_TRACKER.disconnect();
     }
 
     @Override
@@ -260,16 +266,17 @@ public class CrystalAura extends Module {
         if(!offhand && MC.player.inventory.getMainHandStack().getItem() != Items.END_CRYSTAL) {
             if(doSwitch.getValue() != Switch.NONE) {
                 if(slot != -1) {
+                    HOTBAR_TRACKER.setSlot(slot, true, -1);
+                    HOTBAR_TRACKER.sendSlot();
                     if(doSwitch.getValue() != Switch.SILENT)
                         MC.player.inventory.selectedSlot = slot;
-                    MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(slot));
                 }
             } else return;
         }
 
         Runnable switchBack = () -> {
             if(!offhand && oldSelection != slot && doSwitch.getValue() == Switch.SILENT)
-                MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(oldSelection));
+                HOTBAR_TRACKER.reset();
         };
 
         // Get the best interaction point and side, as according to preferences

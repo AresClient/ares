@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.utils;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.Pair;
+import dev.tigr.ares.fabric.utils.entity.EntityUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -130,7 +131,12 @@ public class MathUtils implements Wrapper {
 
     //Ideally we want beds to place on the upper hitbox of the player on 1.15+ to force the player into crawl position
     public static double getDistanceScoreBed(Vec3d pos, Entity player) {
-        double score = Math.abs(player.getPos().y + 1 - pos.y) + Math.abs(player.getPos().x - pos.x) + Math.abs(player.getPos().z - pos.z);
+        double score =
+                Math.abs(
+                        (MC.world.getBlockState(EntityUtils.getBlockPosCorrected(player).up()).getMaterial().isReplaceable() ? player.getPos().y + 1
+                                : (MC.world.getBlockState(EntityUtils.getBlockPosCorrected(player).up(2)).getMaterial().isReplaceable() ? player.getPos().y + 2
+                                : player.getPos().y)) - pos.y)
+                        + Math.abs(player.getPos().x - pos.x) + Math.abs(player.getPos().z - pos.z);
 
         if(MathUtils.rayTrace(pos, new Vec3d(player.getX(), player.getY() +1, player.getZ())) == HitResult.Type.BLOCK) score = -1;
 

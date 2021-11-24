@@ -34,6 +34,12 @@ public interface ClientPlayerInteractionManagerAccessor {
     @Accessor("breakingBlock")
     void setBreakingBlock(boolean breakingBlock);
 
+    @Accessor("lastSelectedSlot")
+    int getLastSelectedSlot();
+
+    @Accessor("lastSelectedSlot")
+    void setLastSelectedSlot(int lastSelectedSlot);
+
     @Invoker("syncSelectedSlot")
     void syncSelectedSlot();
 

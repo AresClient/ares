@@ -29,13 +29,11 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.item.ItemAppleGold;
 import net.minecraft.item.ItemBed;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.DimensionType;
 
@@ -44,17 +42,15 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.forge.utils.MathUtils.getDamage;
-import static dev.tigr.ares.forge.utils.MathUtils.rayTrace;
 import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
+import static dev.tigr.ares.forge.utils.MathUtils.getDamage;
 
 /**
  * @author Tigermouthbear 2/6/21
  */
 @Module.Info(name = "BedAura", description = "Automatically places and explodes beds in the nether or end for combat", category = Category.COMBAT)
 public class BedAura extends Module {
-    // TODO: Simpler 1.15+ mode which focuses on placing on player rather than calculating. Better rotations. Antisuicide / max self damage. Smart Break? Automatic fire remover for 1.12 placements (can't place foot of bed on fire block)
-    // TODO: Forge Only (from my testing) fix Bedaura consistently getting stuck trying to break bed if on 0 tick break delay
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
     private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DISTANCE));
     //    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
@@ -64,9 +60,10 @@ public class BedAura extends Module {
     private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 20));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
-    private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9));
+    private final Setting<Boolean> packetPlace = register(new BooleanSetting("Packet Place", true));
+    private final Setting<Boolean> replenish = register(new BooleanSetting("Replenish", true));
+    private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9)).setVisibility(replenish::getValue);
     private final Setting<Boolean> silentSwitch = register(new BooleanSetting("Silent Switch", true)).setVisibility(() -> Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0);
-    private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
     private final Setting<Boolean> oneDotTwelve = register(new BooleanSetting("1.12", false));
 
 
@@ -91,8 +88,14 @@ public class BedAura extends Module {
     int key = Priorities.Rotation.BED_AURA;
 
     @Override
+    public void onEnable() {
+        HOTBAR_TRACKER.connect();
+    }
+
+    @Override
     public void onDisable() {
         ROTATIONS.setCompletedAction(key, true);
+        HOTBAR_TRACKER.disconnect();
     }
 
     @Override
@@ -119,7 +122,7 @@ public class BedAura extends Module {
         if(amountBedInInventory() <= 0 && placed.isEmpty()) return;
 
         // replenish
-        replenishBed();
+        if(replenish.getValue()) replenishBed();
 
         if(amountBedInHotbar() <= 0 && placed.isEmpty()) return;
 
@@ -159,8 +162,9 @@ public class BedAura extends Module {
                 }
             }
             if(slot != -1) {
-                MC.player.inventory.currentItem = slot;
-                if(sync.getValue()) MC.player.connection.sendPacket(new CPacketHeldItemChange());
+                if(!silentSwitch.getValue() || Math.max(breakDelay.getValue(), placeDelay.getValue()) < 1)
+                    MC.player.inventory.currentItem = slot;
+                HOTBAR_TRACKER.setSlot(slot, packetPlace.getValue(), oldSelection);
             }
         }
 
@@ -170,7 +174,7 @@ public class BedAura extends Module {
 
         // Swap back
         if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0 && oldSelection != -1)
-            MC.player.inventory.currentItem = oldSelection;
+            HOTBAR_TRACKER.reset();
 
         // set render pos
         target = pair;
@@ -180,7 +184,7 @@ public class BedAura extends Module {
         float yaw = direction.getHorizontalAngle();
         if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.rotationPitch, key, key, true, false);
         else MC.player.connection.sendPacket(new CPacketPlayer.Rotation(yaw, MC.player.rotationPitch, MC.player.onGround));
-        SelfUtils.placeBlock(false, -1, -1, false, false, EnumHand.MAIN_HAND, pos, !oneDotTwelve.getValue(), false);
+        SelfUtils.placeBlock(packetPlace.getValue(), -1, false, -1, -1, false, false, EnumHand.MAIN_HAND, pos, !oneDotTwelve.getValue(), false);
     }
 
     private void explode() {

@@ -35,7 +35,6 @@ import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemAppleGold;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemPotion;
-import net.minecraft.network.play.client.CPacketHeldItemChange;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
 import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.network.play.server.SPacketSoundEffect;
@@ -53,6 +52,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * @author Tigermouthbear
@@ -148,8 +148,14 @@ public class CrystalAura extends Module {
     }
 
     @Override
+    public void onEnable() {
+        HOTBAR_TRACKER.connect();
+    }
+
+    @Override
     public void onDisable() {
         ROTATIONS.setCompletedAction(key, true);
+        HOTBAR_TRACKER.disconnect();
     }
 
     @Override
@@ -261,16 +267,17 @@ public class CrystalAura extends Module {
         if(!offhand && MC.player.inventory.getCurrentItem().getItem() != Items.END_CRYSTAL) {
             if(doSwitch.getValue() != Switch.NONE) {
                 if(slot != -1) {
+                    HOTBAR_TRACKER.setSlot(slot, true, -1);
+                    HOTBAR_TRACKER.sendSlot();
                     if(doSwitch.getValue() != Switch.SILENT)
                         MC.player.inventory.currentItem = slot;
-                    MC.player.connection.sendPacket(new CPacketHeldItemChange(slot));
                 }
             } else return;
         }
 
         Runnable switchBack = () -> {
             if(!offhand && oldSelection != slot && doSwitch.getValue() == Switch.SILENT)
-                MC.player.connection.sendPacket(new CPacketHeldItemChange(oldSelection));
+                HOTBAR_TRACKER.reset();
         };
 
         // Get the best interaction point and side, as according to preferences

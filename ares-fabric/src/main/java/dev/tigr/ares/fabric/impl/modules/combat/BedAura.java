@@ -29,7 +29,6 @@ import net.minecraft.item.BedItem;
 import net.minecraft.item.EnchantedGoldenAppleItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -44,6 +43,7 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
 import static dev.tigr.ares.fabric.utils.MathUtils.getDamage;
 
 /**
@@ -51,7 +51,6 @@ import static dev.tigr.ares.fabric.utils.MathUtils.getDamage;
  */
 @Module.Info(name = "BedAura", description = "Automatically places and explodes beds in the nether or end for combat", category = Category.COMBAT)
 public class BedAura extends Module {
-    // TODO: Simpler 1.15+ mode which focuses on placing on player rather than calculating. Better rotations. Antisuicide / max self damage. Smart Break?
     private final Setting<Target> targetSetting = register(new EnumSetting<>("Target", Target.CLOSEST));
     private final Setting<MathUtils.DmgCalcMode> calcMode = register(new EnumSetting<>("Dmg Calc Mode", MathUtils.DmgCalcMode.DISTANCE));
 //    private final Setting<Boolean> preventSuicide = register(new BooleanSetting("Prevent Suicide", true));
@@ -61,9 +60,10 @@ public class BedAura extends Module {
     private final Setting<Float> minDamage = register(new FloatSetting("Minimum Damage", 7.5f, 0, 20));
     private final Setting<Double> placeRange = register(new DoubleSetting("Place Range", 5, 0, 10));
     private final Setting<Double> breakRange = register(new DoubleSetting("Break Range", 5, 0, 10));
-    private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9));
+    private final Setting<Boolean> packetPlace = register(new BooleanSetting("Packet Place", true));
+    private final Setting<Boolean> replenish = register(new BooleanSetting("Replenish", true));
+    private final Setting<Integer> replenishSlot = register(new IntegerSetting("Replenish Slot", 8, 1, 9)).setVisibility(replenish::getValue);
     private final Setting<Boolean> silentSwitch = register(new BooleanSetting("Silent Switch", true)).setVisibility(() -> Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0);
-    private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true));
     private final Setting<Boolean> oneDotTwelve = register(new BooleanSetting("1.12", false));
 
     private final Setting<Boolean> showRenderOptions = register(new BooleanSetting("Show Render Options", false));
@@ -87,8 +87,14 @@ public class BedAura extends Module {
     int key = Priorities.Rotation.BED_AURA;
 
     @Override
+    public void onEnable() {
+        HOTBAR_TRACKER.connect();
+    }
+
+    @Override
     public void onDisable() {
         ROTATIONS.setCompletedAction(key, true);
+        HOTBAR_TRACKER.disconnect();
     }
 
     @Override
@@ -112,7 +118,7 @@ public class BedAura extends Module {
         if(amountBedInInventory() <= 0 && placed.isEmpty()) return;
 
         // replenish
-        replenishBed();
+        if(replenish.getValue()) replenishBed();
 
         if(amountBedInHotbar() <= 0 && placed.isEmpty()) return;
 
@@ -152,8 +158,9 @@ public class BedAura extends Module {
                 }
             }
             if(slot != -1) {
-                MC.player.getInventory().selectedSlot = slot;
-                if(sync.getValue()) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.getInventory().selectedSlot));
+                if(!silentSwitch.getValue() || Math.max(breakDelay.getValue(), placeDelay.getValue()) < 1)
+                    MC.player.getInventory().selectedSlot = slot;
+                HOTBAR_TRACKER.setSlot(slot, packetPlace.getValue(), oldSelection);
             }
         }
 
@@ -162,8 +169,8 @@ public class BedAura extends Module {
         placed.add(pair.getFirst());
 
         // Swap back
-        if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0 && oldSelection != -1)
-            MC.player.getInventory().selectedSlot = oldSelection;
+        if(silentSwitch.getValue() && Math.max(breakDelay.getValue(), placeDelay.getValue()) > 0)
+            HOTBAR_TRACKER.reset();
 
         // set render pos
         target = pair;
@@ -173,7 +180,7 @@ public class BedAura extends Module {
         float yaw = direction.asRotation();
         if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.getPitch(), key, key, true, false);
         else MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookAndOnGround(yaw, MC.player.getPitch(), MC.player.isOnGround()));
-        SelfUtils.placeBlockNoRotate(Hand.MAIN_HAND, pos);
+        SelfUtils.placeBlockNoRotate(packetPlace.getValue(), -1, Hand.MAIN_HAND, pos);
     }
 
     private void explode() {

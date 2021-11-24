@@ -194,11 +194,11 @@ public class Auto32k extends Module {
         if(mode.getValue() == PlaceMode.HOPPER_ONLY) {
             //Place hopper
             MC.player.inventory.currentItem = hopper;
-            SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, basePos);
+            SelfUtils.placeBlockMainHand(false, -1, rotate.getValue(), key, key, true, true, basePos);
 
             //Place shulker
             MC.player.inventory.currentItem = shulker;
-            SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, new BlockPos(basePos.getX(), basePos.getY() + 1, basePos.getZ()));
+            SelfUtils.placeBlockMainHand(false, -1, rotate.getValue(), key, key, true, true, new BlockPos(basePos.getX(), basePos.getY() + 1, basePos.getZ()));
 
             endSequence();
         } else if(mode.getValue() == PlaceMode.DISPENSER) {
@@ -228,7 +228,7 @@ public class Auto32k extends Module {
             }
             if(MC.world.getBlockState(block).getMaterial().isReplaceable()) {
                 MC.player.inventory.currentItem = solidBlock;
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, block);
+                SelfUtils.placeBlockMainHand(false, -1, rotate.getValue(), key, key, true, true, block);
             }
             //End Place block
 
@@ -252,7 +252,7 @@ public class Auto32k extends Module {
             }
             if(MC.world.getBlockState(block).getMaterial().isReplaceable()) {
                 MC.player.inventory.currentItem = dispenser;
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, block);
+                SelfUtils.placeBlockMainHand(false, -1, rotate.getValue(), key, key, true, true, block);
                 MC.player.inventory.currentItem = shulker;
                 MC.playerController.processRightClickBlock(MC.player, MC.world, block, EnumFacing.UP, new Vec3d(block.getX(), block.getY(), block.getZ()), EnumHand.MAIN_HAND);
                 tickCount++;
@@ -284,7 +284,7 @@ public class Auto32k extends Module {
             }
             if(MC.world.getBlockState(block).getMaterial().isReplaceable()) {
                 MC.player.inventory.currentItem = InventoryUtils.findItemInHotbar(Item.getItemById(152));
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, block);
+                SelfUtils.placeBlockMainHand(false, -1, rotate.getValue(), key, key, true, true, block);
                 tickCount++;
                 return;
             }
@@ -292,7 +292,7 @@ public class Auto32k extends Module {
 
             //Place hopper
             MC.player.inventory.currentItem = hopper;
-            SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, true, true, basePos);
+            SelfUtils.placeBlockMainHand(false, -1, rotate.getValue(), key, key, true, true, basePos);
 
             MC.player.inventory.currentItem = shulker;
 

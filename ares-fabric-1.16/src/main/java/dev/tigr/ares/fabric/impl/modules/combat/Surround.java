@@ -25,6 +25,7 @@ import net.minecraft.util.math.Box;
 import java.util.*;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * @author Tigermouthbear
@@ -39,7 +40,9 @@ public class Surround extends Module {
     private final Setting<Integer> centerDelay = register(new IntegerSetting("Center Delay", 0, 0, 10));
     private final Setting<Boolean> placeOnCrystal = register(new BooleanSetting("Place on Crystal", true));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
+    private final Setting<Boolean> packetPlace = register(new BooleanSetting("Packet Place", true));
     private final Setting<Boolean> air = register(new BooleanSetting("AirPlace", true));
+    private final Setting<Boolean> airplaceForce = register(new BooleanSetting("Force AirPlace", false)).setVisibility(air::getValue);
     private final Setting<Boss> boss = register(new EnumSetting<>("Boss", Boss.NONE));
     private final Setting<Primary> primary = register(new EnumSetting<>("Main", Primary.Obsidian));
     private final Setting<Boolean> allBlocks = register(new BooleanSetting("All BP Blocks", true));
@@ -134,24 +137,25 @@ public class Surround extends Module {
                     if(MC.world.getBlockState(pos).getMaterial().isReplaceable())
                         renderChange.putIfAbsent(pos, new Pair<>(new Timer(), false));
 
-                    MC.player.inventory.selectedSlot = obbyIndex;
+                    if(delay.getValue() == 0) {
+                        HOTBAR_TRACKER.setSlot(obbyIndex, packetPlace.getValue(), prevSlot);
+                    }
 
                     boolean bossPos = false;
                     if(bossList().contains(pos)) bossPos = true;
 
-                    if(SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() <= 0, false, pos, air.getValue(), !bossPos && placeOnCrystal.getValue())) {
+                    if(SelfUtils.placeBlockMainHand(packetPlace.getValue(), delay.getValue() == 0 ? -1 : obbyIndex, rotate.getValue(), key, key, delay.getValue() <= 0, false, pos, air.getValue(), airplaceForce.getValue(), !bossPos && placeOnCrystal.getValue())) {
                         if(renderChange.containsKey(pos)) {
                             renderChange.get(pos).setSecond(true);
                             renderChange.get(pos).getFirst().reset();
                         }
-                        if(delay.getValue() != 0) {
-                            MC.player.inventory.selectedSlot = prevSlot;
-                            return;
-                        }
+                        if(delay.getValue() != 0) return;
                     }
                 }
 
-                MC.player.inventory.selectedSlot = prevSlot;
+                if(delay.getValue() == 0) {
+                    HOTBAR_TRACKER.reset();
+                }
             }
         }
     }
@@ -249,6 +253,7 @@ public class Surround extends Module {
     @Override
     public void onEnable() {
         lastPos = MC.player.isOnGround() ? WorldUtils.roundBlockPos(MC.player.getPos()) : MC.player.getBlockPos();
+        HOTBAR_TRACKER.connect();
     }
 
     @Override
@@ -259,6 +264,7 @@ public class Surround extends Module {
         hasCentered = false;
         renderChange.clear();
         ROTATIONS.setCompletedAction(key, true);
+        HOTBAR_TRACKER.disconnect();
     }
 
     // draw blocks

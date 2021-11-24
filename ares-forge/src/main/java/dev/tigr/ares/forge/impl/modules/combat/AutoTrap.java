@@ -19,6 +19,7 @@ import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 
 import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * @author Tigermouthbear
@@ -27,6 +28,7 @@ import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 public class AutoTrap extends Module {
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.FULL));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
+    private final Setting<Boolean> packetPlace = register(new BooleanSetting("Packet Place", true));
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 8));
     private final Setting<Integer> delay = register(new IntegerSetting("Delay", 2, 0, 10));
     private final Setting<Integer> blocksPerTick = register(new IntegerSetting("Blocks Per Tick", 8, 0, 20)).setVisibility(() -> delay.getValue() == 0);
@@ -38,8 +40,14 @@ public class AutoTrap extends Module {
     int blocksPlaced = 0;
 
     @Override
+    public void onEnable() {
+        HOTBAR_TRACKER.connect();
+    }
+
+    @Override
     public void onDisable() {
         if(rotate.getValue()) ROTATIONS.setCompletedAction(key, true);
+        HOTBAR_TRACKER.disconnect();
     }
 
     @Override
@@ -65,7 +73,7 @@ public class AutoTrap extends Module {
                     int newSlot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
                     if(delay.getValue() == 0) {
                         if(newSlot == -1) return;
-                        else MC.player.inventory.currentItem = newSlot;
+                        else HOTBAR_TRACKER.setSlot(newSlot, packetPlace.getValue(), oldSlot);
                     }
                     for(BlockPos pos : getPos(player)) {
                         if(MC.world.getBlockState(pos).getMaterial().isReplaceable() && isPosInRange(pos)) {
@@ -73,12 +81,12 @@ public class AutoTrap extends Module {
                                 //place block
                                 if(delay.getValue() != 0) {
                                     if(newSlot == -1) return;
-                                    else MC.player.inventory.currentItem = newSlot;
+                                    else HOTBAR_TRACKER.setSlot(newSlot, packetPlace.getValue(), oldSlot);
                                 }
 
-                                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
+                                SelfUtils.placeBlockMainHand(packetPlace.getValue(), -1, rotate.getValue(), key, key, delay.getValue() == 0, false, pos);
 
-                                if(delay.getValue() != 0) MC.player.inventory.currentItem = oldSlot;
+                                if(delay.getValue() != 0) HOTBAR_TRACKER.reset();
 
                                 delayTimer.reset();
 
@@ -86,7 +94,7 @@ public class AutoTrap extends Module {
                                     blocksPlaced++;
                                     if(blocksPlaced < blocksPerTick.getValue()) continue;
                                     else {
-                                        MC.player.inventory.currentItem = oldSlot;
+                                        HOTBAR_TRACKER.reset();
                                         blocksPlaced = 0;
                                         return;
                                     }
@@ -99,7 +107,7 @@ public class AutoTrap extends Module {
             }
         }
 
-        MC.player.inventory.currentItem = oldSlot;
+        HOTBAR_TRACKER.reset();
     }
 
     private boolean isPosInRange(BlockPos pos) {

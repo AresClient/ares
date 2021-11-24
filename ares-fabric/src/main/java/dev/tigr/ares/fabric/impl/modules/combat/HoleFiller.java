@@ -30,6 +30,7 @@ public class HoleFiller extends Module {
     private final Setting<Boolean> skipNearby = register(new BooleanSetting("Skip closest", true));
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Double> range = register(new DoubleSetting("Range", 5, 0, 10));
+    private final Setting<Boolean> packetPlace = register(new BooleanSetting("Packet Place", true));
 
     int key = Priorities.Rotation.HOLE_FILLER;
 
@@ -56,16 +57,12 @@ public class HoleFiller extends Module {
                             new Box(hole)
                     ).stream().noneMatch(Entity::collides)
             ) {
-                int first = MC.player.getInventory().selectedSlot;
                 int slot = InventoryUtils.findBlockInHotbar(Blocks.OBSIDIAN);
                 if(slot == -1) {
                     slot = InventoryUtils.findBlockInHotbar(Blocks.CRYING_OBSIDIAN);
                     if(slot == -1) return;
                 }
-                MC.player.getInventory().selectedSlot = slot;
-
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, hole);
-                MC.player.getInventory().selectedSlot = first;
+                SelfUtils.placeBlockMainHand(packetPlace.getValue(), slot, rotate.getValue(), key, key, false, false, hole);
                 return;
             }
         }

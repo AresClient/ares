@@ -32,6 +32,12 @@ public interface PlayerControllerMPAccessor {
     @Accessor("currentBlock")
     BlockPos getCurrentBlock();
 
+    @Accessor("currentPlayerItem")
+    int getLastSelectedSlot();
+
+    @Accessor("currentPlayerItem")
+    void setLastSelectedSlot(int lastSelectedSlot);
+
     @Invoker("syncCurrentPlayItem")
     void syncCurrentPlayItem();
 

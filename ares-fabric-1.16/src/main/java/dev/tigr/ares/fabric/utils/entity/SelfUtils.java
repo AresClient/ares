@@ -18,8 +18,7 @@ import net.minecraft.entity.effect.StatusEffectUtil;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
+import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.tag.FluidTags;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -28,6 +27,7 @@ import net.minecraft.util.math.*;
 import java.util.List;
 
 import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * Split from WorldUtils 10/17/21 - Makrennel
@@ -192,48 +192,75 @@ public class SelfUtils implements Wrapper {
     public static boolean placeBlockMainHand(BlockPos pos) {
         return placeBlockMainHand(false, -1, -1, false, false, pos);
     }
-
     public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos) {
-        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, true);
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, true, false);
+    }
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean forceAirplace) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, forceAirplace, false);
+    }
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity) {
+        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, forceAirplace, ignoreEntity, null);
+    }
+    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity, Direction overrideSide) {
+        return placeBlock(false, -1, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, Hand.MAIN_HAND, pos, airPlace, forceAirplace, ignoreEntity, overrideSide);
     }
 
-    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace) {
-        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, false);
+
+    public static boolean placeBlockMainHand(boolean packetPlace, int slot, BlockPos pos) {
+        return placeBlockMainHand(packetPlace, slot, false, -1, -1, false, false, pos);
+    }
+    public static boolean placeBlockMainHand(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos) {
+        return placeBlockMainHand(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, true, false);
+    }
+    public static boolean placeBlockMainHand(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean forceAirplace) {
+        return placeBlockMainHand(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, forceAirplace, false);
+    }
+    public static boolean placeBlockMainHand(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity) {
+        return placeBlockMainHand(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, forceAirplace, ignoreEntity, null);
+    }
+    public static boolean placeBlockMainHand(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity, Direction overrideSide) {
+        return placeBlock(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, Hand.MAIN_HAND, pos, airPlace, forceAirplace, ignoreEntity, overrideSide);
     }
 
-    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
-        return placeBlockMainHand(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, pos, airPlace, ignoreEntity, null);
-    }
-
-    public static boolean placeBlockMainHand(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, BlockPos pos, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
-        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, Hand.MAIN_HAND, pos, airPlace, ignoreEntity, overrideSide);
-    }
 
     public static boolean placeBlockNoRotate(Hand hand, BlockPos pos) {
-        return placeBlock(false, -1, -1, false, false, hand, pos, true, false);
+        return placeBlock(false, -1, false, -1, -1, false, false, hand, pos, true, false);
     }
+    public static boolean placeBlockNoRotate(boolean packetPlace, int slot, Hand hand, BlockPos pos) {
+        return placeBlock(packetPlace, slot, false, -1, -1, false, false, hand, pos, true, false);
+    }
+
 
     public static boolean placeBlock(Hand hand, BlockPos pos) {
-        placeBlock(false, -1, -1, false, false, hand, pos, true);
-        return true;
+        return placeBlock(false, -1, -1, false, false, hand, pos, true, false);
     }
-
     public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos) {
-        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, false);
-        return true;
+        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, false, false);
+    }
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean forceAirplace) {
+        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, forceAirplace, false);
+    }
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity) {
+        return placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, forceAirplace, ignoreEntity, null);
+    }
+    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity, Direction overrideSide) {
+        return placeBlock(false, -1, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, forceAirplace, ignoreEntity, overrideSide);
     }
 
-    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace) {
-        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, false);
-        return true;
-    }
 
-    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity) {
-        placeBlock(rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, ignoreEntity, null);
-        return true;
+    public static boolean placeBlock(boolean packetPlace, int slot, Hand hand, BlockPos pos) {
+        return placeBlock(packetPlace, slot, false, -1, -1, false, false, hand, pos, true, false);
     }
-
-    public static boolean placeBlock(Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean ignoreEntity, Direction overrideSide) {
+    public static boolean placeBlock(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos) {
+        return placeBlock(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, false, false);
+    }
+    public static boolean placeBlock(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean forceAirplace) {
+        return placeBlock(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, forceAirplace, false);
+    }
+    public static boolean placeBlock(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity) {
+        return placeBlock(packetPlace, slot, rotate, rotationKey, rotationPriority, instantRotation, instantBypassesCurrent, hand, pos, airPlace, forceAirplace, ignoreEntity, null);
+    }
+    public static boolean placeBlock(boolean packetPlace, int slot, Boolean rotate, int rotationKey, int rotationPriority, boolean instantRotation, boolean instantBypassesCurrent, Hand hand, BlockPos pos, Boolean airPlace, Boolean forceAirplace, Boolean ignoreEntity, Direction overrideSide) {
         // make sure place is empty if ignoreEntity is not true
         if(ignoreEntity) {
             if (!MC.world.getBlockState(pos).getMaterial().isReplaceable())
@@ -249,31 +276,33 @@ public class SelfUtils implements Wrapper {
         BlockPos neighbor = null;
         Direction side2 = null;
 
-        if(overrideSide != null) {
-            neighbor = pos.offset(overrideSide.getOpposite());
-            side2 = overrideSide;
-        }
-
-        for(Direction side: Direction.values()) {
-            if(overrideSide == null) {
-                neighbor = pos.offset(side);
-                side2 = side.getOpposite();
-
-                // check if neighbor can be right clicked aka it isnt air
-                if(MC.world.getBlockState(neighbor).isAir() || MC.world.getBlockState(neighbor).getBlock() instanceof FluidBlock) {
-                    neighbor = null;
-                    side2 = null;
-                    continue;
-                }
+        if(!forceAirplace || !airPlace) {
+            if(overrideSide != null) {
+                neighbor = pos.offset(overrideSide.getOpposite());
+                side2 = overrideSide;
             }
 
-            hitVec = new Vec3d(neighbor.getX(), neighbor.getY(), neighbor.getZ()).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getUnitVector()).multiply(0.5));
-            break;
+            for(Direction side: Direction.values()) {
+                if(overrideSide == null) {
+                    neighbor = pos.offset(side);
+                    side2 = side.getOpposite();
+
+                    // check if neighbor can be right clicked aka it isnt air
+                    if(MC.world.getBlockState(neighbor).isAir() || MC.world.getBlockState(neighbor).getBlock() instanceof FluidBlock) {
+                        neighbor = null;
+                        side2 = null;
+                        continue;
+                    }
+                }
+
+                hitVec = Vec3d.of(neighbor).add(0.5, 0.5, 0.5).add(new Vec3d(side2.getUnitVector()).multiply(0.5));
+                break;
+            }
         }
 
         // Air place if no neighbour was found
         if(airPlace) {
-            if (hitVec == null) hitVec = new Vec3d(pos.getX(), pos.getY(), pos.getZ());
+            if (hitVec == null) hitVec = Vec3d.ofCenter(pos);
             if (neighbor == null) neighbor = pos;
             if (side2 == null) side2 = Direction.UP;
         } else if(hitVec == null || neighbor == null || side2 == null) {
@@ -301,8 +330,26 @@ public class SelfUtils implements Wrapper {
                 return false;
 
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
-        MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
-        MC.player.swingHand(hand);
+
+        int oldSlot = MC.player.inventory.selectedSlot;
+        if(slot != -1) {
+            HOTBAR_TRACKER.connect();
+            HOTBAR_TRACKER.setSlot(slot, packetPlace, oldSlot);
+            // When packet placing we must send an update slot packet first
+            if(packetPlace) HOTBAR_TRACKER.sendSlot();
+        } else if(packetPlace) MC.player.networkHandler.sendPacket(new UpdateSelectedSlotC2SPacket(MC.player.inventory.selectedSlot));
+
+        if(packetPlace) MC.player.networkHandler.sendPacket(new PlayerInteractBlockC2SPacket(hand, new BlockHitResult(hitVec, side2, neighbor, false)));
+        else MC.interactionManager.interactBlock(MC.player, MC.world, hand, new BlockHitResult(hitVec, side2, neighbor, false));
+
+        MC.player.networkHandler.sendPacket(new HandSwingC2SPacket(hand));
+
+        if(slot != -1) {
+            if(!packetPlace) MC.player.inventory.selectedSlot = oldSlot;
+            HOTBAR_TRACKER.reset();
+            HOTBAR_TRACKER.disconnect();
+        }
+
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
 
         return true;

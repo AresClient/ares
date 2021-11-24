@@ -23,6 +23,7 @@ import net.minecraft.util.math.MathHelper;
 import java.util.ArrayList;
 
 import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
+import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * @author Tigermouthbear
@@ -31,9 +32,11 @@ import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
 @Module.Info(name = "Scaffold", description = "Automatically bridges for you", category = Category.PLAYER)
 public class Scaffold extends Module {
     private final Setting<Integer> radius = register(new IntegerSetting("Radius", 0, 0, 6));
+    private final Setting<Integer> blocksPerTick = register(new IntegerSetting("Blocks P. Tick", 1, 1, 10)).setVisibility(() -> radius.getValue() > 0);
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));
     private final Setting<Boolean> down = register(new BooleanSetting("Down", false));
     private final Setting<Boolean> airplace = register(new BooleanSetting("AirPlace", false));
+    private final Setting<Boolean> airplaceForce = register(new BooleanSetting("Force AirPlace", false)).setVisibility(airplace::getValue);
     private final Setting<Boolean> tower = register(new BooleanSetting("Tower", true)).setVisibility(() -> radius.getValue() <= 0);
     private final Setting<Boolean> packetTower = register(new BooleanSetting("Packet Tower", false)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0);
     private final Setting<Integer> towerJumpVelocity = register(new IntegerSetting("Jump Velocity", 42, 37, 60)).setVisibility(() -> tower.getValue() && radius.getValue() <= 0 && !packetTower.getValue());
@@ -137,12 +140,8 @@ public class Scaffold extends Module {
     public void onMotion() {
         if(MC.player == null || MC.world == null) return;
 
-        int oldSlot = MC.player.inventory.currentItem;
         int newSlot = InventoryUtils.getBlockInHotbar();
-
-        if(newSlot != -1) {
-            MC.player.inventory.currentItem = newSlot;
-        } else {
+        if(newSlot == -1) {
             UTILS.printMessage(TextColor.RED + "No blocks found in hotbar!");
             setEnabled(false);
             return;
@@ -174,9 +173,7 @@ public class Scaffold extends Module {
             BlockPos under = new BlockPos(MC.player.posX, MC.player.posY - 2, MC.player.posZ);
 
             if(MC.world.getBlockState(under).getMaterial().isReplaceable())
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
-
-            MC.player.inventory.currentItem = oldSlot;
+                SelfUtils.placeBlockMainHand(false, newSlot, rotate.getValue(), key, key, false, false, under, airplace.getValue(), airplaceForce.getValue());
 
             return;
         }
@@ -186,9 +183,7 @@ public class Scaffold extends Module {
             BlockPos under = new BlockPos(MC.player.posX, MC.player.posY - 1, MC.player.posZ);
 
             if(MC.world.getBlockState(under).getMaterial().isReplaceable())
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, under, airplace.getValue());
-
-            MC.player.inventory.currentItem = oldSlot;
+                SelfUtils.placeBlockMainHand(false, newSlot, rotate.getValue(), key, key, false, false, under, airplace.getValue(), airplaceForce.getValue());
 
             return;
         }
@@ -201,13 +196,17 @@ public class Scaffold extends Module {
             }
         }
 
+        HOTBAR_TRACKER.connect();
+        HOTBAR_TRACKER.setSlot(newSlot, true, -1);
+        int blocksPlaced = 0;
         for(BlockPos x: blocks) {
             if(MC.world.getBlockState(x).getMaterial().isReplaceable()) {
-                SelfUtils.placeBlockMainHand(rotate.getValue(), key, key, false, false, x, airplace.getValue());
-                break;
+                if(SelfUtils.placeBlockMainHand(true, -1, rotate.getValue(), key, key, false, false, x, airplace.getValue(), airplaceForce.getValue()))
+                    blocksPlaced++;
+                if(blocksPlaced == blocksPerTick.getValue()) break;
             }
         }
-
-        MC.player.inventory.currentItem = oldSlot;
+        HOTBAR_TRACKER.reset();
+        HOTBAR_TRACKER.disconnect();
     }
 }

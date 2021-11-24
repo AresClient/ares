@@ -75,7 +75,7 @@ public class AutoSign extends Module {
 
             // place sign
             MC.player.inventory.currentItem = sign;
-            SelfUtils.placeBlockMainHand(pos);
+            SelfUtils.placeBlockMainHand(false, -1, pos);
 
             return true;
         }
