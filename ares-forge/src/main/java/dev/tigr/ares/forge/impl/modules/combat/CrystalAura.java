@@ -36,7 +36,6 @@ import net.minecraft.item.ItemAppleGold;
 import net.minecraft.item.ItemFood;
 import net.minecraft.item.ItemPotion;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock;
-import net.minecraft.network.play.client.CPacketUseEntity;
 import net.minecraft.network.play.server.SPacketSoundEffect;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -97,10 +96,8 @@ public class CrystalAura extends Module {
     private final Setting<Boolean> breakOnSpawn = register(new BooleanSetting("Break On Spawn", true)).setVisibility(() -> page.getValue() == Page.BREAK && !(breakAge.getValue() > 0));
     private final Setting<BreakMode> breakMode = register(new EnumSetting<>("Break Mode", BreakMode.SMART)).setVisibility(() -> page.getValue() == Page.BREAK);
     private final Setting<Integer> maxBreakTries = register(new IntegerSetting("Break Attempts", 3, 1, 5)).setVisibility(() -> page.getValue() == Page.BREAK);
-    private final Setting<Integer> lostWindow = register(new IntegerSetting("Fail Window", 6, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK);
     private final Setting<Boolean> retryLost = register(new BooleanSetting("Retry Failed Crystals", true)).setVisibility(() -> page.getValue() == Page.BREAK && breakMode.getValue() != BreakMode.ALL);
     private final Setting<Integer> retryAfter = register(new IntegerSetting("Retry After", 4, 0, 20)).setVisibility(() -> page.getValue() == Page.BREAK && breakMode.getValue() != BreakMode.ALL && retryLost.getValue());
-    private final Setting<Boolean> sync = register(new BooleanSetting("Sync", true)).setVisibility(() -> page.getValue() == Page.BREAK);
 
     //Render Page
     private final Setting<Float> colorRed = register(new FloatSetting("Red", 0.69f, 0, 1)).setVisibility(() -> page.getValue() == Page.RENDER);
@@ -128,6 +125,7 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<EntityEnderCrystal, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EntityEnderCrystal, Integer> lostCrystals = new LinkedHashMap<>();
     private EntityPlayer targetPlayer;
+    private double pingWindow = 0;
 
     final int key = Priorities.Rotation.CRYSTAL_AURA;
     final int generalPriority = Priorities.Rotation.CRYSTAL_AURA;
@@ -164,7 +162,10 @@ public class CrystalAura extends Module {
     }
 
     private void run() {
-        //Ensure it doesn't spam illegal place and break interactions without being rotated
+        // Get ping for timing how long to wait before a crystal is lost
+        pingWindow = MC.player.connection.getPlayerInfo(MC.player.getUniqueID()).getResponseTime() / 50D;
+
+        // Ensure it doesn't spam illegal place and break interactions without being rotated
         if(rotateMode.getValue() == Rotations.PACKET) {
             if(!ROTATIONS.isKeyCurrent(key) && !ROTATIONS.isCompletedAction() && ROTATIONS.getCurrentPriority() > key) return;
         }
@@ -174,7 +175,7 @@ public class CrystalAura extends Module {
         for(EntityEnderCrystal c: SelfUtils.getEndCrystalsInRadius(Math.max(placeRange.getValue(), breakRange.getValue()) +2)) {
             if(breakMode.getValue() == BreakMode.ALL) {
                 if(lostCrystals.containsKey(c)) {
-                    if(c.ticksExisted < lostCrystals.get(c) + lostWindow.getValue()) continue;
+                    if(c.ticksExisted < lostCrystals.get(c) + pingWindow) continue;
                 }
                 if(!spawnedCrystals.containsKey(c)) {
                     spawnedCrystals.put(c, new AtomicInteger(0));
@@ -185,7 +186,7 @@ public class CrystalAura extends Module {
             if(breakMode.getValue() == BreakMode.OWN && retryLost.getValue()) {
                 if(!lostCrystals.containsKey(c)) continue;
                 if(lostCrystals.containsKey(c)) {
-                    if(c.ticksExisted < lostCrystals.get(c) + lostWindow.getValue() + retryAfter.getValue()) continue;
+                    if(c.ticksExisted < lostCrystals.get(c) + pingWindow + retryAfter.getValue()) continue;
                 }
                 spawnedCrystals.put(c, new AtomicInteger(0));
                 lostCrystals.remove(c);
@@ -353,7 +354,6 @@ public class CrystalAura extends Module {
         EnumHand hand = offhand ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
 
         // break
-        if(sync.getValue()) MC.player.connection.sendPacket(new CPacketUseEntity(crystal, hand));
         MC.playerController.attackEntity(MC.player, crystal);
         MC.player.swingArm(hand);
 
@@ -383,7 +383,7 @@ public class CrystalAura extends Module {
             if(!canBreakCrystal(c)) continue;
 
             if(lostCrystals.containsKey(c)) {
-                if(c.ticksExisted < lostCrystals.get(c) + lostWindow.getValue() + retryAfter.getValue()) continue;
+                if(c.ticksExisted < lostCrystals.get(c) + pingWindow + retryAfter.getValue()) continue;
                 else lostCrystals.remove(c);
             }
 
@@ -605,7 +605,7 @@ public class CrystalAura extends Module {
         if(spawnedCrystals.containsKey(entity) && preventSuicide.getValue())
             return !(MC.player.getHealth() - MathUtils.getDamage(entity.getPositionVector(), MC.player, false) <= 1);
         if(lostCrystals.containsKey(entity))
-            return entity.ticksExisted < lostCrystals.get(entity) + lostWindow.getValue();
+            return entity.ticksExisted < lostCrystals.get(entity) + pingWindow;
         if(!spawnedCrystals.containsKey(entity) && !lostCrystals.containsKey(entity)) {
             if(breakMode.getValue() == BreakMode.SMART || breakMode.getValue() == BreakMode.ALL)
                 return MathUtils.isInRange(SelfUtils.getEyePos(), entity.getPositionVector(), breakRange.getValue());
