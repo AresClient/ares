@@ -22,8 +22,12 @@ for filename in $TRAVIS_BUILD_DIR/build/*.jar; do
 done
 
 COMMITS=$(git log $TRAVIS_COMMIT_RANGE --oneline | tac)
-if [ $FORGE_PATH != "" ] && [ $FABRIC_PATH  != "" ] && [ $FABRIC_16_PATH  != "" ] && grep -qv "NO-BETA" <<< "$COMMITS"; then
-  echo $(curl -F token=$UPLOAD_TOKEN -F message="$COMMITS" -F forge=@$FORGE_PATH -F fabric=@$FABRIC_PATH -F fabric_16=@$FABRIC_16_PATH https://aresclient.org/beta)
+if grep -qv "NO-BETA" <<< "$COMMITS"; then
+   if [ $FORGE_PATH != "" ] && [ $FABRIC_PATH  != "" ] && [ $FABRIC_16_PATH  != "" ]; then
+     echo $(curl -F token=$UPLOAD_TOKEN -F message="$COMMITS" -F forge=@$FORGE_PATH -F fabric=@$FABRIC_PATH -F fabric_16=@$FABRIC_16_PATH https://aresclient.org/beta)
+   else
+     echo "Couldn't find path to forge and fabric builds!"
+   fi
 else
-  echo "Couldn't find path to forge and fabric builds!"
+  echo "Skipped beta upload!"
 fi
