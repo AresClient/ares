@@ -1,5 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
+import dev.tigr.ares.core.feature.BetaOnly;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -47,6 +48,7 @@ import static dev.tigr.ares.fabric.utils.MathUtils.getDamage;
 /**
  * @author Tigermouthbear 2/6/20
  */
+@BetaOnly
 @Module.Info(name = "AnchorAura", description = "Automatically places and explodes respawn anchors in the overworld", category = Category.COMBAT)
 public class AnchorAura extends Module {
     //TODO: Chain delays so that break delay starts after placing has finished and vice versa? Give every anchor placed a seperate timer so they're guaranteed to break with correct timing?

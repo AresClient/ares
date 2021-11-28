@@ -1,5 +1,8 @@
 package dev.tigr.ares.core.util.global;
 
+import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.feature.BetaOnly;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -22,7 +25,11 @@ public class Manager<T> {
     }
 
     public Manager<T> initialize(List<Class<? extends T>> instances) {
-        instances.forEach(this::build);
+        if(Ares.BRANCH == Ares.Branches.STABLE) {
+            instances.stream().filter(clazz -> clazz.getDeclaredAnnotation(BetaOnly.class) == null).forEach(this::build);
+        } else {
+            instances.forEach(this::build);
+        }
         return this;
     }
 
