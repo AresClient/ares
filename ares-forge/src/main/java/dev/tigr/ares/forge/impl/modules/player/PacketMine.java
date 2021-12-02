@@ -166,7 +166,8 @@ public class PacketMine extends Module {
 
         //Increment breakProgress if necessary
         int tool = InventoryUtils.getTool(currentPos);
-        if(tool != -1) breakProgress = Math.min(breakProgress + SelfUtils.calcBlockBreakingDelta(MC.world.getBlockState(currentPos), tool), 1);
+        if(tool == -1) tool = MC.player.inventory.currentItem;
+        breakProgress = Math.min(breakProgress + SelfUtils.calcBlockBreakingDelta(MC.world.getBlockState(currentPos), tool), 1);
     }
 
     private boolean nullCheck() {
@@ -280,16 +281,12 @@ public class PacketMine extends Module {
         }
 
         if(mode.getValue() == Mode.UPDATE) {
-            if(autoSwitch.getValue() == Switch.SILENT) onPlayerDamageBlock(currentPos, side);
-            else MC.playerController.onPlayerDamageBlock(currentPos, side);
-        }
-
-        if(mode.getValue() == Mode.UPDATE) {
             if(clientUpdate.getValue()) {
                 if(autoSwitch.getValue() == Switch.SILENT) onPlayerDamageBlock(currentPos, side);
                 else MC.playerController.onPlayerDamageBlock(currentPos, side);
             } else {
                 if(!hasMined) {
+                    breakProgress = 0;
                     MC.player.connection.sendPacket(new CPacketPlayerDigging(CPacketPlayerDigging.Action.START_DESTROY_BLOCK, currentPos, side));
                     hasFinished = false;
                 }
@@ -317,7 +314,7 @@ public class PacketMine extends Module {
         if(!getEnabled() || !WorldUtils.canBreakBlock(event.getBlockPos())) return;
 
         if(currentPos != null) {
-            if(currentPos.equals(event.getBlockPos()) && hasMined && mode.getValue() == Mode.NORMAL) {
+            if(currentPos.equals(event.getBlockPos()) && hasMined && (mode.getValue() == Mode.NORMAL || (mode.getValue() == Mode.UPDATE && !clientUpdate.getValue()))) {
                 hasMined = false;
                 event.setCancelled(true);
                 return;
@@ -330,6 +327,23 @@ public class PacketMine extends Module {
             hasMined = false;
         }
         event.setCancelled(true);
+    });
+
+    @EventHandler
+    private final EventListener<PacketEvent.Sent> onPacketSent = new EventListener<>(event -> {
+        if(event.getPacket() instanceof CPacketPlayerDigging) {
+            CPacketPlayerDigging packet = (CPacketPlayerDigging) event.getPacket();
+
+            // Prevent stray sent packets from causing the PacketMine target to fail (more often specifically on update mode)
+            if(currentPos != null && packet.getAction() == CPacketPlayerDigging.Action.START_DESTROY_BLOCK)
+                if(!packet.getPosition().equals(currentPos))
+                    event.setCancelled(true);
+
+            if(!getEnabled()) return;
+
+            if(packet.getAction() == CPacketPlayerDigging.Action.ABORT_DESTROY_BLOCK)
+                event.setCancelled(true);
+        }
     });
 
     @EventHandler
