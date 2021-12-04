@@ -6,7 +6,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import net.minecraft.client.input.Input;
 import net.minecraft.util.math.MathHelper;
 
 /**

@@ -11,7 +11,6 @@ import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.block.Block;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;

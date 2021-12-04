@@ -1,7 +1,6 @@
 package dev.tigr.ares.fabric.utils;
 
 import dev.tigr.ares.Wrapper;
-import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.fabric.utils.entity.EntityUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.BlockState;
@@ -16,12 +15,13 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.stat.Stats;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.RaycastContext;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**

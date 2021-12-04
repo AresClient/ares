@@ -2,11 +2,11 @@ package dev.tigr.ares.fabric.impl.modules.movement;
 
 /*import baritone.api.BaritoneAPI;
 import baritone.api.pathing.goals.GoalXZ;*/
+
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import net.minecraft.util.math.MathHelper;
 
 /**
  * @author Tigermouthbear

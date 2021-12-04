@@ -13,7 +13,8 @@ import net.minecraft.util.math.AxisAlignedBB;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_LINES;
+import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 
 public class Mesh implements Wrapper {
     public static void construct(BufferBuilder buffer, Vertex... vertices) {

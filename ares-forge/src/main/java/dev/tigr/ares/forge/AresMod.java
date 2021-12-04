@@ -25,6 +25,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import org.lwjgl.opengl.Display;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -55,7 +56,7 @@ public class AresMod extends Ares {
 
     @Override
     protected List<Class<? extends Module>> getModules() {
-        return Arrays.asList(
+        List<Class<? extends Module>> modules = new ArrayList<>(Arrays.asList(
                 // combat
                 Anchor.class,
                 AntiDeathScreen.class,
@@ -118,7 +119,6 @@ public class AresMod extends Ares {
                 BetterSign.class,
                 ChatSuffix.class,
                 ConstantQMain.class,
-                DiscordPresence.class,
                 InfiniteChatLength.class,
                 MidClickFriend.class,
                 MsgOnToggle.class,
@@ -187,7 +187,17 @@ public class AresMod extends Ares {
                 Search.class,
                 Tracers.class,
                 Trajectories.class
-        );
+        ));
+
+        // only add discord rpc if we are on supported architecture
+        String arch = System.getProperty("os.arch");
+        if(arch.equals("i686") || arch.equals("i386")
+                || arch.equals("x86") || arch.equals("x86_64")
+                || arch.equals("amd64")) {
+            modules.add(DiscordPresence.class);
+        }
+
+        return modules;
     }
 
     @Override

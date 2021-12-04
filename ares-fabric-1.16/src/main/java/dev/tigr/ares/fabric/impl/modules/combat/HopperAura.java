@@ -8,7 +8,6 @@ import dev.tigr.ares.core.setting.settings.numerical.DoubleSetting;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
-import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.ares.fabric.utils.entity.PlayerUtils;
 import dev.tigr.ares.fabric.utils.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;

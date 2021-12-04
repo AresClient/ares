@@ -3,8 +3,8 @@ package dev.tigr.ares.fabric.impl.modules.render;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.block.entity.*;
 import net.minecraft.util.math.Box;
 

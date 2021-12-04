@@ -2,9 +2,6 @@ package dev.tigr.ares.forge.impl.modules.movement;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.core.setting.Setting;
-import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
-import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
 import dev.tigr.ares.forge.event.events.movement.EntityPushEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;

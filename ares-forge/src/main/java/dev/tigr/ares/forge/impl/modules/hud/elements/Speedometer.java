@@ -14,8 +14,6 @@ import dev.tigr.ares.forge.impl.modules.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Timer;
 
-import java.util.Set;
-
 /**
  * @author Tigermouthbear
  */

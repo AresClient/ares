@@ -2,11 +2,11 @@ package dev.tigr.ares.fabric.impl.modules.movement;
 
 /*import baritone.api.BaritoneAPI;
 import baritone.api.event.events.ChatEvent;*/
+
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
-import dev.tigr.ares.core.util.render.TextColor;
 
 /**
  * @author Tigermouthbear

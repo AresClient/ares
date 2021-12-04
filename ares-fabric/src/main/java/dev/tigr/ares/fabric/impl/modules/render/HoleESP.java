@@ -9,8 +9,8 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.utils.HoleType;
-import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 

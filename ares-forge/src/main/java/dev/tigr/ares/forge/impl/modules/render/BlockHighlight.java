@@ -7,10 +7,8 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.utils.render.RenderUtils;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.opengl.GL11;
 
 /**
  * @author Tigermouthbear

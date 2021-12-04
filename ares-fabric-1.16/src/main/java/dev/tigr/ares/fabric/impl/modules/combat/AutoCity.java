@@ -10,7 +10,6 @@ import dev.tigr.ares.fabric.utils.Comparators;
 import dev.tigr.ares.fabric.utils.MathUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;
 import dev.tigr.ares.fabric.utils.entity.SelfUtils;
-import net.minecraft.block.AirBlock;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.PickaxeItem;

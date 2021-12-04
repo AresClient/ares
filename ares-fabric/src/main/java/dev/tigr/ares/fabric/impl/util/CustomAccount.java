@@ -6,15 +6,12 @@ import com.mojang.authlib.UserAuthentication;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.util.UUIDTypeAdapter;
 import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.fabric.impl.render.CustomRenderStack;
-import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import net.minecraft.client.render.*;
 import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
-import net.minecraft.client.util.Session;
 import net.minecraft.util.math.Matrix4f;
 
 import javax.imageio.ImageIO;

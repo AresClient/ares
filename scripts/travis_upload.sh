@@ -22,7 +22,7 @@ for filename in $TRAVIS_BUILD_DIR/build/*.jar; do
   fi
   if grep -q "fabric-1.17" <<< "$filename"; then
       FABRIC_17_PATH="$filename"
-    fi
+  fi
 done
 
 COMMITS=$(git log $TRAVIS_COMMIT_RANGE --oneline | tac)

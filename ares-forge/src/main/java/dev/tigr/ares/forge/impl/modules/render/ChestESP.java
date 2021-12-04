@@ -4,7 +4,6 @@ import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.forge.utils.render.RenderUtils;
-import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.tileentity.*;
 import net.minecraft.util.math.AxisAlignedBB;
 
