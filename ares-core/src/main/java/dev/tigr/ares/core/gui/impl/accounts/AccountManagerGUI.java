@@ -43,7 +43,7 @@ public class AccountManagerGUI extends GUI {
 
     @Override
     public void draw(int mouseX, int mouseY, float partialTicks) {
-        GUI_MANAGER.drawBackground();
+        GUI_MANAGER.drawPanorama();
 
         // calculation positions
         double x = getScreenWidth() / 3.5d;

@@ -7,7 +7,11 @@ import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
-import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.option.OptionsScreen;
+import net.minecraft.client.gui.screen.world.SelectWorldScreen;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
@@ -28,7 +32,7 @@ public class CustomUtils implements IUtils {
 
     @Override
     public void executeBaritoneCommand(String string) {
-        Baritone.executeCommand(string);
+        //Baritone.executeCommand(string);
     }
 
     @Override
@@ -39,6 +43,31 @@ public class CustomUtils implements IUtils {
     @Override
     public void openHUDEditor() {
         MC.setScreen(new EditHudGui(MC.currentScreen));
+    }
+
+    @Override
+    public void openTitleScreen() {
+        MC.setScreen(new TitleScreen());
+    }
+
+    @Override
+    public void openSinglePlayerMenu() {
+        MC.setScreen(new SelectWorldScreen(MC.currentScreen));
+    }
+
+    @Override
+    public void openMultiPlayerMenu() {
+        MC.setScreen(new MultiplayerScreen(MC.currentScreen));
+    }
+
+    @Override
+    public void openRealmsMenu() {
+        MC.setScreen(new RealmsMainScreen(MC.currentScreen));
+    }
+
+    @Override
+    public void openOptionsMenu() {
+        MC.setScreen(new OptionsScreen(MC.currentScreen, MC.options));
     }
 
     @Override

@@ -1,13 +1,11 @@
 package dev.tigr.ares.fabric.mixin.render;
 
 import dev.tigr.ares.Wrapper;
-import dev.tigr.ares.core.gui.impl.menu.MenuButton;
-import dev.tigr.ares.core.gui.impl.menu.SelectionMenu;
+import dev.tigr.ares.core.feature.module.ClickGUIMod;
+import dev.tigr.ares.core.gui.impl.menu.SelectionMenuGUI;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
-import net.minecraft.client.gui.screen.option.OptionsScreen;
-import net.minecraft.client.gui.screen.world.SelectWorldScreen;
-import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,43 +18,34 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  */
 @Mixin(MultiplayerScreen.class)
 public class MixinMultiplayerScreen extends Screen implements Wrapper {
-    SelectionMenu mainMenu;
+    private static final SelectionMenuGUI SELECTION_MENU = new SelectionMenuGUI();
 
     protected MixinMultiplayerScreen(Text title) {
         super(title);
     }
 
-    @Inject(method = "init", at = @At("HEAD"))
-    private void initGui(CallbackInfo ci) {
-        mainMenu = new SelectionMenu(MC.currentScreen.width, MC.currentScreen.height, MC.options.guiScale);
-
-        mainMenu.getMenuButtonGroup().getButtons().forEach(button -> {
-            if(button.getButtonName().equals("MP")) button.setPressed(true);
-        });
-    }
-
-    @Inject(method = "render", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "render", at = @At("RETURN"))
     public void drawScreen(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        mainMenu.draw(mouseX, mouseY, delta);
+        if(ClickGUIMod.shouldRenderCustomMenu()) SELECTION_MENU.draw(mouseX, mouseY, delta);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int mouseButton) {
-        if(mouseButton == 0) {
-            mainMenu.onClick(mouseX, mouseY);
-
-            if(mainMenu.getCustomToggle().isPressed()) {
-                for(MenuButton button: mainMenu.getMenuButtonGroup().getButtons()) {
-                    if(button.isMouseOver(mouseX, mouseY)) {
-                        if(button.getButtonName().equals("SP")) MC.setScreen(new SelectWorldScreen(this));
-                        if(button.getButtonName().equals("MP")) MC.setScreen(new MultiplayerScreen(this));
-                        if(button.getButtonName().equals("OP")) MC.setScreen(new OptionsScreen(this, MC.options));
-                        if(button.getButtonName().equals("RL")) MC.setScreen(new RealmsMainScreen(this));
-                    }
-                }
-            }
-        }
-
+        if(ClickGUIMod.shouldRenderCustomMenu()) SELECTION_MENU.mouseClicked((int) mouseX, (int) mouseY, mouseButton);
         return super.mouseClicked(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
+        if(ClickGUIMod.shouldRenderCustomMenu()) SELECTION_MENU.mouseReleased((int) mouseX, (int) mouseY, mouseButton);
+        return super.mouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public void resize(MinecraftClient client, int width, int height) {
+        Screen screen = (Screen) GUI_MANAGER;
+        screen.width = width;
+        screen.height = height;
+        super.resize(client, width, height);
     }
 }

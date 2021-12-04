@@ -8,6 +8,11 @@ import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
+import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
+import net.minecraft.client.gui.screen.options.OptionsScreen;
+import net.minecraft.client.gui.screen.world.SelectWorldScreen;
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 
@@ -39,6 +44,31 @@ public class CustomUtils implements IUtils {
     @Override
     public void openHUDEditor() {
         MC.openScreen(new EditHudGui(MC.currentScreen));
+    }
+
+    @Override
+    public void openTitleScreen() {
+        MC.openScreen(new TitleScreen());
+    }
+
+    @Override
+    public void openSinglePlayerMenu() {
+        MC.openScreen(new SelectWorldScreen(MC.currentScreen));
+    }
+
+    @Override
+    public void openMultiPlayerMenu() {
+        MC.openScreen(new MultiplayerScreen(MC.currentScreen));
+    }
+
+    @Override
+    public void openRealmsMenu() {
+        MC.openScreen(new RealmsMainScreen(MC.currentScreen));
+    }
+
+    @Override
+    public void openOptionsMenu() {
+        MC.openScreen(new OptionsScreen(MC.currentScreen, MC.options));
     }
 
     @Override

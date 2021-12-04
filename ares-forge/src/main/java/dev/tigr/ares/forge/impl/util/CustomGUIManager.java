@@ -2,6 +2,7 @@ package dev.tigr.ares.forge.impl.util;
 
 import dev.tigr.ares.core.gui.api.GUI;
 import dev.tigr.ares.core.util.IGUIManager;
+import dev.tigr.ares.forge.impl.render.CustomPanoramaRenderer;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ChatAllowedCharacters;
 import org.lwjgl.input.Keyboard;
@@ -59,6 +60,11 @@ public class CustomGUIManager extends GuiScreen implements IGUIManager {
     @Override
     public void drawBackground() {
         drawDefaultBackground();
+    }
+
+    @Override
+    public void drawPanorama() {
+        CustomPanoramaRenderer.ARES_DEFAULT_PANORAMA_RENDERER.draw();
     }
 
     @Override

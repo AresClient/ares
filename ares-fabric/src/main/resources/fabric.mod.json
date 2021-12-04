@@ -13,8 +13,7 @@
   },
   "environment": "*",
   "mixins": [
-    "ares.mixins.json",
-    "mixins.baritone.json"
+    "ares.mixins.json"
   ],
   "suggests": {
     "flamingo": "*"

@@ -65,7 +65,7 @@ public class CustomGlyphPage extends AbstractGlyphPage {
             RenderSystem.setShaderTexture(0, texture.getGlId());
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-            Matrix4f matrix4f = ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
+            Matrix4f matrix4f = ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getPositionMatrix();
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder bufferBuilder = tessellator.getBuffer();
             bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_COLOR_TEXTURE);

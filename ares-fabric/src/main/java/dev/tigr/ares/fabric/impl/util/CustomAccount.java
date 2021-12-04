@@ -94,14 +94,14 @@ public class CustomAccount extends AbstractAccount {
         USER_AUTHENTICATION.logIn();
 
         // create new session
-        Session session = new Session(
+        /*Session session = new Session(
                 USER_AUTHENTICATION.getSelectedProfile().getName(),
                 UUIDTypeAdapter.fromUUID(USER_AUTHENTICATION.getSelectedProfile().getId()),
                 USER_AUTHENTICATION.getAuthenticatedToken(),
                 "mojang"
         );
 
-        ((MinecraftClientAccessor) MC).setSession(session);
+        ((MinecraftClientAccessor) MC).setSession(session);*/
         return true;
     }
 
@@ -121,7 +121,7 @@ public class CustomAccount extends AbstractAccount {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         // draw it
-        Matrix4f matrix4f = ((CustomRenderStack)RENDER_STACK).getMatrixStack().peek().getModel();
+        Matrix4f matrix4f = ((CustomRenderStack)RENDER_STACK).getMatrixStack().peek().getPositionMatrix();
         BufferBuilder bufferBuilder = Tessellator.getInstance().getBuffer();
         bufferBuilder.begin(VertexFormat.DrawMode.TRIANGLES, VertexFormats.POSITION_TEXTURE);
         bufferBuilder.vertex(matrix4f, (float) (x + width), (float) y, 0).texture(1, 0).next();

@@ -8,6 +8,8 @@ import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.forge.impl.modules.movement.Baritone;
+import net.minecraft.client.gui.*;
+import net.minecraft.realms.RealmsBridge;
 import net.minecraft.util.text.ChatType;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
@@ -46,6 +48,33 @@ public class CustomUtils implements IUtils {
     public void openHUDEditor() {
         MC.addScheduledTask(() -> MC.displayGuiScreen(new EditHudGui(MC.currentScreen)));
     }
+
+    @Override
+    public void openTitleScreen() {
+        MC.displayGuiScreen(new GuiMainMenu());
+    }
+
+    @Override
+    public void openSinglePlayerMenu() {
+        MC.displayGuiScreen(new GuiWorldSelection(MC.currentScreen));
+    }
+
+    @Override
+    public void openMultiPlayerMenu() {
+        MC.displayGuiScreen(new GuiMultiplayer(MC.currentScreen));
+    }
+
+    @Override
+    public void openRealmsMenu() {
+        RealmsBridge realmsbridge = new RealmsBridge();
+        realmsbridge.switchToRealms(MC.currentScreen);
+    }
+
+    @Override
+    public void openOptionsMenu() {
+        MC.displayGuiScreen(new GuiOptions(MC.currentScreen, MC.gameSettings));
+    }
+
 
     @Override
     public AbstractAccount createAccount(String email, String password, String uuid) throws IOException {

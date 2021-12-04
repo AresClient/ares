@@ -10,6 +10,8 @@ public interface IGUIManager {
 
     void drawBackground();
 
+    void drawPanorama();
+
     int getWidth();
 
     int getHeight();

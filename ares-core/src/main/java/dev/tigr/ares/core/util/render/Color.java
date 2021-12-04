@@ -6,6 +6,8 @@ package dev.tigr.ares.core.util.render;
 public class Color {
     public static final Color BLACK = new Color(0, 0, 0, 0.8f);
     public static final Color ARES_RED = new Color(0.54f, 0.03f, 0.03f, 1);
+    public static final Color ARES_RED_LIGHT = new Color(0.54f, 0.03f, 0.03f, 0.45f);
+    public static final Color ARES_GRAY = new Color(0.098f, 0.098f, 0.098f, 1);
     public static final Color GRAY = new Color(0.5f, 0.5f, 0.5f, 1);
     public static final Color WHITE = new Color(1, 1, 1, 1);
     public static final Color RED = new Color(1, 0, 0, 1);

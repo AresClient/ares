@@ -182,11 +182,11 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     private static Matrix4f getModel() {
-        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
+        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getPositionMatrix();
     }
 
     private static Matrix3f getNormal() {
-        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getNormal();
+        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getNormalMatrix();
     }
 
     private static Vec3f getNormal(float x1, float y1, float z1, float x2, float y2, float z2) {

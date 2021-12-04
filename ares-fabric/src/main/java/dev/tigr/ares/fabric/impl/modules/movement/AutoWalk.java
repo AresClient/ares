@@ -1,7 +1,7 @@
 package dev.tigr.ares.fabric.impl.modules.movement;
 
-import baritone.api.BaritoneAPI;
-import baritone.api.pathing.goals.GoalXZ;
+/*import baritone.api.BaritoneAPI;
+import baritone.api.pathing.goals.GoalXZ;*/
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -19,9 +19,10 @@ public class AutoWalk extends Module {
 
     @Override
     public void onEnable() {
-        if(mode.getValue() == Mode.SMART) startPathing();
+        //if(mode.getValue() == Mode.SMART) startPathing();
     }
 
+    /*
     @Override
     public void onMotion() {
         if(mode.getValue() == Mode.BASIC) {
@@ -79,7 +80,7 @@ public class AutoWalk extends Module {
     private Direction getDirection() {
         int dir = MathHelper.floor((double) (MC.player.getYaw() * 8.0F / 360.0F) + 0.5D) & 7;
         return Direction.values()[dir];
-    }
+    }*/
 
     @Override
     public String getInfo() {

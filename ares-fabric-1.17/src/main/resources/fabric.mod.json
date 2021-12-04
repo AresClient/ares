@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "ares",
+  "version": "${version}",
+
+  "name": "Ares",
+  "description": "Ares is a minecraft cheat client",
+  "authors": [
+    "Tigermouthbear"
+  ],
+  "contact": {
+    "homepage": "https://aresclient.org/"
+  },
+  "environment": "*",
+  "mixins": [
+    "ares.mixins.json",
+    "mixins.baritone.json"
+  ],
+  "suggests": {
+    "flamingo": "*"
+  }
+}

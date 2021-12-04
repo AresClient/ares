@@ -23,7 +23,6 @@
     "render.MixinAbstractClientPlayer",
     "render.MixinEntityRenderer",
     "render.MixinGuiButton",
-    "render.MixinGuiListWorldSelectionEntry",
     "render.MixinGuiMainMenu",
     "render.MixinGuiMultiplayer",
     "render.MixinGuiNewChat",
@@ -37,8 +36,7 @@
     "render.MixinLayerElytra",
     "render.MixinModelPlayer",
     "render.MixinRenderGlobal",
-    "render.MixinRenderLivingBase",
-    "render.MixinServerListEntryNormal"
+    "render.MixinRenderLivingBase"
   ],
   "client": [
     "accessor.PlayerControllerMPAccessor"

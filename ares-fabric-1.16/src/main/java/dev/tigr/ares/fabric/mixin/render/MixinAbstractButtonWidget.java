@@ -2,7 +2,6 @@ package dev.tigr.ares.fabric.mixin.render;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
-import dev.tigr.ares.core.gui.impl.menu.MenuButton;
 import dev.tigr.ares.core.util.render.Color;
 import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -19,28 +18,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(AbstractButtonWidget.class)
 public abstract class MixinAbstractButtonWidget implements Wrapper {
     @Shadow private Text message;
+    @Shadow protected int width;
+    @Shadow protected int height;
+    @Shadow public int x;
+    @Shadow public int y;
 
-    public Text retrieveMessage() {
-        return message;
-    }
+    @Shadow public abstract Text getMessage();
 
-    MenuButton replacement;
+    @Shadow public abstract int getHeight();
 
-    @Inject(method = "<init>", at = @At("RETURN"))
-    public void onInit(int x, int y, int width, int height, Text string, CallbackInfo ci) {
-        replacement = new MenuButton(message.getString());
-        replacement.setX(x);
-        replacement.setY(y);
-        replacement.setWidth(width);
-        replacement.setHeight(height);
-    }
-
-    @Inject(method = "renderButton", at = @At("RETURN"))
+    @Inject(method = "renderButton", at = @At("HEAD"), cancellable = true)
     public void drawButton(MatrixStack matrices, int mouseX, int mouseY, float delta, CallbackInfo ci) {
-        if(ClickGUIMod.INSTANCE.customButtons.getValue()) {
-            RENDERER.drawRect(replacement.getRenderX(), replacement.getRenderY(), replacement.getWidth(), replacement.getHeight(), new Color(0,0,0,1));
-            replacement.setButtonName(message.getString());
-            replacement.draw(mouseX, mouseY, delta);
+        if(ClickGUIMod.shouldRenderCustomMenu()) {
+            RENDERER.drawRect(x, y, width, height, Color.BLACK);
+            RENDERER.drawLineLoop(1, Color.ARES_RED,
+                    x, y,
+                    x + width, y,
+                    x + width, y + height,
+                    x, y + height
+            );
+
+            String text = message.getString();
+            double textHeight =  height / 2D;
+            double textWidth = FONT_RENDERER.getStringWidth(text, textHeight);
+            FONT_RENDERER.drawStringWithCustomHeight(text, x + width / 2D - textWidth / 2D, y + height / 2D - textHeight / 2D, Color.WHITE, textHeight);
+            ci.cancel();
         }
     }
 }

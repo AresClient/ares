@@ -5,7 +5,7 @@ plugins {
 
 version = project.aresFabricVersion
 
-sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_17
 
 dependencies {
     // fabric deps
@@ -33,9 +33,9 @@ dependencies {
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 
     // fabritone
-    implementation "cabaletta:baritone-api-fabric:1.7.0"
-    shadow "cabaletta:baritone-api-fabric:1.7.0"
-    shadow "cabaletta:baritone-standalone-fabric:1.7.0"
+    //implementation "cabaletta:baritone-api-fabric:1.7.0"
+    //shadow "cabaletta:baritone-api-fabric:1.7.0"
+    //shadow "cabaletta:baritone-standalone-fabric:1.7.0"
 }
 
 processResources {
@@ -48,7 +48,7 @@ processResources {
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
-    options.release.set(16)
+    options.release.set(17)
 }
 
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar

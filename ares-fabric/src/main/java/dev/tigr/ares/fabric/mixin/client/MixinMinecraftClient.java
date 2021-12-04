@@ -44,7 +44,6 @@ public class MixinMinecraftClient {
 
     @Inject(method = "getWindowTitle", at = @At("RETURN"), cancellable = true)
     public void getWindowTitle(CallbackInfoReturnable<String> cir) {
-
         cir.setReturnValue(cir.getReturnValue().replaceAll("Minecraft", "Ares " + Ares.VERSION_FULL + " -").replaceAll("\\*", ""));
     }
 

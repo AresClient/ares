@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.impl.util;
 
 import dev.tigr.ares.core.gui.api.GUI;
 import dev.tigr.ares.core.util.IGUIManager;
+import dev.tigr.ares.fabric.impl.render.CustomPanoramaRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
@@ -73,6 +74,11 @@ public class CustomGUIManager extends Screen implements IGUIManager {
     @Override
     public void drawBackground() {
         renderBackground(new MatrixStack());
+    }
+
+    @Override
+    public void drawPanorama() {
+        CustomPanoramaRenderer.ARES_DEFAULT_PANORAMA_RENDERER.draw();
     }
 
     @Override

@@ -17,8 +17,13 @@ public interface IUtils {
 
     void openHUDEditor();
 
-    AbstractAccount createAccount(String email, String password, String uuid) throws IOException;
+    void openTitleScreen();
+    void openSinglePlayerMenu();
+    void openMultiPlayerMenu();
+    void openRealmsMenu();
+    void openOptionsMenu();
 
+    AbstractAccount createAccount(String email, String password, String uuid) throws IOException;
     AbstractAccount createAccount(String email, String password) throws IOException, AuthenticationException;
 
     void shutdown();

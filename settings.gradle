@@ -11,6 +11,6 @@ pluginManagement {
 include "ares-core"
 include "ares-forge"
 include "ares-fabric"
-include "ares-installer"
 include "ares-fabric-1.16"
-
+include "ares-fabric-1.17"
+include "ares-installer"

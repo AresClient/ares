@@ -14,7 +14,7 @@ import static dev.tigr.ares.Wrapper.*;
  */
 public class CustomRenderer implements IRenderer {
     private Matrix4f getModel() {
-        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
+        return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getPositionMatrix();
     }
 
     private void draw() {
