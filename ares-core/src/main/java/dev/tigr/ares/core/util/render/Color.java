@@ -115,6 +115,10 @@ public class Color {
         return this;
     }
 
+    public Color withA(float value) {
+        return new Color(r, g, b, value);
+    }
+
     public int getRGB() {
         return (((int) (getAlpha() * 255 + 0.5) & 0xFF) << 24) |
                 (((int) (getRed() * 255 + 0.5) & 0xFF) << 16) |

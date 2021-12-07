@@ -72,7 +72,7 @@ public class RenderUtils {
 
     public static void cube(AxisAlignedBB box, Color fill1, Color fill2, Color fill3, Color fill4, Color fill5, Color fill6, Color fill7, Color fill8, Color line1, Color line2, Color line3, Color line4, Color line5, Color line6, Color line7, Color line8, float lineThickness, EnumFacing... excludeSides) {
         cubeFill(box, fill1, fill2, fill3, fill4, fill5, fill6, fill7, fill8, excludeSides);
-        cubeLines(box, line1, line2, line3, line4, line5, line6, line7, line8, lineThickness);
+        cubeLines(box, line1, line2, line3, line4, line5, line6, line7, line8, lineThickness, excludeSides);
     }
 
     public static void cubeFill(AxisAlignedBB box, Color color, EnumFacing... excludeSides) {
@@ -80,19 +80,36 @@ public class RenderUtils {
     }
 
     public static void cubeFill(AxisAlignedBB box, Color color1, Color color2, Color color3, Color color4, Color color5, Color color6, Color color7, Color color8, EnumFacing... excludeSides) {
-        Mesh.cube(GL_TRIANGLES, 2, box, color1, color2, color3, color4, color5, color6, color7, color8, excludeSides);
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+
+        Mesh.cube(buffer, box, color1, color2, color3, color4, color5, color6, color7, color8, excludeSides);
+
+        tessellator.draw();
     }
 
-    public static void cubeLines(AxisAlignedBB box, Color color) {
-        cubeLines(box, color, 4);
+    public static void cubeLines(AxisAlignedBB box, Color color, EnumFacing... excludeSides) {
+        cubeLines(box, color, 4, excludeSides);
     }
 
-    public static void cubeLines(AxisAlignedBB box, Color color, float lineThickness) {
-        cubeLines(box, color, color, color, color, color, color, color, color, lineThickness);
+    public static void cubeLines(AxisAlignedBB box, Color color, float lineThickness, EnumFacing... excludeSides) {
+        cubeLines(box, color, color, color, color, color, color, color, color, lineThickness, excludeSides);
     }
 
-    public static void cubeLines(AxisAlignedBB box, Color color1, Color color2, Color color3, Color color4, Color color5, Color color6, Color color7, Color color8, float lineThickness) {
-        Mesh.cube(GL_LINES, lineThickness, box, color1, color2, color3, color4, color5, color6, color7, color8);
+    public static void cubeLines(AxisAlignedBB box, Color color1, Color color2, Color color3, Color color4, Color color5, Color color6, Color color7, Color color8, float lineThickness, EnumFacing... excludeSides) {
+        GlStateManager.disableCull();
+        GlStateManager.glLineWidth(lineThickness);
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+        buffer.begin(GL_LINES, DefaultVertexFormats.POSITION_COLOR);
+
+        Mesh.cube(buffer, box, color1, color2, color3, color4, color5, color6, color7, color8, excludeSides);
+
+        tessellator.draw();
+        GlStateManager.enableCull();
+        GlStateManager.glLineWidth(1);
     }
 
     /**

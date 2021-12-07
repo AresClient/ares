@@ -11,6 +11,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.*;
 
+import static net.minecraft.client.render.VertexFormat.DrawMode.*;
+
 /**
  * @author Tigermouthbear 8/11/20
  */
@@ -61,12 +63,11 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
     }
 
     public static void cubeFill(Box box, Color color1, Color color2, Color color3, Color color4, Color color5, Color color6, Color color7, Color color8, Direction... excludeSides) {
-        Matrix4f model = getModel();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR);
+        buffer.begin(QUADS, VertexFormats.POSITION_COLOR);
 
-        Mesh.cube(buffer, model, box, color1, color2, color3, color4, color5, color6, color7, color8, excludeSides);
+        Mesh.cube(buffer, box, color1, color2, color3, color4, color5, color6, color7, color8, excludeSides);
 
         tessellator.draw();
     }
@@ -84,14 +85,11 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         RenderSystem.lineWidth(lineThickness);
 
-        Matrix4f model = getModel();
-        Matrix3f normal = getNormal();
-        Vec3f normalVec = getNormal((float)box.minX, (float)box.minY, (float)box.minZ, (float)box.maxX, (float)box.maxY, (float)box.maxZ);
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
-        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        buffer.begin(LINES, VertexFormats.LINES);
 
-        Mesh.cube(buffer, model, normal, normalVec, box, color1, color2, color3, color4, color5, color6, color7, color8);
+        Mesh.cube(buffer, box, color1, color2, color3, color4, color5, color6, color7, color8);
 
         tessellator.draw();
         RenderSystem.enableCull();
@@ -109,16 +107,12 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         RenderSystem.lineWidth(weight);
 
-        Matrix4f model = getModel();
-        Matrix3f normal = getNormal();
-
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
-        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        buffer.begin(LINES, VertexFormats.LINES);
 
-        Vec3f normalVec = getNormal((float)vertex1.x, (float)vertex1.y, (float)vertex1.z, (float)vertex2.x, (float)vertex2.y, (float)vertex2.z);
-        Mesh.construct(buffer, model, normal, normalVec, vertex1, vertex2);
+        Mesh.construct(buffer, vertex1, vertex2);
 
         tessellator.draw();
         RenderSystem.enableCull();
@@ -130,19 +124,15 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         RenderSystem.lineWidth(weight);
 
-        Matrix4f model = getModel();
-        Matrix3f normal = getNormal();
-
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
 
-        buffer.begin(VertexFormat.DrawMode.LINES, VertexFormats.LINES);
+        buffer.begin(LINE_STRIP, VertexFormats.LINES);
 
         Vertex prevVert = null;
         for(Vertex vertex: vertices) {
             if(prevVert != null) {
-                Vec3f normalVec = getNormal((float)vertex.x, (float)vertex.y, (float)vertex.z, (float)prevVert.x, (float)prevVert.y, (float)prevVert.z);
-                Mesh.construct(buffer, model, normal, normalVec, prevVert, vertex);
+                Mesh.construct(buffer, prevVert, vertex);
             }
             prevVert = vertex;
         }
@@ -172,7 +162,7 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
                 .rotateX((float) (-Math.toRadians(MC.player.getPitch())))
                 .rotateY((float) (-Math.toRadians(MC.player.getYaw())))
                 .add(MC.cameraEntity.getPos()
-                .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
+                        .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
 
         drawLine(new Vertex(pos, color), new Vertex(eyeVector, color), 2);
     }
@@ -181,17 +171,18 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         return ((CustomRenderStack) RENDER_STACK).getMatrixStack();
     }
 
-    private static Matrix4f getModel() {
+    public static Matrix4f getModel() {
         return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getModel();
     }
 
-    private static Matrix3f getNormal() {
+    public static Matrix3f getNormal() {
         return ((CustomRenderStack) RENDER_STACK).getMatrixStack().peek().getNormal();
     }
 
-    private static Vec3f getNormal(float x1, float y1, float z1, float x2, float y2, float z2) {
+    public static Vec3f getNormal(float x1, float y1, float z1, float x2, float y2, float z2) {
         Vec3f normal = new Vec3f(x2 - x1, y2 - y1, z2 - z1);
         normal.normalize();
         return normal;
     }
 }
+
