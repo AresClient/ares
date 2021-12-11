@@ -1,12 +1,13 @@
 package dev.tigr.ares.fabric.impl.modules.movement;
 
-/*import baritone.api.BaritoneAPI;
-import baritone.api.event.events.ChatEvent;*/
+import baritone.api.BaritoneAPI;
+import baritone.api.event.events.ChatEvent;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
+import dev.tigr.ares.core.util.render.TextColor;
 
 /**
  * @author Tigermouthbear
@@ -24,7 +25,7 @@ public class Baritone extends Module {
     private final Setting<Boolean> renderGoal = register(new BooleanSetting("Render Goal", true));
     private final Setting<Boolean> enterPortal = register(new BooleanSetting("Avoid Portals", false));
 
-    /*public static <T> void executeCommand(String args) {
+    public static <T> void executeCommand(String args) {
         boolean enabled = BaritoneAPI.getSettings().chatControl.value;
         BaritoneAPI.getSettings().chatControl.value = true;
 
@@ -47,7 +48,7 @@ public class Baritone extends Module {
         BaritoneAPI.getSettings().freeLook.value = freeLook.getValue();
         BaritoneAPI.getSettings().renderGoal.value = renderGoal.getValue();
         BaritoneAPI.getSettings().enterPortal.value = enterPortal.getValue();
-    }*/
+    }
 
     @Override
     public void onDisable() {

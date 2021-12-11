@@ -7,6 +7,7 @@ import dev.tigr.ares.core.util.AbstractAccount;
 import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
+import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
@@ -32,7 +33,7 @@ public class CustomUtils implements IUtils {
 
     @Override
     public void executeBaritoneCommand(String string) {
-        //Baritone.executeCommand(string);
+        Baritone.executeCommand(string);
     }
 
     @Override
