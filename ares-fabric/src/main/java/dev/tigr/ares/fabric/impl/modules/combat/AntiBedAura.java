@@ -1,5 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.combat;
 
+import dev.tigr.ares.core.feature.BetaOnly;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -18,6 +19,7 @@ import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS
 /**
  * @author Tigermouthbear
  */
+@BetaOnly
 @Module.Info(name = "AntiBedAura", description = "automatically places string in hitbox when in hole to prevent beds", category = Category.COMBAT)
 public class AntiBedAura extends Module {
     private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", true));

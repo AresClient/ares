@@ -3,6 +3,7 @@ package dev.tigr.ares.fabric.mixin.render;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.gui.impl.menu.SelectionMenuGUI;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.util.math.MatrixStack;
@@ -38,5 +39,13 @@ public class MixinSelectWorldScreen extends Screen implements Wrapper {
     public boolean mouseReleased(double mouseX, double mouseY, int mouseButton) {
         if(ClickGUIMod.shouldRenderCustomMenu()) SELECTION_MENU.mouseReleased((int) mouseX, (int) mouseY, mouseButton);
         return super.mouseReleased(mouseX, mouseY, mouseButton);
+    }
+
+    @Override
+    public void resize(MinecraftClient client, int width, int height) {
+        Screen screen = (Screen) GUI_MANAGER;
+        screen.width = width;
+        screen.height = height;
+        super.resize(client, width, height);
     }
 }

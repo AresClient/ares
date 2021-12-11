@@ -1,5 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.render;
 
+import dev.tigr.ares.core.feature.BetaOnly;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.fabric.event.render.CrosshairRenderEvent;
@@ -17,6 +18,7 @@ import net.minecraft.util.math.BlockPos;
 /**
  * @author Tigermouthbear 1/4/21
  */
+@BetaOnly
 @Module.Info(name = "DebugCrosshair", description = "Show f3 crosshair", category = Category.RENDER)
 public class DebugCrosshair extends Module {
     @EventHandler
