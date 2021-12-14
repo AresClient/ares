@@ -44,6 +44,7 @@ public class ChestESP extends Module {
     private final Setting<Boolean> shulker = register(new BooleanSetting("Shulkers", true));
     private final Setting<Boolean> other = register(new BooleanSetting("Other", true));
     private final Setting<Boolean> lump = register(new BooleanSetting("Lump Together", true));
+    private final Setting<ShouldDraw> shouldDraw = register(new EnumSetting<>("Draw", ShouldDraw.BOTH));
 
     private final Setting<ColorMenu> colorMenu = register(new EnumSetting<>("Color Menu", ColorMenu.CHEST));
     private final Setting<Float> cRed = register(new FloatSetting("C. Red", ColorMenu.CHEST.getFillColor().getRed(), 0, 1)).setVisibility(() -> colorMenu.getValue() == ColorMenu.CHEST);
@@ -98,6 +99,8 @@ public class ChestESP extends Module {
         }
     }
 
+    private enum ShouldDraw { BOTH, QUADS, LINES }
+
     List<BlockPos> tilePoses = new ArrayList<>();
     Box bb;
     Direction[] ignoreDirections = new Direction[6];
@@ -107,6 +110,11 @@ public class ChestESP extends Module {
 
     @Override
     public void onTick() {
+        ColorMenu.CHEST.setColor(cRed.getValue(), cGreen.getValue(), cBlue.getValue(), cFAlpha.getValue(), cLAlpha.getValue());
+        ColorMenu.ENDER_CHEST.setColor(eRed.getValue(), eGreen.getValue(), eBlue.getValue(), eFAlpha.getValue(), eLAlpha.getValue());
+        ColorMenu.OTHER.setColor(oRed.getValue(), oGreen.getValue(), oBlue.getValue(), oFAlpha.getValue(), oLAlpha.getValue());
+        ColorMenu.SHULKER.setColor(sRed.getValue(), sGreen.getValue(), sBlue.getValue(), sFAlpha.getValue(), sLAlpha.getValue());
+
         tilePoses.clear();
         for(BlockEntity blockEntity: WorldUtils.getBlockEntities())
             tilePoses.add(blockEntity.getPos());
@@ -115,22 +123,32 @@ public class ChestESP extends Module {
 
     @Override
     public void onRender3d() {
-        if(colorMenu.getValue() == ColorMenu.CHEST)
-            ColorMenu.CHEST.setColor(cRed.getValue(), cGreen.getValue(), cBlue.getValue(), cFAlpha.getValue(), cLAlpha.getValue());
-        if(colorMenu.getValue() == ColorMenu.ENDER_CHEST)
-            ColorMenu.ENDER_CHEST.setColor(eRed.getValue(), eGreen.getValue(), eBlue.getValue(), eFAlpha.getValue(), eLAlpha.getValue());
-        if(colorMenu.getValue() == ColorMenu.OTHER)
-            ColorMenu.OTHER.setColor(oRed.getValue(), oGreen.getValue(), oBlue.getValue(), oFAlpha.getValue(), oLAlpha.getValue());
-        if(colorMenu.getValue() == ColorMenu.SHULKER)
-            ColorMenu.SHULKER.setColor(sRed.getValue(), sGreen.getValue(), sBlue.getValue(), sFAlpha.getValue(), sLAlpha.getValue());
-
         RenderUtils.prepare3d();
+
+        switch(shouldDraw.getValue()) {
+            case QUADS:
+                drawQuads();
+                break;
+            case LINES:
+                drawLines();
+                break;
+            default:
+                drawQuads();
+                drawLines();
+        }
+
+        RenderUtils.end3d();
+    }
+
+    private void drawQuads() {
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         buffer.begin(QUADS, VertexFormats.POSITION_COLOR);
         fillBuffer();
         tessellator.draw();
+    }
 
+    private void drawLines() {
         RenderSystem.disableCull();
         RenderSystem.setShader(GameRenderer::getRenderTypeLinesShader);
         RenderSystem.lineWidth(2);
@@ -141,7 +159,6 @@ public class ChestESP extends Module {
 
         RenderSystem.lineWidth(1);
         RenderSystem.enableCull();
-        RenderUtils.end3d();
     }
 
     private void fillBuffer() {
