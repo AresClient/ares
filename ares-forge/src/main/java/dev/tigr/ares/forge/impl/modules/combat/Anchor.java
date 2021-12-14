@@ -1,10 +1,10 @@
 package dev.tigr.ares.forge.impl.modules.combat;
 
+import dev.tigr.ares.core.event.movement.MovePlayerEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
-import dev.tigr.ares.forge.event.events.movement.MovePlayerEvent;
 import dev.tigr.ares.forge.utils.HoleType;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
@@ -26,12 +26,12 @@ public class Anchor extends Module {
     @EventHandler
     public EventListener<MovePlayerEvent> movePlayerEvent = new EventListener<>(event -> {
         // if over hole
-        if(event.getMoverType() == MoverType.SELF && MC.player != null && MC.player.rotationPitch > cutoff.getValue()
+        if(event.getMoverType().equals("SELF") && MC.player != null && MC.player.rotationPitch > cutoff.getValue()
                 && isOverHole(MC.player.getPositionVector()) && MC.player.motionY <= 0.1) {
-            event.setShouldDo(true);
             // correct movement
             event.set(getBounds(MC.player.posX) * 0.2, isCenter(MC.player.getPositionVector()) ? -speed.getValue() : event.getY(), getBounds(MC.player.posZ) * 0.2);
-        } else event.setShouldDo(false);
+            event.setCancelled(true);
+        }
     });
 
     private boolean isOverHole(Vec3d vec3d) {

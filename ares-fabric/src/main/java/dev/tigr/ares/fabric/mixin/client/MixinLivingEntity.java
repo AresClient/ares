@@ -1,6 +1,8 @@
 package dev.tigr.ares.fabric.mixin.client;
 
+import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.fabric.event.client.LivingDeathEvent;
 import dev.tigr.ares.fabric.event.client.UpdateLivingEntityEvent;
 import dev.tigr.ares.fabric.event.movement.ElytraMoveEvent;
@@ -21,7 +23,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * @author Tigermouthbear 9/26/20
  */
 @Mixin(LivingEntity.class)
-public class MixinLivingEntity {
+public class MixinLivingEntity implements Wrapper {
     private final LivingEntity entity = ((LivingEntity) (Object) this);
 
     @Inject(method = "onDeath", at = @At("HEAD"))
@@ -48,5 +50,11 @@ public class MixinLivingEntity {
     @Inject(method = "hasStatusEffect", at = @At("RETURN"), cancellable = true)
     public void hasStatusEffect(StatusEffect effect, CallbackInfoReturnable<Boolean> cir) {
         if(Ares.EVENT_MANAGER.post(new StatusEffectEvent(entity, effect)).isCancelled()) cir.setReturnValue(false);
+    }
+
+    @Inject(method = "jump", at = @At("HEAD"), cancellable = true)
+    public void onJump(CallbackInfo ci) {
+        if(entity != MC.player) return;
+        if(Ares.EVENT_MANAGER.post(new PlayerJumpEvent()).isCancelled()) ci.cancel();
     }
 }

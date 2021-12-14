@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.AccountManager;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.util.interfaces.ISelf;
 import dev.tigr.ares.core.setting.SettingsManager;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
@@ -49,6 +50,8 @@ public abstract class Ares {
     public static AbstractFontRenderer FONT_RENDERER = null;
     public static ITextureManager TEXTURE_MANAGER = null;
 
+    public static ISelf SELF = null;
+
     public static final GlyphFont MONO_FONT = new GlyphFont("/assets/ares/font/mono.ttf", 64);
     public static final GlyphFont ARIAL_FONT = new GlyphFont("/assets/ares/font/arial.ttf", 64);
 
@@ -85,6 +88,8 @@ public abstract class Ares {
             else if(RENDER_STACK == null) error("Missing renderStack! Shutting down...");
             else if(FONT_RENDERER == null) error("Missing fontRenderer! Shutting down...");
             else if(TEXTURE_MANAGER == null) error("Missing textureManager! Shutting down...");
+
+            else if(SELF == null) error("Missing Self! Shutting down...");
 
             // complete initialization
             ares.initMain();

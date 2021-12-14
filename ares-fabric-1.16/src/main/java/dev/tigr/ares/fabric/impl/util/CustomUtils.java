@@ -8,6 +8,8 @@ import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.fabric.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.fabric.impl.modules.movement.Baritone;
+import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
+import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen;
 import net.minecraft.client.gui.screen.options.OptionsScreen;
@@ -84,5 +86,10 @@ public class CustomUtils implements IUtils {
     @Override
     public void shutdown() {
         MC.scheduleStop();
+    }
+
+    @Override
+    public float getRenderTickTime() {
+        return ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).getTickTime();
     }
 }

@@ -93,4 +93,9 @@ public class CustomUtils implements IUtils {
     public void shutdown() {
         MC.shutdown();
     }
+
+    @Override
+    public float getRenderTickTime() {
+        return MC.getRenderPartialTicks();
+    }
 }

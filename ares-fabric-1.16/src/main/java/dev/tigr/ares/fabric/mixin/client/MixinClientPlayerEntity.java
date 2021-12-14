@@ -3,8 +3,11 @@ package dev.tigr.ares.fabric.mixin.client;
 import com.mojang.authlib.GameProfile;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.event.movement.MovePlayerEvent;
+import dev.tigr.ares.core.event.movement.SetPlayerSprintEvent;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.feature.module.modules.movement.AutoSprint;
 import dev.tigr.ares.fabric.event.movement.*;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.ClientPlayerEntityAccessor;
@@ -62,12 +65,21 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
         return ((EntityAccessor) clientPlayerEntity).isInNetherPortal() && !Ares.EVENT_MANAGER.post(new PortalChatEvent()).isCancelled();
     }
 
-    @Redirect(method = "move", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;move(Lnet/minecraft/entity/MovementType;Lnet/minecraft/util/math/Vec3d;)V"))
-    public void movePlayer(AbstractClientPlayerEntity abstractClientPlayerEntity, MovementType type, Vec3d movement) {
-        MovePlayerEvent event = Ares.EVENT_MANAGER.post(new MovePlayerEvent(type, movement.x, movement.y, movement.z));
-        if(!event.isCancelled()) {
-            if(event.getShouldDo()) super.move(type, new Vec3d(event.getX(), event.getY(), event.getZ()));
-            else super.move(type, movement);
+    @Inject(method = "move", at = @At("HEAD"), cancellable = true)
+    public void onMovePlayer(MovementType movementType, Vec3d movement, CallbackInfo ci) {
+        MovePlayerEvent event = Ares.EVENT_MANAGER.post(new MovePlayerEvent(movementType.name(), movement.x, movement.y, movement.z));
+        if(event.isCancelled()) {
+            super.move(movementType, new Vec3d(event.getX(), event.getY(), event.getZ()));
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "setSprinting", at = @At("HEAD"), cancellable = true)
+    public void onSetSprint(boolean sprinting, CallbackInfo ci) {
+        SetPlayerSprintEvent event = Ares.EVENT_MANAGER.post(new SetPlayerSprintEvent(sprinting));
+        if(event.isCancelled()) {
+            super.setSprinting(event.isSprinting());
+            ci.cancel();
         }
     }
 
@@ -83,12 +95,12 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
             ci.cancel();
 
             //Modified packets
-            boolean bl = MC.player.isSprinting();
+            boolean bl = AutoSprint.INSTANCE.getEnabled() || MC.player.isSprinting();
 
-            if(bl != ((ClientPlayerEntityAccessor) MC.player).lastSneaking()) {
+            if(bl != ((ClientPlayerEntityAccessor) MC.player).lastSprinting()) {
                 ClientCommandC2SPacket.Mode mode = bl ? ClientCommandC2SPacket.Mode.START_SPRINTING : ClientCommandC2SPacket.Mode.STOP_SPRINTING;
                 MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, mode));
-                ((ClientPlayerEntityAccessor) MC.player).lastSneaking(bl);
+                ((ClientPlayerEntityAccessor) MC.player).lastSprinting(bl);
             }
 
             boolean bl2 = MC.player.isSneaking();
@@ -152,11 +164,4 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
         }
     }
     /* Rotations End */
-
-    @Override
-    public void jump() {
-        PlayerJumpEvent event = new PlayerJumpEvent();
-        Ares.EVENT_MANAGER.post(event);
-        if(!event.isCancelled()) super.jump();
-    }
 }

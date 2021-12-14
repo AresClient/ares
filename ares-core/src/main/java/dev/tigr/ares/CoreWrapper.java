@@ -1,6 +1,7 @@
 package dev.tigr.ares;
 
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.util.interfaces.ISelf;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
 import dev.tigr.ares.core.util.IUtils;
@@ -20,4 +21,6 @@ public interface CoreWrapper {
     IRenderStack RENDER_STACK = Ares.RENDER_STACK;
     AbstractFontRenderer FONT_RENDERER = Ares.FONT_RENDERER;
     ITextureManager TEXTURE_MANAGER = Ares.TEXTURE_MANAGER;
+
+    ISelf SELF = Ares.SELF;
 }

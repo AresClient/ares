@@ -27,4 +27,6 @@ public interface IUtils {
     AbstractAccount createAccount(String email, String password) throws IOException, AuthenticationException;
 
     void shutdown();
+
+    float getRenderTickTime();
 }

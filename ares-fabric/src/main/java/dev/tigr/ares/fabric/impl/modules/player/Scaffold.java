@@ -1,5 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.player;
 
+import dev.tigr.ares.core.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -8,7 +9,6 @@ import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.TextColor;
-import dev.tigr.ares.fabric.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.fabric.event.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
 import dev.tigr.ares.fabric.utils.WorldUtils;

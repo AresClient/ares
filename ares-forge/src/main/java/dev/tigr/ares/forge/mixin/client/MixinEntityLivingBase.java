@@ -1,6 +1,8 @@
 package dev.tigr.ares.forge.mixin.client;
 
+import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.forge.event.events.movement.ElytraMoveEvent;
 import dev.tigr.ares.forge.event.events.movement.SmoothElytraEvent;
 import dev.tigr.ares.forge.event.events.movement.WaterMoveEvent;
@@ -13,13 +15,14 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
  * @author Tigermouthbear
  */
 @Mixin(EntityLivingBase.class)
-public abstract class MixinEntityLivingBase {
+public abstract class MixinEntityLivingBase implements Wrapper {
     private final EntityLivingBase entity = (EntityLivingBase) (Object) this;
 
     @Redirect(method = "travel", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/EntityLivingBase;move(Lnet/minecraft/entity/MoverType;DDD)V", ordinal = 0))
@@ -42,5 +45,11 @@ public abstract class MixinEntityLivingBase {
     @Inject(method = "isPotionActive", at = @At("RETURN"), cancellable = true)
     public void isPotionActive(Potion potionIn, CallbackInfoReturnable<Boolean> cir) {
         if(Ares.EVENT_MANAGER.post(new StatusEffectEvent(entity, potionIn)).isCancelled()) cir.setReturnValue(false);
+    }
+
+    @Inject(method = "jump", at = @At("HEAD"), cancellable = true)
+    public void onJump(CallbackInfo ci) {
+        if(entity != MC.player) return;
+        if(Ares.EVENT_MANAGER.post(new PlayerJumpEvent()).isCancelled()) ci.cancel();
     }
 }

@@ -4,6 +4,7 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.feature.module.modules.movement.*;
 import dev.tigr.ares.fabric.impl.commands.*;
 import dev.tigr.ares.fabric.impl.modules.combat.*;
 import dev.tigr.ares.fabric.impl.modules.exploit.*;
@@ -18,6 +19,7 @@ import dev.tigr.ares.fabric.impl.render.CustomRenderer;
 import dev.tigr.ares.fabric.impl.render.CustomTextureManager;
 import dev.tigr.ares.fabric.impl.util.CustomGUIManager;
 import dev.tigr.ares.fabric.impl.util.CustomKeyboardManager;
+import dev.tigr.ares.fabric.impl.util.CustomSelf;
 import dev.tigr.ares.fabric.impl.util.CustomUtils;
 
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ public class AresMod extends Ares {
         RENDER_STACK = new CustomRenderStack();
         FONT_RENDERER = new CustomFontRenderer(MONO_FONT);
         TEXTURE_MANAGER = new CustomTextureManager();
+        SELF = new CustomSelf();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package dev.tigr.ares.fabric.event.movement;
+package dev.tigr.ares.core.event.movement;
 
 import dev.tigr.simpleevents.event.Event;
 

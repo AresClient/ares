@@ -4,6 +4,7 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.feature.module.modules.movement.*;
 import dev.tigr.ares.forge.event.ForgeEvents;
 import dev.tigr.ares.forge.impl.commands.*;
 import dev.tigr.ares.forge.impl.modules.combat.*;
@@ -19,6 +20,7 @@ import dev.tigr.ares.forge.impl.render.CustomRenderer;
 import dev.tigr.ares.forge.impl.render.CustomTextureManager;
 import dev.tigr.ares.forge.impl.util.CustomGUIManager;
 import dev.tigr.ares.forge.impl.util.CustomKeyboardManager;
+import dev.tigr.ares.forge.impl.util.CustomSelf;
 import dev.tigr.ares.forge.impl.util.CustomUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -52,6 +54,7 @@ public class AresMod extends Ares {
         RENDER_STACK = new CustomRenderStack();
         FONT_RENDERER = new CustomFontRenderer(MONO_FONT);
         TEXTURE_MANAGER = new CustomTextureManager();
+        SELF = new CustomSelf();
     }
 
     @Override
