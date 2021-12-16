@@ -50,9 +50,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /**
  * @author Tigermouthbear
  */
@@ -146,14 +143,8 @@ public class CrystalAura extends Module {
     }
 
     @Override
-    public void onEnable() {
-        HOTBAR_TRACKER.connect();
-    }
-
-    @Override
     public void onDisable() {
         ROTATIONS.setCompletedAction(key, true);
-        HOTBAR_TRACKER.disconnect();
     }
 
     @Override

@@ -2,6 +2,7 @@ package dev.tigr.ares.fabric.utils.render;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.core.util.render.Vertex;
 import dev.tigr.ares.fabric.mixin.accessors.BufferBuilderAccessor;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.VertexFormat;

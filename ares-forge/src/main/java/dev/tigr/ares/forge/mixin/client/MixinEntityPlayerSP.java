@@ -4,13 +4,13 @@ import com.mojang.authlib.GameProfile;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.movement.MovePlayerEvent;
+import dev.tigr.ares.core.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.core.event.movement.SetPlayerSprintEvent;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.feature.module.modules.movement.AutoSprint;
 import dev.tigr.ares.core.util.math.doubles.V3D;
 import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
-import dev.tigr.ares.forge.event.events.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.forge.event.events.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.forge.event.events.player.PlayerDismountEvent;
 import dev.tigr.ares.forge.impl.modules.player.Freecam;
@@ -132,7 +132,7 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer implement
 
     @Inject(method = "onUpdateWalkingPlayer", at = @At("HEAD"), cancellable = true)
     public void onSendMovementPackets(CallbackInfo ci) {
-        SendMovementPacketsEvent event = new SendMovementPacketsEvent.Pre(getPositionVector(), onGround);
+        SendMovementPacketsEvent event = new SendMovementPacketsEvent.Pre(new V3D(getPositionVector().x, getPositionVector().y, getPositionVector().z), onGround);
         if(Ares.EVENT_MANAGER.post(event).isCancelled()) {
             if(!event.isModifying()) {
                 ci.cancel();

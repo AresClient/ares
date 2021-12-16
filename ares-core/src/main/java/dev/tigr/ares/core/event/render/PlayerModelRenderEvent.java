@@ -1,21 +1,20 @@
-package dev.tigr.ares.fabric.event.render;
+package dev.tigr.ares.core.event.render;
 
 import dev.tigr.simpleevents.event.Event;
-import net.minecraft.entity.LivingEntity;
 
 public class PlayerModelRenderEvent extends Event {
-    LivingEntity livingEntity;
+    int entity;
     float headPitch, headYaw, bodyYaw;
 
-    public PlayerModelRenderEvent(LivingEntity livingEntity) {
-        this.livingEntity = livingEntity;
-        this.headPitch = livingEntity.pitch;
-        this.headYaw = livingEntity.headYaw;
-        this.bodyYaw = livingEntity.bodyYaw;
+    public PlayerModelRenderEvent(int entity, float headPitch, float headYaw, float bodyYaw) {
+        this.entity = entity;
+        this.headPitch = headPitch;
+        this.headYaw = headYaw;
+        this.bodyYaw = bodyYaw;
     }
 
-    public LivingEntity getLivingEntity() {
-        return livingEntity;
+    public int getEntity() {
+        return entity;
     }
 
     public float getHeadPitch() {

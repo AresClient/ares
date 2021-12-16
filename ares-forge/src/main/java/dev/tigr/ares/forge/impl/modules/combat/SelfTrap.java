@@ -18,9 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import java.util.ArrayList;
 import java.util.List;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /**
  * @author Makrennel
  */
@@ -43,15 +40,9 @@ public class SelfTrap extends Module {
     boolean hasSnapped = false;
 
     @Override
-    public void onEnable() {
-        HOTBAR_TRACKER.connect();
-    }
-
-    @Override
     public void onDisable() {
         if(rotate.getValue()) ROTATIONS.setCompletedAction(key, true);
         hasSnapped = false;
-        HOTBAR_TRACKER.disconnect();
     }
 
     @Override

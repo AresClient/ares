@@ -1,6 +1,7 @@
 package dev.tigr.ares.fabric.utils.entity;
 
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.util.math.floats.V2F;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
@@ -25,9 +26,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.*;
 
 import java.util.List;
-
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
 
 /**
  * Split from WorldUtils 10/17/21 - Makrennel
@@ -77,14 +75,14 @@ public class SelfUtils implements Wrapper {
 
     /** Calculation */
 
-    public static Vec2f calculateLookAtVector(double x, double y, double z) {
+    public static V2F calculateLookAtVector(double x, double y, double z) {
         double[] rotation = PlayerUtils.calculateLookFromPlayer(x, y, z, getPlayer());
-        return new Vec2f((float) rotation[0], (float) rotation[1]);
+        return new V2F((float) rotation[0], (float) rotation[1]);
     }
 
-    public static Vec2f calculateLookAtVector(Vec3d pos) {
+    public static V2F calculateLookAtVector(Vec3d pos) {
         double[] rotation = PlayerUtils.calculateLookFromPlayer(pos.x, pos.y, pos.z, getPlayer());
-        return new Vec2f((float) rotation[0], (float) rotation[1]);
+        return new V2F((float) rotation[0], (float) rotation[1]);
     }
 
     public static double[] calculateLookAt(double x, double y, double z) {
@@ -326,14 +324,13 @@ public class SelfUtils implements Wrapper {
                         .wrapDegrees(pitch - MC.player.pitch)};
 
         if(rotate)
-            if(!ROTATIONS.setCurrentRotation(new Vec2f(rotations[0], rotations[1]), rotationKey, rotationPriority, instantRotation, instantBypassesCurrent))
+            if(!ROTATIONS.setCurrentRotation(new V2F(rotations[0], rotations[1]), rotationKey, rotationPriority, instantRotation, instantBypassesCurrent))
                 return false;
 
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
 
         int oldSlot = MC.player.inventory.selectedSlot;
         if(slot != -1) {
-            HOTBAR_TRACKER.connect();
             HOTBAR_TRACKER.setSlot(slot, packetPlace, oldSlot);
             // When packet placing we must send an update slot packet first
             if(packetPlace) HOTBAR_TRACKER.sendSlot();
@@ -347,7 +344,6 @@ public class SelfUtils implements Wrapper {
         if(slot != -1) {
             if(!packetPlace) MC.player.inventory.selectedSlot = oldSlot;
             HOTBAR_TRACKER.reset();
-            HOTBAR_TRACKER.disconnect();
         }
 
         MC.player.networkHandler.sendPacket(new ClientCommandC2SPacket(MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));

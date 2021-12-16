@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.feature.module.modules.movement.*;
+import dev.tigr.ares.core.feature.module.modules.player.*;
 import dev.tigr.ares.forge.event.ForgeEvents;
 import dev.tigr.ares.forge.impl.commands.*;
 import dev.tigr.ares.forge.impl.modules.combat.*;
@@ -18,10 +19,7 @@ import dev.tigr.ares.forge.impl.render.CustomFontRenderer;
 import dev.tigr.ares.forge.impl.render.CustomRenderStack;
 import dev.tigr.ares.forge.impl.render.CustomRenderer;
 import dev.tigr.ares.forge.impl.render.CustomTextureManager;
-import dev.tigr.ares.forge.impl.util.CustomGUIManager;
-import dev.tigr.ares.forge.impl.util.CustomKeyboardManager;
-import dev.tigr.ares.forge.impl.util.CustomSelf;
-import dev.tigr.ares.forge.impl.util.CustomUtils;
+import dev.tigr.ares.forge.impl.util.*;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -55,11 +53,17 @@ public class AresMod extends Ares {
         FONT_RENDERER = new CustomFontRenderer(MONO_FONT);
         TEXTURE_MANAGER = new CustomTextureManager();
         SELF = new CustomSelf();
+        INV = new CustomInv();
+        PACKET = new CustomPacket();
+        ENTITY = new CustomEntity();
     }
 
     @Override
     protected List<Class<? extends Module>> getModules() {
         List<Class<? extends Module>> modules = new ArrayList<>(Arrays.asList(
+                // For what ever reason forge version doesn't like using core static modules if it wasn't instantiated before other ones
+//                RotationManager.class,
+
                 // combat
                 Anchor.class,
                 AntiDeathScreen.class,
@@ -162,7 +166,7 @@ public class AresMod extends Ares {
                 NoForceLook.class,
                 PacketMine.class,
                 RotationLock.class,
-                RotationManager.class,
+                Rotations.class,
                 Scaffold.class,
 
                 // render

@@ -23,8 +23,6 @@ import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-
 /**
  * @author Makrennel
  */
@@ -128,7 +126,7 @@ public class Burrow extends Module {
         if(!fakeJump.getValue() && useTimer.getValue()) {
             ReflectionHelper.setPrivateValue(net.minecraft.util.Timer.class, ReflectionHelper.getPrivateValue(Minecraft.class, MC, "timer", "field_71428_T"), 1000.0F / 20.0F, "tickLength", "field_194149_e");
         }
-        
+
         ROTATIONS.setCompletedAction(key, true);
     }
     public void run() {

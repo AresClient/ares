@@ -4,11 +4,13 @@ import com.mojang.authlib.GameProfile;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.event.movement.MovePlayerEvent;
+import dev.tigr.ares.core.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.core.event.movement.SetPlayerSprintEvent;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.feature.module.modules.movement.AutoSprint;
 import dev.tigr.ares.core.util.Priorities;
+import dev.tigr.ares.core.util.math.doubles.V3D;
 import dev.tigr.ares.fabric.event.movement.*;
 import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.ClientPlayerEntityAccessor;
@@ -86,7 +88,7 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
     /* Rotations Start */
     @Inject(method = "sendMovementPackets", at = @At("HEAD"), cancellable = true)
     public void onSendMovementPackets(CallbackInfo ci) {
-        SendMovementPacketsEvent event = new SendMovementPacketsEvent.Pre(getPos(), onGround);
+        SendMovementPacketsEvent event = new SendMovementPacketsEvent.Pre(new V3D(getPos().x, getPos().y, getPos().z), onGround);
         if(Ares.EVENT_MANAGER.post(event).isCancelled()) {
             if(!event.isModifying()) {
                 ci.cancel();

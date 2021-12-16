@@ -26,8 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-
 /**
  * @author Tigermouthbear
  * Ported to Fabric by Makrennel 5/13/21

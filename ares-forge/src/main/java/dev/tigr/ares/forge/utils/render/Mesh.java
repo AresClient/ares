@@ -2,6 +2,7 @@ package dev.tigr.ares.forge.utils.render;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.core.util.render.Vertex;
 import dev.tigr.ares.forge.mixin.accessor.BufferBuilderAccessor;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.util.EnumFacing;

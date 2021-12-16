@@ -21,9 +21,6 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /**
  * @author Tigermouthbear
  * ported to Fabric by Hoosiers
@@ -192,7 +189,6 @@ public class Scaffold extends Module {
             }
         }
 
-        HOTBAR_TRACKER.connect();
         HOTBAR_TRACKER.setSlot(newSlot, true, -1);
         int blocksPlaced = 0;
         for(BlockPos x: blocks) {
@@ -203,6 +199,5 @@ public class Scaffold extends Module {
             }
         }
         HOTBAR_TRACKER.reset();
-        HOTBAR_TRACKER.disconnect();
     }
 }

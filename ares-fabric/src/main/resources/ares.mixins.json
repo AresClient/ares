@@ -30,6 +30,7 @@
     "accessors.ShaderEffectAccessor",
     "accessors.SignEditScreenAccessor",
     "accessors.SoundManagerAccessor",
+    "accessors.UpdateSelectedSlotC2SPacketAccessor",
     "accessors.WorldRendererAccessor",
     "client.MixinBlock",
     "client.MixinBoatEntity",

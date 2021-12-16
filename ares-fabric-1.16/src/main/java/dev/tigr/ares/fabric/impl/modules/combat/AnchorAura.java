@@ -42,7 +42,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
 import static dev.tigr.ares.fabric.utils.MathUtils.getDamage;
 
 /**

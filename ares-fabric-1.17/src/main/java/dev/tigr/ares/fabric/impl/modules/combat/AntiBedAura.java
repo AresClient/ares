@@ -14,8 +14,6 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-
 /**
  * @author Tigermouthbear
  */

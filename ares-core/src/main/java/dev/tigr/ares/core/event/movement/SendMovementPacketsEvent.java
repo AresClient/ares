@@ -1,33 +1,33 @@
-package dev.tigr.ares.fabric.event.movement;
+package dev.tigr.ares.core.event.movement;
 
+import dev.tigr.ares.core.util.math.doubles.V3D;
+import dev.tigr.ares.core.util.math.floats.V2F;
 import dev.tigr.simpleevents.event.Event;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 
 public class SendMovementPacketsEvent extends Event {
-    private Vec3d pos;
-    protected Vec2f rotation;
+    private V3D pos;
+    protected V2F rotation;
     private boolean onGround;
     private boolean modifying = false;
 
-    public Vec3d getPos()
+    public V3D getPos()
     {
         return pos;
     }
 
-    public Vec2f getRotation()
+    public V2F getRotation()
     {
         return rotation;
     }
 
     public float getYaw()
     {
-        return rotation.x;
+        return rotation.a;
     }
 
     public float getPitch()
     {
-        return rotation.y;
+        return rotation.b;
     }
 
     public boolean isOnGround()
@@ -35,12 +35,12 @@ public class SendMovementPacketsEvent extends Event {
         return onGround;
     }
 
-    public void setPos(Vec3d pos)
+    public void setPos(V3D pos)
     {
         this.pos = pos;
     }
 
-    public void setRotation(Vec2f rotation) {
+    public void setRotation(V2F rotation) {
         this.modifying = true;
         this.rotation = rotation;
     }
@@ -48,19 +48,19 @@ public class SendMovementPacketsEvent extends Event {
     public void setRotation(float[] rotation)
     {
         this.modifying = true;
-        this.rotation = new Vec2f(rotation[0], rotation[1]);
+        this.rotation = new V2F(rotation[0], rotation[1]);
     }
 
     public void setYaw(float yaw)
     {
         this.modifying = true;
-        this.rotation = new Vec2f(yaw, rotation.y);
+        this.rotation = new V2F(yaw, rotation.b);
     }
 
     public void setPitch(float pitch)
     {
         this.modifying = true;
-        this.rotation = new Vec2f(rotation.x, pitch);
+        this.rotation = new V2F(rotation.a, pitch);
     }
 
     public void setOnGround(boolean onGround)
@@ -73,23 +73,23 @@ public class SendMovementPacketsEvent extends Event {
     }
 
     public static class Pre extends SendMovementPacketsEvent {
-        public Pre(Vec3d pos, boolean onGround) {
+        public Pre(V3D pos, boolean onGround) {
             setPos(pos);
             setOnGround(onGround);
         }
     }
 
     public static class Post extends SendMovementPacketsEvent {
-        public Post(Vec2f rotation) {
+        public Post(V2F rotation) {
             this.rotation = rotation;
         }
 
         public Post(float yaw, float pitch) {
-            this.rotation = new Vec2f(yaw, pitch);
+            this.rotation = new V2F(yaw, pitch);
         }
 
         public Post(float[] rotation) {
-            this.rotation = new Vec2f(rotation[0], rotation[1]);
+            this.rotation = new V2F(rotation[0], rotation[1]);
         }
     }
 }

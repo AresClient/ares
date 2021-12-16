@@ -8,7 +8,7 @@ import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.fabric.utils.TrajectoryUtils;
 import dev.tigr.ares.fabric.utils.render.RenderUtils;
-import dev.tigr.ares.fabric.utils.render.Vertex;
+import dev.tigr.ares.core.util.render.Vertex;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;

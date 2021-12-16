@@ -1,5 +1,6 @@
 package dev.tigr.ares.fabric.impl.modules.player;
 
+import dev.tigr.ares.core.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
@@ -7,7 +8,6 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
 import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
-import dev.tigr.ares.fabric.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
 import dev.tigr.ares.fabric.utils.CopiedOtherClientPlayerEntity;
 import dev.tigr.ares.fabric.utils.entity.EntityUtils;

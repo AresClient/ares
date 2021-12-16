@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-
 /**
  * @author Tigermouthbear
  */

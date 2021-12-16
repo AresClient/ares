@@ -20,9 +20,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /**
  * @author Tigermouthbear
  */
@@ -42,14 +39,8 @@ public class AutoTrap extends Module {
     int blocksPlaced = 0;
 
     @Override
-    public void onEnable() {
-        HOTBAR_TRACKER.connect();
-    }
-
-    @Override
     public void onDisable() {
         if(rotate.getValue()) ROTATIONS.setCompletedAction(key, true);
-        HOTBAR_TRACKER.disconnect();
     }
 
     @Override

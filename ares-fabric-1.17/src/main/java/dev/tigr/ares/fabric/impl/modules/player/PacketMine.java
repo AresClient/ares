@@ -37,9 +37,6 @@ import net.minecraft.util.math.*;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /***
  * @author Makrennel 08/09/21
  * A module for managing packet mining
@@ -176,7 +173,6 @@ public class PacketMine extends Module {
 
         if(autoSwitch.getValue() == Switch.SILENT && progressReady()) {
             if(oldSelection != toolSlot && toolSlot != -1) {
-                HOTBAR_TRACKER.connect();
                 HOTBAR_TRACKER.setSlot(toolSlot, true, -1);
                 HOTBAR_TRACKER.sendSlot();
                 hasSwapped = true;
@@ -185,7 +181,6 @@ public class PacketMine extends Module {
 
         else if(autoSwitch.getValue() == Switch.NORMAL) {
             if(oldSelection != toolSlot && toolSlot != -1) {
-                HOTBAR_TRACKER.connect();
                 HOTBAR_TRACKER.setSlot(toolSlot, false, oldSelection);
                 hasSwapped = true;
             }
@@ -197,7 +192,6 @@ public class PacketMine extends Module {
     private void doSwitchBack() {
         if(hasSwapped && oldSelection != -1) {
             HOTBAR_TRACKER.reset();
-            HOTBAR_TRACKER.disconnect();
             hasSwapped = false;
             oldSelection = -1;
             toolSlot = -1;

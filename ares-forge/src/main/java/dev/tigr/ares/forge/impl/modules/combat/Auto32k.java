@@ -26,8 +26,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-
 /**
  * @author Tigermouthbear
  */

@@ -4,14 +4,18 @@ import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.forge.event.events.client.NetworkExceptionEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
+import dev.tigr.ares.forge.mixin.accessor.CPacketHeldItemChangeAccessor;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketChatMessage;
+import net.minecraft.network.play.client.CPacketHeldItemChange;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static dev.tigr.ares.core.event.client.PacketEvent.Sent;
 
 /**
  * @author Tigermouthbear
@@ -25,6 +29,18 @@ public class MixinNetworkManager {
             ci.cancel();
 
         if(Ares.EVENT_MANAGER.post(new PacketEvent.Sent(packet)).isCancelled()) ci.cancel();
+
+        // We have to post an event for each packet event that core uses
+        if(packet instanceof CPacketHeldItemChange) {
+            CPacketHeldItemChange slotPacket = (CPacketHeldItemChange) packet;
+            Sent.HotbarSlotPacket event = Ares.EVENT_MANAGER.post(new Sent.HotbarSlotPacket(slotPacket.getSlotId()));
+            if(event.isCancelled()) {
+                ci.cancel();
+                return;
+            }
+            if(event.getSlot() != slotPacket.getSlotId())
+                ((CPacketHeldItemChangeAccessor) slotPacket).setSlotId(event.getSlot());
+        }
     }
 
     @Inject(method = "channelRead0", at = @At("HEAD"), cancellable = true)

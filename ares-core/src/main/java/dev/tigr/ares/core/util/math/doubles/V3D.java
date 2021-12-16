@@ -57,4 +57,45 @@ public class V3D {
         this.z = z;
         return this;
     }
+
+    public V3D rotateX(float angle) {
+        double
+                a = Math.cos(angle),
+                b = Math.sin(angle),
+                x = this.x,
+                y = this.y * a + this.z * b,
+                z = this.z * a - this.y * b;
+
+        return new V3D(x, y, z);
+    }
+
+    public V3D rotateY(float angle) {
+        double
+                a = Math.cos(angle),
+                b = Math.sin(angle),
+                x = this.x * a + this.z * b,
+                y = this.y,
+                z = this.z * a - this.x * b;
+
+        return new V3D(x, y, z);
+    }
+
+    public V3D rotateZ(float angle) {
+        double
+                a = Math.cos(angle),
+                b = Math.sin(angle),
+                x = this.x * a + this.y * b,
+                y = this.y * a - this.x * b,
+                z = this.z;
+
+        return new V3D(x, y, z);
+    }
+
+    public V3D add(V3D vec) {
+        return this.add(vec.getX(), vec.getY(), vec.getZ());
+    }
+
+    public V3D add(double x, double y, double z) {
+        return new V3D(this.x + x, this.y + y, this.z + z);
+    }
 }

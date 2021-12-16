@@ -2,7 +2,9 @@ package dev.tigr.ares.fabric.utils.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.util.math.doubles.V3D;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.core.util.render.Vertex;
 import dev.tigr.ares.fabric.impl.render.CustomRenderStack;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.*;
@@ -146,25 +148,26 @@ public class RenderUtils extends DrawableHelper implements Wrapper {
         RenderSystem.disableDepthTest();
         Vec3d pos = new Vec3d(entity.getX(), entity.getY() + entity.getHeight()/2, entity.getZ());
 
-        Vec3d eyeVector = new Vec3d(0.0, 0.0, 75)
+        Vec3d eyePos = MC.cameraEntity.getPos().add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0);
+        V3D eyeVector = new V3D(0.0, 0.0, 75)
                 .rotateX((float) (-Math.toRadians(MC.cameraEntity.getPitch())))
                 .rotateY((float) (-Math.toRadians(MC.cameraEntity.getYaw())))
-                .add(MC.cameraEntity.getPos()
-                        .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
+                .add(eyePos.getX(), eyePos.getY(), eyePos.getZ());
 
-        drawLine(new Vertex(pos, color), new Vertex(eyeVector, color), 2);
+        drawLine(new Vertex(new V3D(pos.getX(), pos.getY(), pos.getZ()), color), new Vertex(eyeVector, color), 2);
         drawLine(new Vertex(pos.x, pos.y - entity.getHeight()/2, pos.z, color), new Vertex(pos.x, pos.y + entity.getHeight()/2, pos.z, color), 2);
     }
 
     public static void drawTracer(Vec3d pos, Color color) {
         RenderSystem.disableDepthTest();
-        Vec3d eyeVector = new Vec3d(0.0, 0.0, 75)
+
+        Vec3d eyePos = MC.cameraEntity.getPos().add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0);
+        V3D eyeVector = new V3D(0.0, 0.0, 75)
                 .rotateX((float) (-Math.toRadians(MC.player.getPitch())))
                 .rotateY((float) (-Math.toRadians(MC.player.getYaw())))
-                .add(MC.cameraEntity.getPos()
-                        .add(0, MC.cameraEntity.getEyeHeight(MC.cameraEntity.getPose()), 0));
+                .add(eyePos.getX(), eyePos.getY(), eyePos.getZ());
 
-        drawLine(new Vertex(pos, color), new Vertex(eyeVector, color), 2);
+        drawLine(new Vertex(new V3D(pos.getX(), pos.getY(), pos.getZ()), color), new Vertex(eyeVector, color), 2);
     }
 
     private static MatrixStack getMatrix() {

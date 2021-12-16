@@ -2,7 +2,7 @@ package dev.tigr.ares.fabric.mixin.render;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
-import dev.tigr.ares.fabric.event.render.PlayerModelRenderEvent;
+import dev.tigr.ares.core.event.render.PlayerModelRenderEvent;
 import dev.tigr.ares.fabric.event.render.RenderLivingEvent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
@@ -72,7 +72,7 @@ public abstract class MixinLivingEntityRenderer<T extends LivingEntity, M extend
     Float lastPitch = null;
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"), cancellable = true)
     public void onRenderModel(T livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
-        PlayerModelRenderEvent event = new PlayerModelRenderEvent(livingEntity);
+        PlayerModelRenderEvent event = new PlayerModelRenderEvent(livingEntity.getEntityId(), livingEntity.pitch, livingEntity.headYaw, livingEntity.bodyYaw);
         if(!Ares.EVENT_MANAGER.post(event).isCancelled()) {
             return;
         }

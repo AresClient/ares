@@ -1,11 +1,10 @@
-package dev.tigr.ares.fabric.utils.render;
+package dev.tigr.ares.core.util.render;
 
-import dev.tigr.ares.core.util.render.Color;
-import net.minecraft.util.math.Vec3d;
+import dev.tigr.ares.core.util.math.doubles.V3D;
 
 public class Vertex {
     public double x, y, z;
-    float r, g, b, a;
+    public float r, g, b, a;
 
     public Vertex(double x, double y, double z, float r, float g, float b, float a) {
         this.x = x;
@@ -27,7 +26,7 @@ public class Vertex {
         this.a = color.getAlpha();
     }
 
-    public Vertex(Vec3d pos, float r, float g, float b, float a) {
+    public Vertex(V3D pos, float r, float g, float b, float a) {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
@@ -37,7 +36,7 @@ public class Vertex {
         this.a = a;
     }
 
-    public Vertex(Vec3d pos, Color color) {
+    public Vertex(V3D pos, Color color) {
         this.x = pos.getX();
         this.y = pos.getY();
         this.z = pos.getZ();
@@ -47,8 +46,12 @@ public class Vertex {
         this.a = color.getAlpha();
     }
 
-    public Vec3d getPos() {
-        return new Vec3d(x, y, z);
+    public V3D getPos() {
+        return new V3D(x, y, z);
+    }
+
+    public Vertex offset(double x, double y, double z) {
+        return new Vertex(this.x + x, this.y + y, this.z + z, r, g, b, a);
     }
 
     public Color getColor() {

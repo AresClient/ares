@@ -5,6 +5,7 @@ import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.module.ClickGUIMod;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.feature.module.modules.movement.*;
+import dev.tigr.ares.core.feature.module.modules.player.*;
 import dev.tigr.ares.fabric.impl.commands.*;
 import dev.tigr.ares.fabric.impl.modules.combat.*;
 import dev.tigr.ares.fabric.impl.modules.exploit.*;
@@ -17,10 +18,7 @@ import dev.tigr.ares.fabric.impl.render.CustomFontRenderer;
 import dev.tigr.ares.fabric.impl.render.CustomRenderStack;
 import dev.tigr.ares.fabric.impl.render.CustomRenderer;
 import dev.tigr.ares.fabric.impl.render.CustomTextureManager;
-import dev.tigr.ares.fabric.impl.util.CustomGUIManager;
-import dev.tigr.ares.fabric.impl.util.CustomKeyboardManager;
-import dev.tigr.ares.fabric.impl.util.CustomSelf;
-import dev.tigr.ares.fabric.impl.util.CustomUtils;
+import dev.tigr.ares.fabric.impl.util.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +38,9 @@ public class AresMod extends Ares {
         FONT_RENDERER = new CustomFontRenderer(MONO_FONT);
         TEXTURE_MANAGER = new CustomTextureManager();
         SELF = new CustomSelf();
+        INV = new CustomInv();
+        PACKET = new CustomPacket();
+        ENTITY = new CustomEntity();
     }
 
     @Override
@@ -145,7 +146,7 @@ public class AresMod extends Ares {
                 NoForceLook.class,
                 PacketMine.class,
                 RotationLock.class,
-                RotationManager.class,
+                Rotations.class,
                 Scaffold.class,
 
                 // render

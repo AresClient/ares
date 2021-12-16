@@ -24,9 +24,6 @@ import net.minecraft.util.math.Box;
 
 import java.util.*;
 
-import static dev.tigr.ares.fabric.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.fabric.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /**
  * @author Tigermouthbear
  */
@@ -253,7 +250,6 @@ public class Surround extends Module {
     @Override
     public void onEnable() {
         lastPos = MC.player.isOnGround() ? WorldUtils.roundBlockPos(MC.player.getPos()) : MC.player.getBlockPos();
-        HOTBAR_TRACKER.connect();
     }
 
     @Override
@@ -264,7 +260,6 @@ public class Surround extends Module {
         hasCentered = false;
         renderChange.clear();
         ROTATIONS.setCompletedAction(key, true);
-        HOTBAR_TRACKER.disconnect();
     }
 
     // draw blocks

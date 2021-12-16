@@ -1,10 +1,14 @@
 package dev.tigr.ares.fabric.impl.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.tigr.ares.core.util.math.AABox;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
+import dev.tigr.ares.fabric.utils.render.RenderUtils;
 import net.minecraft.client.render.*;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Matrix4f;
 
 import static dev.tigr.ares.Wrapper.*;
@@ -220,5 +224,24 @@ public class CustomRenderer implements IRenderer {
                 x + width, y + height,
                 x, y + height
         );
+    }
+
+    @Override
+    public void prepare3d() {
+        RenderUtils.prepare3d();
+    }
+
+    @Override
+    public void end3d() {
+        RenderUtils.end3d();
+    }
+
+    @Override
+    public void drawBox(AABox box, Color fillColor, Color lineColor, int... ignoredSides) {
+        Direction[] sides = new Direction[6];
+        for(int side: ignoredSides) {
+            sides[side] = Direction.byId(side);
+        }
+        RenderUtils.cube(new Box(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ), fillColor, lineColor, sides);
     }
 }

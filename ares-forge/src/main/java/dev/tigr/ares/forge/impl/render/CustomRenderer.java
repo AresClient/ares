@@ -1,13 +1,17 @@
 package dev.tigr.ares.forge.impl.render;
 
+import dev.tigr.ares.core.util.math.AABox;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.LocationIdentifier;
+import dev.tigr.ares.forge.utils.render.RenderUtils;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.AxisAlignedBB;
 import org.lwjgl.opengl.GL11;
 
 import static dev.tigr.ares.Wrapper.*;
@@ -192,5 +196,24 @@ public class CustomRenderer implements IRenderer {
                 x + width, y + height,
                 x, y + height
         );
+    }
+
+    @Override
+    public void prepare3d() {
+        RenderUtils.prepare3d();
+    }
+
+    @Override
+    public void end3d() {
+        RenderUtils.end3d();
+    }
+
+    @Override
+    public void drawBox(AABox box, Color fillColor, Color lineColor, int... ignoredSides) {
+        EnumFacing[] sides = new EnumFacing[6];
+        for(int side: ignoredSides) {
+            sides[side] = EnumFacing.byIndex(side);
+        }
+        RenderUtils.cube(new AxisAlignedBB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ), fillColor, lineColor, sides);
     }
 }

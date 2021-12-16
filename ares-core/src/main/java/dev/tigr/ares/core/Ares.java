@@ -5,6 +5,11 @@ import dev.tigr.ares.core.feature.AccountManager;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.util.global.Tracker;
+import dev.tigr.ares.core.util.tracker.HotbarTracker;
+import dev.tigr.ares.core.util.interfaces.IEntity;
+import dev.tigr.ares.core.util.interfaces.IInv;
+import dev.tigr.ares.core.util.interfaces.IPacket;
 import dev.tigr.ares.core.util.interfaces.ISelf;
 import dev.tigr.ares.core.setting.SettingsManager;
 import dev.tigr.ares.core.util.IGUIManager;
@@ -15,6 +20,7 @@ import dev.tigr.ares.core.util.render.IRenderer;
 import dev.tigr.ares.core.util.render.ITextureManager;
 import dev.tigr.ares.core.util.render.font.AbstractFontRenderer;
 import dev.tigr.ares.core.util.render.font.GlyphFont;
+import dev.tigr.ares.core.util.tracker.RotationTracker;
 import dev.tigr.simpleevents.EventManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -51,6 +57,12 @@ public abstract class Ares {
     public static ITextureManager TEXTURE_MANAGER = null;
 
     public static ISelf SELF = null;
+    public static IInv INV = null;
+    public static IPacket PACKET = null;
+    public static IEntity ENTITY = null;
+
+    public static final HotbarTracker HOTBAR_TRACKER = Tracker.addTracker(new HotbarTracker());
+    public static final RotationTracker ROTATIONS = Tracker.addTracker(new RotationTracker());
 
     public static final GlyphFont MONO_FONT = new GlyphFont("/assets/ares/font/mono.ttf", 64);
     public static final GlyphFont ARIAL_FONT = new GlyphFont("/assets/ares/font/arial.ttf", 64);
@@ -90,6 +102,9 @@ public abstract class Ares {
             else if(TEXTURE_MANAGER == null) error("Missing textureManager! Shutting down...");
 
             else if(SELF == null) error("Missing Self! Shutting down...");
+            else if(INV == null) error("Missing Inv! Shutting down...");
+            else if(PACKET == null) error("Missing Packet! Shutting down...");
+            else if(ENTITY == null) error("Missing Entity! Shutting down...");
 
             // complete initialization
             ares.initMain();
@@ -123,6 +138,8 @@ public abstract class Ares {
         LOGGER.info("Loading Ares...");
 
         long startTime = System.currentTimeMillis();
+
+        Tracker.getTrackers().forEach(Tracker::registerTrackers);
 
         initModules();
         initCommands();

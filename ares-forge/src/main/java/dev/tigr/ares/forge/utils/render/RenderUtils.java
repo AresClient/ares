@@ -2,6 +2,7 @@ package dev.tigr.ares.forge.utils.render;
 
 import dev.tigr.ares.core.util.global.ReflectionHelper;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.core.util.render.Vertex;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.RenderHelper;

@@ -3,6 +3,7 @@ package dev.tigr.ares.fabric.utils.render;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.render.Color;
+import dev.tigr.ares.core.util.render.Vertex;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.render.*;
 import net.minecraft.entity.Entity;

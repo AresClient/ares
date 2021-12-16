@@ -22,9 +22,6 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
-
 /**
  * @author Tigermouthbear
  * Tower added by Makrennel 3/31/21
@@ -196,7 +193,6 @@ public class Scaffold extends Module {
             }
         }
 
-        HOTBAR_TRACKER.connect();
         HOTBAR_TRACKER.setSlot(newSlot, true, -1);
         int blocksPlaced = 0;
         for(BlockPos x: blocks) {
@@ -207,6 +203,5 @@ public class Scaffold extends Module {
             }
         }
         HOTBAR_TRACKER.reset();
-        HOTBAR_TRACKER.disconnect();
     }
 }

@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import static dev.tigr.ares.forge.impl.modules.player.RotationManager.ROTATIONS;
-import static dev.tigr.ares.forge.utils.HotbarTracker.HOTBAR_TRACKER;
 import static dev.tigr.ares.forge.utils.MathUtils.getDamage;
 
 /**
@@ -88,14 +86,8 @@ public class BedAura extends Module {
     int key = Priorities.Rotation.BED_AURA;
 
     @Override
-    public void onEnable() {
-        HOTBAR_TRACKER.connect();
-    }
-
-    @Override
     public void onDisable() {
         ROTATIONS.setCompletedAction(key, true);
-        HOTBAR_TRACKER.disconnect();
     }
 
     @Override
@@ -182,8 +174,7 @@ public class BedAura extends Module {
 
     private void placeRotated(BlockPos pos, EnumFacing direction) {
         float yaw = direction.getHorizontalAngle();
-        if(ROTATIONS.getEnabled()) ROTATIONS.setCurrentRotation(yaw, MC.player.rotationPitch, key, key, true, false);
-        else MC.player.connection.sendPacket(new CPacketPlayer.Rotation(yaw, MC.player.rotationPitch, MC.player.onGround));
+        ROTATIONS.setCurrentRotation(yaw, MC.player.rotationPitch, key, key, true, false);
         SelfUtils.placeBlock(packetPlace.getValue(), -1, false, -1, -1, false, false, EnumHand.MAIN_HAND, pos, !oneDotTwelve.getValue(), false);
     }
 

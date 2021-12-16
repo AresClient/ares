@@ -1,5 +1,7 @@
 package dev.tigr.ares.core.util.render;
 
+import dev.tigr.ares.core.util.math.AABox;
+
 /**
  * @author Tigermouthbear
  * provides abstraction for rendering layer
@@ -32,4 +34,10 @@ public interface IRenderer {
     void stopScissor();
 
     void drawTooltip(String text, int mouseX, int mouseY, Color color);
+
+    void prepare3d();
+
+    void end3d();
+
+    void drawBox(AABox box, Color fillColor, Color lineColor, int... ignoredSides);
 }

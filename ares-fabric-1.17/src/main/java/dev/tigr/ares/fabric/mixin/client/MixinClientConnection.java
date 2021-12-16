@@ -3,16 +3,20 @@ package dev.tigr.ares.fabric.mixin.client;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.mixin.accessors.UpdateSelectedSlotC2SPacketAccessor;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
+import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import static dev.tigr.ares.core.event.client.PacketEvent.Sent;
 
 /**
  * @author Tigermouthbear 8/10/20
@@ -28,6 +32,18 @@ public class MixinClientConnection {
         }
 
         if(Ares.EVENT_MANAGER.post(new PacketEvent.Sent(packet)).isCancelled()) ci.cancel();
+
+        // We have to post an event for each packet event that core uses
+        if(packet instanceof UpdateSelectedSlotC2SPacket) {
+            UpdateSelectedSlotC2SPacket slotPacket = (UpdateSelectedSlotC2SPacket) packet;
+            Sent.HotbarSlotPacket event = Ares.EVENT_MANAGER.post(new Sent.HotbarSlotPacket(slotPacket.getSelectedSlot()));
+            if(event.isCancelled()) {
+                ci.cancel();
+                return;
+            }
+            if(event.getSlot() != slotPacket.getSelectedSlot())
+                ((UpdateSelectedSlotC2SPacketAccessor) slotPacket).setSelectedSlot(event.getSlot());
+        }
     }
 
     @Inject(method = "channelRead0", at = @At("HEAD"), cancellable = true)
