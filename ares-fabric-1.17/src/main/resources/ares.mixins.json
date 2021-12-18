@@ -23,6 +23,7 @@
     "accessors.MatrixStackAccessor",
     "accessors.MinecraftClientAccessor",
     "accessors.PlayerEntityModelAccessor",
+    "accessors.PlayerInputC2SPacketAccessor",
     "accessors.PlayerMoveC2SPacketAccessor",
     "accessors.PlayerPositionLookS2CPacketAccessor",
     "accessors.RenderTickCounterAccessor",

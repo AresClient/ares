@@ -8,6 +8,8 @@ import dev.tigr.ares.core.util.IUtils;
 import dev.tigr.ares.core.util.render.TextColor;
 import dev.tigr.ares.forge.impl.modules.hud.EditHudGui;
 import dev.tigr.ares.forge.impl.modules.movement.Baritone;
+import dev.tigr.ares.forge.mixin.accessor.MinecraftAccessor;
+import dev.tigr.ares.forge.mixin.accessor.TimerAccessor;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiMultiplayer;
 import net.minecraft.client.gui.GuiOptions;
@@ -95,7 +97,17 @@ public class CustomUtils implements IUtils {
     }
 
     @Override
-    public float getRenderTickTime() {
+    public float getRenderPartialTicks() {
         return MC.getRenderPartialTicks();
+    }
+
+    @Override
+    public float getTickLength() {
+        return ((TimerAccessor) ((MinecraftAccessor) MC).getTimer()).getTickLength();
+    }
+
+    @Override
+    public void setTickLength(float tickLength) {
+        ((TimerAccessor) ((MinecraftAccessor) MC).getTimer()).setTickLength(tickLength);
     }
 }

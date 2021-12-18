@@ -1,11 +1,11 @@
 package dev.tigr.ares.fabric.mixin.client;
 
 import dev.tigr.ares.core.Ares;
-import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
+import dev.tigr.ares.core.event.movement.EntityClipEvent;
+import dev.tigr.ares.core.event.player.ChangePoseEvent;
 import dev.tigr.ares.fabric.event.movement.EntityPushEvent;
 import dev.tigr.ares.fabric.event.movement.PlayerTurnEvent;
 import dev.tigr.ares.fabric.event.movement.SlowDownEvent;
-import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
 import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
@@ -33,7 +33,7 @@ public class MixinEntity {
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     public void move(MovementType movementType, Vec3d vec3d, CallbackInfo ci) {
-        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity)).isCancelled()) {
+        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity.getEntityId())).isCancelled()) {
             entity.setBoundingBox(entity.getBoundingBox().offset(vec3d));
             entity.moveToBoundingBoxCenter();
             ci.cancel();
@@ -42,7 +42,7 @@ public class MixinEntity {
 
     @Inject(method = "isInsideWall", at = @At("HEAD"), cancellable = true)
     public void isInsideWall(CallbackInfoReturnable<Boolean> cir) {
-        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity)).isCancelled()) {
+        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity.getEntityId())).isCancelled()) {
             cir.setReturnValue(false);
             cir.cancel();
         }
@@ -63,9 +63,9 @@ public class MixinEntity {
 
     @Inject(method = "setPose", at = @At("HEAD"), cancellable = true)
     public void setPose(EntityPose pose, CallbackInfo ci) {
-        ChangePoseEvent event = Ares.EVENT_MANAGER.post(new ChangePoseEvent(pose));
-        if(event.getPose() != pose) {
-            entity.getDataTracker().set(((EntityAccessor) entity).getPose(), event.getPose());
+        ChangePoseEvent event = Ares.EVENT_MANAGER.post(new ChangePoseEvent(pose.name()));
+        if(EntityPose.valueOf(event.getPose()) != pose) {
+            entity.getDataTracker().set(((EntityAccessor) entity).getPose(), EntityPose.valueOf(event.getPose()));
             ci.cancel();
         }
     }

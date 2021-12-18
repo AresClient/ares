@@ -1,6 +1,6 @@
 package dev.tigr.ares.forge.mixin.render;
 
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;

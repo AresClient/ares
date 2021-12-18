@@ -6,6 +6,8 @@ public final class Priorities {
     public static class Rotation {
         //All rotation priorities should be unique - so they can be used for keys as well
         public static final int
+                MOVEMENT = 1,
+
                 //100 and below - Auras
                 HOPPER_AURA = 95,
                 KILL_AURA = 96, // When not YawStepping

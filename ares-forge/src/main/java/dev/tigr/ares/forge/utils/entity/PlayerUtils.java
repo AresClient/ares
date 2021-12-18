@@ -2,7 +2,7 @@ package dev.tigr.ares.forge.utils.entity;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.feature.FriendManager;
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.MathUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import net.minecraft.entity.player.EntityPlayer;
@@ -39,7 +39,7 @@ public class PlayerUtils implements Wrapper {
                 && !hasZeroHealth(player)
                 && isPlayerInRange(player, distance)
                 && player != MC.player
-                && player != Freecam.INSTANCE.clone;
+                && player != MC.world.getEntityByID(Freecam.INSTANCE.clone != null ? Freecam.INSTANCE.clone : MC.player.getEntityId());
     }
 
     public static boolean isPlayerInRange(EntityPlayer player, double distance) {

@@ -1,11 +1,8 @@
 package dev.tigr.ares;
 
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.util.interfaces.*;
 import dev.tigr.ares.core.util.tracker.HotbarTracker;
-import dev.tigr.ares.core.util.interfaces.IEntity;
-import dev.tigr.ares.core.util.interfaces.IInv;
-import dev.tigr.ares.core.util.interfaces.IPacket;
-import dev.tigr.ares.core.util.interfaces.ISelf;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
 import dev.tigr.ares.core.util.IUtils;
@@ -31,6 +28,7 @@ public interface CoreWrapper {
     IInv INV = Ares.INV;
     IPacket PACKET = Ares.PACKET;
     IEntity ENTITY = Ares.ENTITY;
+    IWorld WORLD = Ares.WORLD;
 
     HotbarTracker HOTBAR_TRACKER = Ares.HOTBAR_TRACKER;
     RotationTracker ROTATIONS = Ares.ROTATIONS;

@@ -5,11 +5,13 @@ import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.forge.event.events.client.NetworkExceptionEvent;
 import dev.tigr.ares.forge.event.events.player.PacketEvent;
 import dev.tigr.ares.forge.mixin.accessor.CPacketHeldItemChangeAccessor;
+import dev.tigr.ares.forge.mixin.accessor.CPacketInputAccessor;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraft.network.play.client.CPacketHeldItemChange;
+import net.minecraft.network.play.client.CPacketInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -32,14 +34,27 @@ public class MixinNetworkManager {
 
         // We have to post an event for each packet event that core uses
         if(packet instanceof CPacketHeldItemChange) {
-            CPacketHeldItemChange slotPacket = (CPacketHeldItemChange) packet;
-            Sent.HotbarSlotPacket event = Ares.EVENT_MANAGER.post(new Sent.HotbarSlotPacket(slotPacket.getSlotId()));
+            CPacketHeldItemChange p = (CPacketHeldItemChange) packet;
+            Sent.HotbarSlot event = Ares.EVENT_MANAGER.post(new Sent.HotbarSlot(p.getSlotId()));
             if(event.isCancelled()) {
                 ci.cancel();
                 return;
             }
-            if(event.getSlot() != slotPacket.getSlotId())
-                ((CPacketHeldItemChangeAccessor) slotPacket).setSlotId(event.getSlot());
+            if(event.getSlot() != p.getSlotId())
+                ((CPacketHeldItemChangeAccessor) p).setSlotId(event.getSlot());
+        }
+
+        if(packet instanceof CPacketInput) {
+            CPacketInput p = (CPacketInput) packet;
+            Sent.Input event = Ares.EVENT_MANAGER.post(new Sent.Input(p.getForwardSpeed(), p.getStrafeSpeed(), p.isJumping(), p.isSneaking()));
+            if(event.isCancelled()) {
+                ci.cancel();
+                return;
+            }
+            if(event.sideways != p.getStrafeSpeed()) ((CPacketInputAccessor) p).setSideways(event.sideways);
+            if(event.forward != p.getForwardSpeed()) ((CPacketInputAccessor) p).setForward(event.forward);
+            if(event.jumping != p.isJumping()) ((CPacketInputAccessor) p).setJumping(event.jumping);
+            if(event.sneaking != p.isSneaking()) ((CPacketInputAccessor) p).setSneaking(event.sneaking);
         }
     }
 

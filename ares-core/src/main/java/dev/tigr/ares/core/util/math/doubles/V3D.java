@@ -31,6 +31,12 @@ public class V3D {
         this.z = v3L.z;
     }
 
+    public V3D(V2D v2D) {
+        this.x = v2D.a;
+        this.y = 0;
+        this.z = v2D.b;
+    }
+
     public double getX() {
         return x;
     }
@@ -55,6 +61,12 @@ public class V3D {
 
     public V3D setZ(double z) {
         this.z = z;
+        return this;
+    }
+
+    public V3D setXZ(V2D xz) {
+        this.x = xz.a;
+        this.z = xz.b;
         return this;
     }
 

@@ -9,11 +9,11 @@ import dev.tigr.ares.core.event.movement.SetPlayerSprintEvent;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.feature.module.modules.movement.AutoSprint;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.core.util.math.doubles.V3D;
 import dev.tigr.ares.forge.event.events.movement.BlockPushEvent;
 import dev.tigr.ares.forge.event.events.movement.WalkOffLedgeEvent;
 import dev.tigr.ares.forge.event.events.player.PlayerDismountEvent;
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.mixin.accessor.EntityPlayerSPAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
@@ -182,7 +182,7 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer implement
 
                 else if(flag3) {
                     if(Freecam.INSTANCE.getEnabled() && !event.isModifying())
-                        MC.player.connection.sendPacket(new CPacketPlayer.Rotation(Freecam.INSTANCE.clone.rotationYaw, Freecam.INSTANCE.clone.rotationPitch, MC.player.onGround));
+                        MC.player.connection.sendPacket(new CPacketPlayer.Rotation(MC.world.getEntityByID(Freecam.INSTANCE.clone).rotationYaw, MC.world.getEntityByID(Freecam.INSTANCE.clone).rotationPitch, MC.player.onGround));
 
                     else MC.player.connection.sendPacket(new CPacketPlayer.Rotation(event.getYaw(), event.getPitch(), MC.player.onGround));
                 }

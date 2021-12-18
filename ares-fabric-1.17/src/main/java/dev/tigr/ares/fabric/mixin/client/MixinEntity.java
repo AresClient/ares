@@ -2,12 +2,12 @@ package dev.tigr.ares.fabric.mixin.client;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
-import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
+import dev.tigr.ares.core.event.movement.EntityClipEvent;
+import dev.tigr.ares.core.event.player.ChangePoseEvent;
 import dev.tigr.ares.fabric.event.movement.EntityPushEvent;
 import dev.tigr.ares.fabric.event.movement.PlayerTurnEvent;
 import dev.tigr.ares.fabric.event.movement.SlowDownEvent;
 import dev.tigr.ares.fabric.event.player.CanHandCollideWaterEvent;
-import dev.tigr.ares.fabric.event.player.ChangePoseEvent;
 import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import dev.tigr.simpleevents.event.Result;
 import net.minecraft.entity.Entity;
@@ -47,7 +47,7 @@ public abstract class MixinEntity implements Wrapper {
 
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     public void move(MovementType movementType, Vec3d vec3d, CallbackInfo ci) {
-        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity)).isCancelled()) {
+        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity.getId())).isCancelled()) {
             entity.setBoundingBox(entity.getBoundingBox().offset(vec3d));
             Box box = entity.getBoundingBox();
             entity.setPos((box.minX + box.maxX) / 2.0D, box.minY, (box.minZ + box.maxZ) / 2.0D);
@@ -57,7 +57,7 @@ public abstract class MixinEntity implements Wrapper {
 
     @Inject(method = "isInsideWall", at = @At("HEAD"), cancellable = true)
     public void isInsideWall(CallbackInfoReturnable<Boolean> cir) {
-        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity)).isCancelled()) {
+        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(entity.getId())).isCancelled()) {
             cir.setReturnValue(false);
             cir.cancel();
         }
@@ -78,9 +78,9 @@ public abstract class MixinEntity implements Wrapper {
 
     @Inject(method = "setPose", at = @At("HEAD"), cancellable = true)
     public void setPose(EntityPose pose, CallbackInfo ci) {
-        ChangePoseEvent event = Ares.EVENT_MANAGER.post(new ChangePoseEvent(pose));
-        if(event.getPose() != pose) {
-            entity.getDataTracker().set(((EntityAccessor) entity).getPose(), event.getPose());
+        ChangePoseEvent event = Ares.EVENT_MANAGER.post(new ChangePoseEvent(pose.name()));
+        if(EntityPose.valueOf(event.getPose()) != pose) {
+            entity.getDataTracker().set(((EntityAccessor) entity).getPose(), EntityPose.valueOf(event.getPose()));
             ci.cancel();
         }
     }

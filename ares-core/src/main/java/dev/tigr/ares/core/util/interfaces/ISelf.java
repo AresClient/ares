@@ -14,11 +14,17 @@ public interface ISelf {
 
     float getPrevYaw();
 
+    float getPitch();
+
     void setSprinting(boolean sprinting);
 
     float getInputMovementForward();
 
     float getInputMovementSideways();
+
+    boolean getInputJumping();
+
+    boolean getInputSneaking();
 
     boolean isPotionActive(int potionID);
 
@@ -26,11 +32,35 @@ public interface ISelf {
 
     V3D getVelocity();
 
-    void addVelocity(V3D velocity);
+    default void addVelocity(V3D velocity) {
+        addVelocity(velocity.x, velocity.y, velocity.z);
+    }
 
-    void addVelocity(V2D xzVelocity);
+    default void addVelocity(V2D xzVelocity) {
+        addVelocity(xzVelocity.a, 0, xzVelocity.b);
+    }
 
     void addVelocity(double x, double y, double z);
 
-    void setVelocity(V3D velocity);
+    default void setVelocity(V3D velocity) {
+        setVelocity(velocity.x, velocity.y, velocity.z);
+    }
+
+    void setVelocity(double x, double y, double z);
+
+    void copyFrom(int entity);
+
+    int getId();
+
+    boolean isRiding();
+
+    void startRiding(int entity);
+
+    void stopRiding();
+
+    void setPose(String pose);
+
+    void setNoClip(boolean noClip);
+
+    int getRidingEntity();
 }

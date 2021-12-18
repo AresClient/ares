@@ -100,7 +100,7 @@ public class RotationTracker extends Tracker {
 
     @EventHandler
     public final EventListener<PlayerModelRenderEvent> onPlayerModelRender = new EventListener<>(event -> {
-        if(!ENTITY.isEntitySelf(event.getEntity()) || currentRotation == null) return;
+        if(!ENTITY.isSelf(event.getEntity()) || currentRotation == null) return;
 
         event.setCancelled(true);
         event.setHeadPitch(currentRotation.b);

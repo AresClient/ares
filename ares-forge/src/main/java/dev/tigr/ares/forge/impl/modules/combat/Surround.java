@@ -2,6 +2,7 @@ package dev.tigr.ares.forge.impl.modules.combat;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
@@ -10,7 +11,6 @@ import dev.tigr.ares.core.util.Pair;
 import dev.tigr.ares.core.util.Priorities;
 import dev.tigr.ares.core.util.Timer;
 import dev.tigr.ares.core.util.render.Color;
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
 import dev.tigr.ares.forge.utils.entity.SelfUtils;
@@ -99,7 +99,7 @@ public class Surround extends Module {
             if(delay.getValue() != 0 && ticks++ % delay.getValue() != 0) return;
 
             // make sure player is in the same place
-            AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? Freecam.INSTANCE.clone : MC.player;
+            AbstractClientPlayer loc = Freecam.INSTANCE.getEnabled() ? (AbstractClientPlayer) MC.world.getEntityByID(Freecam.INSTANCE.clone) : MC.player;
             BlockPos locRounded = WorldUtils.roundBlockPos(loc.getPositionVector());
             if(!lastPos.equals(loc.onGround ? locRounded : loc.getPosition())) {
                 if(onlyGround.getValue() || !(loc.getPositionVector().y <= lastPos.getY() + 1.5)

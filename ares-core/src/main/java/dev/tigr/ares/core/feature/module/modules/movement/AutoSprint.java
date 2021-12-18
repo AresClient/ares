@@ -5,9 +5,13 @@ import dev.tigr.ares.core.event.movement.PlayerJumpEvent;
 import dev.tigr.ares.core.event.movement.SetPlayerSprintEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.core.setting.Setting;
+import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import dev.tigr.ares.core.util.SelfUtils;
+import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
+import dev.tigr.ares.core.util.Priorities;
+import dev.tigr.ares.core.util.entity.SelfUtils;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 import dev.tigr.simpleevents.listener.Priority;
@@ -25,8 +29,29 @@ public class AutoSprint extends Module {
     }
 
     private final Setting<Mode> mode = register(new EnumSetting<>("Mode", Mode.OMNIDIRECTIONAL));
+    private final Setting<Boolean> rotate = register(new BooleanSetting("Rotate", false)).setVisibility(() -> mode.getValue() != Mode.VANILLA);
+    private final Setting<Float> omniJumpBoost = register(new FloatSetting("Omni Jump Boost", 0.26f, 0.2f, 0.36f)).setVisibility(() -> mode.getValue() == Mode.OMNIDIRECTIONAL);
 
     enum Mode { OMNIDIRECTIONAL, VANILLA, STRAFE }
+
+    @EventHandler
+    private final EventListener<MovePlayerEvent> onMovePlayerLowPrio = new EventListener<>(Priority.LOW, event -> {
+        if(rotate.getValue()) {
+            float yaw = SELF.getYaw();
+            float forwards = SELF.getInputMovementForward();
+            float sideways = SELF.getInputMovementSideways();
+
+            if(sideways > 0 && forwards > 0) yaw -= 45;
+            else if(sideways > 0 && forwards < 0) yaw -= 135;
+            else if(sideways < 0 && forwards > 0) yaw += 45;
+            else if(sideways < 0 && forwards < 0) yaw += 135;
+            else if(sideways > 0) yaw -= 90;
+            else if(sideways < 0) yaw += 90;
+            else if(forwards < 0) yaw -= 180;
+
+            ROTATIONS.setCurrentRotation(yaw, SELF.getPitch(), Priorities.Rotation.MOVEMENT, Priorities.Rotation.MOVEMENT, false, false);
+        }
+    });
 
     // Using the MovePlayerEvent instead of setVelocity in the onMotion method keeps the speed the same in every direction
     @EventHandler
@@ -38,7 +63,7 @@ public class AutoSprint extends Module {
 
         if(SELF.getInputMovementForward() == 0 && SELF.getInputMovementSideways() == 0) return;
 
-        if(event.getMoverType().equals("SELF")) {
+        if(!Freecam.INSTANCE.getEnabled() && !Speed.INSTANCE.getEnabled() && event.getMoverType().equals("SELF")) {
             if(SELF.isInLava() || SELF.isInWater()) {
                 SELF.setSprinting(true);
                 return;
@@ -58,12 +83,17 @@ public class AutoSprint extends Module {
     @EventHandler
     private final EventListener<PlayerJumpEvent> onPlayerJump = new EventListener<>(event -> {
         if(mode.getValue() == Mode.OMNIDIRECTIONAL)
-            SELF.addVelocity(SelfUtils.getMovement(0.26));
+            SELF.addVelocity(SelfUtils.getMovement(omniJumpBoost.getValue()));
     });
 
     // Allows vanilla mode to sprint in any direction while on ground
     @EventHandler
     private final EventListener<SetPlayerSprintEvent> onSetPlayerSprint = new EventListener<>(event -> {
+        if(mode.getValue() == Mode.OMNIDIRECTIONAL)
+            event
+                    .setSprinting(false)
+                    .setCancelled(true);
+
         if(mode.getValue() == Mode.VANILLA || SELF.isInWater() || SELF.isInLava())
             event
                     .setSprinting(true)

@@ -1,8 +1,8 @@
 package dev.tigr.ares.fabric.utils.entity;
 
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.core.util.math.floats.V2F;
-import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.MinecraftClientAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.RenderTickCounterAccessor;
 import dev.tigr.ares.fabric.utils.InventoryUtils;
@@ -33,7 +33,7 @@ import java.util.List;
 public class SelfUtils implements Wrapper {
     // Gets whichever entity is where the actual player is right now
     public static PlayerEntity getPlayer() {
-        if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
+        if(Freecam.INSTANCE.getEnabled()) return (PlayerEntity) MC.world.getEntityById(Freecam.INSTANCE.clone);
         return MC.player;
     }
 

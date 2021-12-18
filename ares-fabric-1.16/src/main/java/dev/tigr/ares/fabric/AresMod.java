@@ -41,6 +41,7 @@ public class AresMod extends Ares {
         INV = new CustomInv();
         PACKET = new CustomPacket();
         ENTITY = new CustomEntity();
+        WORLD = new CustomWorld();
     }
 
     @Override

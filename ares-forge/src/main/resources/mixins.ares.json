@@ -6,6 +6,7 @@
   "mixins": [
     "accessor.BufferBuilderAccessor",
     "accessor.CPacketHeldItemChangeAccessor",
+    "accessor.CPacketInputAccessor",
     "accessor.EntityPlayerSPAccessor",
     "accessor.EntityRendererAccessor",
     "client.MixinBlockLiquid",
@@ -40,6 +41,8 @@
     "render.MixinRenderLivingBase"
   ],
   "client": [
-    "accessor.PlayerControllerMPAccessor"
+    "accessor.MinecraftAccessor",
+    "accessor.PlayerControllerMPAccessor",
+    "accessor.TimerAccessor"
   ]
 }

@@ -1,8 +1,8 @@
 package dev.tigr.ares.forge.utils.entity;
 
 import dev.tigr.ares.Wrapper;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.core.util.math.floats.V2F;
-import dev.tigr.ares.forge.impl.modules.player.Freecam;
 import dev.tigr.ares.forge.utils.InventoryUtils;
 import dev.tigr.ares.forge.utils.MathUtils;
 import dev.tigr.ares.forge.utils.WorldUtils;
@@ -28,7 +28,7 @@ import java.util.List;
 public class SelfUtils implements Wrapper {
     // Gets whichever entity is where the actual player is right now
     public static EntityPlayer getPlayer() {
-        if(Freecam.INSTANCE.getEnabled()) return Freecam.INSTANCE.clone;
+        if(Freecam.INSTANCE.getEnabled()) return (EntityPlayer) MC.world.getEntityByID(Freecam.INSTANCE.clone);
         return MC.player;
     }
 

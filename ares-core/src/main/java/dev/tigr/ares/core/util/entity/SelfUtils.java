@@ -1,4 +1,4 @@
-package dev.tigr.ares.core.util;
+package dev.tigr.ares.core.util.entity;
 
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.util.math.MathUtils;
@@ -9,7 +9,7 @@ public class SelfUtils implements Wrapper {
         float
                 forward = SELF.getInputMovementForward(),
                 sideways = SELF.getInputMovementSideways(),
-                yaw = SELF.getPrevYaw() + (SELF.getYaw() - SELF.getPrevYaw()) * UTILS.getRenderTickTime();
+                yaw = SELF.getPrevYaw() + (SELF.getYaw() - SELF.getPrevYaw()) * UTILS.getRenderPartialTicks();
         return MathUtils.getMovement(speed, forward, sideways, yaw);
     }
 }

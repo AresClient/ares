@@ -1,9 +1,9 @@
 package dev.tigr.ares.fabric.impl.util;
 
 import dev.tigr.ares.core.util.interfaces.ISelf;
-import dev.tigr.ares.core.util.math.doubles.V2D;
 import dev.tigr.ares.core.util.math.doubles.V3D;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.util.math.Vec3d;
 
@@ -37,6 +37,11 @@ public class CustomSelf implements ISelf {
     }
 
     @Override
+    public float getPitch() {
+        return MC.player.pitch;
+    }
+
+    @Override
     public void setSprinting(boolean sprinting) {
         MC.player.setSprinting(sprinting);
     }
@@ -49,6 +54,16 @@ public class CustomSelf implements ISelf {
     @Override
     public float getInputMovementSideways() {
         return MC.player.sidewaysSpeed;
+    }
+
+    @Override
+    public boolean getInputJumping() {
+        return MC.player.input.jumping;
+    }
+
+    @Override
+    public boolean getInputSneaking() {
+        return MC.player.input.sneaking;
     }
 
     @Override
@@ -68,22 +83,52 @@ public class CustomSelf implements ISelf {
     }
 
     @Override
-    public void addVelocity(V3D velocity) {
-        MC.player.addVelocity(velocity.getX(), velocity.getY(), velocity.getZ());
-    }
-
-    @Override
-    public void addVelocity(V2D xzVelocity) {
-        MC.player.addVelocity(xzVelocity.getA(), 0, xzVelocity.getB());
-    }
-
-    @Override
     public void addVelocity(double x, double y, double z) {
         MC.player.addVelocity(x, y, z);
     }
 
     @Override
-    public void setVelocity(V3D velocity) {
-        MC.player.setVelocity(velocity.getX(), velocity.getY(), velocity.getZ());
+    public void setVelocity(double x, double y, double z) {
+        MC.player.setVelocity(x, y, z);
+    }
+
+    @Override
+    public void copyFrom(int entity) {
+        MC.player.copyFrom(MC.world.getEntityById(entity));
+    }
+
+    @Override
+    public int getId() {
+        return MC.player.getEntityId();
+    }
+
+    @Override
+    public boolean isRiding() {
+        return MC.player.isRiding();
+    }
+
+    @Override
+    public void startRiding(int entity) {
+        MC.player.startRiding(MC.world.getEntityById(entity));
+    }
+
+    @Override
+    public void stopRiding() {
+        MC.player.stopRiding();
+    }
+
+    @Override
+    public void setPose(String pose) {
+        MC.player.setPose(EntityPose.valueOf(pose));
+    }
+
+    @Override
+    public void setNoClip(boolean noClip) {
+        MC.player.noClip = noClip;
+    }
+
+    @Override
+    public int getRidingEntity() {
+        return MC.player.getVehicle().getEntityId();
     }
 }

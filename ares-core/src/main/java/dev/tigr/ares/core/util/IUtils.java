@@ -28,5 +28,13 @@ public interface IUtils {
 
     void shutdown();
 
-    float getRenderTickTime();
+    float getRenderPartialTicks();
+
+    float getTickLength();
+
+    void setTickLength(float tickLength);
+
+    default void setTpsMultiplier(float tps) {
+        setTickLength(1000 / (tps * 20));
+    }
 }

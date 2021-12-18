@@ -56,14 +56,12 @@ public class AresMod extends Ares {
         INV = new CustomInv();
         PACKET = new CustomPacket();
         ENTITY = new CustomEntity();
+        WORLD = new CustomWorld();
     }
 
     @Override
     protected List<Class<? extends Module>> getModules() {
         List<Class<? extends Module>> modules = new ArrayList<>(Arrays.asList(
-                // For what ever reason forge version doesn't like using core static modules if it wasn't instantiated before other ones
-//                RotationManager.class,
-
                 // combat
                 Anchor.class,
                 AntiDeathScreen.class,

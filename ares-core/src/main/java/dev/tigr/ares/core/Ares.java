@@ -6,11 +6,8 @@ import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.core.feature.FriendManager;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.util.global.Tracker;
+import dev.tigr.ares.core.util.interfaces.*;
 import dev.tigr.ares.core.util.tracker.HotbarTracker;
-import dev.tigr.ares.core.util.interfaces.IEntity;
-import dev.tigr.ares.core.util.interfaces.IInv;
-import dev.tigr.ares.core.util.interfaces.IPacket;
-import dev.tigr.ares.core.util.interfaces.ISelf;
 import dev.tigr.ares.core.setting.SettingsManager;
 import dev.tigr.ares.core.util.IGUIManager;
 import dev.tigr.ares.core.util.IKeyboardManager;
@@ -60,6 +57,7 @@ public abstract class Ares {
     public static IInv INV = null;
     public static IPacket PACKET = null;
     public static IEntity ENTITY = null;
+    public static IWorld WORLD = null;
 
     public static final HotbarTracker HOTBAR_TRACKER = Tracker.addTracker(new HotbarTracker());
     public static final RotationTracker ROTATIONS = Tracker.addTracker(new RotationTracker());
@@ -105,6 +103,7 @@ public abstract class Ares {
             else if(INV == null) error("Missing Inv! Shutting down...");
             else if(PACKET == null) error("Missing Packet! Shutting down...");
             else if(ENTITY == null) error("Missing Entity! Shutting down...");
+            else if(WORLD == null) error("Missing World! Shutting down...");
 
             // complete initialization
             ares.initMain();

@@ -3,6 +3,7 @@ package dev.tigr.ares.fabric.mixin.client;
 import dev.tigr.ares.core.Ares;
 import dev.tigr.ares.core.feature.Command;
 import dev.tigr.ares.fabric.event.client.PacketEvent;
+import dev.tigr.ares.fabric.mixin.accessors.PlayerInputC2SPacketAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.UpdateSelectedSlotC2SPacketAccessor;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.concurrent.Future;
@@ -10,6 +11,7 @@ import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
+import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -35,14 +37,27 @@ public class MixinClientConnection {
 
         // We have to post an event for each packet event that core uses
         if(packet instanceof UpdateSelectedSlotC2SPacket) {
-            UpdateSelectedSlotC2SPacket slotPacket = (UpdateSelectedSlotC2SPacket) packet;
-            Sent.HotbarSlotPacket event = Ares.EVENT_MANAGER.post(new Sent.HotbarSlotPacket(slotPacket.getSelectedSlot()));
+            UpdateSelectedSlotC2SPacket p = (UpdateSelectedSlotC2SPacket) packet;
+            Sent.HotbarSlot event = Ares.EVENT_MANAGER.post(new Sent.HotbarSlot(p.getSelectedSlot()));
             if(event.isCancelled()) {
                 ci.cancel();
                 return;
             }
-            if(event.getSlot() != slotPacket.getSelectedSlot())
-                ((UpdateSelectedSlotC2SPacketAccessor) slotPacket).setSelectedSlot(event.getSlot());
+            if(event.getSlot() != p.getSelectedSlot())
+                ((UpdateSelectedSlotC2SPacketAccessor) p).setSelectedSlot(event.getSlot());
+        }
+
+        if(packet instanceof PlayerInputC2SPacket) {
+            PlayerInputC2SPacket p = (PlayerInputC2SPacket) packet;
+            Sent.Input event = Ares.EVENT_MANAGER.post(new Sent.Input(p.getForward(), p.getSideways(), p.isJumping(), p.isSneaking()));
+            if(event.isCancelled()) {
+                ci.cancel();
+                return;
+            }
+            if(event.sideways != p.getSideways()) ((PlayerInputC2SPacketAccessor) p).setSideways(event.sideways);
+            if(event.forward != p.getForward()) ((PlayerInputC2SPacketAccessor) p).setForward(event.forward);
+            if(event.jumping != p.isJumping()) ((PlayerInputC2SPacketAccessor) p).setJumping(event.jumping);
+            if(event.sneaking != p.isSneaking()) ((PlayerInputC2SPacketAccessor) p).setSneaking(event.sneaking);
         }
     }
 

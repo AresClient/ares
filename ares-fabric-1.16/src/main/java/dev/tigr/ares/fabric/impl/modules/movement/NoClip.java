@@ -1,8 +1,8 @@
 package dev.tigr.ares.fabric.impl.modules.movement;
 
+import dev.tigr.ares.core.event.movement.EntityClipEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
-import dev.tigr.ares.fabric.event.movement.EntityClipEvent;
 import dev.tigr.simpleevents.listener.EventHandler;
 import dev.tigr.simpleevents.listener.EventListener;
 
@@ -13,7 +13,7 @@ import dev.tigr.simpleevents.listener.EventListener;
 public class NoClip extends Module {
     @EventHandler
     public EventListener<EntityClipEvent> entityClipEvent = new EventListener<>(event -> {
-        if(event.getEntity() == MC.player) event.setCancelled(true);
+        if(ENTITY.isSelf(event.getEntity())) event.setCancelled(true);
     });
 
     @Override

@@ -89,7 +89,17 @@ public class CustomUtils implements IUtils {
     }
 
     @Override
-    public float getRenderTickTime() {
+    public float getRenderPartialTicks() {
+        return MC.getTickDelta();
+    }
+
+    @Override
+    public float getTickLength() {
         return ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).getTickTime();
+    }
+
+    @Override
+    public void setTickLength(float tickLength) {
+        ((RenderTickCounterAccessor) ((MinecraftClientAccessor) MC).getRenderTickCounter()).setTickTime(tickLength);
     }
 }

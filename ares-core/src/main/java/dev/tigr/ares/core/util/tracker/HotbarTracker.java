@@ -48,7 +48,7 @@ public class HotbarTracker extends Tracker {
     }
 
     @EventHandler
-    private final EventListener<PacketEvent.Sent.HotbarSlotPacket> hotbarSlotPacket = new EventListener<>(event -> {
+    private final EventListener<PacketEvent.Sent.HotbarSlot> hotbarSlotPacket = new EventListener<>(event -> {
         if(modifySlot != -1 && event.getSlot() != modifySlot) {
             // Ensure no packets are sent with a slot that doesn't match the intended slot while this is active
             event.setSlot(modifySlot);

@@ -3,15 +3,16 @@ package dev.tigr.ares.fabric.mixin.client;
 import com.mojang.authlib.GameProfile;
 import dev.tigr.ares.Wrapper;
 import dev.tigr.ares.core.Ares;
+import dev.tigr.ares.core.event.movement.EntityClipEvent;
 import dev.tigr.ares.core.event.movement.MovePlayerEvent;
 import dev.tigr.ares.core.event.movement.SendMovementPacketsEvent;
 import dev.tigr.ares.core.event.movement.SetPlayerSprintEvent;
 import dev.tigr.ares.core.event.render.PortalChatEvent;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.feature.module.modules.movement.AutoSprint;
+import dev.tigr.ares.core.feature.module.modules.player.Freecam;
 import dev.tigr.ares.core.util.math.doubles.V3D;
 import dev.tigr.ares.fabric.event.movement.*;
-import dev.tigr.ares.fabric.impl.modules.player.Freecam;
 import dev.tigr.ares.fabric.mixin.accessors.ClientPlayerEntityAccessor;
 import dev.tigr.ares.fabric.mixin.accessors.EntityAccessor;
 import net.minecraft.client.network.AbstractClientPlayerEntity;
@@ -45,7 +46,7 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
 
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
     public void pushOutOfBlocks(double d, double d1, CallbackInfo ci) {
-        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(clientPlayerEntity)).isCancelled()) ci.cancel();
+        if(Ares.EVENT_MANAGER.post(new EntityClipEvent(clientPlayerEntity.getEntityId())).isCancelled()) ci.cancel();
     }
 
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
@@ -139,7 +140,7 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
 
                 else if(bl4) {
                     if(Freecam.INSTANCE.getEnabled() && !event.isModifying())
-                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(Freecam.INSTANCE.clone.yaw, Freecam.INSTANCE.clone.pitch, MC.player.isOnGround()));
+                        MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(MC.world.getEntityById(Freecam.INSTANCE.clone).yaw, MC.world.getEntityById(Freecam.INSTANCE.clone).pitch, MC.player.isOnGround()));
 
                     else MC.player.networkHandler.sendPacket(new PlayerMoveC2SPacket.LookOnly(event.getYaw(), event.getPitch(), MC.player.isOnGround()));
                 }

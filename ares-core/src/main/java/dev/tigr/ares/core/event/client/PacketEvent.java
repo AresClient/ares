@@ -4,10 +4,10 @@ import dev.tigr.simpleevents.event.Event;
 
 public class PacketEvent {
     public static class Sent {
-        public static class HotbarSlotPacket extends Event {
+        public static class HotbarSlot extends Event {
             int slot;
 
-            public HotbarSlotPacket(int slot) {
+            public HotbarSlot(int slot) {
                 this.slot = slot;
             }
 
@@ -17,6 +17,18 @@ public class PacketEvent {
 
             public void setSlot(int slot) {
                 this.slot = slot;
+            }
+        }
+
+        public static class Input extends Event {
+            public float sideways, forward;
+            public boolean jumping, sneaking;
+
+            public Input(float sideways, float forward, boolean jumping, boolean sneaking) {
+                this.sideways = sideways;
+                this.forward = forward;
+                this.jumping = jumping;
+                this.sneaking = sneaking;
             }
         }
     }
