@@ -70,6 +70,9 @@ public class AresChatGUI extends GuiChat {
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         super.keyTyped(typedChar, keyCode);
+        if(inputField.getText().equals(Command.PREFIX.getValue() + " ")){
+            inputField.setText(inputField.getText().trim());
+        }
 
         if(keyCode == Keyboard.KEY_TAB && !inputField.getText().contains(" ")) {
             String noPrefix = inputField.getText().replaceFirst(Command.PREFIX.getValue(), "");
