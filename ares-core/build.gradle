@@ -2,14 +2,14 @@ sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
     // ares
-    implementation "org.json:json:20190722"
+    implementation 'org.json:json:20211205'
     implementation "dev.tigr:simpleevents:1.2"
     implementation "com.github.Vatuu:discord-rpc:1.6.2"
 
     // minecraft
-    implementation "org.apache.logging.log4j:log4j-api:2.8.1"
+    implementation 'org.apache.logging.log4j:log4j-api:2.17.0'
     implementation "com.mojang:brigadier:1.0.17"
-    implementation "com.google.guava:guava:30.0-jre"
+    implementation 'com.google.guava:guava:31.0.1-jre'
 }
 
 jar {

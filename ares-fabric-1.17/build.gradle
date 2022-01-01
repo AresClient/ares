@@ -14,7 +14,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:0.12.10"
 
     implementation "dev.tigr:simpleevents:1.2"
-    implementation "org.json:json:20190722"
+    implementation 'org.json:json:20211205'
     implementation "com.github.Vatuu:discord-rpc:1.6.2"
 
     // ares core

@@ -16,7 +16,7 @@ allprojects {
         maven {
             name = "tigr.dev"
             url = "https://maven.tigr.dev"
-            metadataSources {
+            metadataSources { // needed for baritone
                 mavenPom()
                 artifact()
                 ignoreGradleMetadataRedirection()

@@ -28,7 +28,7 @@ dependencies {
     // include ares core deps
     include "net.fabricmc.fabric-api:fabric-resource-loader-v0:0.3.1+facf3bbf95"
     implementation "dev.tigr:simpleevents:1.2"
-    implementation "org.json:json:20190722"
+    implementation 'org.json:json:20211205'
     implementation "com.mojang:brigadier:1.0.17"
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 

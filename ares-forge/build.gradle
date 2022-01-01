@@ -35,7 +35,7 @@ dependencies {
     minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2854"
 
     implementation "dev.tigr:simpleevents:1.2"
-    implementation "org.json:json:20190722"
+    implementation 'org.json:json:20211205'
     implementation "com.mojang:brigadier:1.0.17"
     implementation "com.github.Vatuu:discord-rpc:1.6.2"
 

@@ -13,8 +13,8 @@ version = project.installerVersion
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    implementation "org.json:json:20190722"
-    shadow "org.json:json:20190722"
+    implementation "org.json:json:20211205"
+    shadow "org.json:json:20211205"
     implementation "li.flor:native-j-file-chooser:1.6.4"
     shadow "li.flor:native-j-file-chooser:1.6.4"
     implementation "com.github.FabricMC:fabric-installer:6f0b6c0"
