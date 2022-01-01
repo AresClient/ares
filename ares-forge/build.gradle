@@ -22,12 +22,10 @@ apply plugin: "net.minecraftforge.gradle"
 apply plugin: "org.spongepowered.mixin"
 apply plugin: "com.github.johnrengelman.shadow"
 
-version = aresForgeVersion
-
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-    mappings channel: "$project.mcpChannel", version: "$project.mcpVersion"
+    mappings channel: "stable", version: "39-1.12"
 }
 
 dependencies {
@@ -59,7 +57,7 @@ dependencies {
         exclude module: "commons-io"
         exclude module: "log4j-core"
     }
-    annotationProcessor("dev.tigr.ares:mixin-processor:0.8.4")
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
 
     // baritone
     implementation "com.github.cabaletta:baritone:1.2.14"
@@ -91,7 +89,7 @@ mixin {
 task customShadowJar(type: ShadowJar) {
     configurations = [project.configurations.shadow]
     archiveClassifier.set("release")
-    from project.file("build/libs/ares-forge-${project.aresForgeVersion}.jar")
+    from project.file("build/libs/ares-forge-${project.aresVersion}.jar")
     from project.file("${project.tasks[sourceSets.main.compileJavaTaskName].temporaryDir}/mixins.ares.refmap.json")
     exclude("META-INF/MUMFREY.RSA")
     exclude("META-INF/MUMFREY.SF")

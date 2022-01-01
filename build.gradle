@@ -42,13 +42,13 @@ subprojects {
 
     group = project.modGroup
     archivesBaseName = project.name
+    version = project.aresVersion
 
     sourceCompatibility = targetCompatibility = JavaVersion.VERSION_16
 
     // copy artifacts to root build folder after build
     tasks.getByName("build").doLast {
-        String version = project.name == "ares-forge" ? project.aresForgeVersion :
-                (project.name == "ares-installer" ? project.installerVersion : project.aresFabricVersion)
+        String version = project.name == "ares-installer" ? project.installerVersion : project.aresVersion
         copy {
             from "${project.rootProject.rootDir}/${project.name}/build/libs/${project.name}-$version-release.jar"
             into "${project.rootProject.rootDir}/build"
@@ -64,7 +64,7 @@ task testForge(type: GradleBuild) {
 
     doLast {
         copy {
-            from "build/ares-forge-${project.aresForgeVersion}-release.jar"
+            from "build/ares-forge-${project.aresVersion}-release.jar"
             into getModsFolder()
         }
     }
@@ -78,7 +78,7 @@ task testFabric(type: GradleBuild) {
 
     doLast {
         copy {
-            from "build/ares-fabric-${project.aresFabricVersion}-release.jar"
+            from "build/ares-fabric-${project.aresVersion}-release.jar"
             into getModsFolder()
         }
     }
@@ -92,7 +92,7 @@ task testFabric_1_16(type: GradleBuild) {
 
     doLast {
         copy {
-            from "build/ares-fabric-1.16-${project.aresFabricVersion}-release.jar"
+            from "build/ares-fabric-1.16-${project.aresVersion}-release.jar"
             into getModsFolder()
         }
     }
@@ -106,7 +106,7 @@ task testFabric_1_17(type: GradleBuild) {
 
     doLast {
         copy {
-            from "build/ares-fabric-1.17-${project.aresFabricVersion}-release.jar"
+            from "build/ares-fabric-1.17-${project.aresVersion}-release.jar"
             into getModsFolder()
         }
     }
