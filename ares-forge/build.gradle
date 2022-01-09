@@ -5,7 +5,7 @@ buildscript {
         gradlePluginPortal()
         maven {
             name = "forge"
-            url = "https://files.minecraftforge.net/maven"
+            url = "https://maven.minecraftforge.net/"
         }
         maven {
             name = "SpongePowered"
@@ -81,9 +81,6 @@ processResources {
 mixin {
     defaultObfuscationEnv "searge"
     add sourceSets.main, "mixins.ares.refmap.json"
-
-    // don't check for SpongePowered Mixin AP (Ares Mixin AP should be present)
-    disableAnnotationProcessorCheck()
 }
 
 task customShadowJar(type: ShadowJar) {
