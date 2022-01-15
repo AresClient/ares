@@ -23,7 +23,7 @@ public class MinecartCount extends HudElement {
             = register(new IntegerSetting("Min count ", 1, 1, 20));
 
     public MinecartCount() {
-        super(100, 60, 0, FONT_RENDERER.getFontHeight());
+        super(100, 60, 0, 5);
     }
 
     public void draw() {
