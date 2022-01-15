@@ -1,4 +1,4 @@
-package dev.tigr.ares.forge.impl.modules.hud.elements;
+package dev.tigr.ares.fabric.impl.modules.hud.elements;
 
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
@@ -7,8 +7,10 @@ import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.numerical.IntegerSetting;
 import dev.tigr.ares.core.util.render.Color;
 import dev.tigr.ares.core.util.render.IRenderer;
-import dev.tigr.ares.forge.impl.modules.hud.HudElement;
-import net.minecraft.entity.item.EntityMinecartChest;
+import dev.tigr.ares.fabric.impl.modules.hud.HudElement;
+import net.minecraft.entity.vehicle.ChestMinecartEntity;
+
+import java.util.stream.StreamSupport;
 
 /**
  * @author UberRipper
@@ -26,8 +28,8 @@ public class MinecartCount extends HudElement {
     }
 
     public void draw() {
-        final int chests = (int) MC.world.loadedEntityList.stream()
-                .filter(Entity -> Entity instanceof EntityMinecartChest).count();
+        int chests = (int) StreamSupport.stream(MC.world.getEntities().spliterator(),false).
+                filter(entity -> entity instanceof ChestMinecartEntity).count();
         if (minimumNotificationNumber.getValue() <= chests) {
             final String text = chests + " minecart chests";
             drawString(text, getX(), getY(), rainbow.getValue() ? IRenderer.rainbow() : Color.WHITE);
