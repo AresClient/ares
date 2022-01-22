@@ -105,7 +105,7 @@ public class AresMod extends Ares {
 
                 // hud
                 Armor.class,
-                ChestCount.class,
+                StashFinder.class,
                 MinecartCount.class,
                 Coordinates.class,
                 CrystalCount.class,
