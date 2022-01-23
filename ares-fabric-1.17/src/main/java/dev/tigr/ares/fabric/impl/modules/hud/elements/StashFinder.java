@@ -14,6 +14,9 @@ import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.entity.vehicle.ChestMinecartEntity;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,10 +28,11 @@ import java.util.stream.StreamSupport;
  */
 @Module.Info(name = "StashFinder", description = "Finds and logs stashed in render distance", category = Category.HUD)
 public class StashFinder extends HudElement {
-
     private static final String CHESTS = "Chests";
     private static final String MINECARTS = "Minecart Chests";
     private static final String SHULKERS = "Shulkers";
+    private static final String FILE_PATH = "Ares/stashFinder.csv";
+    private static final String FIRST_ROW = "server, x, z, chests, minecarts, shulkers";
     private static final Integer CHUNK_SIZE = 16;
 
     private final Setting<Boolean> rainbow = register(new BooleanSetting("Rainbow", false));
@@ -50,7 +54,7 @@ public class StashFinder extends HudElement {
     final static List<int[]> history = new LinkedList<>();
 
     public StashFinder() {
-        super(300, 300, 0, FONT_RENDERER.getFontHeight());
+        super(300, 300, 0, 18);
         currentStashInfo.put(CHESTS, 0);
         currentStashInfo.put(MINECARTS, 0);
         currentStashInfo.put(SHULKERS, 0);
@@ -124,7 +128,15 @@ public class StashFinder extends HudElement {
             });
 
             final String toLog =
-                    String.format("[stashLogger]: %s, x: %s, y: %s, chests: %s, minecarts: %s, shulkers: %s",
+                    String.format("[stashLogger]: %s, x: %s, z: %s, chests: %s, minecarts: %s, shulkers: %s",
+                            MC.getCurrentServerEntry() == null ? "None" : MC.getCurrentServerEntry().name,
+                            chunkX,
+                            chunkZ,
+                            stashInfo.get(CHESTS),
+                            stashInfo.get(MINECARTS),
+                            stashInfo.get(SHULKERS));
+            final String toLogCsv =
+                    String.format("%s,%s,%s,%s,%s,%s",
                             MC.getCurrentServerEntry() == null ? "None" : MC.getCurrentServerEntry().name,
                             chunkX,
                             chunkZ,
@@ -133,6 +145,7 @@ public class StashFinder extends HudElement {
                             stashInfo.get(SHULKERS));
 
             UTILS.printMessage(TextColor.BLUE + toLog);
+            staveCoordinateToFile(toLogCsv);
             // TODO: play an orb sound
         }
     }
@@ -149,5 +162,23 @@ public class StashFinder extends HudElement {
 
     private int getChunkCord(int location) {
         return CHUNK_SIZE * (location / CHUNK_SIZE);
+    }
+
+    private void staveCoordinateToFile(final String row){
+        final File f = new File(FILE_PATH);
+        if(f.exists()){
+            writeRow(row);
+        }else{
+            writeRow(FIRST_ROW);
+            writeRow(row);
+        }
+    }
+
+    private void writeRow(final String row){
+        try (final PrintStream out = new PrintStream(new FileOutputStream(FILE_PATH, true))) {
+            out.println(row);
+        } catch (final Exception e){
+            UTILS.printMessage(TextColor.RED + " File log failed.");
+        }
     }
 }
