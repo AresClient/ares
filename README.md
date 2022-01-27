@@ -15,7 +15,8 @@ Visit https://aresclient.org/download for instructions on downloading and instal
 - Requires JDK 17
 - To build all versions of Ares (including the installer), run the `build` gradle task. 
   - To build the forge 1.12.2 version, run the `:ares-forge:build` gradle task.
-  - To build the fabric 1.17.1 version, run the `:ares-fabric:build` gradle task.
+  - To build the fabric 1.18.1 version, run the `:ares-fabric:build` gradle task.
+  - To build the fabric 1.17.1 version, run the `:ares-fabric-1.17:build` gradle task.
   - To build the fabric 1.16.4 version, run the `:ares-fabric-1.16:build` gradle task.
   - To build the installer, run the `:ares-installer:build` gradle task. 
 - All built jars will be copied to the `build` folder.
