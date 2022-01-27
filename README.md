@@ -11,6 +11,11 @@ Ares is a free, open source minecraft utility mod aimed at anarchy servers. Crea
 ## Installing
 Visit https://aresclient.org/download for instructions on downloading and installing.
 
+## Using
+To open GUI use `;` key.
+
+To change GUI bind key use `-bind clickGui your_preferred_key` (e.g. `-bind clickGui u` will change gui key to `u`)
+
 ## Building
 - Requires JDK 17
 - To build all versions of Ares (including the installer), run the `build` gradle task. 
