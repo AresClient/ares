@@ -201,7 +201,8 @@ public class AresMod extends Ares {
                 Save.class,
                 Toggle.class,
                 SearchCommand.class,
-                Macros.class
+                Macros.class,
+                Crash.class
         );
     }
 }

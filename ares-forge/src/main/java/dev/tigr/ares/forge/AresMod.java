@@ -221,7 +221,8 @@ public class AresMod extends Ares {
                 Toggle.class,
                 Vanish.class,
                 BaritoneCommand.class,
-                Macros.class
+                Macros.class,
+                Crash.class
         );
     }
 }
