@@ -30,7 +30,7 @@ dependencies {
     // include ares core deps
     shadow "com.github.Vatuu:discord-rpc:1.6.2"
 
-    // fabritone
+    // baritone
     implementation "cabaletta:baritone-api-fabric:1.8.0"
     shadow "cabaletta:baritone-api-fabric:1.8.0"
     shadow "cabaletta:baritone-standalone-fabric:1.8.0"
