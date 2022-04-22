@@ -1,0 +1,45 @@
+plugins {
+    id "java"
+    id "org.jetbrains.kotlin.jvm" version "$kotlinVersion"
+    id "org.jetbrains.kotlin.plugin.serialization" version "$kotlinVersion"
+}
+
+group "org.aresclient"
+version "3.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "MeshMC"
+        url = "https://maven.meshmc.net"
+    }
+}
+
+dependencies {
+    implementation "net.meshmc:mesh-core:1.0-SNAPSHOT"
+    implementation "dev.tigr:simpleevents:1.3"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
+    implementation "org.apache.logging.log4j:log4j-api:2.17.0"
+    implementation "com.google.guava:guava:31.0.1-jre"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    from(sourceSets.main.resources.srcDirs) {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        expand "version": project.version
+    }
+
+    from(sourceSets.main.resources.srcDirs) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
