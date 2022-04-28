@@ -12,8 +12,7 @@ import org.aresclient.ares.module.Module
 object ESP: Module("ESP", "See outlines of players through walls", Category.RENDER, enabled = true) {
     override fun renderWorld() {
         RENDERER.prepare3d()
-
-        RENDERER.bufferBuilder.begin(Renderer.DrawMode.LINES, Renderer.VertexFormat.POSITION_COLOR)
+        RENDERER.bufferBuilder.begin(Renderer.DrawMode.LINES, Renderer.VertexFormat.LINES)
 
         MC.world.loadedEntities.forEach { entity ->
             if(entity.entityType == EntityType.PLAYER && entity != MC.player)
@@ -21,7 +20,6 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
         }
 
         RENDERER.bufferBuilder.draw()
-
         RENDERER.end3d()
     }
 
@@ -33,10 +31,11 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
             .blendFunc(GlState.SourceFactor.SRC_ALPHA, GlState.DestFactor.ONE_MINUS_SRC_ALPHA)
             .depth(false)
             .alpha(false)
-            .cull(true)
             .lineSmooth(true)
             .texture(false)
             .depthMask(false)
+            .lineWeight(2f)
+            .cull(false)
     }
 
     private fun Renderer.end3d() {
@@ -47,6 +46,8 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
             .alpha(true)
             .lineSmooth(false)
             .blend(false)
+            .lineWeight(1f)
+            .cull(true)
         renderStack.pop()
     }
 
