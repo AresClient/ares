@@ -7,7 +7,7 @@ open class Manager {
     }
 
     init {
-        Ares.MANAGERS.put(this.javaClass, this)
+        Ares.MANAGERS.add(this)
         Ares.MESH.eventManager.register(this)
     }
 

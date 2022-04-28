@@ -3,7 +3,8 @@ package org.aresclient.ares.module
 import org.aresclient.ares.Ares
 
 open class Module(val name: String, val description: String, val category: Category, enabled: Boolean = false,
-                  bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false) {
+                  bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false,
+                  var priority: Int = -1) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("modules")
 
@@ -21,7 +22,7 @@ open class Module(val name: String, val description: String, val category: Categ
     fun isVisible() = visible.value
 
     init {
-        Ares.MODULES.put(this.javaClass, this)
+        Ares.MODULES.add(this)
         category.modules.add(this)
         if(enabled || alwaysListening) Ares.MESH.eventManager.register(this)
     }

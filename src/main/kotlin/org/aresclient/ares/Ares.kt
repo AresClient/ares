@@ -7,6 +7,7 @@ import net.meshmc.mesh.event.MeshEvent
 import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
 import org.apache.logging.log4j.LogManager
+import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.*
 import java.io.File
@@ -26,38 +27,28 @@ class Ares: Mesh.Initializer {
            prettyPrint = true
         }
 
-        val MODULES = linkedMapOf<Class<out Module>, Module>()
-        val MANAGERS = linkedMapOf<Class<out Manager>, Manager>()
-
-        // returns a module's instance
-        fun <T> getModule(clazz: Class<T>): T where T: Module {
-            return MODULES[clazz] as T
-        }
-
-        // returns a manager's instance
-        fun <T> getManager(clazz: Class<T>): T where T: Manager {
-            return MANAGERS[clazz] as T
-        }
+        val MANAGERS = arrayListOf<Manager>()
+        val MODULES = arrayListOf<Module>()
 
         @field:EventHandler
         private val tickEventListener = EventListener<TickEvent.Client> { event ->
             if(event.era == MeshEvent.Era.BEFORE) {
-                MODULES.values.forEach(Module::tick)
-                MANAGERS.values.forEach(Manager::tick)
+                MODULES.forEach(Module::tick)
+                MANAGERS.forEach(Manager::tick)
             }
         }
 
         @field:EventHandler
         private val renderEventListener = EventListener<RenderEvent> { event ->
             when(event.type) {
-                RenderEvent.Type.HUD -> MODULES.values.forEach(Module::renderHud)
-                RenderEvent.Type.WORLD -> MODULES.values.forEach(Module::renderWorld)
+                RenderEvent.Type.HUD -> MODULES.forEach(Module::renderHud)
+                RenderEvent.Type.WORLD -> MODULES.forEach(Module::renderWorld)
             }
         }
 
         @field:EventHandler
         private val motionEventListener = EventListener<TickEvent.Motion> { event ->
-            if(event.era == MeshEvent.Era.BEFORE) MODULES.values.forEach(Module::motion)
+            if(event.era == MeshEvent.Era.BEFORE) MODULES.forEach(Module::motion)
         }
     }
 
@@ -66,6 +57,9 @@ class Ares: Mesh.Initializer {
 
         // register companion object for basic module / manager events
         MESH.eventManager.register(Ares::class.java)
+
+        // load managers into classpath
+        RotationManager
 
         // load modules into classpath
         ESP
@@ -76,6 +70,6 @@ class Ares: Mesh.Initializer {
             SETTINGS.write(SETTINGS_FILE)
         })
 
-        LOGGER.info("Ares loaded {} modules in {} milliseconds", MODULES.size, System.currentTimeMillis() - start)
+        LOGGER.info("Ares loaded {} modules and {} managers in {} milliseconds", MODULES.size, MANAGERS.size, System.currentTimeMillis() - start)
     }
 }
