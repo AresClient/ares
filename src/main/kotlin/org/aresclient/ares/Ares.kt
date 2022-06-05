@@ -33,22 +33,24 @@ class Ares: Mesh.Initializer {
         @field:EventHandler
         private val tickEventListener = EventListener<TickEvent.Client> { event ->
             if(event.era == MeshEvent.Era.BEFORE) {
-                MODULES.forEach(Module::tick)
+                for(module in MODULES) if(module.isEnabled()) module.tick()
                 MANAGERS.forEach(Manager::tick)
             }
         }
 
+        @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
         @field:EventHandler
         private val renderEventListener = EventListener<RenderEvent> { event ->
             when(event.type) {
-                RenderEvent.Type.HUD -> MODULES.forEach(Module::renderHud)
-                RenderEvent.Type.WORLD -> MODULES.forEach(Module::renderWorld)
+                RenderEvent.Type.HUD -> for(module in MODULES) if(module.isEnabled()) module.renderHud()
+                RenderEvent.Type.WORLD -> for(module in MODULES) if(module.isEnabled()) module.renderWorld()
             }
         }
 
         @field:EventHandler
         private val motionEventListener = EventListener<TickEvent.Motion> { event ->
-            if(event.era == MeshEvent.Era.BEFORE) MODULES.forEach(Module::motion)
+            if(event.era == MeshEvent.Era.BEFORE)
+                for(module in MODULES) if(module.isEnabled()) module.motion()
         }
     }
 

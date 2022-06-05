@@ -24,7 +24,7 @@ open class Setting<T>(val name: String, private val type: Type, public var value
             STRING -> entry.jsonPrimitive.content as T
             BOOLEAN -> entry.jsonPrimitive.boolean as T
             ENUM -> value!!::class.java.enumConstants[entry.jsonPrimitive.int] as T
-            COLOR -> Color(entry.jsonPrimitive.int) as T
+            COLOR -> toColor(toFloatArray(entry.jsonArray)) as T
             INTEGER -> entry.jsonPrimitive.int as T
             DOUBLE -> entry.jsonPrimitive.double as T
             FLOAT -> entry.jsonPrimitive.float as T
@@ -33,11 +33,31 @@ open class Setting<T>(val name: String, private val type: Type, public var value
         }
     }
 
+    private fun toFloatArray(jsonArray: JsonArray): FloatArray {
+        val f: FloatArray = FloatArray(4)
+        for(i in 0..3) {
+            try {
+                f[i] = jsonArray[i].jsonPrimitive.float
+            } catch(e: Exception) {
+                println("Setting $name not successfully read, returning WHITE")
+                return floatArrayOf(1.0F, 1.0F, 1.0F, 1.0F)
+            }
+        }
+        return f
+    }
+
+    private fun toColor(values: FloatArray): Color {
+        return Color(values[0], values[1], values[2], values[3])
+    }
+
     override fun toJSON(): JsonElement = when(type) {
         STRING -> JsonPrimitive(value as String)
         BOOLEAN -> JsonPrimitive(value as Boolean)
         ENUM -> JsonPrimitive((value as Enum<*>).ordinal)
-        COLOR -> JsonPrimitive((value as Color).rgb)
+        COLOR -> {
+            val v = value as Color
+            JsonArray(listOf(JsonPrimitive(v.red), JsonPrimitive(v.green), JsonPrimitive(v.blue), JsonPrimitive(v.alpha)))
+        }
         INTEGER, DOUBLE, FLOAT, LONG -> JsonPrimitive(value as Number)
         LIST -> JsonArray((value as List<*>).mapNotNull { if(it is String) JsonPrimitive(it) else null })
     }

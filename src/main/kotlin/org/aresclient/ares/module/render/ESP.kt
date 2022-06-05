@@ -10,13 +10,15 @@ import org.aresclient.ares.module.Category
 import org.aresclient.ares.module.Module
 
 object ESP: Module("ESP", "See outlines of players through walls", Category.RENDER, enabled = true) {
+    private val color = settings.color("Color", Color.RED)
+
     override fun renderWorld() {
         RENDERER.prepare3d()
         RENDERER.bufferBuilder.begin(Renderer.DrawMode.LINES, Renderer.VertexFormat.LINES)
 
         MC.world.loadedEntities.forEach { entity ->
             if(entity.entityType == EntityType.PLAYER && entity != MC.player)
-                drawBox(entity.bounds, Color.RED)
+                drawBox(entity.boundingBox, color.value)
         }
 
         RENDERER.bufferBuilder.draw()
@@ -52,7 +54,7 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
     }
 
    private fun drawBox(box: Box, color: Color) {
-        RENDERER.bufferBuilder.construct(
+       RENDERER.bufferBuilder.construct(
            Vertex(box.minX, box.minY, box.minZ, color), Vertex(box.maxX, box.minY, box.minZ, color),
            Vertex(box.maxX, box.minY, box.minZ, color), Vertex(box.maxX, box.minY, box.maxZ, color),
            Vertex(box.maxX, box.minY, box.maxZ, color), Vertex(box.minX, box.minY, box.maxZ, color),
