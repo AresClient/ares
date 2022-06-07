@@ -8,7 +8,6 @@ open class Manager {
 
     init {
         Ares.MANAGERS.add(this)
-        Ares.MESH.eventManager.register(this)
     }
 
     open fun tick() {

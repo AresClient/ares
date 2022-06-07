@@ -13,7 +13,7 @@ import org.aresclient.ares.utils.Timer
 /**
  * TODO: Test any of this actually works
  */
-object RotationManager: Manager() {
+class RotationManager: Manager() {
     private var rotation: Vec2f? = null
 
     private var key: Rotator? = null
@@ -168,7 +168,6 @@ object RotationManager: Manager() {
                     }
                 }
             }
-
         }
     }
 }

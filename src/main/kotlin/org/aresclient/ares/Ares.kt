@@ -3,10 +3,15 @@ package org.aresclient.ares
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.meshmc.mesh.Mesh
+import net.meshmc.mesh.api.packet.client.CPacketChatMessage
 import net.meshmc.mesh.event.MeshEvent
+import net.meshmc.mesh.event.events.client.InputEvent
+import net.meshmc.mesh.event.events.client.PacketEvent
 import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
 import org.apache.logging.log4j.LogManager
+import org.aresclient.ares.command.BindCommand
+import org.aresclient.ares.command.UnbindCommand
 import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.*
@@ -52,6 +57,25 @@ class Ares: Mesh.Initializer {
             if(event.era == MeshEvent.Era.BEFORE)
                 for(module in MODULES) if(module.isEnabled()) module.motion()
         }
+
+        @field:EventHandler
+        private val onChatMessageSent = EventListener<PacketEvent.Sent> { event ->
+            if(event.era == MeshEvent.Era.BEFORE && event.packet is CPacketChatMessage) {
+                val packet = event.packet as CPacketChatMessage
+                if(packet.message.startsWith(Command.prefix)) {
+                    Command.processCommand(packet.message)
+                    event.isCancelled = true
+                }
+            }
+        }
+
+        @field:EventHandler
+        private val onInputKey = EventListener<InputEvent.Keyboard> { event ->
+            for(module in MODULES)
+                if(module.getBind() == event.key)
+                    if(module.getToggleState() == event.state)
+                        module.toggle()
+        }
     }
 
     override fun init() {
@@ -61,11 +85,19 @@ class Ares: Mesh.Initializer {
         MESH.eventManager.register(Ares::class.java)
 
         // load managers into classpath
-        RotationManager
+        RotationManager()
 
         // load modules into classpath
         ESP
         TestModule
+
+        // load commands into classpath
+        BindCommand
+        UnbindCommand
+
+        // register events after loading modules / managers
+        MODULES.forEach(Module::postInit)
+        for(manager in MANAGERS) MESH.eventManager.register(manager)
 
         // save settings on shutdown
         Runtime.getRuntime().addShutdownHook(Thread {
