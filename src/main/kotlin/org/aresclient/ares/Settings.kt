@@ -10,7 +10,7 @@ interface Serializable {
     fun toJSON(): JsonElement
 }
 
-open class Setting<T>(val name: String, private val type: Type, public var value: T): Serializable {
+open class Setting<T>(val name: String, val type: Type, var value: T): Serializable {
     enum class Type {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
@@ -74,6 +74,14 @@ open class Settings(private val json: JsonObject, jsonBuilder: JsonBuilder.() ->
 
     private val writer = Json(Json.Default, jsonBuilder)
     private val map = mutableMapOf<String, Serializable>()
+
+    fun get(name: String): Serializable? {
+        for(key in map.keys)
+            if(key.contentEquals(name, true))
+                return map[key]
+
+        return null
+    }
 
     fun string(name: String, default: String) = Setting(name, STRING, default).read()
     fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default).read()

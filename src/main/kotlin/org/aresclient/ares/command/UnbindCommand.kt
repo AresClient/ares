@@ -10,7 +10,7 @@ object UnbindCommand: Command("unbind", "Unbinds modules from keys") {
         COMMANDS["ub"] = this
     }
 
-    override fun execute(command: List<String>) {
+    override fun execute(command: ArrayList<String>) {
         if(command.size == 1) {
             println("NO MODULE SPECIFIED")
             return

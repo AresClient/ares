@@ -11,6 +11,7 @@ import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
 import org.apache.logging.log4j.LogManager
 import org.aresclient.ares.command.BindCommand
+import org.aresclient.ares.command.SettingCommand
 import org.aresclient.ares.command.UnbindCommand
 import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
@@ -94,6 +95,7 @@ class Ares: Mesh.Initializer {
         // load commands into classpath
         BindCommand
         UnbindCommand
+        SettingCommand
 
         // register events after loading modules / managers
         MODULES.forEach(Module::postInit)

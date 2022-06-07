@@ -12,7 +12,7 @@ object BindCommand: Command("bind", "Binds keys to modules") {
         COMMANDS["keybind"] = this
     }
 
-    override fun execute(command: List<String>) {
+    override fun execute(command: ArrayList<String>) {
         if(command.size == 1) {
             println("NO MODULE AND KEY SPECIFIED")
             return

@@ -13,7 +13,10 @@ import org.aresclient.ares.utils.Timer
 /**
  * TODO: Test any of this actually works
  */
-class RotationManager: Manager() {
+class RotationManager: Manager("Rotation Manager") {
+    private var globalYawStep = settings.float("Global Yaw Step", 180F)
+    private var globalPitchStep = settings.float("Global Pitch Step", 180F)
+
     private var rotation: Vec2f? = null
 
     private var key: Rotator? = null

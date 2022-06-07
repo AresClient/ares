@@ -3,7 +3,7 @@ package org.aresclient.ares
 import java.util.*
 
 /**
- * TODO: Turn console prints into chat messages or some rendered alternative
+ * TODO: Turn console prints into ingame visible chat messages or some rendered alternative
  */
 abstract class Command(val name: String, val description: String) {
     companion object {
@@ -33,7 +33,7 @@ abstract class Command(val name: String, val description: String) {
                 return
             }
 
-            COMMANDS[parts[0].lowercase(Locale.getDefault())]?.execute(parts)
+            COMMANDS[parts[0].lowercase(Locale.getDefault())]?.execute(parts as ArrayList<String>)
         }
     }
 
@@ -41,5 +41,5 @@ abstract class Command(val name: String, val description: String) {
         COMMANDS[name] = this
     }
 
-    abstract fun execute(command: List<String>)
+    abstract fun execute(command: ArrayList<String>)
 }

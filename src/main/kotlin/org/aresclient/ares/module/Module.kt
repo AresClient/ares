@@ -3,7 +3,7 @@ package org.aresclient.ares.module
 import net.meshmc.mesh.event.events.client.InputEvent
 import org.aresclient.ares.Ares
 
-open class Module(val name: String, val description: String, val category: Category, enabled: Boolean = false,
+abstract class Module(val name: String, val description: String, val category: Category, enabled: Boolean = false,
                   bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false, val priority: Int = -1) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("modules")
