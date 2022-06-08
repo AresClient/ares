@@ -11,6 +11,7 @@ import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
 import org.apache.logging.log4j.LogManager
 import org.aresclient.ares.command.BindCommand
+import org.aresclient.ares.command.ConfigCommand
 import org.aresclient.ares.command.SettingCommand
 import org.aresclient.ares.command.UnbindCommand
 import org.aresclient.ares.gui.AresTitleScreen
@@ -36,7 +37,7 @@ class Ares: Mesh.Initializer {
         val MESH = Mesh.getMesh()
         val LOGGER = LogManager.getLogger("Ares")
 
-        private val SETTINGS_FILE = File("Ares/settings.json")
+        var SETTINGS_FILE = File("ares/configs/settings.json")
         val SETTINGS = Settings.read(SETTINGS_FILE) {
            prettyPrint = true
         }
@@ -129,8 +130,9 @@ class Ares: Mesh.Initializer {
 
         // load commands into classpath
         BindCommand
-        UnbindCommand
+        ConfigCommand
         SettingCommand
+        UnbindCommand
 
         // register events after loading modules / managers
         MODULES.forEach(Module::postInit)
@@ -144,6 +146,7 @@ class Ares: Mesh.Initializer {
             BlurFrameBuffer.clear()
             MSAAFrameBuffer.clear()
             SkyBox.clear()
+            if(!File("ares/configs").exists()) File("ares/configs").mkdir()
             SETTINGS.write(SETTINGS_FILE)
         })
 

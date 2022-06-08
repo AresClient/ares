@@ -11,10 +11,19 @@ interface Serializable {
 }
 
 open class Setting<T>(val name: String, val type: Type, var value: T): Serializable {
+    private val default: T = value
     enum class Type {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
         FLOAT, LONG, LIST
+    }
+
+    fun refresh(json: JsonObject) {
+        this.value = fromJSON(json)
+    }
+
+    fun default() {
+        this.value = default
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -63,7 +72,7 @@ open class Setting<T>(val name: String, val type: Type, var value: T): Serializa
     }
 }
 
-open class Settings(private val json: JsonObject, jsonBuilder: JsonBuilder.() -> Unit = {}): Serializable {
+open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() -> Unit = {}): Serializable {
     companion object {
         fun read(file: File, jsonBuilder: JsonBuilder.() -> Unit = {}) = Settings(try {
             Json.parseToJsonElement(file.readText()).jsonObject
@@ -81,6 +90,39 @@ open class Settings(private val json: JsonObject, jsonBuilder: JsonBuilder.() ->
                 return map[key]
 
         return null
+    }
+
+    fun refreshFromFile(file: File) {
+        json =
+            try {
+                Json.parseToJsonElement(file.readText()).jsonObject
+            } catch(e: Exception) {
+                JsonObject(emptyMap())
+            }
+
+        refresh()
+    }
+
+    private fun refresh() {
+        for(e in map) {
+            if(e.value is Setting<*>)
+                (e.value as Setting<*>).refresh(json)
+            if(e.value is Settings) {
+                (e.value as Settings).json = (json[e.key]?.jsonObject ?: JsonObject(emptyMap()))
+                (e.value as Settings).refresh()
+            }
+        }
+    }
+
+    fun default() {
+        for(e in map) {
+            if(e.value is Setting<*>)
+                (e.value as Setting<*>).default()
+            if(e.value is Settings) {
+                (e.value as Settings).json = (json[e.key]?.jsonObject ?: JsonObject(emptyMap()))
+                (e.value as Settings).default()
+            }
+        }
     }
 
     fun string(name: String, default: String) = Setting(name, STRING, default).read()
