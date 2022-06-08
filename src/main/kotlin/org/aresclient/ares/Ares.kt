@@ -30,6 +30,7 @@ import java.io.File
  * third rewrite - 3x better
  * developed by Tigermouthbear & Makrennel
  */
+@Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
 class Ares: Mesh.Initializer {
     companion object {
         val MESH = Mesh.getMesh()
@@ -56,7 +57,6 @@ class Ares: Mesh.Initializer {
             }
         }
 
-        @Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
         @field:EventHandler
         private val renderEventListener = EventListener<RenderEvent> { event ->
             when(event.type) {
@@ -84,10 +84,33 @@ class Ares: Mesh.Initializer {
 
         @field:EventHandler
         private val onInputKey = EventListener<InputEvent.Keyboard> { event ->
-            for(module in MODULES)
-                if(module.getBind() == event.key)
-                    if(module.getToggleState() == event.state)
-                        module.toggle()
+            for(module in MODULES) {
+                if(module.getBind() == event.key) {
+                    when(event.state) {
+                        InputEvent.Keyboard.State.PRESSED -> {
+                            if(!module.pressed) {
+                                if(module.getToggleState() == Module.TogglesWhen.PRESSED)
+                                    module.toggle()
+                                if(module.getToggleState() == Module.TogglesWhen.HELD_DOWN) {
+                                    module.enable()
+                                }
+
+                                module.pressed = true
+                            }
+                        }
+                        InputEvent.Keyboard.State.RELEASED -> {
+                            if(module.getToggleState() == Module.TogglesWhen.RELEASED) {
+                                module.toggle()
+                            }
+                            if(module.getToggleState() == Module.TogglesWhen.HELD_DOWN) {
+                                module.disable()
+                            }
+
+                            module.pressed = false
+                        }
+                    }
+                }
+            }
         }
     }
 

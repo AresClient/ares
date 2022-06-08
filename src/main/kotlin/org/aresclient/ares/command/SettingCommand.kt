@@ -91,12 +91,18 @@ object SettingCommand: Command("setting", "Used to get or set the value for sett
             }
             Setting.Type.ENUM -> {
                 val ordinal = value.toIntOrNull()
-                if(ordinal != null)
-                    (setting as Setting<Enum<*>>).value = setting.value.javaClass.enumConstants[ordinal]
+                if(ordinal != null) {
+                    val array = (setting as Setting<Enum<*>>).value.javaClass.enumConstants
+                    if(ordinal <= array.size - 1 && ordinal > -1) {
+                        setting.value = array[ordinal]
+                        println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO ${setting.value.name}")
+                    }
+                }
                 else {
+                    val valEnum = value.replace(' ', '_')
                     val enumConstants = (setting as Setting<Enum<*>>).value.javaClass.enumConstants ?: return
                     for(v in enumConstants)
-                        if(v.toString().contentEquals(value, true)) {
+                        if(v.toString().contentEquals(valEnum, true)) {
                             setting.value = v
                             println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO ${setting.value.name}")
                         }
@@ -106,7 +112,7 @@ object SettingCommand: Command("setting", "Used to get or set the value for sett
                 val s = value.split(',')
                 if(s.size != 4) return
 
-                val values = floatArrayOf(1F, 1F, 1F, 1F)
+                val values = floatArrayOf(0F,0F,0F,0F)
                 for(i in 0 until 4) {
                     val temp = s[i].toFloatOrNull() ?: return
                     values[i] = temp

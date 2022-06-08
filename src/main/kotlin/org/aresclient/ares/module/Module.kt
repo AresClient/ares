@@ -1,6 +1,5 @@
 package org.aresclient.ares.module
 
-import net.meshmc.mesh.event.events.client.InputEvent
 import org.aresclient.ares.Ares
 
 abstract class Module(val name: String, val description: String, val category: Category, enabled: Boolean = false,
@@ -17,8 +16,14 @@ abstract class Module(val name: String, val description: String, val category: C
     private var bind = settings.integer("bind", bind)
     private var visible = settings.boolean("visible", visible)
 
-    // released is mechanically slower to activate but preferable in general as it doesn't cause spam when held down
-    private var toggleState = settings.enum("toggle state", InputEvent.Keyboard.State.RELEASED)
+    enum class TogglesWhen {
+        PRESSED,
+        RELEASED,
+        HELD_DOWN
+    }
+
+    private var toggleState = settings.enum("toggle when", TogglesWhen.PRESSED)
+    var pressed = false
 
     fun isEnabled() = enabled.value
     fun getBind() = bind.value
