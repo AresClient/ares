@@ -15,8 +15,14 @@ repositories {
     }
 }
 
+configurations {
+    lib
+}
+
 dependencies {
-    implementation "net.meshmc:mesh-core:1.0-SNAPSHOT"
+    //implementation "net.meshmc:mesh-core:1.0-SNAPSHOT"
+    implementation fileTree("libs")
+
     implementation "dev.tigr:simpleevents:1.3"
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
@@ -29,6 +35,12 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
     implementation "org.apache.logging.log4j:log4j-api:2.17.0"
     implementation "com.google.guava:guava:31.0.1-jre"
+    implementation "org.lwjgl:lwjgl:3.3.1"
+    implementation "org.lwjgl:lwjgl-opengl:3.3.1"
+
+    lib "org.joml:joml:1.10.4"
+
+    implementation configurations.lib
 }
 
 processResources {
@@ -36,10 +48,21 @@ processResources {
 
     from(sourceSets.main.resources.srcDirs) {
         duplicatesStrategy = DuplicatesStrategy.INCLUDE
-        expand "version": project.version
+        filesMatching("ares.mesh.json") {
+            expand "version": project.version
+        }
     }
 
     from(sourceSets.main.resources.srcDirs) {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    }
+}
+
+jar {
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.lib.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
     }
 }

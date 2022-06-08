@@ -13,9 +13,16 @@ import org.apache.logging.log4j.LogManager
 import org.aresclient.ares.command.BindCommand
 import org.aresclient.ares.command.SettingCommand
 import org.aresclient.ares.command.UnbindCommand
+import org.aresclient.ares.gui.AresTitleScreen
 import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.*
+import org.aresclient.ares.renderer.BlurFrameBuffer
+import org.aresclient.ares.renderer.Buffer
+import org.aresclient.ares.renderer.MSAAFrameBuffer
+import org.aresclient.ares.renderer.Shader
+import org.aresclient.ares.renderer.SkyBox
+import org.aresclient.ares.renderer.Texture
 import java.io.File
 
 /*
@@ -36,11 +43,16 @@ class Ares: Mesh.Initializer {
         val MANAGERS = arrayListOf<Manager>()
         val MODULES = arrayListOf<Module>()
 
+        private var first = true
         @field:EventHandler
         private val tickEventListener = EventListener<TickEvent.Client> { event ->
             if(event.era == MeshEvent.Era.BEFORE) {
                 for(module in MODULES) if(module.isEnabled()) module.tick()
                 MANAGERS.forEach(Manager::tick)
+            }
+            if(first) {
+                MESH.minecraft.openScreen(AresTitleScreen())
+                first = false
             }
         }
 
@@ -103,6 +115,12 @@ class Ares: Mesh.Initializer {
 
         // save settings on shutdown
         Runtime.getRuntime().addShutdownHook(Thread {
+            Buffer.clear()
+            Shader.clear()
+            Texture.clear()
+            BlurFrameBuffer.clear()
+            MSAAFrameBuffer.clear()
+            SkyBox.clear()
             SETTINGS.write(SETTINGS_FILE)
         })
 

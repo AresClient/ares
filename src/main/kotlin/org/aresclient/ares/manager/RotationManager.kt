@@ -170,6 +170,7 @@ class RotationManager: Manager("Rotation Manager") {
                         if(lastRotation.x == it.x && lastRotation.y == it.y) steppingComplete = true
                     }
                 }
+                else -> Unit
             }
         }
     }
