@@ -8,12 +8,13 @@ import org.lwjgl.opengl.GL11
 
 class AresTitleScreen: Screen("Ares Main Menu") {
     companion object {
+        private val LEGACY_GL = Ares.MESH.loaderVersion.startsWith("1.12")
         private val SKYBOX = SkyBox("/assets/ares/textures/panorama/2b2t")
         private val MSAA = MSAAFrameBuffer(4, Ares.MESH.minecraft.resolution)
         private lateinit var SKYBOX_STACK: MatrixStack
         private lateinit var MATRIX_STACK: MatrixStack
 
-        private var LOGO = Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/menu_logo.png"))
+        private val LOGO = Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/menu_logo.png"))
         private val BUFFER = Buffer
             .beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV)
             .vertices(
@@ -38,15 +39,18 @@ class AresTitleScreen: Screen("Ares Main Menu") {
     override fun render(mouseX: Int, mouseY: Int, partialTicks: Float) {
         val fbo = Ares.MESH.minecraft.framebuffer.fbo
 
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT)
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glPushMatrix()
-        GL11.glLoadIdentity()
-        GL11.glMatrixMode(GL11.GL_PROJECTION)
-        GL11.glPushMatrix()
-        GL11.glLoadIdentity()
+        if(LEGACY_GL) {
+            GL11.glPushAttrib(GL11.GL_ENABLE_BIT)
+            GL11.glMatrixMode(GL11.GL_MODELVIEW)
+            GL11.glPushMatrix()
+            GL11.glLoadIdentity()
+            GL11.glMatrixMode(GL11.GL_PROJECTION)
+            GL11.glPushMatrix()
+            GL11.glLoadIdentity()
 
-        GL11.glEnable(GL11.GL_ALPHA_TEST)
+            GL11.glEnable(GL11.GL_ALPHA_TEST)
+        }
+
         GL11.glDisable(GL11.GL_DEPTH_TEST)
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
@@ -67,13 +71,16 @@ class AresTitleScreen: Screen("Ares Main Menu") {
 
         GL11.glEnable(GL11.GL_DEPTH_TEST)
         GL11.glDisable(GL11.GL_BLEND)
-        GL11.glDisable(GL11.GL_ALPHA_TEST)
 
-        GL11.glMatrixMode(GL11.GL_PROJECTION)
-        GL11.glPopMatrix()
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glPopMatrix()
-        GL11.glPopAttrib()
+        if(LEGACY_GL) {
+            GL11.glDisable(GL11.GL_ALPHA_TEST)
+
+            GL11.glMatrixMode(GL11.GL_PROJECTION)
+            GL11.glPopMatrix()
+            GL11.glMatrixMode(GL11.GL_MODELVIEW)
+            GL11.glPopMatrix()
+            GL11.glPopAttrib()
+        }
     }
 
     override fun resize(width: Int, height: Int) = resize(Ares.MESH.minecraft.resolution)
