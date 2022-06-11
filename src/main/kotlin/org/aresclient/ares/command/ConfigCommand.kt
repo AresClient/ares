@@ -5,12 +5,7 @@ import org.aresclient.ares.Command
 import java.io.File
 import java.util.*
 
-object ConfigCommand: Command("config", "allows the creation and loading of different configurations") {
-    init {
-        COMMANDS["conf"] = this
-        COMMANDS["configuration"] = this
-    }
-
+object ConfigCommand: Command("allows the creation and loading of different configurations", "config", "conf", "configuration") {
     override fun execute(command: ArrayList<String>) {
         if(command.size > 2) command[2] = command[2].replace('_', ' ')
         when(command[1].lowercase(Locale.getDefault())) {

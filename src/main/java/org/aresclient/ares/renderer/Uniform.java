@@ -417,7 +417,7 @@ public abstract class Uniform {
 
         static void uniform(int id, Matrix4f value) {
             FloatBuffer buffer = BufferUtils.createFloatBuffer(16);
-            if(!LEGACY) GL20.glUniformMatrix4fv(id, false, buffer);
+            if(!LEGACY) GL20.glUniformMatrix4fv(id, false, value.get(buffer));
             else {
                 try {
                     LEGACY_METHOD.invoke(null, id, false, value.get(buffer));

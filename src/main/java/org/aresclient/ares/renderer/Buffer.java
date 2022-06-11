@@ -1,5 +1,7 @@
 package org.aresclient.ares.renderer;
 
+import net.meshmc.mesh.Mesh;
+import net.meshmc.mesh.api.render.buffer.BufferRenderer;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Buffer {
+    private final static BufferRenderer BUFFER_RENDERER = Mesh.getMesh().getMinecraft().getBufferRenderer();
     private final static List<Buffer> BUFFERS = new ArrayList<>();
 
     private final int vao = GL30.glGenVertexArrays();
@@ -107,6 +110,11 @@ public class Buffer {
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
+
+        BUFFER_RENDERER.setElementBuffer(0);
+        BUFFER_RENDERER.setVertexBuffer(0);
+        BUFFER_RENDERER.setVertexArray(0);
+
         return this;
     }
 
@@ -130,6 +138,9 @@ public class Buffer {
         GL11.glDrawElements(lines ? GL11.GL_LINES : GL11.GL_TRIANGLES, indexCount, GL11.GL_UNSIGNED_INT, 0);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
+
+        BUFFER_RENDERER.setElementBuffer(0);
+        BUFFER_RENDERER.setVertexArray(0);
 
         if(shader != null) shader.detach();
     }

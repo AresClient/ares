@@ -5,18 +5,17 @@ import java.util.*
 /**
  * TODO: Turn console prints into ingame visible chat messages or some rendered alternative
  */
-abstract class Command(val name: String, val description: String) {
+abstract class Command(val description: String, vararg names: String) {
     companion object {
         val MC = Ares.MESH.minecraft
-
         val COMMANDS = hashMapOf<String, Command>()
+
         var prefix: Char = '-'
 
         fun processCommand(command: String) {
-            //Split string where spaces separate words
+            // Split string where spaces separate words
             val parts = command.split(' ').toMutableList()
-
-            for(part in parts) if(part.isEmpty()) parts.remove(part)
+            parts.removeIf { it.isEmpty() }
 
             // Remove prefix
             if(parts[0].length == 1) {
@@ -38,7 +37,7 @@ abstract class Command(val name: String, val description: String) {
     }
 
     init {
-        COMMANDS[name] = this
+        for(name in names) COMMANDS[name] = this
     }
 
     abstract fun execute(command: ArrayList<String>)

@@ -61,18 +61,10 @@ public class VertexFormat {
 
     private final int stride;
     private final Vertex[] vertices;
-    private final VertexTypes[] types;
 
     private VertexFormat(int stride, Vertex[] vertices) {
         this.stride = stride;
         this.vertices = vertices;
-
-        // create type map, used in buffer allocation
-        types = new VertexTypes[stride];
-        int i = 0;
-        for(Vertex vertex: vertices) {
-            for(int j = 0; j < vertex.len; j++) types[i++] = vertex.type;
-        }
     }
 
     void use() {

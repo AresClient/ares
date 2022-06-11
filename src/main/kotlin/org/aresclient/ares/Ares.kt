@@ -31,7 +31,6 @@ import java.io.File
  * third rewrite - 3x better
  * developed by Tigermouthbear & Makrennel
  */
-@Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
 class Ares: Mesh.Initializer {
     companion object {
         val MESH = Mesh.getMesh()
@@ -63,6 +62,7 @@ class Ares: Mesh.Initializer {
             when(event.type) {
                 RenderEvent.Type.HUD -> for(module in MODULES) if(module.isEnabled()) module.renderHud()
                 RenderEvent.Type.WORLD -> for(module in MODULES) if(module.isEnabled()) module.renderWorld()
+                else -> Unit
             }
         }
 
@@ -109,6 +109,7 @@ class Ares: Mesh.Initializer {
 
                             module.pressed = false
                         }
+                        else -> Unit
                     }
                 }
             }
@@ -140,12 +141,12 @@ class Ares: Mesh.Initializer {
 
         // save settings on shutdown
         Runtime.getRuntime().addShutdownHook(Thread {
-            Buffer.clear()
+            /*Buffer.clear() // TODO: DO WE NEED THIS?
             Shader.clear()
             Texture.clear()
             BlurFrameBuffer.clear()
             MSAAFrameBuffer.clear()
-            SkyBox.clear()
+            SkyBox.clear()*/
             if(!File("ares/configs").exists()) File("ares/configs").mkdir()
             SETTINGS.write(SETTINGS_FILE)
         })

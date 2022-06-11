@@ -13,12 +13,7 @@ import java.util.*
  * Names which have spaces are separated by underscores and then later changed to spaces when comparing
  * Values in lists/arrays are separated by commas - Color / List settings
  */
-object SettingCommand: Command("setting", "Used to get or set the value for settings") {
-    init {
-        COMMANDS["set"] = this
-        COMMANDS["settings"] = this
-    }
-
+object SettingCommand: Command("Used to get or set the value for settings", "setting", "set", "settings") {
     override fun execute(command: ArrayList<String>) {
         if(command.size == 1) {
             println("NOTHING SPECIFIED")

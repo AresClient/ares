@@ -5,13 +5,7 @@ import org.aresclient.ares.Ares
 import org.aresclient.ares.Command
 import java.util.*
 
-object BindCommand: Command("bind", "Binds keys to modules") {
-    init {
-        // alternative command names
-        COMMANDS["kb"] = this
-        COMMANDS["keybind"] = this
-    }
-
+object BindCommand: Command("Binds keys to modules", "bind", "kb", "keybind") {
     override fun execute(command: ArrayList<String>) {
         if(command.size == 1) {
             println("NO MODULE AND KEY SPECIFIED")
