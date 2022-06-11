@@ -14,7 +14,7 @@ public class FontRenderer {
     private static final Uniform.F4 DIMENSIONS = SHADER.uniformF4("dimensions");
     private static final Uniform.F3 COLOR = SHADER.uniformF3("color").set(1, 1, 1);
     private static final Buffer BUFFER = Buffer
-            .beginStatic(SHADER, VertexFormat.POSITION_UV)
+            .beginStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                     1, 1, 0,    1, 1,
                     1, 0, 0,   1, 0,
@@ -64,7 +64,7 @@ public class FontRenderer {
 
         AffineTransform affineTransform = new AffineTransform();
         FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);
-        font = font.deriveFont(size);
+        font = font.deriveFont(size * 2);
 
         // calculate max character and image width and height
         float charWidth = 0;
@@ -117,7 +117,7 @@ public class FontRenderer {
         if(glyph == null) return 0;
 
         matrixStack.push();
-        matrixStack.model().translate(x, y, 0).scale(glyph.width, glyph.height, 1);
+        matrixStack.model().translate(x, y, 0).scale(glyph.width, glyph.height, 1).scaleLocal(0.5f, 0.5f, 1);
 
         DIMENSIONS.set(glyph.x / width, glyph.y / height, glyph.width / width, glyph.height / height);
         COLOR.set(r, g, b);

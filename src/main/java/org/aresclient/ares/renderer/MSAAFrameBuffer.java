@@ -10,7 +10,7 @@ import java.util.List;
 public class MSAAFrameBuffer {
     private static final List<MSAAFrameBuffer> MSAAS = new ArrayList<>();
     private static final Buffer BUFFER = Buffer
-            .beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV)
+            .beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                     -1, -1, 0, 0, 0,
                     -1, 1, 0, 0, 1,

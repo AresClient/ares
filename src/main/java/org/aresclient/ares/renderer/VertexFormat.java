@@ -77,6 +77,10 @@ public class VertexFormat {
         }
     }
 
+    public int getStride() {
+        return stride;
+    }
+
     public BufferBuilder buffer() {
         return new BufferBuilder(this);
     }

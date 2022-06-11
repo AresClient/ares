@@ -11,7 +11,6 @@ import org.lwjgl.opengl.GL30;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +28,12 @@ public class Buffer {
 
     private final List<Uniform> uniforms = new ArrayList<>();
     private final boolean dynamic;
+
+    private final ByteBuffer vertBuffer;
+    private final IntBuffer indexBuffer;
     private boolean vertices = false;
     private boolean indices = false;
+    private boolean building = true;
 
     private boolean lines = false;
     private Uniform.F2 linesViewport = null;
@@ -39,12 +42,12 @@ public class Buffer {
 
     private int indexCount = 0;
 
-    public static Buffer beginStatic(Shader shader, VertexFormat vertexFormat) {
-        return new Buffer(shader, vertexFormat, false);
+    public static Buffer beginStatic(Shader shader, VertexFormat vertexFormat, int vert, int index) {
+        return new Buffer(shader, vertexFormat, false, vert, index);
     }
 
-    public static Buffer beginDynamic(Shader shader, VertexFormat vertexFormat) {
-        return new Buffer(shader, vertexFormat, true);
+    public static Buffer beginDynamic(Shader shader, VertexFormat vertexFormat, int vert, int index) {
+        return new Buffer(shader, vertexFormat, true, vert, index);
     }
 
     public Buffer lines(float aa) {
@@ -59,9 +62,11 @@ public class Buffer {
         return lines(2);
     }
 
-    private Buffer(Shader shader, VertexFormat vertexFormat, boolean dynamic) {
+    private Buffer(Shader shader, VertexFormat vertexFormat, boolean dynamic, int vert, int index) {
         this.dynamic = dynamic;
         this.shader = shader;
+        this.vertBuffer = BufferUtils.createByteBuffer(vert * vertexFormat.getStride());
+        this.indexBuffer = BufferUtils.createIntBuffer(index);
         this.projection = GL20.glGetUniformLocation(shader.getProgram(), "projection");
         this.model = GL20.glGetUniformLocation(shader.getProgram(), "model");
 
@@ -75,28 +80,21 @@ public class Buffer {
     }
 
     public Buffer vertices(float... data) {
-        FloatBuffer buffer = (FloatBuffer) BufferUtils.createFloatBuffer(data.length).put(data).flip();
-
-        if(vertices) GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
-        else GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+        for(float f: data) vertBuffer.putFloat(f);
 
         vertices = true;
         return this;
     }
 
     public Buffer vertices(ByteBuffer buffer) {
-        if(vertices) GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, buffer);
-        else GL15.glBufferData(GL15.GL_ARRAY_BUFFER, buffer, dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+        vertBuffer.put(buffer);
 
         vertices = true;
         return this;
     }
 
     public Buffer indices(int... data) {
-        IntBuffer buffer = (IntBuffer) BufferUtils.createIntBuffer(data.length).put(data).flip();
-
-        if(indices) GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, buffer);
-        else GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, buffer, dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+        indexBuffer.put(data);
 
         indices = true;
         indexCount = data.length;
@@ -106,6 +104,10 @@ public class Buffer {
     public Buffer end() {
         if(!vertices) throw new RuntimeException("Vertices not specified for buffer!");
         if(!indices) throw new RuntimeException("Indices not specified for buffer!");
+        vertices = indices = false;
+
+        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (ByteBuffer) vertBuffer.flip(), dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (IntBuffer) indexBuffer.flip(), dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
@@ -123,6 +125,9 @@ public class Buffer {
     }
 
     public void draw(MatrixStack matrixStack) {
+        if(vertices) GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, (ByteBuffer) vertBuffer.flip());
+        if(indices) GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, (IntBuffer) indexBuffer.flip());
+
         if(shader != null && !shader.isAttached()) shader.attach();
 
         if(lines) {
