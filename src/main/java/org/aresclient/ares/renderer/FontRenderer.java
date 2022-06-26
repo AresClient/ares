@@ -116,8 +116,9 @@ public class FontRenderer {
         Glyph glyph = glyphMap.get(c);
         if(glyph == null) return 0;
 
+        float w = glyph.width / 2f;
         matrixStack.push();
-        matrixStack.model().translate(x, y, 0).scale(glyph.width, glyph.height, 1).scaleLocal(0.5f, 0.5f, 1);
+        matrixStack.model().translate(x, y, 0).scale(w, glyph.height / 2f, 1);
 
         DIMENSIONS.set(glyph.x / width, glyph.y / height, glyph.width / width, glyph.height / height);
         COLOR.set(r, g, b);
@@ -127,7 +128,7 @@ public class FontRenderer {
 
         matrixStack.pop();
 
-        return glyph.width;
+        return w;
     }
 
     public void drawString(MatrixStack matrixStack, String text, float x, float y, float r, float g, float b) {
@@ -153,7 +154,7 @@ public class FontRenderer {
     public float getCharWidth(char c) {
         Glyph glyph = glyphMap.get(c);
         if(glyph == null) return 0;
-        return glyph.width;
+        return glyph.width / 2f;
     }
 
     public float getStringWidth(String text) {

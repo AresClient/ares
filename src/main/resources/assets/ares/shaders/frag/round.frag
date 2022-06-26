@@ -3,12 +3,14 @@
 in vec2 vertUV;
 in vec4 vertColor;
 
-uniform float radius = 0.6; // 0 to 1
+uniform float radius = 0.1; // 0 to 1
+uniform vec2 size = vec2(1, 1); // ratio w to h of the rect
 
 out vec4 fragColor;
 
 void main() {
-    float distance = (length(max(vertUV*vertUV - radius, 0)) + radius) * 0.5;
-    float alpha = smoothstep(0.0, 1.5, (0.5 - distance) / fwidth(distance));
+    vec2 factor = size / max(size.x, size.y);
+    float distance = length(max(abs(vertUV * factor) - 1.0 * factor + radius, 0.0)) - radius;
+    float alpha = 1.0 - smoothstep(0.0, 1.5, distance / fwidth(distance));
     fragColor = vec4(vertColor.rgb, vertColor.a * alpha);
 }

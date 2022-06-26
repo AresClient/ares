@@ -7,6 +7,7 @@ import net.meshmc.mesh.api.packet.client.CPacketChatMessage
 import net.meshmc.mesh.event.MeshEvent
 import net.meshmc.mesh.event.events.client.InputEvent
 import net.meshmc.mesh.event.events.client.PacketEvent
+import net.meshmc.mesh.event.events.client.ScreenOpenedEvent
 import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
 import org.apache.logging.log4j.LogManager
@@ -18,12 +19,6 @@ import org.aresclient.ares.gui.AresTitleScreen
 import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.*
-import org.aresclient.ares.renderer.BlurFrameBuffer
-import org.aresclient.ares.renderer.Buffer
-import org.aresclient.ares.renderer.MSAAFrameBuffer
-import org.aresclient.ares.renderer.Shader
-import org.aresclient.ares.renderer.SkyBox
-import org.aresclient.ares.renderer.Texture
 import java.io.File
 
 /*
@@ -44,16 +39,16 @@ class Ares: Mesh.Initializer {
         val MANAGERS = arrayListOf<Manager>()
         val MODULES = arrayListOf<Module>()
 
-        private var first = true
+        @field:EventHandler
+        private val screenOpenedEventListener = EventListener<ScreenOpenedEvent> { event ->
+            if(event.isMainMenu) MESH.minecraft.openScreen(AresTitleScreen())
+        }
+
         @field:EventHandler
         private val tickEventListener = EventListener<TickEvent.Client> { event ->
             if(event.era == MeshEvent.Era.BEFORE) {
                 for(module in MODULES) if(module.isEnabled()) module.tick()
                 MANAGERS.forEach(Manager::tick)
-            }
-            if(first) {
-                MESH.minecraft.openScreen(AresTitleScreen())
-                first = false
             }
         }
 

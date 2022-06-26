@@ -2,23 +2,26 @@ package org.aresclient.ares.gui
 
 import net.meshmc.mesh.api.render.Screen
 import org.aresclient.ares.Ares
+import org.aresclient.ares.gui.api.TitleScreenButton
 import org.aresclient.ares.renderer.*
 import org.aresclient.ares.utils.Renderer
 
+// TODO: ADD QUIT GAME AND OPTIONS BUTTON
 class AresTitleScreen: Screen("Ares Main Menu") {
     companion object {
         private val SKYBOX = SkyBox("/assets/ares/textures/panorama/2b2t")
         private lateinit var SKYBOX_STACK: MatrixStack
+        private val BLUR_FRAMEBUFFER = BlurFrameBuffer(Ares.MESH.minecraft.resolution)
         private lateinit var MATRIX_STACK: MatrixStack
 
         private val LOGO = Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/ares_hex.png")) // 903 x 1042
-        private val BUFFER = Buffer
+        private val IMAGE = Buffer
             .beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                 0f, 0f, 0f, 0f, 0f,
-                0f, 100f, 0f, 0f, 1f,
-                903f / 1042f * 100f, 100f, 0f, 1f, 1f,
-                903f / 1042f * 100f, 0f, 0f, 1f, 0f
+                0f, 126f, 0f, 0f, 1f,
+                903f / 1042f * 126f, 126f, 0f, 1f, 1f,
+                903f / 1042f * 126f, 0f, 0f, 1f, 0f
             )
             .indices(
                 0, 1, 2,
@@ -26,27 +29,23 @@ class AresTitleScreen: Screen("Ares Main Menu") {
             )
             .end()
 
-        // TODO: UPDATE ROUNDED SHADER TO ALLOW NON-SQUARE RECTANGLES TO NOT BE DISTORTED
-        private val BUTTON = Buffer
-            .beginStatic(Shader.POSITION_COLOR, VertexFormat.POSITION_COLOR, 8, 12)
-            .vertices(
-                110f, 22f, 0f, /*1f, 1f,*/ 0.54f, 0.03f, 0.03f, 1f,
-                110f, 0f, 0f, /*1f, -1f,*/ 0.54f, 0.03f, 0.03f, 1f,
-                0f,  22f, 0f, /*-1f, 1f,*/ 0.54f, 0.03f, 0.03f, 1f,
-                0f, 0f, 0f, /*-1f, -1f,*/ 0.54f, 0.03f, 0.03f, 1f,
-
-                109f, 21f, 0f, /*1f, 1f,*/ 0f, 0f, 0f, 1f,
-                109f, 1f, 0f, /*1f, -1f,*/ 0f, 0f, 0f, 1f,
-                1f,  21f, 0f, /*-1f, 1f,*/ 0f, 0f, 0f, 1f,
-                1f, 1f, 0f, /*-1f, -1f,*/ 0f, 0f, 0f, 1f
-            )
-            .indices(
-                0, 1, 2,
-                1, 2, 3,
-                4, 5, 6,
-                5, 6, 7,
-            )
-            .end()
+        private val BUTTONS = listOf(
+            TitleScreenButton("Singleplayer", 143f, 0f) {
+                openSelectWorldScreen()
+            },
+            TitleScreenButton("Multiplayer", 143f, 26f) {
+                openMultiplayerScreen()
+            },
+            TitleScreenButton("Realms", 143f, 52f) {
+                openRealmsMainScreen()
+            },
+            TitleScreenButton("Accounts", 143f, 78f) {
+                println("CLICKED!")
+            },
+            TitleScreenButton("Options", 143f, 104f) {
+                openOptionsScreen()
+            }
+        )
     }
 
     override fun init() {
@@ -60,29 +59,42 @@ class AresTitleScreen: Screen("Ares Main Menu") {
             it.model().rotate(Math.toRadians(45.0).toFloat(), 0f, 1f, 0f)
         }
 
+        BLUR_FRAMEBUFFER.resize(Ares.MESH.minecraft.resolution)
+
         MATRIX_STACK = MatrixStack().also {
             it.projection().ortho(0F, width.toFloat(), height.toFloat(), 0F, 0F, 1F)
         }
     }
 
-    override fun render(mouseX: Int, mouseY: Int, partialTicks: Float) {
-        Ares.MESH.minecraft.framebuffer.clear()
+    private fun paneX() = width / 2f - 153f
+    private fun paneY() = height / 2f - 63f
 
-        Renderer.render2d {
-            SKYBOX.render(SKYBOX_STACK)
-            SKYBOX_STACK.model().rotate((0.0002 * partialTicks).toFloat(), 0f, 1f, 0f)
+    override fun render(mouseX: Int, mouseY: Int, partialTicks: Float) = Renderer.render2d {
+        // draw cool background
+        SKYBOX.render(SKYBOX_STACK)
+        SKYBOX_STACK.model().rotate((0.0002 * partialTicks).toFloat(), 0f, 1f, 0f)
 
-            MATRIX_STACK.push()
+        // begin drawing main pane
+        val paneX = paneX()
+        val paneY = paneY()
+        MATRIX_STACK.push()
+        MATRIX_STACK.model().translate(paneX, paneY, 0f)
 
-            LOGO.bind()
-            MATRIX_STACK.model().translate(width / 2f - 110f, height / 2f - 50f, 0f)
-            BUFFER.draw(MATRIX_STACK)
+        // draw logo
+        LOGO.bind()
+        IMAGE.draw(MATRIX_STACK)
 
-            // nav buttons:
-            MATRIX_STACK.model().translate(115f, 0f, 0f)
-            BUTTON.draw(MATRIX_STACK)
+        // draw nav buttons
+        BUTTONS.forEach { it.render(MATRIX_STACK, offsetX = paneX, offsetY = paneY) }
 
-            MATRIX_STACK.pop()
-        }
+        MATRIX_STACK.pop()
+    }
+
+    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        BUTTONS.forEach { it.click(mouseX - paneX(), mouseY - paneY(), mouseButton) }
+    }
+
+    override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        BUTTONS.forEach { it.release(mouseX - paneX(), mouseY - paneY(), mouseButton) }
     }
 }
