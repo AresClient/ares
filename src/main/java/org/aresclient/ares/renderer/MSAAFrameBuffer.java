@@ -1,7 +1,10 @@
 package org.aresclient.ares.renderer;
 
 import net.meshmc.mesh.util.render.Resolution;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL30;
+import org.lwjgl.opengl.GL32;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

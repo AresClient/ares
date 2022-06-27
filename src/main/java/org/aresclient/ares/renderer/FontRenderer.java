@@ -74,7 +74,7 @@ public class FontRenderer {
             float width = (float) bounds.getWidth();
             float height = (float) bounds.getHeight();
 
-            if(width > charWidth) charWidth = width;
+            if(width > charWidth) charWidth = width + 2;
             if(height > tempCharHeight) tempCharHeight = height;
         }
         charHeight = tempCharHeight;

@@ -10,6 +10,7 @@ import net.meshmc.mesh.event.events.client.PacketEvent
 import net.meshmc.mesh.event.events.client.ScreenOpenedEvent
 import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
+import net.meshmc.mesh.util.render.Color
 import org.apache.logging.log4j.LogManager
 import org.aresclient.ares.command.BindCommand
 import org.aresclient.ares.command.ConfigCommand
@@ -18,7 +19,8 @@ import org.aresclient.ares.command.UnbindCommand
 import org.aresclient.ares.gui.AresTitleScreen
 import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
-import org.aresclient.ares.module.render.*
+import org.aresclient.ares.module.render.ESP
+import org.aresclient.ares.module.render.TestModule
 import java.io.File
 
 /*
@@ -31,17 +33,21 @@ class Ares: Mesh.Initializer {
         val MESH = Mesh.getMesh()
         val LOGGER = LogManager.getLogger("Ares")
 
+        val RED = Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)
+        val GRAY = Color(0.09803922f, 0.09803922f, 0.09803922f, 1f)
+
         var SETTINGS_FILE = File("ares/configs/settings.json")
         val SETTINGS = Settings.read(SETTINGS_FILE) {
            prettyPrint = true
         }
+        val CUSTOM_MAIN_MENU = SETTINGS.boolean("Ares Main Menu", true)
 
         val MANAGERS = arrayListOf<Manager>()
         val MODULES = arrayListOf<Module>()
 
         @field:EventHandler
         private val screenOpenedEventListener = EventListener<ScreenOpenedEvent> { event ->
-            if(event.isMainMenu) MESH.minecraft.openScreen(AresTitleScreen())
+            if(CUSTOM_MAIN_MENU.value && event.isMainMenu) MESH.minecraft.openScreen(AresTitleScreen())
         }
 
         @field:EventHandler

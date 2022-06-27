@@ -10,10 +10,11 @@ import java.awt.Font
 object Renderer {
     // TODO: BETTER CHECK FOR LEGACY OPENGL
     private val LEGACY = Ares.MESH.loaderVersion.startsWith("1.12")
-    private val FONT_RENDERERS = hashMapOf<Float, FontRenderer>()
+    private val FONT_RENDERERS = hashMapOf<Int, HashMap<Float, FontRenderer>>()
     private val FONT = Font.createFont(Font.TRUETYPE_FONT, Renderer::class.java.getResourceAsStream("/assets/ares/font/arial.ttf")) // TODO: CUSTOMIZE THIS
 
-    fun getFontRenderer(size: Float) = FONT_RENDERERS.getOrPut(size) { FontRenderer(FONT, size) }
+    fun getFontRenderer(size: Float, style: Int) = FONT_RENDERERS.getOrPut(style) { hashMapOf() }.getOrPut(size) { FontRenderer(FONT, size, style) }
+    fun getFontRenderer(size: Float) = Renderer.getFontRenderer(size, Font.PLAIN)
 
     inline fun render2d(callback: () -> Unit) {
         val state = begin()
@@ -98,5 +99,22 @@ object Renderer {
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
         callback()
         GL11.glDisable(GL11.GL_SCISSOR_TEST)
+    }
+
+    inline fun clip(area: () -> Unit, callback: () -> Unit) {
+        GL11.glEnable(GL11.GL_STENCIL_TEST)
+        GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT)
+        GL11.glStencilMask(0xFF)
+        GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF)
+        GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE)
+
+        area()
+
+        GL11.glStencilMask(0x00)
+        GL11.glStencilFunc(GL11.GL_NOTEQUAL, 0, 0xFF)
+
+        callback()
+
+        GL11.glDisable(GL11.GL_STENCIL_TEST)
     }
 }

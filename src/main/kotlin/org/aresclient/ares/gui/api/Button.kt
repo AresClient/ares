@@ -5,7 +5,6 @@ import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.renderer.Shader
 import org.aresclient.ares.renderer.VertexFormat
 import org.aresclient.ares.utils.Renderer
-import org.joml.Vector4f
 import kotlin.math.min
 
 abstract class Button(var x: Float, var y: Float, var width: Float, var height: Float, private val action: () -> Unit) {
@@ -23,39 +22,49 @@ abstract class Button(var x: Float, var y: Float, var width: Float, var height: 
             )
             .end()
     }
+    
+    protected var hovering = false
+    protected var hoverSince = 0L
 
     protected var holding = false
-    private var holdX = 0f
-    private var holdY = 0f
-    private var since = 0L
+    protected var holdX = 0f
+    protected var holdY = 0f
+    protected var holdSince = 0L
 
     protected abstract fun draw(matrixStack: MatrixStack)
 
-    fun render(matrixStack: MatrixStack, offsetX: Float = 0f, offsetY: Float = 0f) {
+    fun render(matrixStack: MatrixStack, mouseX: Float, mouseY: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
+        if(isHovering(mouseX - offsetX, mouseY - offsetY)) {
+            if(!hovering) {
+                hovering = true
+                hoverSince = System.currentTimeMillis()
+            }
+        } else hovering = false
+
         // draw button
         matrixStack.push()
         matrixStack.model().translate(x, y, 0f)
-        draw(matrixStack)
-        matrixStack.pop()
 
         // draw click circle if holding
         if(holding) {
-            val time = System.currentTimeMillis() - since
+            val time = System.currentTimeMillis() - holdSince
 
-            Renderer.scissor(x + offsetX, y + offsetY, width, height) {
+            Renderer.clip({ draw(matrixStack) }) {
+                matrixStack.pop()
                 matrixStack.push()
                 matrixStack.model().translate(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
                 CIRCLE.draw(matrixStack)
-                matrixStack.pop()
             }
-        }
+        } else draw(matrixStack)
+
+        matrixStack.pop()
     }
 
-    fun isHovering(mouseX: Float, mouseY: Float) = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
+    open fun isHovering(mouseX: Float, mouseY: Float) = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
 
     fun click(mouseX: Float, mouseY: Float, mouseButton: Int) {
         if(mouseButton == 0 && isHovering(mouseX, mouseY)) {
-            since = System.currentTimeMillis()
+            holdSince = System.currentTimeMillis()
             holdX = mouseX
             holdY = mouseY
             holding = true
@@ -68,4 +77,6 @@ abstract class Button(var x: Float, var y: Float, var width: Float, var height: 
             holding = false
         }
     }
+
+    abstract fun delete()
 }
