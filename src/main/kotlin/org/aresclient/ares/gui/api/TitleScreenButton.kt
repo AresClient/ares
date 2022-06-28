@@ -18,7 +18,7 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
         private val FONT_RENDERER = Renderer.getFontRenderer(14f, Font.BOLD)
 
         private val BUFFER = Buffer
-            .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 12, 18)
+            .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
             .vertices(
                 // outline
                 WIDTH, HEIGHT, 0f, 1f, 1f, Ares.RED.red, Ares.RED.green, Ares.RED.blue, Ares.RED.alpha,

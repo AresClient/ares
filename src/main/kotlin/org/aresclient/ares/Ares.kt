@@ -17,6 +17,7 @@ import org.aresclient.ares.command.ConfigCommand
 import org.aresclient.ares.command.SettingCommand
 import org.aresclient.ares.command.UnbindCommand
 import org.aresclient.ares.gui.AresTitleScreen
+import org.aresclient.ares.gui.ClickGUI
 import org.aresclient.ares.manager.RotationManager
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.ESP
@@ -44,6 +45,8 @@ class Ares: Mesh.Initializer {
 
         val MANAGERS = arrayListOf<Manager>()
         val MODULES = arrayListOf<Module>()
+
+        val CLICKGUI = ClickGUI()
 
         @field:EventHandler
         private val screenOpenedEventListener = EventListener<ScreenOpenedEvent> { event ->
@@ -86,6 +89,9 @@ class Ares: Mesh.Initializer {
 
         @field:EventHandler
         private val onInputKey = EventListener<InputEvent.Keyboard> { event ->
+            if(ClickGUI.bind.value == event.key)
+                if(event.state == InputEvent.Keyboard.State.PRESSED)
+                    MESH.minecraft.openScreen(CLICKGUI)
             for(module in MODULES) {
                 if(module.getBind() == event.key) {
                     when(event.state) {
