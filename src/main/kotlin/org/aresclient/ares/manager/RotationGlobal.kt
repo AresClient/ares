@@ -6,16 +6,16 @@ import net.meshmc.mesh.api.math.Vec2f
 import net.meshmc.mesh.api.packet.client.CPacketMovePlayer
 import net.meshmc.mesh.event.MeshEvent
 import net.meshmc.mesh.event.events.client.PacketEvent
-import org.aresclient.ares.Manager
+import org.aresclient.ares.Global
 import org.aresclient.ares.utils.Rotator
 import org.aresclient.ares.utils.Timer
 
 /**
  * TODO: Test any of this actually works
  */
-class RotationManager: Manager("Rotation Manager") {
-    private var globalYawStep = settings.float("Global Yaw Step", 180F)
-    private var globalPitchStep = settings.float("Global Pitch Step", 180F)
+class RotationGlobal: Global("Rotation Global") {
+    private var yawStep = settings.float("Yaw Step", 180F)
+    private var pitchStep = settings.float("Pitch Step", 180F)
 
     private var rotation: Vec2f? = null
 

@@ -2,7 +2,7 @@ package org.aresclient.ares.command
 
 import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.Command
-import org.aresclient.ares.Manager
+import org.aresclient.ares.Global
 import org.aresclient.ares.Setting
 import org.aresclient.ares.Settings
 import org.aresclient.ares.module.Module
@@ -29,8 +29,8 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
             command[i] = command[i].replace('_', ' ').uppercase(Locale.getDefault())
 
         val setting =
-            if(command[2].endsWith("MANAGER"))
-                getSetting(command, Manager.SETTINGS)
+            if(command[2].endsWith("GLOBAL"))
+                getSetting(command, Global.SETTINGS)
             else
                 getSetting(command, Module.SETTINGS)
 

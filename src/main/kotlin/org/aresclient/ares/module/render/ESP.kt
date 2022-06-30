@@ -5,26 +5,21 @@ import net.meshmc.mesh.api.entity.EntityType
 import net.meshmc.mesh.api.math.Box
 import net.meshmc.mesh.util.math.MathHelper
 import net.meshmc.mesh.util.render.Color
+import org.aresclient.ares.manager.RenderGlobal
+import org.aresclient.ares.manager.RenderGlobalEvent
 import org.aresclient.ares.module.Category
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.renderer.Buffer
-import org.aresclient.ares.renderer.Shader
-import org.aresclient.ares.renderer.VertexFormat
-import org.aresclient.ares.utils.Renderer
 
 object ESP: Module("ESP", "See outlines of players through walls", Category.RENDER, enabled = true) {
     private val color = settings.color("Color", Color.RED)
-    private val buffer by lazy { Buffer.beginDynamic(Shader.LINES, VertexFormat.LINES).lines() }
 
-    override fun renderWorld(delta: Float) {
-        Renderer.render3d { matrixStack ->
-            buffer.begin()
-            MC.world.loadedEntities.forEach { entity ->
-                if(entity.entityType == EntityType.COW && entity != MC.player)
-                    buffer.rainbox(entity.getInterpolatedBoundingBox(delta), 2f)
-            }
-            buffer.end()
-            buffer.draw(matrixStack)
+    override fun onRenderWorld(event: RenderGlobalEvent) {
+        if(event.type == RenderGlobal.Buffers.TRIANGLES) return
+
+        MC.world.loadedEntities.forEach {
+            if(it.entityType == EntityType.PLAYER && it != MC.player)
+                event.getBuffer().rainbox(it.getInterpolatedBoundingBox(event.delta), 2f)
         }
     }
 

@@ -18,10 +18,11 @@ import org.aresclient.ares.command.SettingCommand
 import org.aresclient.ares.command.UnbindCommand
 import org.aresclient.ares.gui.AresTitleScreen
 import org.aresclient.ares.gui.ClickGUI
-import org.aresclient.ares.manager.RotationManager
+import org.aresclient.ares.manager.RotationGlobal
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.ESP
 import org.aresclient.ares.module.render.TestModule
+import org.aresclient.ares.manager.RenderGlobal
 import java.io.File
 
 /*
@@ -43,7 +44,7 @@ class Ares: Mesh.Initializer {
         }
         val CUSTOM_MAIN_MENU = SETTINGS.boolean("Ares Main Menu", true)
 
-        val MANAGERS = arrayListOf<Manager>()
+        val GLOBALS = arrayListOf<Global>()
         val MODULES = arrayListOf<Module>()
 
         val CLICKGUI = ClickGUI()
@@ -56,24 +57,19 @@ class Ares: Mesh.Initializer {
         @field:EventHandler
         private val tickEventListener = EventListener<TickEvent.Client> { event ->
             if(event.era == MeshEvent.Era.BEFORE) {
-                for(module in MODULES) if(module.isEnabled()) module.tick()
-                MANAGERS.forEach(Manager::tick)
+                MODULES.forEach(Module::tick)
+                GLOBALS.forEach(Global::tick)
             }
         }
 
         @field:EventHandler
-        private val renderEventListener = EventListener<RenderEvent> { event ->
-            when(event.type) {
-                RenderEvent.Type.HUD -> for(module in MODULES) if(module.isEnabled()) module.renderHud(event.tickDelta)
-                RenderEvent.Type.WORLD -> for(module in MODULES) if(module.isEnabled()) module.renderWorld(event.tickDelta)
-                else -> Unit
-            }
+        private val renderEventListener = EventListener<RenderEvent.Hud> { event ->
+            MODULES.forEach { it.renderHud(event.tickDelta) }
         }
 
         @field:EventHandler
         private val motionEventListener = EventListener<TickEvent.Motion> { event ->
-            if(event.era == MeshEvent.Era.BEFORE)
-                for(module in MODULES) if(module.isEnabled()) module.motion()
+            if(event.era == MeshEvent.Era.BEFORE) MODULES.forEach(Module::motion)
         }
 
         @field:EventHandler
@@ -130,7 +126,8 @@ class Ares: Mesh.Initializer {
         MESH.eventManager.register(Ares::class.java)
 
         // load managers into classpath
-        RotationManager()
+        RenderGlobal()
+        RotationGlobal()
 
         // load modules into classpath
         ESP
@@ -144,7 +141,7 @@ class Ares: Mesh.Initializer {
 
         // register events after loading modules / managers
         MODULES.forEach(Module::postInit)
-        for(manager in MANAGERS) MESH.eventManager.register(manager)
+        GLOBALS.forEach(MESH.eventManager::register)
 
         // save settings on shutdown
         Runtime.getRuntime().addShutdownHook(Thread {
@@ -158,6 +155,6 @@ class Ares: Mesh.Initializer {
             SETTINGS.write(SETTINGS_FILE)
         })
 
-        LOGGER.info("Ares loaded {} modules and {} managers in {} milliseconds", MODULES.size, MANAGERS.size, System.currentTimeMillis() - start)
+        LOGGER.info("Ares loaded {} modules and {} globals in {} milliseconds", MODULES.size, GLOBALS.size, System.currentTimeMillis() - start)
     }
 }

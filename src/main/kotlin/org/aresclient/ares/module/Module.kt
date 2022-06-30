@@ -1,14 +1,13 @@
 package org.aresclient.ares.module
 
 import org.aresclient.ares.Ares
+import org.aresclient.ares.manager.RenderGlobalEvent
 
 abstract class Module(val name: String, val description: String, val category: Category, enabled: Boolean = false,
                   bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false, val priority: Int = -1) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("modules")
-
         val MC = Ares.MESH.minecraft
-        val RENDERER = Ares.MESH.renderer
     }
 
     protected val settings = SETTINGS.category(name)
@@ -41,29 +40,53 @@ abstract class Module(val name: String, val description: String, val category: C
     }
 
     fun postInit() {
-        if(isEnabled() || alwaysListening) Ares.MESH.eventManager.register(this)
+        if(shouldTick()) Ares.MESH.eventManager.register(this)
     }
 
-    open fun tick() {
+    fun tick() {
+        if(shouldTick()) onTick()
     }
 
-    open fun renderHud(delta: Float) {
+    fun renderHud(delta: Float) {
+        if(shouldTick()) onRenderHud(delta)
     }
 
-    open fun renderWorld(delta: Float) {
+    fun renderWorld(event: RenderGlobalEvent) {
+        if(shouldTick()) onRenderWorld(event)
     }
 
-    open fun motion() {
+    fun motion() {
+        if(shouldTick()) onMotion()
     }
 
-    open fun enable() {
+    fun enable() {
         enabled.value = true
         if(!alwaysListening) Ares.MESH.eventManager.register(this)
+        onEnable()
     }
 
-    open fun disable() {
+    fun disable() {
         enabled.value = false
         if(!alwaysListening) Ares.MESH.eventManager.unregister(this)
+        onDisable()
+    }
+
+    protected open fun onTick() {
+    }
+
+    protected open fun onRenderHud(delta: Float) {
+    }
+
+    protected open fun onRenderWorld(event: RenderGlobalEvent) {
+    }
+
+    protected open fun onMotion() {
+    }
+
+    protected open fun onEnable() {
+    }
+
+    protected open fun onDisable() {
     }
 
     fun setEnabled(value: Boolean) {
@@ -74,5 +97,10 @@ abstract class Module(val name: String, val description: String, val category: C
     fun toggle() {
         if(enabled.value) disable()
         else enable()
+    }
+
+    private fun shouldTick(): Boolean {
+        if(enabled.value || alwaysListening) return true
+        return false
     }
 }

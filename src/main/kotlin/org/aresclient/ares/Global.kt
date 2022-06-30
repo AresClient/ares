@@ -1,17 +1,16 @@
 package org.aresclient.ares
 
-abstract class Manager(val name: String) {
+abstract class Global(val name: String) {
     companion object {
-        val SETTINGS = Ares.SETTINGS.category("managers")
+        val SETTINGS = Ares.SETTINGS.category("globals")
 
         val MC = Ares.MESH.minecraft
-        val RENDERER = Ares.MESH.renderer
     }
 
     protected val settings = SETTINGS.category(name)
 
     init {
-        Ares.MANAGERS.add(this)
+        Ares.GLOBALS.add(this)
     }
 
     open fun tick() {
