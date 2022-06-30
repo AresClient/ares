@@ -1,11 +1,12 @@
 package org.aresclient.ares.utils
 
 import org.aresclient.ares.Ares
+import org.aresclient.ares.module.Module
+import org.aresclient.ares.module.render.ESP
 import org.aresclient.ares.renderer.FontRenderer
 import org.aresclient.ares.renderer.MatrixStack
 import org.lwjgl.opengl.GL11
 import java.awt.Font
-
 
 object Renderer {
     // TODO: BETTER CHECK FOR LEGACY OPENGL
@@ -25,14 +26,29 @@ object Renderer {
     inline fun render3d(callback: (MatrixStack) -> Unit) {
         val state = begin()
 
-        // TODO: THIS IS INCORRECT I THINK
+        // TODO: THIS DOES NOT WORK ON 1.12.2!!!
         val matrixStack = MatrixStack()
         Ares.MESH.renderer.camera.also {
-            matrixStack.projection().translate(-it.x.toFloat(), -it.y.toFloat(), -it.z.toFloat())
+            matrixStack.projection()
+                .set(Ares.MESH.renderer.renderStack.projectionMatrix)
+                .rotate(wrapDegrees(it.pitch).toRadians(), 1f, 0f, 0f)
+                .rotate(wrapDegrees(it.yaw + 180f).toRadians(), 0f, 1f, 0f)
+                .translate(-it.x.toFloat(), -it.y.toFloat(), -it.z.toFloat())
         }
         callback(matrixStack)
 
         state.end()
+    }
+
+    fun wrapDegrees(degrees: Float): Float{
+        var wrapped = degrees % 360f
+        if(wrapped >= 180f) wrapped -= 360f
+        if(wrapped < -180f) wrapped += 360f
+        return wrapped
+    }
+
+    fun Float.toRadians(): Float {
+        return this / 180f * 3.1415927f
     }
 
     data class State(val depth: Boolean, val blend: Boolean, val cull: Boolean,  val texture: Boolean, val alpha/*LEGACY*/: Boolean)

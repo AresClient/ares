@@ -64,8 +64,8 @@ class Ares: Mesh.Initializer {
         @field:EventHandler
         private val renderEventListener = EventListener<RenderEvent> { event ->
             when(event.type) {
-                RenderEvent.Type.HUD -> for(module in MODULES) if(module.isEnabled()) module.renderHud()
-                RenderEvent.Type.WORLD -> for(module in MODULES) if(module.isEnabled()) module.renderWorld()
+                RenderEvent.Type.HUD -> for(module in MODULES) if(module.isEnabled()) module.renderHud(event.tickDelta)
+                RenderEvent.Type.WORLD -> for(module in MODULES) if(module.isEnabled()) module.renderWorld(event.tickDelta)
                 else -> Unit
             }
         }

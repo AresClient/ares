@@ -47,10 +47,10 @@ abstract class Module(val name: String, val description: String, val category: C
     open fun tick() {
     }
 
-    open fun renderHud() {
+    open fun renderHud(delta: Float) {
     }
 
-    open fun renderWorld() {
+    open fun renderWorld(delta: Float) {
     }
 
     open fun motion() {

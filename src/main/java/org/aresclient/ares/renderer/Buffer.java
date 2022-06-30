@@ -25,29 +25,29 @@ public class Buffer {
 
 
     private final Shader shader;
+    private final VertexFormat vertexFormat;
 
     private final List<Uniform> uniforms = new ArrayList<>();
     private final boolean dynamic;
 
-    private final ByteBuffer vertBuffer;
-    private final IntBuffer indexBuffer;
-    private boolean vertices = false;
-    private boolean indices = false;
-    private boolean building = true;
+    private ByteBuffer vertBuffer;
+    private IntBuffer indexBuffer;
+    private int vertexSize, indexSize; // vertexSize is size in bytes and indexSize is size in ints (4 bytes)
+    private int vertexPos = 0, indexPos = 0;
+    private boolean vertexDirty = false, indexDirty = false;
+    private boolean vertexSizeDirty = true, indexSizeDirty = true;
 
     private boolean lines = false;
     private Uniform.F2 linesViewport = null;
     private final int projection;
     private final int model;
 
-    private int indexCount = 0;
-
     public static Buffer beginStatic(Shader shader, VertexFormat vertexFormat, int vert, int index) {
         return new Buffer(shader, vertexFormat, false, vert, index);
     }
 
-    public static Buffer beginDynamic(Shader shader, VertexFormat vertexFormat, int vert, int index) {
-        return new Buffer(shader, vertexFormat, true, vert, index);
+    public static Buffer beginDynamic(Shader shader, VertexFormat vertexFormat) {
+        return new Buffer(shader, vertexFormat, true, 0, 0);
     }
 
     public Buffer lines(float aa) {
@@ -64,9 +64,16 @@ public class Buffer {
 
     private Buffer(Shader shader, VertexFormat vertexFormat, boolean dynamic, int vert, int index) {
         this.dynamic = dynamic;
+        if(dynamic) {
+            vert = 4;
+            index = 6;
+        }
         this.shader = shader;
-        this.vertBuffer = BufferUtils.createByteBuffer(vert * vertexFormat.getStride());
-        this.indexBuffer = BufferUtils.createIntBuffer(index);
+        this.vertexFormat = vertexFormat;
+        this.vertexSize = vert * vertexFormat.getStride();
+        this.indexSize = index;
+        this.vertBuffer = BufferUtils.createByteBuffer(vertexSize);
+        this.indexBuffer = BufferUtils.createIntBuffer(indexSize);
         this.projection = GL20.glGetUniformLocation(shader.getProgram(), "projection");
         this.model = GL20.glGetUniformLocation(shader.getProgram(), "model");
 
@@ -79,35 +86,102 @@ public class Buffer {
         BUFFERS.add(this);
     }
 
-    public Buffer vertices(float... data) {
-        for(float f: data) vertBuffer.putFloat(f);
+    public void begin() {
+        beginVertices();
+        beginIndices();
+    }
 
-        vertices = true;
+    public void beginVertices() {
+        vertexPos = 0;
+        vertBuffer.clear();
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+    }
+
+    public void beginIndices() {
+        indexPos = 0;
+        indexBuffer.clear();
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
+    }
+
+    public Buffer vertices(float... data) {
+        vertexPos += data.length * 4;
+        tryIncreaseVertexBuffer();
+        for(float f: data) vertBuffer.putFloat(f);
+        vertexDirty = true;
         return this;
     }
 
     public Buffer vertices(ByteBuffer buffer) {
+        vertexPos += buffer.remaining();
+        tryIncreaseVertexBuffer();
         vertBuffer.put(buffer);
-
-        vertices = true;
+        vertexDirty = true;
         return this;
+    }
+
+    private void tryIncreaseVertexBuffer() {
+        if(vertexPos > vertexSize) {
+            int size = vertexSize;
+            while(size < vertexPos) size *= 2;
+
+            ByteBuffer buffer = BufferUtils.createByteBuffer(size);
+            buffer.put((ByteBuffer) vertBuffer.flip());
+
+            vertBuffer = buffer;
+            vertexSize = size;
+            vertexSizeDirty = true;
+        }
     }
 
     public Buffer indices(int... data) {
+        indexPos += data.length;
+        tryIncreaseIndexBuffer();
         indexBuffer.put(data);
-
-        indices = true;
-        indexCount = data.length;
+        indexDirty = true;
         return this;
     }
 
-    public Buffer end() {
-        if(!vertices) throw new RuntimeException("Vertices not specified for buffer!");
-        if(!indices) throw new RuntimeException("Indices not specified for buffer!");
-        vertices = indices = false;
+    public Buffer indicesOffset(int... data) {
+        int offset = vertexPos / vertexFormat.getStride();
+        int[] out = new int[data.length];
+        for(int i = 0; i < data.length; i++) out[i] = data[i] + offset;
+        return indices(out);
+    }
 
-        GL15.glBufferData(GL15.GL_ARRAY_BUFFER, (ByteBuffer) vertBuffer.flip(), dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
-        GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, (IntBuffer) indexBuffer.flip(), dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+    private void tryIncreaseIndexBuffer() {
+        if(indexPos > indexSize) {
+            int size = indexSize;
+            while(size < indexPos) size *= 2;
+
+            IntBuffer buffer = BufferUtils.createIntBuffer(size);
+            buffer.put((IntBuffer) indexBuffer.flip());
+
+            indexBuffer = buffer;
+            indexSize = size;
+            indexSizeDirty = true;
+        }
+    }
+
+    public Buffer end() {
+        if(vertexSizeDirty) {
+            vertBuffer.flip().limit(vertexSize);
+            GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertBuffer, dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+            vertexSizeDirty = false;
+            vertexDirty = false;
+        } else if(vertexDirty) {
+            GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, (ByteBuffer) vertBuffer.flip());
+            vertexDirty = false;
+        }
+
+        if(indexSizeDirty) {
+            indexBuffer.flip().limit(indexSize);
+            GL15.glBufferData(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer, dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
+            indexSizeDirty = false;
+            indexDirty = false;
+        } else if(indexDirty) {
+            GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, (IntBuffer) indexBuffer.flip());
+            indexDirty = false;
+        }
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
@@ -125,9 +199,6 @@ public class Buffer {
     }
 
     public void draw(MatrixStack matrixStack) {
-        if(vertices) GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, (ByteBuffer) vertBuffer.flip());
-        if(indices) GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, (IntBuffer) indexBuffer.flip());
-
         if(shader != null && !shader.isAttached()) shader.attach();
 
         if(lines) {
@@ -140,7 +211,7 @@ public class Buffer {
 
         GL30.glBindVertexArray(vao);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
-        GL11.glDrawElements(lines ? GL11.GL_LINES : GL11.GL_TRIANGLES, indexCount, GL11.GL_UNSIGNED_INT, 0);
+        GL11.glDrawElements(lines ? GL11.GL_LINES : GL11.GL_TRIANGLES, indexPos, GL11.GL_UNSIGNED_INT, 0);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
 
@@ -170,7 +241,6 @@ public class Buffer {
         }
         BUFFERS.clear();
     }
-
 
     // hacky code from now on...
     // why does 1.12.2 use lwjgl nightly????
