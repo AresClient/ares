@@ -15,11 +15,11 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
     private val color = settings.color("Color", Color.RED)
 
     override fun onRenderWorld(event: RenderGlobalEvent) {
-        if(event.type == RenderGlobal.Buffers.TRIANGLES) return
-
         MC.world.loadedEntities.forEach {
-            if(it.entityType == EntityType.PLAYER && it != MC.player)
-                event.getBuffer().rainbox(it.getInterpolatedBoundingBox(event.delta), 2f)
+            if(it.entityType == EntityType.COW && it != MC.player)
+                event.lines {
+                    RenderGlobal.INSTANCE.lines.rainbox(it.getInterpolatedBoundingBox(event.delta), 2f)
+                }
         }
     }
 
@@ -59,7 +59,7 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
     }
 
     // box but rainbow :o
-    private fun Buffer.rainbox(box: Box, width: Float) {
+    private fun Buffer.rainbox(box: Box, width: Float): RenderGlobal.LineOrder {
         val color0 = rainbow(1280L)
         val color1 = rainbow(2560L)
         val color2 = rainbow(3840L)
@@ -91,6 +91,8 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
             minX, maxY, maxZ, width, color6.red, color6.green, color6.blue, color6.alpha,
             maxX, maxY, maxZ, width, color7.red, color7.green, color7.blue, color7.alpha,
         )
+
+        return RenderGlobal.LineOrder
     }
 
     private fun rainbow(offset: Long): Color {
