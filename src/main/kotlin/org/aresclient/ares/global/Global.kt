@@ -1,10 +1,11 @@
-package org.aresclient.ares
+package org.aresclient.ares.global
 
-abstract class Global(val name: String) {
+import org.aresclient.ares.Ares
+
+open class Global(val name: String) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("globals")
-
-        val MC = Ares.MESH.minecraft
+        internal val MC = Ares.MESH.minecraft
     }
 
     protected val settings = SETTINGS.category(name)

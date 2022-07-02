@@ -13,7 +13,7 @@ import java.util.List;
 public class MSAAFrameBuffer {
     private static final List<MSAAFrameBuffer> MSAAS = new ArrayList<>();
     private static final Buffer BUFFER = Buffer
-            .beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
+            .createStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                     -1, -1, 0, 0, 0,
                     -1, 1, 0, 0, 1,
@@ -23,8 +23,7 @@ public class MSAAFrameBuffer {
             .indices(
                     0, 1, 2,
                     2, 0, 3
-            )
-            .end();
+            );
 
     private final int framebuffer = GL30.glGenFramebuffers();
     private final int msTexture = GL11.glGenTextures();

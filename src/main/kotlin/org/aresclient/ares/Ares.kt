@@ -12,17 +12,15 @@ import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
 import net.meshmc.mesh.util.render.Color
 import org.apache.logging.log4j.LogManager
-import org.aresclient.ares.command.BindCommand
-import org.aresclient.ares.command.ConfigCommand
-import org.aresclient.ares.command.SettingCommand
-import org.aresclient.ares.command.UnbindCommand
+import org.aresclient.ares.command.*
 import org.aresclient.ares.gui.AresTitleScreen
 import org.aresclient.ares.gui.ClickGUI
-import org.aresclient.ares.manager.RotationGlobal
+import org.aresclient.ares.global.Global
+import org.aresclient.ares.global.RotationGlobal
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.ESP
 import org.aresclient.ares.module.render.TestModule
-import org.aresclient.ares.manager.RenderGlobal
+import org.aresclient.ares.global.RenderGlobal
 import java.io.File
 
 /*
@@ -125,13 +123,15 @@ class Ares: Mesh.Initializer {
         // register companion object for basic module / manager events
         MESH.eventManager.register(Ares::class.java)
 
-        // load managers into classpath
-        RenderGlobal()
-        RotationGlobal()
+        // load globals into classpath
+        RenderGlobal
+        RotationGlobal
+        GLOBALS.forEach { MESH.eventManager.register(it.javaClass) }
 
         // load modules into classpath
         ESP
         TestModule
+        MODULES.forEach { MESH.eventManager.register(it.javaClass) }
 
         // load commands into classpath
         BindCommand
@@ -139,11 +139,8 @@ class Ares: Mesh.Initializer {
         SettingCommand
         UnbindCommand
 
-        // register events after loading modules / managers
-        MODULES.forEach(Module::postInit)
-        GLOBALS.forEach(MESH.eventManager::register)
-
         // save settings on shutdown
+        // TODO: THIS DOESNT WORK EVERY TIME
         Runtime.getRuntime().addShutdownHook(Thread {
             /*Buffer.clear() // TODO: DO WE NEED THIS?
             Shader.clear()

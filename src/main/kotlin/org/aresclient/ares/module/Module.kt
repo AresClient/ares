@@ -1,10 +1,11 @@
 package org.aresclient.ares.module
 
 import org.aresclient.ares.Ares
-import org.aresclient.ares.manager.RenderGlobalEvent
+import org.aresclient.ares.global.RenderGlobal
 
-abstract class Module(val name: String, val description: String, val category: Category, enabled: Boolean = false,
-                  bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false, val priority: Int = -1) {
+abstract class Module(
+    val name: String, val description: String, val category: Category, enabled: Boolean = false,
+    bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("modules")
         val MC = Ares.MESH.minecraft
@@ -37,10 +38,7 @@ abstract class Module(val name: String, val description: String, val category: C
     init {
         Ares.MODULES.add(this)
         category.modules.add(this)
-    }
-
-    fun postInit() {
-        if(shouldTick()) Ares.MESH.eventManager.register(this)
+        if(shouldTick()) Ares.MESH.eventManager.register(this.javaClass)
     }
 
     fun tick() {
@@ -51,7 +49,7 @@ abstract class Module(val name: String, val description: String, val category: C
         if(shouldTick()) onRenderHud(delta)
     }
 
-    fun renderWorld(event: RenderGlobalEvent) {
+    fun renderWorld(event: RenderGlobal.Event) {
         if(shouldTick()) onRenderWorld(event)
     }
 
@@ -77,7 +75,7 @@ abstract class Module(val name: String, val description: String, val category: C
     protected open fun onRenderHud(delta: Float) {
     }
 
-    protected open fun onRenderWorld(event: RenderGlobalEvent) {
+    protected open fun onRenderWorld(event: RenderGlobal.Event) {
     }
 
     protected open fun onMotion() {
@@ -99,8 +97,5 @@ abstract class Module(val name: String, val description: String, val category: C
         else enable()
     }
 
-    private fun shouldTick(): Boolean {
-        if(enabled.value || alwaysListening) return true
-        return false
-    }
+    private fun shouldTick() = enabled.value || alwaysListening
 }

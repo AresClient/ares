@@ -10,7 +10,7 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
         private const val BORDER = 0.03f
         private const val BOUNDS = 0.2f
 
-        private val IMAGE = Buffer.beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
+        private val IMAGE = Buffer.createStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                 1f - BOUNDS, 1f - BOUNDS, 0f, 1f, 1f,
                 1f - BOUNDS, BOUNDS, 0f, 1f, 0f,
@@ -21,9 +21,8 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
                 0, 1, 2,
                 1, 2, 3
             )
-            .end()
 
-        private val SHADOW = Buffer.beginStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
+        private val SHADOW = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
                 BORDER + 1, BORDER + 1, 0f, 1f, 1f, 0f, 0f, 0f, 0.4f,
                 BORDER + 1, 0f, 0f, 1f, -1f, 0f, 0f, 0f, 0.4f,
@@ -34,10 +33,9 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
                 0, 1, 2,
                 1, 2, 3
             )
-            .end()
     }
 
-    private val circle = Buffer.beginStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 8, 12)
+    private val circle = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 8, 12)
         .vertices(
             1f, 1f, 0f, 1f, 1f, outline.red, outline.green, outline.blue, outline.alpha,
             1f, 0f, 0f, 1f, -1f, outline.red, outline.green, outline.blue, outline.alpha,
@@ -55,9 +53,8 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
             4, 5, 6,
             5, 6, 7
         )
-        .end()
 
-    private val hover = Buffer.beginStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
+    private val hover = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
         .vertices(
             1f - BORDER, 1f - BORDER, 0f, 1f, 1f, outline.red, outline.green, outline.blue, 0.6f,
             1f - BORDER, BORDER, 0f, 1f, -1f, outline.red, outline.green, outline.blue, 0.6f,
@@ -68,7 +65,6 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
             0, 1, 2,
             1, 2, 3
         )
-        .end()
 
     override fun draw(matrixStack: MatrixStack) {
         if(holding) matrixStack.model().translate(0f, 1f, 0f)

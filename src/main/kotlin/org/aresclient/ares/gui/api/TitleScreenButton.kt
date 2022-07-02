@@ -18,7 +18,7 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
         private val FONT_RENDERER = Renderer.getFontRenderer(14f, Font.BOLD)
 
         private val BUFFER = Buffer
-            .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
+            .createStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
             .vertices(
                 // outline
                 WIDTH, HEIGHT, 0f, 1f, 1f, Ares.RED.red, Ares.RED.green, Ares.RED.blue, Ares.RED.alpha,
@@ -40,10 +40,9 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
             )
             .uniform(RADIUS)
             .uniform(SIZE)
-            .end()
 
         private val SHADOW = Buffer
-            .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 4, 6)
+            .createStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
                 WIDTH + 1, HEIGHT + 1, 0f, 1f, 1f, 0f, 0f, 0f, 0.4f,
                 WIDTH + 1, 1f, 0f, 1f, -1f, 0f, 0f, 0f, 0.4f,
@@ -56,10 +55,9 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
             )
             .uniform(RADIUS)
             .uniform(SIZE)
-            .end()
 
         private val HOVER = Buffer
-            .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 4, 6)
+            .createStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
                 WIDTH - 1, HEIGHT - 1, 0f, 1f, 1f, Ares.RED.red, Ares.RED.green, Ares.RED.blue, 0.6f,
                 WIDTH - 1, 1f, 0f, 1f, -1f, Ares.RED.red, Ares.RED.green, Ares.RED.blue, 0.6f,
@@ -72,7 +70,6 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
             )
             .uniform(RADIUS)
             .uniform(SIZE)
-            .end()
     }
 
     private val textX = WIDTH / 2 - FONT_RENDERER.getStringWidth(text) / 2f

@@ -15,7 +15,7 @@ public class BlurFrameBuffer {
     private static final Uniform.F2 RESOLUTION = SHADER.uniformF2("resolution");
     private static final Uniform.F2 DIRECTION = SHADER.uniformF2("direction");
     private static final Buffer BUFFER = Buffer
-            .beginStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
+            .createStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                     1, 1, 0,    1, 1,
                     1, -1, 0,   1, 0,
@@ -27,8 +27,7 @@ public class BlurFrameBuffer {
                     1, 2, 3
             )
             .uniform(RESOLUTION)
-            .uniform(DIRECTION)
-            .end();
+            .uniform(DIRECTION);
 
     private final int framebuffer = GL30.glGenFramebuffers();
     private final int first = GL11.glGenTextures();

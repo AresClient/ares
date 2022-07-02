@@ -9,7 +9,7 @@ import kotlin.math.min
 
 abstract class Button(var x: Float, var y: Float, var width: Float, var height: Float, private val action: () -> Unit) {
     private companion object {
-        private val CIRCLE = Buffer.beginStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
+        private val CIRCLE = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
                 1f, 1f, 0f,     1f, 1f,      1f, 1f, 1f, 0.3f,
                 1f, -1f, 0f,    1f, -1f,     1f, 1f, 1f, 0.3f,
@@ -20,7 +20,6 @@ abstract class Button(var x: Float, var y: Float, var width: Float, var height: 
                 0, 1, 2,
                 1, 2, 3
             )
-            .end()
     }
     
     protected var hovering = false

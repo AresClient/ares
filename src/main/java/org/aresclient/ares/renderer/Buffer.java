@@ -30,6 +30,7 @@ public class Buffer {
     private final List<Uniform> uniforms = new ArrayList<>();
     private final boolean dynamic;
 
+    private boolean building = true;
     private ByteBuffer vertBuffer;
     private IntBuffer indexBuffer;
     private int vertexSize, indexSize; // vertexSize is size in bytes and indexSize is size in ints (4 bytes)
@@ -42,11 +43,11 @@ public class Buffer {
     private final int projection;
     private final int model;
 
-    public static Buffer beginStatic(Shader shader, VertexFormat vertexFormat, int vert, int index) {
+    public static Buffer createStatic(Shader shader, VertexFormat vertexFormat, int vert, int index) {
         return new Buffer(shader, vertexFormat, false, vert, index);
     }
 
-    public static Buffer beginDynamic(Shader shader, VertexFormat vertexFormat) {
+    public static Buffer createDynamic(Shader shader, VertexFormat vertexFormat) {
         return new Buffer(shader, vertexFormat, true, 0, 0);
     }
 
@@ -79,28 +80,35 @@ public class Buffer {
 
         GL30.glBindVertexArray(vao);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
 
         vertexFormat.use();
+
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
+        GL30.glBindVertexArray(0);
+        BUFFER_RENDERER.setVertexBuffer(0);
+        BUFFER_RENDERER.setVertexArray(0);
 
         BUFFERS.add(this);
     }
 
-    public void begin() {
-        beginVertices();
-        beginIndices();
+    public Buffer reset() {
+        resetVertices();
+        resetIndices();
+        return this;
     }
 
-    public void beginVertices() {
+    public Buffer resetVertices() {
         vertexPos = 0;
         vertBuffer.clear();
-        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        building = true;
+        return this;
     }
 
-    public void beginIndices() {
+    public Buffer resetIndices() {
         indexPos = 0;
         indexBuffer.clear();
-        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
+        building = true;
+        return this;
     }
 
     public Buffer vertices(float... data) {
@@ -162,7 +170,10 @@ public class Buffer {
         }
     }
 
-    public Buffer end() {
+    private void end() {
+        GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vbo);
+        GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, ibo);
+
         if(vertexSizeDirty) {
             vertBuffer.flip().limit(vertexSize);
             GL15.glBufferData(GL15.GL_ARRAY_BUFFER, vertBuffer, dynamic ? GL15.GL_DYNAMIC_DRAW : GL15.GL_STATIC_DRAW);
@@ -185,13 +196,8 @@ public class Buffer {
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-        GL30.glBindVertexArray(0);
-
         BUFFER_RENDERER.setElementBuffer(0);
         BUFFER_RENDERER.setVertexBuffer(0);
-        BUFFER_RENDERER.setVertexArray(0);
-
-        return this;
     }
 
     public void draw() {
@@ -199,6 +205,11 @@ public class Buffer {
     }
 
     public void draw(MatrixStack matrixStack) {
+        if(building) {
+            end();
+            building = false;
+        }
+
         if(shader != null && !shader.isAttached()) shader.attach();
 
         if(lines) {

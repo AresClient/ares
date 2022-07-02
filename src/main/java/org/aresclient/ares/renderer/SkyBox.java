@@ -15,7 +15,7 @@ public class SkyBox {
     private static final List<SkyBox> SKY_BOXES = new ArrayList<>();
     private static final Shader SHADER = Shader.fromResources("/assets/ares/shaders/vert/skybox.vert", "/assets/ares/shaders/frag/skybox.frag");
     private static final Buffer BUFFER = Buffer
-            .beginStatic(SHADER, VertexFormat.POSITION, 8, 36)
+            .createStatic(SHADER, VertexFormat.POSITION, 8, 36)
             .vertices(
                     -1, 1, -1,
                     -1, -1, -1,
@@ -45,8 +45,7 @@ public class SkyBox {
                     // bottom
                     1, 6, 3,
                     3, 6, 7
-            )
-            .end();
+            );
 
     private final int texture = GL11.glGenTextures();
 

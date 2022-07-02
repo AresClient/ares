@@ -1,8 +1,7 @@
 package org.aresclient.ares.command
 
 import net.meshmc.mesh.util.render.Color
-import org.aresclient.ares.Command
-import org.aresclient.ares.Global
+import org.aresclient.ares.global.Global
 import org.aresclient.ares.Setting
 import org.aresclient.ares.Settings
 import org.aresclient.ares.module.Module

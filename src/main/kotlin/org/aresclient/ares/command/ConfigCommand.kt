@@ -1,7 +1,6 @@
 package org.aresclient.ares.command
 
 import org.aresclient.ares.Ares
-import org.aresclient.ares.Command
 import java.io.File
 import java.util.*
 

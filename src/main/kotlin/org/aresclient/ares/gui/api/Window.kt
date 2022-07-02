@@ -9,6 +9,7 @@ import org.aresclient.ares.renderer.VertexFormat
 import org.aresclient.ares.utils.Renderer
 import java.awt.Font
 
+// TODO: USE DYNAMIC BUFFERS INSTEAD OF CREATING A NEW STATIC BUFFER EACH DRAW CALL
 class Window(
     var name: String,
     parent: Element?,
@@ -21,7 +22,7 @@ class Window(
     height: () -> Int = { 270 }
 ): GuiElement(parent, matrixStack, isWindowOpen, spawnX, spawnY, width, height) {
     private companion object {
-        private val FONT_RENDERER = Renderer.getFontRenderer(14f, Font.PLAIN)
+        private val FONT_RENDERER = Renderer.getFontRenderer(14f)
         private val TITLEBAR_HEIGHT = 30f
     }
 
@@ -59,7 +60,7 @@ class Window(
 
         Renderer.render2d {
             Buffer
-                .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
+                .createStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
                 .vertices(
                     getWidth().toFloat(),   getHeight().toFloat(),  0f, 1f, 1f,     Ares.RED.red, Ares.RED.green, Ares.RED.blue, Ares.RED.alpha,
                     getWidth().toFloat(),   0f,                     0f, 1f, -1f,    Ares.RED.red, Ares.RED.green, Ares.RED.blue, Ares.RED.alpha,
@@ -79,7 +80,6 @@ class Window(
                 )
                 .uniform(windowRadius)
                 .uniform(windowSize)
-                .end()
                 .draw(getMatrixStack())
 
             val textX = getWidth() / 2 - FONT_RENDERER.getStringWidth(name) / 2
@@ -123,7 +123,7 @@ class WorkingArea(matrixStack: MatrixStack): GuiElement(null, matrixStack) {
 
         Renderer.render2d {
             Buffer
-                .beginStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
+                .createStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 8, 12)
                 .vertices(
                     getWidth().toFloat(),   getHeight().toFloat(),  0f, 1f, 1f,     Ares.RED.red, Ares.RED.green, Ares.RED.blue, Ares.RED.alpha,
                     getWidth().toFloat(),   0f,                     0f, 1f, -1f,    Ares.RED.red, Ares.RED.green, Ares.RED.blue, Ares.RED.alpha,
@@ -143,7 +143,6 @@ class WorkingArea(matrixStack: MatrixStack): GuiElement(null, matrixStack) {
                 )
                 .uniform(areaRadius)
                 .uniform(areaSize)
-                .end()
                 .draw(getMatrixStack())
         }
     }
@@ -159,5 +158,4 @@ class WorkingArea(matrixStack: MatrixStack): GuiElement(null, matrixStack) {
 
     override fun onScroll(mouseX: Double, mouseY: Double, value: Double) {
     }
-
 }

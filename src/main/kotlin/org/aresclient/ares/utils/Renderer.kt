@@ -15,7 +15,7 @@ object Renderer {
     private val FONT = Font.createFont(Font.TRUETYPE_FONT, Renderer::class.java.getResourceAsStream("/assets/ares/font/arial.ttf")) // TODO: CUSTOMIZE THIS
 
     fun getFontRenderer(size: Float, style: Int) = FONT_RENDERERS.getOrPut(style) { hashMapOf() }.getOrPut(size) { FontRenderer(FONT, size, style) }
-    fun getFontRenderer(size: Float) = Renderer.getFontRenderer(size, Font.PLAIN)
+    fun getFontRenderer(size: Float) = getFontRenderer(size, Font.PLAIN)
 
     inline fun render2d(callback: () -> Unit) {
         val state = begin()

@@ -1,5 +1,6 @@
-package org.aresclient.ares
+package org.aresclient.ares.command
 
+import org.aresclient.ares.Ares
 import java.util.*
 
 /**
@@ -7,7 +8,7 @@ import java.util.*
  */
 abstract class Command(val description: String, vararg names: String) {
     companion object {
-        val MC = Ares.MESH.minecraft
+        internal val MC = Ares.MESH.minecraft
         val COMMANDS = hashMapOf<String, Command>()
 
         var prefix: Char = '-'

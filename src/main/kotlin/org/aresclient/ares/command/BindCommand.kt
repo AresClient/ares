@@ -2,7 +2,6 @@ package org.aresclient.ares.command
 
 import net.meshmc.mesh.util.Keys
 import org.aresclient.ares.Ares
-import org.aresclient.ares.Command
 import java.util.*
 
 object BindCommand: Command("Binds keys to modules", "bind", "kb", "keybind") {

@@ -5,8 +5,7 @@ import net.meshmc.mesh.api.entity.EntityType
 import net.meshmc.mesh.api.math.Box
 import net.meshmc.mesh.util.math.MathHelper
 import net.meshmc.mesh.util.render.Color
-import org.aresclient.ares.manager.RenderGlobal
-import org.aresclient.ares.manager.RenderGlobalEvent
+import org.aresclient.ares.global.RenderGlobal
 import org.aresclient.ares.module.Category
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.renderer.Buffer
@@ -14,12 +13,10 @@ import org.aresclient.ares.renderer.Buffer
 object ESP: Module("ESP", "See outlines of players through walls", Category.RENDER, enabled = true) {
     private val color = settings.color("Color", Color.RED)
 
-    override fun onRenderWorld(event: RenderGlobalEvent) {
+    override fun onRenderWorld(event: RenderGlobal.Event) {
         MC.world.loadedEntities.forEach {
             if(it.entityType == EntityType.COW && it != MC.player)
-                event.lines {
-                    RenderGlobal.INSTANCE.lines.rainbox(it.getInterpolatedBoundingBox(event.delta), 2f)
-                }
+                event.buffers.lines.rainbox(it.getInterpolatedBoundingBox(event.delta), 2f)
         }
     }
 
@@ -59,7 +56,7 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
     }
 
     // box but rainbow :o
-    private fun Buffer.rainbox(box: Box, width: Float): RenderGlobal.LineOrder {
+    private fun Buffer.rainbox(box: Box, width: Float) {
         val color0 = rainbow(1280L)
         val color1 = rainbow(2560L)
         val color2 = rainbow(3840L)
@@ -91,8 +88,6 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
             minX, maxY, maxZ, width, color6.red, color6.green, color6.blue, color6.alpha,
             maxX, maxY, maxZ, width, color7.red, color7.green, color7.blue, color7.alpha,
         )
-
-        return RenderGlobal.LineOrder
     }
 
     private fun rainbow(offset: Long): Color {

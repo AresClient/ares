@@ -14,7 +14,7 @@ public class FontRenderer {
     private static final Uniform.F4 DIMENSIONS = SHADER.uniformF4("dimensions");
     private static final Uniform.F3 COLOR = SHADER.uniformF3("color").set(1, 1, 1);
     private static final Buffer BUFFER = Buffer
-            .beginStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
+            .createStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                     1, 1, 0,    1, 1,
                     1, 0, 0,   1, 0,
@@ -26,8 +26,7 @@ public class FontRenderer {
                     1, 2, 3
             )
             .uniform(DIMENSIONS)
-            .uniform(COLOR)
-            .end();
+            .uniform(COLOR);
 
     private final Map<Character, Glyph> glyphMap = new HashMap<>();
     private final int[] colorCodes = new int[32];

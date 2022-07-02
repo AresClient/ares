@@ -15,7 +15,7 @@ class AresTitleScreen: Screen("Ares Main Menu") {
 
         private val LOGO = Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/icons/ares.png"))
         private val IMAGE = Buffer
-            .beginStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
+            .createStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
                 0f, 0f, 0f, 0f, 0f,
                 0f, 126f, 0f, 0f, 1f,
@@ -26,7 +26,6 @@ class AresTitleScreen: Screen("Ares Main Menu") {
                 0, 1, 2,
                 2, 0, 3
             )
-            .end()
 
         private val BUTTONS = listOf(
             TitleScreenButton("Singleplayer", 143f, 0f) {

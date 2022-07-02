@@ -1,4 +1,4 @@
-package org.aresclient.ares.manager
+package org.aresclient.ares.global
 
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
@@ -6,14 +6,13 @@ import net.meshmc.mesh.api.math.Vec2f
 import net.meshmc.mesh.api.packet.client.CPacketMovePlayer
 import net.meshmc.mesh.event.MeshEvent
 import net.meshmc.mesh.event.events.client.PacketEvent
-import org.aresclient.ares.Global
 import org.aresclient.ares.utils.Rotator
 import org.aresclient.ares.utils.Timer
 
 /**
  * TODO: Test any of this actually works
  */
-class RotationGlobal: Global("Rotation Global") {
+object RotationGlobal: Global("Rotation Global") {
     private var yawStep = settings.float("Yaw Step", 180F)
     private var pitchStep = settings.float("Pitch Step", 180F)
 
