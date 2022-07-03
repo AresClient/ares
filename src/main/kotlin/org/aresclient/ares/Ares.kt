@@ -131,7 +131,6 @@ class Ares: Mesh.Initializer {
         // load modules into classpath
         ESP
         TestModule
-        MODULES.forEach { MESH.eventManager.register(it.javaClass) }
 
         // load commands into classpath
         BindCommand
@@ -148,6 +147,7 @@ class Ares: Mesh.Initializer {
             BlurFrameBuffer.clear()
             MSAAFrameBuffer.clear()
             SkyBox.clear()*/
+            if(!File("ares").exists()) File("ares").mkdir()
             if(!File("ares/configs").exists()) File("ares/configs").mkdir()
             SETTINGS.write(SETTINGS_FILE)
         })

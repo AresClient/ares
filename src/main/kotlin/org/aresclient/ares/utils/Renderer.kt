@@ -1,8 +1,6 @@
 package org.aresclient.ares.utils
 
 import org.aresclient.ares.Ares
-import org.aresclient.ares.module.Module
-import org.aresclient.ares.module.render.ESP
 import org.aresclient.ares.renderer.FontRenderer
 import org.aresclient.ares.renderer.MatrixStack
 import org.lwjgl.opengl.GL11
@@ -18,13 +16,13 @@ object Renderer {
     fun getFontRenderer(size: Float) = getFontRenderer(size, Font.PLAIN)
 
     inline fun render2d(callback: () -> Unit) {
-        val state = begin()
+        val state = begin(true)
         callback()
         state.end()
     }
 
-    inline fun render3d(callback: (MatrixStack) -> Unit) {
-        val state = begin()
+    inline fun render3d(callback: (MatrixStack) -> Unit, disableCull: Boolean = true) {
+        val state = begin(disableCull)
 
         // TODO: THIS DOES NOT WORK ON 1.12.2!!!
         val matrixStack = MatrixStack()
@@ -53,7 +51,7 @@ object Renderer {
 
     data class State(val depth: Boolean, val blend: Boolean, val cull: Boolean,  val texture: Boolean, val alpha/*LEGACY*/: Boolean)
 
-    fun begin(): State {
+    fun begin(disableCull: Boolean): State {
         if(LEGACY) {
             GL11.glMatrixMode(GL11.GL_MODELVIEW)
             GL11.glPushMatrix()
@@ -65,7 +63,8 @@ object Renderer {
             GL11.glEnable(GL11.GL_ALPHA_TEST)
         }
 
-        GL11.glDisable(GL11.GL_CULL_FACE)
+        if(disableCull) GL11.glDisable(GL11.GL_CULL_FACE)
+
         GL11.glDisable(GL11.GL_DEPTH_TEST)
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
