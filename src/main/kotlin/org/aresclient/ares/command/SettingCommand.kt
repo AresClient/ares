@@ -1,11 +1,14 @@
 package org.aresclient.ares.command
 
 import net.meshmc.mesh.util.render.Color
+import org.aresclient.ares.ListValues
+import org.aresclient.ares.RangeValues
 import org.aresclient.ares.global.Global
 import org.aresclient.ares.Setting
 import org.aresclient.ares.Settings
 import org.aresclient.ares.module.Module
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Spaces are used to separate parts of a command
@@ -36,7 +39,14 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
         if(setting == null) return
 
         if(command[1].startsWith("g")) get(setting)
-        if(command[1].startsWith("s")) set(setting, command[command.size - 1])
+
+        val sVal =
+            if(setting.type == Setting.Type.LIST)
+                arrayOf(command[command.size -2], command[command.size -1])
+            else
+                arrayOf(command[command.size -1])
+
+        if(command[1].startsWith("s")) set(setting, sVal)
     }
 
     private fun getSetting(command: ArrayList<String>, settings: Settings): Setting<*>? {
@@ -70,7 +80,8 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun set(setting: Setting<*>, value: String) {
+    private fun set(setting: Setting<*>, values: Array<String>) {
+        val value = values[0]
         when(setting.type) {
             Setting.Type.STRING -> (setting as Setting<String>).value = value
             Setting.Type.BOOLEAN -> {
@@ -118,28 +129,143 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
             Setting.Type.INTEGER -> {
                 val int = value.toIntOrNull()
                 if(int != null) {
-                    (setting as Setting<Int>).value = int
+                    setting as Setting<Int>
+                    if(!(setting.possibleValues as RangeValues).noBounds() && (int > setting.possibleValues.max!! || int < setting.possibleValues.min!!)) {
+                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $int: VALUE IS OUT OF BOUNDS")
+                        return
+                    }
+                    setting.value = int
                     println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $int")
                 }
             }
             Setting.Type.DOUBLE -> {
                 val double = value.toDoubleOrNull()
-                if(double != null) (setting as Setting<Double>).value = double
-                println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $double")
+                if(double != null) {
+                    setting as Setting<Double>
+                    if(!(setting.possibleValues as RangeValues).noBounds() && (double > setting.possibleValues.max!! || double < setting.possibleValues.min!!)) {
+                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $double: VALUE IS OUT OF BOUNDS")
+                        return
+                    }
+                    setting.value = double
+                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $double")
+                }
             }
             Setting.Type.FLOAT -> {
                 val float = value.toFloatOrNull()
-                if(float != null) (setting as Setting<Float>).value = float
-                println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $float")
+                if(float != null) {
+                    setting as Setting<Float>
+                    if(!(setting.possibleValues as RangeValues).noBounds() && (float > setting.possibleValues.max!! || float < setting.possibleValues.min!!)) {
+                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $float: VALUE IS OUT OF BOUNDS")
+                        return
+                    }
+                    setting.value = float
+                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $float")
+                }
             }
             Setting.Type.LONG -> {
                 val long = value.toLongOrNull()
-                if(long != null) (setting as Setting<Long>).value = long
-                println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $long")
+                if(long != null) {
+                    setting as Setting<Long>
+                    if(!(setting.possibleValues as RangeValues).noBounds() && (long > setting.possibleValues.max!! || long < setting.possibleValues.min!!)) {
+                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $long: VALUE IS OUT OF BOUNDS")
+                        return
+                    }
+                    setting.value = long
+                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $long")
+                }
             }
             Setting.Type.LIST -> {
-                (setting as Setting<List<String>>).value = value.split(",")
-                println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $value")
+                val list = values[1].split(",")
+                setting.possibleValues as ListValues<*>
+                val type: Int
+                val sett =
+                    if(setting.possibleValues.values[0] is String) {
+                        type = 0
+                        setting.possibleValues as ListValues<String>
+                    }
+                    else {
+                        type = 1
+                        setting.possibleValues as ListValues<Enum<*>>
+                    }
+
+                if(value == "ADD") {
+                    val newList = (setting.value as List<*>).toMutableList()
+                    if(type == 0) {
+                        list.forEach {
+                            if(sett.values.contains(it) && !newList.contains(it)) newList.add(it)
+                        }
+                    }
+
+                    else {
+                        for(str in list) {
+                            var enum: Enum<*>? = null
+                            sett.values[0].javaClass.enumConstants.forEach {
+                                if((it as Enum<*>).name.uppercase(Locale.getDefault()) == str.uppercase(Locale.getDefault())) enum = it
+                            }
+
+                            if(enum == null) continue
+                            if(!newList.contains(enum)) newList.add(enum)
+                        }
+                    }
+
+                    (setting as Setting<List<*>>).value = newList
+                    println("ATTEMPTED TO ADD ${values[1]} TO LIST ${setting.name.uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
+                }
+
+                else if(value == "REMOVE") {
+                    val newList = (setting.value as List<*>).toMutableList()
+                    if(type == 0) {
+                        list.forEach {
+                            if(newList.contains(it)) newList.remove(it)
+                        }
+                    }
+
+                    else {
+                        for(str in list) {
+                            var enum: Enum<*>? = null
+                            sett.values[0].javaClass.enumConstants.forEach {
+                                if((it as Enum<*>).name.uppercase(Locale.getDefault()) == str.uppercase(Locale.getDefault())) enum = it
+                            }
+
+                            if(enum == null) continue
+                            if(newList.contains(enum!!)) newList.remove(enum!!)
+                        }
+                    }
+
+                    (setting as Setting<List<*>>).value = newList
+
+                    println("ATTEMPTED TO REMOVE ${values[1]} FROM LIST ${setting.name.uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
+                }
+
+                else if(value == "REPLACE") {
+                    if(type == 0) {
+                        val newList = ArrayList<String>()
+                        list.forEach {
+                            if(sett.values.contains(it)) newList.add(it)
+                        }
+
+                        (setting as Setting<List<String>>).value = newList
+                    }
+
+                    else {
+                        val newList = ArrayList<Enum<*>>()
+                        for(str in list) {
+                            var enum: Enum<*>? = null
+                            sett.values[0].javaClass.enumConstants.forEach {
+                                if((it as Enum<*>).name.uppercase(Locale.getDefault()) == str.uppercase(Locale.getDefault())) enum = it
+                            }
+
+                            if(enum == null) continue
+                            newList.add(enum!!)
+                        }
+
+                        (setting as Setting<List<Enum<*>>>).value = newList
+                    }
+
+                    println("ATTEMPTED TO SET LIST ${setting.name.uppercase(Locale.getDefault())} TO $value: USE \"GET\" TO CHECK")
+                }
+
+                else println("INVALID COMMAND")
             }
         }
     }

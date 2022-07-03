@@ -11,6 +11,8 @@ import org.aresclient.ares.module.Module
 
 object ESP: Module("ESP", "See outlines of players through walls", Category.RENDER, enabled = true) {
     private val color = settings.color("Color", Color.RED)
+    private val maxDistance = settings.integer("Max Distance", 20, 0, 120)
+    private val entities = settings.list("Entities", listOf(EntityType.PLAYER, EntityType.COW), EntityType.values().asList())
 
     override fun onRenderWorld(event: RenderGlobal.Event) {
         val color0 = rainbow(1280L)
@@ -23,7 +25,7 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
         val color7 = rainbow(10240L)
 
         MC.world.loadedEntities.forEach {
-            if(it.entityType == EntityType.PLAYER && it != MC.player)
+            if(MC.player.distanceTo(it) <= maxDistance.value && entities.value.contains(it.entityType) && it != MC.player)
                 RenderGlobal.Lines.box(it.getInterpolatedBoundingBox(event.delta), color0, color1, color2, color3, color4, color5, color6, color7, 2f)
         }
     }

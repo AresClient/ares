@@ -10,7 +10,7 @@ interface Serializable {
     fun toJSON(): JsonElement
 }
 
-open class Setting<T>(val name: String, val type: Type, var value: T): Serializable {
+open class Setting<T>(val name: String, val type: Type, var value: T, val possibleValues: PossibleValues<T> = PossibleValues()): Serializable {
     private val default: T = value
     enum class Type {
         STRING, BOOLEAN, ENUM,
@@ -34,11 +34,45 @@ open class Setting<T>(val name: String, val type: Type, var value: T): Serializa
             BOOLEAN -> entry.jsonPrimitive.boolean as T
             ENUM -> value!!::class.java.enumConstants[entry.jsonPrimitive.int] as T
             COLOR -> toColor(toFloatArray(entry.jsonArray)) as T
-            INTEGER -> entry.jsonPrimitive.int as T
-            DOUBLE -> entry.jsonPrimitive.double as T
-            FLOAT -> entry.jsonPrimitive.float as T
-            LONG -> entry.jsonPrimitive.long as T
-            LIST -> entry.jsonArray.map { it.jsonPrimitive.toString() } as T
+            INTEGER -> {
+                possibleValues as RangeValues
+                if(possibleValues.noBounds()) entry.jsonPrimitive.int as T
+                else if(possibleValues.min as Int > entry.jsonPrimitive.int) possibleValues.min
+                else if(entry.jsonPrimitive.int > possibleValues.max as Int) possibleValues.max
+                else entry.jsonPrimitive.int as T
+            }
+            DOUBLE -> {
+                possibleValues as RangeValues
+                if(possibleValues.noBounds()) entry.jsonPrimitive.double as T
+                else if(possibleValues.min as Double > entry.jsonPrimitive.double) possibleValues.min
+                else if(entry.jsonPrimitive.double > possibleValues.max as Double) possibleValues.max
+                else entry.jsonPrimitive.double as T
+            }
+            FLOAT -> {
+                possibleValues as RangeValues
+                if(possibleValues.noBounds()) entry.jsonPrimitive.float as T
+                else if(possibleValues.min as Float > entry.jsonPrimitive.float) possibleValues.min
+                else if(entry.jsonPrimitive.float > possibleValues.max as Float) possibleValues.max
+                else entry.jsonPrimitive.float as T
+            }
+            LONG -> {
+                possibleValues as RangeValues
+                if(possibleValues.noBounds()) entry.jsonPrimitive.long as T
+                else if(possibleValues.min as Long > entry.jsonPrimitive.long) possibleValues.min
+                else if(entry.jsonPrimitive.long > possibleValues.max as Long) possibleValues.max
+                else entry.jsonPrimitive.long as T
+            }
+            LIST ->
+                if((possibleValues as ListValues<*>).values[0]!!::class.java.isEnum) entry.jsonArray.map {
+                    val v = possibleValues.values[0]!!::class.java.enumConstants[it.jsonPrimitive.int]
+                    if(possibleValues.values.contains(v)) v
+                    else null
+                } as T
+                else entry.jsonArray.map {
+                    val v = it.jsonPrimitive.toString()
+                    if(possibleValues.values.contains(v)) v
+                    else null
+                } as T
         }
     }
 
@@ -68,7 +102,13 @@ open class Setting<T>(val name: String, val type: Type, var value: T): Serializa
             JsonArray(listOf(JsonPrimitive(v.red), JsonPrimitive(v.green), JsonPrimitive(v.blue), JsonPrimitive(v.alpha)))
         }
         INTEGER, DOUBLE, FLOAT, LONG -> JsonPrimitive(value as Number)
-        LIST -> JsonArray((value as List<*>).mapNotNull { if(it is String) JsonPrimitive(it) else null })
+        LIST -> JsonArray((value as List<*>).mapNotNull {
+            when(it) {
+                is String -> JsonPrimitive(it)
+                is Enum<*> -> JsonPrimitive(it.ordinal)
+                else -> null
+            }
+        })
     }
 }
 
@@ -129,11 +169,11 @@ open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() ->
     fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default).read()
     fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, default).read()
     fun color(name: String, default: Color) = Setting(name, COLOR, default).read()
-    fun integer(name: String, default: Int) = Setting(name, INTEGER, default).read()
-    fun double(name: String, default: Double) = Setting(name, DOUBLE, default).read()
-    fun float(name: String, default: Float) = Setting(name, FLOAT, default).read()
-    fun long(name: String, default: Long) = Setting(name, LONG, default).read()
-    fun list(name: String, default: List<String>) = Setting(name, LIST, default).read()
+    fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, default, RangeValues(min, max)).read()
+    fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, default, RangeValues(min, max)).read()
+    fun float(name: String, default: Float, min: Float? = null, max: Float? = null) = Setting(name, FLOAT, default, RangeValues(min, max)).read()
+    fun long(name: String, default: Long, min: Long? = null, max: Long? = null) = Setting(name, LONG, default, RangeValues(min, max)).read()
+    fun <T> list(name: String, default: List<T>, possibleValues: List<T>) = Setting(name, LIST, default, ListValues(possibleValues)).read()
     fun category(name: String) = Settings((json[name]?.jsonObject ?: JsonObject(emptyMap()))).also { map[name] = it }
 
     private fun <T> Setting<T>.read(): Setting<T> {
@@ -145,4 +185,10 @@ open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() ->
     fun write(file: File) = file.writeText(writer.encodeToString(toJSON()))
 
     override fun toJSON() = JsonObject(map.mapValues { it.value.toJSON() })
+}
+
+open class PossibleValues<T>
+data class ListValues<T>(val values: List<T>): PossibleValues<List<T>>()
+data class RangeValues<T: Number>(val min: T?, val max: T?): PossibleValues<T>() {
+    fun noBounds(): Boolean = min == null || max == null
 }
