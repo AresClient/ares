@@ -70,20 +70,33 @@ object RenderGlobal: Global("Render Global") {
 
         fun box(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float, color: Color, colorX: Color, colorXZ: Color, colorZ: Color, colorY: Color, colorXY: Color, colorXYZ: Color, colorYZ: Color, vararg excludedSides: Facing) {
             if(excludedSides.isEmpty()) {
-                quad(minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, color, colorX, colorXZ, colorZ)
-                quad(minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, minX, minY, minZ, colorZ, colorYZ, colorY, color)
-                quad(maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, maxX, minY, maxZ, colorX, colorXY, colorXYZ, colorXZ)
-                quad(minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, minY, minZ, color, colorY, colorXY, colorX)
-                quad(maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ, minX, minY, maxZ, colorXZ, colorXYZ, colorYZ, colorZ)
-                quad(minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ, colorYZ, colorXYZ, colorXY, colorY)
+                buffers.positionColor.indicesOffset(
+                    0,1,2, 2,3,0,
+                    3,7,4, 4,0,3,
+                    1,5,6, 6,2,1,
+                    0,4,5, 5,1,0,
+                    2,6,7, 7,3,2,
+                    7,6,5, 5,4,7
+                )
             } else {
-                if(!excludedSides.contains(Facing.DOWN)) quad(minX, minY, minZ, maxX, minY, minZ, maxX, minY, maxZ, minX, minY, maxZ, color, colorX, colorXZ, colorZ)
-                if(!excludedSides.contains(Facing.WEST)) quad(minX, minY, maxZ, minX, maxY, maxZ, minX, maxY, minZ, minX, minY, minZ, colorZ, colorYZ, colorY, color)
-                if(!excludedSides.contains(Facing.EAST)) quad(maxX, minY, minZ, maxX, maxY, minZ, maxX, maxY, maxZ, maxX, minY, maxZ, colorX, colorXY, colorXYZ, colorXZ)
-                if(!excludedSides.contains(Facing.NORTH)) quad(minX, minY, minZ, minX, maxY, minZ, maxX, maxY, minZ, maxX, minY, minZ, color, colorY, colorXY, colorX)
-                if(!excludedSides.contains(Facing.SOUTH)) quad(maxX, minY, maxZ, maxX, maxY, maxZ, minX, maxY, maxZ, minX, minY, maxZ, colorXZ, colorXYZ, colorYZ, colorZ)
-                if(!excludedSides.contains(Facing.UP)) quad(minX, maxY, maxZ, maxX, maxY, maxZ, maxX, maxY, minZ, minX, maxY, minZ, colorYZ, colorXYZ, colorXY, colorY)
+                if(!excludedSides.contains(Facing.DOWN))    buffers.positionColor.indicesOffset(0,1,2, 2,3,0)
+                if(!excludedSides.contains(Facing.WEST))    buffers.positionColor.indicesOffset(3,7,4, 4,0,3)
+                if(!excludedSides.contains(Facing.EAST))    buffers.positionColor.indicesOffset(1,5,6, 6,2,1)
+                if(!excludedSides.contains(Facing.NORTH))   buffers.positionColor.indicesOffset(0,4,5, 5,1,0)
+                if(!excludedSides.contains(Facing.SOUTH))   buffers.positionColor.indicesOffset(2,6,7, 7,3,2)
+                if(!excludedSides.contains(Facing.UP))      buffers.positionColor.indicesOffset(7,6,5, 5,4,7)
             }
+
+            buffers.positionColor.vertices(
+                minX, minY, minZ, color.red, color.green, color.blue, color.alpha,
+                maxX, minY, minZ, colorX.red, colorX.green, colorX.blue, colorX.alpha,
+                maxX, minY, maxZ, colorXZ.red, colorXZ.green, colorXZ.blue, colorXZ.alpha,
+                minX, minY, maxZ, colorZ.red, colorZ.green, colorZ.blue, colorZ.alpha,
+                minX, maxY, minZ, colorY.red, colorY.green, colorY.blue, colorY.alpha,
+                maxX, maxY, minZ, colorXY.red, colorXY.green, colorXY.blue, colorXY.alpha,
+                maxX, maxY, maxZ, colorXYZ.red, colorXYZ.green, colorXYZ.blue, colorXYZ.alpha,
+                minX, maxY, maxZ, colorYZ.red, colorYZ.green, colorYZ.blue, colorYZ.alpha,
+            )
         }
 
         fun box(minX: Double, minY: Double, minZ: Double, maxX: Double, maxY: Double, maxZ: Double, color: Color, colorX: Color, colorXZ: Color, colorZ: Color, colorY: Color, colorXY: Color, colorXYZ: Color, colorYZ: Color, vararg excludedSides: Facing) = box(minX.toFloat(), minY.toFloat(), minZ.toFloat(), maxX.toFloat(), maxY.toFloat(), maxZ.toFloat(), color, colorX, colorXZ, colorZ, colorY, colorXY, colorXYZ, colorYZ, excludedSides = excludedSides)
