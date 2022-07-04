@@ -7,7 +7,9 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Shader {
@@ -20,6 +22,7 @@ public class Shader {
     public static final Shader ELLIPSE = fromResources("/assets/ares/shaders/vert/ellipse.vert", "/assets/ares/shaders/frag/ellipse.frag");
     public static final Shader ROUNDED = fromResources("/assets/ares/shaders/vert/ellipse.vert", "/assets/ares/shaders/frag/round.frag");
 
+    private final Map<String, List<Uniform>> uniforms = new HashMap<>();
     private final int program = GL20.glCreateProgram();
 
     private boolean attached = false;
@@ -105,55 +108,65 @@ public class Shader {
         SHADERS.clear();
     }
 
+    private <T extends Uniform> T add(T uniform) {
+        uniforms.computeIfAbsent(uniform.getName(), name -> new ArrayList<>()).add(uniform);
+        return uniform;
+    }
+
     public Uniform.F1 uniformF1(String name) {
-        return new Uniform.F1(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.F1(name, this));
     }
 
     public Uniform.I1 uniformI1(String name) {
-        return new Uniform.I1(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.I1(name, this));
     }
 
     public Uniform.F2 uniformF2(String name) {
-        return new Uniform.F2(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.F2(name, this));
     }
 
     public Uniform.I2 uniformI2(String name) {
-        return new Uniform.I2(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.I2(name, this));
     }
 
     public Uniform.F3 uniformF3(String name) {
-        return new Uniform.F3(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.F3(name, this));
     }
 
     public Uniform.I3 uniformI3(String name) {
-        return new Uniform.I3(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.I3(name, this));
     }
 
     public Uniform.F4 uniformF4(String name) {
-        return new Uniform.F4(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.F4(name, this));
     }
 
     public Uniform.I4 uniformI4(String name) {
-        return new Uniform.I4(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.I4(name, this));
     }
 
     public Uniform.Mat2f uniformMat2f(String name) {
-        return new Uniform.Mat2f(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.Mat2f(name, this));
     }
 
     public Uniform.Mat3f uniformMat3f(String name) {
-        return new Uniform.Mat3f(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.Mat3f(name, this));
     }
 
     public Uniform.Mat3x2f uniformMat3x2f(String name) {
-        return new Uniform.Mat3x2f(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.Mat3x2f(name, this));
     }
 
     public Uniform.Mat4f uniformMat4f(String name) {
-        return new Uniform.Mat4f(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.Mat4f(name, this));
     }
 
     public Uniform.Mat4x3f uniformMat4x3f(String name) {
-        return new Uniform.Mat4x3f(GL20.glGetUniformLocation(program, name));
+        return add(new Uniform.Mat4x3f(name, this));
+    }
+
+    void markDirty(Uniform uniform) {
+        List<Uniform> list = uniforms.get(uniform.getName());
+        if(list != null) list.forEach(Uniform::markDirty);
     }
 }

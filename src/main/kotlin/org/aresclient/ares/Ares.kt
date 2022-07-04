@@ -45,11 +45,12 @@ class Ares: Mesh.Initializer {
         val GLOBALS = arrayListOf<Global>()
         val MODULES = arrayListOf<Module>()
 
-        val CLICKGUI = ClickGUI()
+        //val CLICKGUI = ClickGUI()
 
         @field:EventHandler
         private val screenOpenedEventListener = EventListener<ScreenOpenedEvent> { event ->
-            if(CUSTOM_MAIN_MENU.value && event.isMainMenu) MESH.minecraft.openScreen(AresTitleScreen())
+            // TODO: call delete() on screen after close
+            if(CUSTOM_MAIN_MENU.value && event.isMainMenu) MESH.minecraft.openScreen(AresTitleScreen().getScreen())
         }
 
         @field:EventHandler
@@ -83,9 +84,9 @@ class Ares: Mesh.Initializer {
 
         @field:EventHandler
         private val onInputKey = EventListener<InputEvent.Keyboard> { event ->
-            if(ClickGUI.bind.value == event.key)
-                if(event.state == InputEvent.Keyboard.State.PRESSED)
-                    MESH.minecraft.openScreen(CLICKGUI)
+            //if(ClickGUI.bind.value == event.key)
+            //    if(event.state == InputEvent.Keyboard.State.PRESSED)
+            //        MESH.minecraft.openScreen(CLICKGUI.getScreen())
             for(module in MODULES) {
                 if(module.getBind() == event.key) {
                     when(event.state) {

@@ -1,258 +1,307 @@
 package org.aresclient.ares.gui.api
 
 import net.meshmc.mesh.api.render.Screen
+import org.aresclient.ares.Ares
 import org.aresclient.ares.renderer.MatrixStack
+import org.aresclient.ares.utils.Renderer
 import java.util.*
 import kotlin.math.floor
 
-interface Element {
-    fun getParent(): Element?
-    fun getChildren(): Stack<GuiElement>
+abstract class Element {
+    private val children = Stack<Element>()
+    private var parent: Element? = null
 
-    fun isVisible(): Boolean
-    fun getMatrixStack(): MatrixStack
+    abstract fun isVisible(): Boolean
 
-    fun getX(): Int
-    fun getY(): Int
+    abstract fun getX(): Float
+    abstract fun getY(): Float
 
-    fun getWidth(): Int
-    fun getHeight(): Int
+    abstract fun getWidth(): Float
+    abstract fun getHeight(): Float
 
-    fun getRootParent(): Element? {
-        var p: Element? = getParent() ?: return this
-        while(p!!.getParent() != null) p = p.getParent()
-        return p
-    }
+    open fun getRenderX(): Float = getX() + (getParent()?.getRenderX() ?: 0f)
+    open fun getRenderY(): Float = getY() + (getParent()?.getRenderY() ?: 0f)
 
-    fun getOnScreenX(): Int =
-        if(getParent() is GuiElement) getX() + getParent()!!.getOnScreenX()
-        else getX()
+    fun getChildren(): Stack<Element> = children
+    open fun pushChild(child: Element): Element = getChildren().push(child).setParent(this)
+    open fun popChild(): Element = getChildren().pop().setParent(null)
 
-    fun getOnScreenY(): Int =
-        if(getParent() is GuiElement) getY() + getParent()!!.getOnScreenY()
-        else getY()
-
-    fun isMouseOver(mouseX: Double, mouseY: Double): Boolean =
-        mouseX >= getOnScreenX()
-                && mouseX <= getOnScreenX() + getWidth()
-                && mouseY >= getOnScreenY()
-                && mouseY <= getOnScreenY() + getHeight()
-
-    fun pushChild(child: GuiElement): GuiElement {
-        getChildren().push(child)
-            .setParent(this)
-        return child
-    }
-
-    fun popChild(): GuiElement {
-        return getChildren().pop().setParent(null)
-    }
-
-    fun numberOfChildren(): Int {
-        return getChildren().size
-    }
-
-    fun onRender(mouseX: Int, mouseY: Int, partialTicks: Float)
-    fun render(mouseX: Int, mouseY: Int, partialTicks: Float) {
-        getMatrixStack().push()
-        getMatrixStack().model().translate(getX().toFloat(), getY().toFloat(), 0f)
-
-        onRender(mouseX, mouseY, partialTicks)
-        getChildren().forEach { if(it.isVisible()) it.render(mouseX, mouseY, partialTicks) }
-
-        getMatrixStack().pop()
-    }
-
-    fun onClick(mouseX: Int, mouseY: Int, mouseButton: Int)
-    fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        onClick(mouseX, mouseY, mouseButton)
-        ArrayList(getChildren()).forEach { if(it.isVisible() && it.isMouseOver(mouseX.toDouble(), mouseY.toDouble())) it.click(mouseX, mouseY, mouseButton) }
-    }
-
-    fun onRelease(mouseX: Int, mouseY: Int, mouseButton: Int)
-    fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        onRelease(mouseX, mouseY, mouseButton)
-        getChildren().forEach { if(it.isVisible() && it.isMouseOver(mouseX.toDouble(), mouseY.toDouble())) it.release(mouseX, mouseY, mouseButton) }
-    }
-
-    fun onType(typedChar: Char?, keyCode: Int)
-    fun type(typedChar: Char?, keyCode: Int) {
-        onType(typedChar, keyCode)
-        getChildren().forEach { if(it.isVisible()) it.type(typedChar, keyCode) }
-    }
-
-    fun onScroll(mouseX: Double, mouseY: Double, value: Double)
-    fun scroll(mouseX: Double, mouseY: Double, value: Double) {
-        onScroll(mouseX, mouseY, value)
-        getChildren().forEach { if(it.isVisible()) it.scroll(mouseX, mouseY, value) }
-    }
-}
-
-abstract class ScreenElement(title: String) :Screen(title), Element {
-    private val children = Stack<GuiElement>()
-    private var open: Boolean = false
-
-    override fun init() {
-        super.init()
-        open = true
-    }
-
-    override fun close() {
-        super.close()
-        open = false
-    }
-
-    override fun getParent(): Element? = null
-    override fun getChildren(): Stack<GuiElement> = children
-
-    override fun isVisible(): Boolean = open
-    override fun getMatrixStack(): MatrixStack = MatrixStack()
-
-    override fun getX(): Int = 0
-    override fun getY(): Int = 0
-
-    override fun render(mouseX: Int, mouseY: Int, partialTicks: Float) {
-        super<Element>.render(mouseX, mouseY, partialTicks)
-    }
-
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        super<Element>.click(mouseX, mouseY, mouseButton)
-    }
-
-    override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        super<Element>.release(mouseX, mouseY, mouseButton)
-    }
-
-    override fun type(typedChar: Char?, keyCode: Int) {
-        super<Element>.type(typedChar, keyCode)
-    }
-
-    override fun scroll(mouseX: Double, mouseY: Double, value: Double) {
-        super<Element>.scroll(mouseX, mouseY, value)
-    }
-}
-
-abstract class GuiElement(
-    private var parent: Element?,
-    private var matrixStack: MatrixStack,
-    private var visible: () -> Boolean = { true },
-    private var x: () -> Int = { 0 },
-    private var y: () -> Int = { 0 },
-    private var width: () -> Int = { 0 },
-    private var height: () -> Int = { 0 }
-): Element {
-    private val children = Stack<GuiElement>()
-
-    override fun getParent(): Element? = parent
-    override fun isVisible(): Boolean = visible.invoke()
-    override fun getMatrixStack(): MatrixStack = matrixStack
-    override fun getX(): Int = x.invoke()
-    override fun getY(): Int = y.invoke()
-    override fun getWidth(): Int = width.invoke()
-    override fun getHeight(): Int = height.invoke()
-    override fun getChildren(): Stack<GuiElement> = children
-
-    fun setParent(parent: Element?): GuiElement {
+    fun getParent(): Element? = parent
+    fun setParent(parent: Element?): Element {
         this.parent = parent
         return this
     }
 
-    fun setVisible(value: () -> Boolean): GuiElement {
+    fun getRootParent(): Element? {
+        var element = this.getParent()
+        while(true) element = element?.getParent() ?: return element
+    }
+
+    fun isMouseOver(mouseX: Int, mouseY: Int): Boolean = isMouseOver(mouseX.toFloat(), mouseY.toFloat())
+    open fun isMouseOver(mouseX: Float, mouseY: Float): Boolean =
+        mouseX >= getRenderX()
+                && mouseX <= getRenderX() + getWidth()
+                && mouseY >= getRenderY()
+                && mouseY <= getRenderY() + getHeight()
+
+    open fun update() { // on window resize
+        getChildren().forEach(Element::update)
+    }
+
+    // render should be called, draw should be overridden
+    protected open fun draw(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        getChildren().forEach {
+            if(it.isVisible()) it.render(matrixStack, mouseX, mouseY, delta)
+        }
+    }
+
+    fun render(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        matrixStack.push()
+        matrixStack.model().translate(getX(), getY(), 0f)
+        draw(matrixStack, mouseX, mouseY, delta)
+        matrixStack.pop()
+    }
+
+    open fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        getChildren().forEach {
+            if(it.isVisible()) it.click(mouseX, mouseY, mouseButton)
+        }
+    }
+
+    open fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        getChildren().forEach {
+            if(it.isVisible()) it.release(mouseX, mouseY, mouseButton)
+        }
+    }
+
+    open fun type(typedChar: Char?, keyCode: Int) {
+        getChildren().forEach {
+            if(it.isVisible()) it.type(typedChar, keyCode)
+        }
+    }
+
+    open fun scroll(mouseX: Double, mouseY: Double, value: Double) {
+        getChildren().forEach {
+            if(it.isVisible()) it.scroll(mouseX, mouseY, value)
+        }
+    }
+
+    open fun delete() {
+        getChildren().forEach(Element::delete)
+    }
+}
+
+open class ScreenElement(title: String): Element() {
+    private var open = false
+    private val matrixStack = MatrixStack()
+    private val screen = object: Screen(title) {
+        private var first = true
+
+        override fun init() {
+            super.init()
+            open = true
+
+            matrixStack.projection().setOrtho(0F, width.toFloat(), height.toFloat(), 0F, 0F, 1F)
+
+            if(first) {
+                this@ScreenElement.init()
+                first = false
+            }
+            this@ScreenElement.update()
+        }
+
+        override fun close() {
+            super.close()
+            open = false
+        }
+
+        override fun render(mouseX: Int, mouseY: Int, partialTicks: Float) {
+            Ares.MESH.minecraft.framebuffer.clear()
+            Renderer.render {
+                this@ScreenElement.draw(matrixStack, mouseX, mouseY, partialTicks) // we don't need to push matrices for screen drawing
+            }
+            super.render(mouseX, mouseY, partialTicks)
+        }
+
+        override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
+            this@ScreenElement.click(mouseX, mouseY, mouseButton)
+            super.click(mouseX, mouseY, mouseButton)
+        }
+
+        override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+            this@ScreenElement.release(mouseX, mouseY, mouseButton)
+            super.release(mouseX, mouseY, mouseButton)
+        }
+
+        override fun type(typedChar: Char?, keyCode: Int) {
+            this@ScreenElement.type(typedChar, keyCode)
+            super.type(typedChar, keyCode)
+        }
+
+        override fun scroll(mouseX: Double, mouseY: Double, value: Double) {
+            this@ScreenElement.scroll(mouseX, mouseY, value)
+            super.scroll(mouseX, mouseY, value)
+        }
+    }
+
+    open fun init() {
+    }
+
+    override fun isVisible(): Boolean = open
+
+    override fun getX(): Float = 0f
+    override fun getY(): Float = 0f
+
+    override fun getWidth(): Float = screen.width.toFloat()
+    override fun getHeight(): Float = screen.height.toFloat()
+
+    fun getScreen(): Screen = screen
+}
+
+// an element with constantly changing dimensions or position
+open class DynamicElement(
+    private var visible: () -> Boolean = { true },
+    private var x: () -> Float = { 0f },
+    private var y: () -> Float = { 0f },
+    private var width: () -> Float = { 0f },
+    private var height: () -> Float = { 0f }
+): Element() {
+    override fun isVisible(): Boolean = visible.invoke()
+    override fun getX(): Float = x.invoke()
+    override fun getY(): Float = y.invoke()
+    override fun getWidth(): Float = width.invoke()
+    override fun getHeight(): Float = height.invoke()
+
+    fun setVisible(value: () -> Boolean): DynamicElement {
         visible = value
         return this
     }
 
-    fun setMatrixStack(matrixStack: MatrixStack): GuiElement {
-        this.matrixStack = matrixStack
-        return this
-    }
-
-    fun setX(value: () -> Int): GuiElement {
+    fun setX(value: () -> Float): DynamicElement {
         x = value
         return this
     }
 
-    fun setY(value: () -> Int): GuiElement {
+    fun setY(value: () -> Float): DynamicElement {
         y = value
         return this
     }
 
-    fun setWidth(value: () -> Int): GuiElement {
+    fun setWidth(value: () -> Float): DynamicElement {
         width = value
         return this
     }
 
-    fun setHeight(value: () -> Int): GuiElement {
+    fun setHeight(value: () -> Float): DynamicElement {
         height = value
         return this
     }
  }
 
-abstract class GuiElementGroup(
-    parent: Element?,
-    matrixStack: MatrixStack,
+
+// an element that dosent change dimension or size
+open class StaticElement(
+    private var x: Float = 0f,
+    private var y: Float = 0f,
+    private var width: Float = 0f,
+    private var height: Float = 0f
+): Element() {
+    private var visible = true
+
+    override fun isVisible(): Boolean = visible
+    override fun getX(): Float = x
+    override fun getY(): Float = y
+    override fun getWidth(): Float = width
+    override fun getHeight(): Float = height
+
+    fun setVisible(value: Boolean): StaticElement {
+        visible = value
+        return this
+    }
+
+    fun setX(value: Float): StaticElement {
+        x = value
+        return this
+    }
+
+    fun setY(value: Float): StaticElement {
+        y = value
+        return this
+    }
+
+    fun setWidth(value: Float): StaticElement {
+        width = value
+        return this
+    }
+
+    fun setHeight(value: Float): StaticElement {
+        height = value
+        return this
+    }
+}
+
+abstract class BaseElementGroup(
     visible: () -> Boolean = { false },
-    x: () -> Int = { 0 },
-    y: () -> Int = { 0 },
-    width: () -> Int = { 0 },
-    height: () -> Int = { 0 },
+    x: () -> Float = { 0f },
+    y: () -> Float = { 0f },
+    width: () -> Float = { 0f },
+    height: () -> Float = { 0f },
 
     private var columns: () -> Int = { 1 },
-    private var childWidth: () -> Int = { 0 },
-    private var childHeight: () -> Int = { 0 },
-    private var padding: () -> Int = { 0 },
-    private var edgePadding: () -> Int = { 0 }
-): GuiElement(parent, matrixStack, visible, x, y, width, height) {
+    private var childWidth: () -> Float = { 0f },
+    private var childHeight: () -> Float = { 0f },
+    private var padding: () -> Float = { 0f },
+    private var edgePadding: () -> Float = { 0f }
+): DynamicElement(visible, x, y, width, height) {
     init {
         if(getColumns() < 1) throw RuntimeException("Fewer than 1 columns in GuiElementGroup is not possible")
     }
 
     fun getColumns(): Int = columns.invoke()
-    fun getChildWidth(): Int = childWidth.invoke()
-    fun getChildHeight(): Int = childHeight.invoke()
-    fun getPadding(): Int = padding.invoke()
-    fun getEdgePadding(): Int = edgePadding.invoke()
+    fun getChildWidth(): Float = childWidth.invoke()
+    fun getChildHeight(): Float = childHeight.invoke()
+    fun getPadding(): Float = padding.invoke()
+    fun getEdgePadding(): Float = edgePadding.invoke()
 
-    fun setColumns(value: () -> Int): GuiElementGroup {
+    fun setColumns(value: () -> Int): BaseElementGroup {
         this.columns = value
         return this
     }
 
-    fun setChildWidth(value: () -> Int): GuiElementGroup {
+    fun setChildWidth(value: () -> Float): BaseElementGroup {
         this.childWidth = value
         return this
     }
 
-    fun setChildHeight(value: () -> Int): GuiElementGroup {
+    fun setChildHeight(value: () -> Float): BaseElementGroup {
         this.childHeight = value
         return this
     }
 
-    fun setPadding(value: () -> Int): GuiElementGroup {
+    fun setPadding(value: () -> Float): BaseElementGroup {
         this.padding = value
         return this
     }
 
-    fun setEdgePadding(value: () -> Int): GuiElementGroup {
+    fun setEdgePadding(value: () -> Float): BaseElementGroup {
         this.edgePadding = value
         return this
     }
 
-    override fun pushChild(child: GuiElement): GuiElement {
-        getChildren().push(child).setParent(this).setMatrixStack(getMatrixStack())
+    override fun pushChild(child: Element): Element {
         getChildren().forEach(this::adjustChildProperties)
-        return child
+        return super.pushChild(child)
     }
 
-    fun addChildren(vararg children: GuiElement): GuiElementGroup {
-        children.forEach { getChildren().push(it).setParent(this).setMatrixStack(getMatrixStack()) }
+    // TODO: should this override Element::pushChild instead?
+    fun addChildren(vararg children: DynamicElement): BaseElementGroup {
+        children.forEach(this::pushChild)
         getChildren().forEach(this::adjustChildProperties)
         return this
     }
 
-    private fun adjustChildProperties(child: GuiElement) {
-        if(!getChildren().contains(child)) return
-
+    private fun adjustChildProperties(child: Element) {
+        child as DynamicElement
         child
             .setWidth(childWidth::invoke).setHeight(childHeight::invoke)
             .setX {

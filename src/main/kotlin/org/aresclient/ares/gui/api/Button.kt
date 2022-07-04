@@ -7,7 +7,7 @@ import org.aresclient.ares.renderer.VertexFormat
 import org.aresclient.ares.utils.Renderer
 import kotlin.math.min
 
-abstract class Button(var x: Float, var y: Float, var width: Float, var height: Float, private val action: () -> Unit) {
+abstract class Button(x: Float, y: Float, width: Float, height: Float, private val action: () -> Unit): StaticElement(x, y, width, height) {
     private companion object {
         private val CIRCLE = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
@@ -32,50 +32,42 @@ abstract class Button(var x: Float, var y: Float, var width: Float, var height: 
 
     protected abstract fun draw(matrixStack: MatrixStack)
 
-    fun render(matrixStack: MatrixStack, mouseX: Float, mouseY: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
-        if(isHovering(mouseX - offsetX, mouseY - offsetY)) {
+    override fun draw(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        if(isMouseOver(mouseX, mouseY)) {
             if(!hovering) {
                 hovering = true
                 hoverSince = System.currentTimeMillis()
             }
         } else hovering = false
 
-        // draw button
-        matrixStack.push()
-        matrixStack.model().translate(x, y, 0f)
-
         // draw click circle if holding
         if(holding) {
             val time = System.currentTimeMillis() - holdSince
 
             Renderer.clip({ draw(matrixStack) }) {
-                matrixStack.pop()
                 matrixStack.push()
-                matrixStack.model().translate(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
+                matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
                 CIRCLE.draw(matrixStack)
+                matrixStack.pop()
             }
         } else draw(matrixStack)
-
-        matrixStack.pop()
     }
 
-    open fun isHovering(mouseX: Float, mouseY: Float) = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height
-
-    fun click(mouseX: Float, mouseY: Float, mouseButton: Int) {
-        if(mouseButton == 0 && isHovering(mouseX, mouseY)) {
+    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        if(mouseButton == 0 && isMouseOver(mouseX, mouseY)) {
             holdSince = System.currentTimeMillis()
-            holdX = mouseX
-            holdY = mouseY
+            holdX = mouseX.toFloat()
+            holdY = mouseY.toFloat()
             holding = true
         }
+        super.click(mouseX, mouseY, mouseButton)
     }
 
-    fun release(mouseX: Float, mouseY: Float, mouseButton: Int) {
+    override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
         if(mouseButton == 0) {
-            if(holding && isHovering(mouseX, mouseY)) action()
+            if(holding && isMouseOver(mouseX, mouseY)) action()
             holding = false
         }
+        super.release(mouseX, mouseY, mouseButton)
     }
-
-    abstract fun delete()
 }

@@ -15,6 +15,7 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
         private const val HEIGHT = 22f
         private val RADIUS = Shader.ROUNDED.uniformF1("radius").set(0.08f)
         private val SIZE = Shader.ROUNDED.uniformF2("size").set(WIDTH, HEIGHT)
+        private val HOVER_SIZE = Shader.ROUNDED.uniformF2("size").set(WIDTH, HEIGHT)
         private val FONT_RENDERER = Renderer.getFontRenderer(14f, Font.BOLD)
 
         private val BUFFER = Buffer
@@ -69,7 +70,7 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
                 1, 2, 3
             )
             .uniform(RADIUS)
-            .uniform(SIZE)
+            .uniform(HOVER_SIZE)
     }
 
     private val textX = WIDTH / 2 - FONT_RENDERER.getStringWidth(text) / 2f
@@ -84,9 +85,8 @@ class TitleScreenButton(private val text: String, x: Float, y: Float, action: ()
             val factor = min((System.currentTimeMillis() - hoverSince) / 200f, 1f)
             matrixStack.push()
             matrixStack.model().scale(factor, 1f, 1f)
-            SIZE.set(WIDTH / factor, HEIGHT)
+            HOVER_SIZE.set(WIDTH / factor, HEIGHT)
             HOVER.draw(matrixStack)
-            SIZE.set(WIDTH, HEIGHT)
             matrixStack.pop()
         }
 

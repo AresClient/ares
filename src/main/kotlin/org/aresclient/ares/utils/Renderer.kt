@@ -15,7 +15,7 @@ object Renderer {
     fun getFontRenderer(size: Float, style: Int) = FONT_RENDERERS.getOrPut(style) { hashMapOf() }.getOrPut(size) { FontRenderer(FONT, size, style) }
     fun getFontRenderer(size: Float) = getFontRenderer(size, Font.PLAIN)
 
-    inline fun render2d(callback: () -> Unit) {
+    inline fun render(callback: () -> Unit) {
         val state = begin(true)
         callback()
         state.end()

@@ -5,7 +5,8 @@ import org.aresclient.ares.renderer.*
 import kotlin.math.min
 import kotlin.math.pow
 
-class IconButton(private val texture: Texture, color: Color, outline: Color, x: Float, y: Float, width: Float, height: Float, action: () -> Unit): Button(x, y, width, height, action) {
+class IconButton(private val texture: Texture, x: Float, y: Float, width: Float, height: Float,
+                 color: Color, outline: Color, action: () -> Unit): Button(x, y, width, height, action) {
     private companion object {
         private const val BORDER = 0.03f
         private const val BOUNDS = 0.2f
@@ -68,7 +69,7 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
 
     override fun draw(matrixStack: MatrixStack) {
         if(holding) matrixStack.model().translate(0f, 1f, 0f)
-        matrixStack.model().scale(width, height, 1f)
+        matrixStack.model().scale(getWidth(), getHeight(), 1f)
 
         if(!holding) SHADOW.draw(matrixStack)
 
@@ -87,14 +88,15 @@ class IconButton(private val texture: Texture, color: Color, outline: Color, x: 
         IMAGE.draw(matrixStack)
     }
 
-    override fun isHovering(mouseX: Float, mouseY: Float): Boolean {
-        val halfW = width / 2f
-        val halfH = height / 2f
-        return (mouseX - x - halfW).pow(2) / halfW.pow(2) + (mouseY - y - halfH).pow(2) / halfH.pow(2) <= 1
+    override fun isMouseOver(mouseX: Float, mouseY: Float): Boolean {
+        val halfW = getWidth() / 2f
+        val halfH = getHeight() / 2f
+        return (mouseX - getRenderX() - halfW).pow(2) / halfW.pow(2) + (mouseY - getRenderY() - halfH).pow(2) / halfH.pow(2) <= 1
     }
 
     override fun delete() {
         circle.delete()
         hover.delete()
+        super.delete()
     }
 }
