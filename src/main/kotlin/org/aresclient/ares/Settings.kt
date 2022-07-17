@@ -6,17 +6,23 @@ import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.Setting.Type.*
 import java.io.File
 
+import java.lang.Integer.*
+import java.lang.Double.*
+import java.lang.Float.*
+import java.lang.Long.*
+
 interface Serializable {
     fun toJSON(): JsonElement
 }
 
 open class Setting<T>(val name: String, val type: Type, var value: T, val possibleValues: PossibleValues<T> = PossibleValues()): Serializable {
-    private val default: T = value
     enum class Type {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
         FLOAT, LONG, LIST
     }
+
+    private val default: T = value
 
     fun refresh(json: JsonObject) {
         this.value = fromJSON(json)
@@ -30,67 +36,43 @@ open class Setting<T>(val name: String, val type: Type, var value: T, val possib
     fun fromJSON(json: JsonObject): T {
         val entry = json[name] ?: return value
         return when(type) {
-            STRING -> entry.jsonPrimitive.content as T
-            BOOLEAN -> entry.jsonPrimitive.boolean as T
-            ENUM -> value!!::class.java.enumConstants[entry.jsonPrimitive.int] as T
-            COLOR -> toColor(toFloatArray(entry.jsonArray)) as T
+            STRING -> entry.jsonPrimitive.contentOrNull as T?
+            BOOLEAN -> entry.jsonPrimitive.booleanOrNull as T?
+            ENUM -> entry.jsonPrimitive.intOrNull?.let { value!!::class.java.enumConstants[it] as T }
+            COLOR -> entry.jsonArray.map { it.jsonPrimitive.floatOrNull ?: 1f }.let { Color(it[0], it[1], it[2], it[3]) } as T?
             INTEGER -> {
                 possibleValues as RangeValues
-                if(possibleValues.noBounds()) entry.jsonPrimitive.int as T
-                else if(possibleValues.min as Int > entry.jsonPrimitive.int) possibleValues.min
-                else if(entry.jsonPrimitive.int > possibleValues.max as Int) possibleValues.max
-                else entry.jsonPrimitive.int as T
+                entry.jsonPrimitive.intOrNull?.let { n ->
+                    max(possibleValues.min as Int? ?: n, min(possibleValues.max as Int? ?: n, n))
+                } as T?
             }
             DOUBLE -> {
                 possibleValues as RangeValues
-                if(possibleValues.noBounds()) entry.jsonPrimitive.double as T
-                else if(possibleValues.min as Double > entry.jsonPrimitive.double) possibleValues.min
-                else if(entry.jsonPrimitive.double > possibleValues.max as Double) possibleValues.max
-                else entry.jsonPrimitive.double as T
+                entry.jsonPrimitive.doubleOrNull?.let { n ->
+                    max(possibleValues.min as Double? ?: n, min(possibleValues.max as Double? ?: n, n))
+                } as T?
             }
             FLOAT -> {
                 possibleValues as RangeValues
-                if(possibleValues.noBounds()) entry.jsonPrimitive.float as T
-                else if(possibleValues.min as Float > entry.jsonPrimitive.float) possibleValues.min
-                else if(entry.jsonPrimitive.float > possibleValues.max as Float) possibleValues.max
-                else entry.jsonPrimitive.float as T
+                entry.jsonPrimitive.floatOrNull?.let { n ->
+                    max(possibleValues.min as Float? ?: n, min(possibleValues.max as Float? ?: n, n))
+                } as T?
             }
             LONG -> {
                 possibleValues as RangeValues
-                if(possibleValues.noBounds()) entry.jsonPrimitive.long as T
-                else if(possibleValues.min as Long > entry.jsonPrimitive.long) possibleValues.min
-                else if(entry.jsonPrimitive.long > possibleValues.max as Long) possibleValues.max
-                else entry.jsonPrimitive.long as T
+                entry.jsonPrimitive.longOrNull?.let { n ->
+                    max(possibleValues.min as Long? ?: n, min(possibleValues.max as Long? ?: n, n))
+                } as T?
             }
-            LIST ->
-                if((possibleValues as ListValues<*>).values[0]!!::class.java.isEnum) entry.jsonArray.map {
-                    val v = possibleValues.values[0]!!::class.java.enumConstants[it.jsonPrimitive.int]
-                    if(possibleValues.values.contains(v)) v
-                    else null
-                } as T
-                else entry.jsonArray.map {
-                    val v = it.jsonPrimitive.toString()
-                    if(possibleValues.values.contains(v)) v
-                    else null
-                } as T
-        }
-    }
-
-    private fun toFloatArray(jsonArray: JsonArray): FloatArray {
-        val f: FloatArray = FloatArray(4)
-        for(i in 0..3) {
-            try {
-                f[i] = jsonArray[i].jsonPrimitive.float
-            } catch(e: Exception) {
-                println("Setting $name not successfully read, returning WHITE")
-                return floatArrayOf(1.0F, 1.0F, 1.0F, 1.0F)
+            LIST -> {
+                possibleValues as ListValues<*>
+                entry.jsonArray.mapNotNull {
+                    it.jsonPrimitive.intOrNull?.let { index ->
+                        possibleValues.values[index]
+                    }
+                } as T?
             }
-        }
-        return f
-    }
-
-    private fun toColor(values: FloatArray): Color {
-        return Color(values[0], values[1], values[2], values[3])
+        } ?: default
     }
 
     override fun toJSON(): JsonElement = when(type) {
@@ -125,14 +107,10 @@ open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() ->
     private val map = mutableMapOf<String, Serializable>()
 
     fun get(name: String): Serializable? {
-        for(key in map.keys)
-            if(key.contentEquals(name, true))
-                return map[key]
-
-        return null
+        return map[map.keys.find { it.contentEquals(name, true) }]
     }
 
-    fun refreshFromFile(file: File) {
+    fun read(file: File) {
         json =
             try {
                 Json.parseToJsonElement(file.readText()).jsonObject

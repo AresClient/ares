@@ -1,6 +1,8 @@
 package org.aresclient.ares.gui.api
 
 import org.aresclient.ares.renderer.*
+import org.aresclient.ares.utils.Renderer
+import org.aresclient.ares.utils.Theme
 
 class Image(private val texture: Texture, x: Float, y: Float, width: Float, height: Float): StaticElement(x, y, width, height) {
     companion object {
@@ -18,12 +20,12 @@ class Image(private val texture: Texture, x: Float, y: Float, width: Float, heig
             )
     }
 
-    override fun draw(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         matrixStack.push()
         matrixStack.model().scale(getWidth(), getHeight(), 0f)
         texture.bind()
         BUFFER.draw(matrixStack)
         matrixStack.pop()
-        super.draw(matrixStack, mouseX, mouseY, delta)
+        super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 }

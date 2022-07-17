@@ -3,7 +3,7 @@
 in vec2 vertUV;
 in vec4 vertColor;
 
-uniform float radius = 0.1; // 0 to 1
+uniform float radius = 0.08; // 0 to 1
 uniform vec2 size = vec2(1, 1); // ratio w to h of the rect
 
 out vec4 fragColor;

@@ -5,9 +5,11 @@ import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.renderer.Shader
 import org.aresclient.ares.renderer.VertexFormat
 import org.aresclient.ares.utils.Renderer
+import org.aresclient.ares.utils.Theme
 import kotlin.math.min
 
-abstract class Button(x: Float, y: Float, width: Float, height: Float, private val action: () -> Unit): StaticElement(x, y, width, height) {
+abstract class Button(x: Float, y: Float, width: Float, height: Float, private val action: () -> Unit, private val clickAnimation: Boolean = true):
+    StaticElement(x, y, width, height) {
     private companion object {
         private val CIRCLE = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
@@ -30,9 +32,9 @@ abstract class Button(x: Float, y: Float, width: Float, height: Float, private v
     protected var holdY = 0f
     protected var holdSince = 0L
 
-    protected abstract fun draw(matrixStack: MatrixStack)
+    protected abstract fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int)
 
-    override fun draw(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         if(isMouseOver(mouseX, mouseY)) {
             if(!hovering) {
                 hovering = true
@@ -41,16 +43,18 @@ abstract class Button(x: Float, y: Float, width: Float, height: Float, private v
         } else hovering = false
 
         // draw click circle if holding
-        if(holding) {
+        if(clickAnimation && holding) {
             val time = System.currentTimeMillis() - holdSince
 
-            Renderer.clip({ draw(matrixStack) }) {
+            Renderer.clip({ draw(theme, buffers, matrixStack, mouseX, mouseY) }) {
                 matrixStack.push()
                 matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
                 CIRCLE.draw(matrixStack)
                 matrixStack.pop()
             }
-        } else draw(matrixStack)
+        } else draw(theme, buffers, matrixStack, mouseX, mouseY)
+
+        super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {

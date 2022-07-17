@@ -21,8 +21,12 @@ public class Texture {
     private final int id = GL11.glGenTextures();
 
     public Texture(InputStream inputStream) {
+        this(inputStream, true);
+    }
+
+    public Texture(InputStream inputStream, boolean linear) {
         try {
-            generate(ImageIO.read(inputStream), id);
+            generate(ImageIO.read(inputStream), id, linear);
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
@@ -30,8 +34,12 @@ public class Texture {
     }
 
     public Texture(File file) {
+        this(file, true);
+    }
+
+    public Texture(File file, boolean linear) {
         try {
-            generate(ImageIO.read(file), id);
+            generate(ImageIO.read(file), id, linear);
         } catch(IOException e) {
             throw new RuntimeException(e);
         }
@@ -39,7 +47,11 @@ public class Texture {
     }
 
     public Texture(BufferedImage image) {
-        generate(image, id);
+        this(image, true);
+    }
+
+    public Texture(BufferedImage image, boolean linear) {
+        generate(image, id, linear);
         TEXTURES.add(this);
     }
 
@@ -64,13 +76,13 @@ public class Texture {
         return buffer;
     }
 
-    private static void generate(BufferedImage image, int id) {
+    private static void generate(BufferedImage image, int id, boolean linear) {
         // generate texture
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
-        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, linear ? GL11.GL_LINEAR : GL11.GL_NEAREST);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, linear ? GL11.GL_LINEAR : GL11.GL_NEAREST);
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, image.getWidth(), image.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, readImage(image));
         GL30.glGenerateMipmap(GL11.GL_TEXTURE_2D);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);

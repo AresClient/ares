@@ -1,9 +1,9 @@
 package org.aresclient.ares.gui.api
 
 import net.meshmc.mesh.api.render.Screen
-import org.aresclient.ares.Ares
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
+import org.aresclient.ares.utils.Theme
 import java.util.*
 import kotlin.math.floor
 
@@ -24,6 +24,18 @@ abstract class Element {
 
     fun getChildren(): Stack<Element> = children
     open fun pushChild(child: Element): Element = getChildren().push(child).setParent(this)
+    fun pushChildren(vararg children: Element): Element {
+        children.forEach { pushChild(it) }
+        return this
+    }
+    fun pushChildren(children: Iterable<Element>): Element {
+        children.forEach { pushChild(it) }
+        return this
+    }
+    fun removeChild(element: Element): Element {
+        getChildren().remove(element)
+        return this
+    }
     open fun popChild(): Element = getChildren().pop().setParent(null)
 
     fun getParent(): Element? = parent
@@ -49,16 +61,16 @@ abstract class Element {
     }
 
     // render should be called, draw should be overridden
-    protected open fun draw(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    protected open fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         getChildren().forEach {
-            if(it.isVisible()) it.render(matrixStack, mouseX, mouseY, delta)
+            if(it.isVisible()) it.render(theme, buffers, matrixStack, mouseX, mouseY, delta)
         }
     }
 
-    fun render(matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    fun render(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         matrixStack.push()
         matrixStack.model().translate(getX(), getY(), 0f)
-        draw(matrixStack, mouseX, mouseY, delta)
+        draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
         matrixStack.pop()
     }
 
@@ -116,9 +128,8 @@ open class ScreenElement(title: String): Element() {
         }
 
         override fun render(mouseX: Int, mouseY: Int, partialTicks: Float) {
-            Ares.MESH.minecraft.framebuffer.clear()
-            Renderer.render {
-                this@ScreenElement.draw(matrixStack, mouseX, mouseY, partialTicks) // we don't need to push matrices for screen drawing
+            Renderer.render(matrixStack) { buffers ->
+                this@ScreenElement.draw(Theme.current(), buffers, matrixStack, mouseX, mouseY, partialTicks) // we don't need to push matrices for screen drawing
             }
             super.render(mouseX, mouseY, partialTicks)
         }
@@ -142,6 +153,8 @@ open class ScreenElement(title: String): Element() {
             this@ScreenElement.scroll(mouseX, mouseY, value)
             super.scroll(mouseX, mouseY, value)
         }
+
+        override fun shouldPause(): Boolean = false
     }
 
     open fun init() {

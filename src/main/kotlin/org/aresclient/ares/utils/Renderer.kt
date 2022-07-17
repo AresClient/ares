@@ -1,8 +1,7 @@
 package org.aresclient.ares.utils
 
 import org.aresclient.ares.Ares
-import org.aresclient.ares.renderer.FontRenderer
-import org.aresclient.ares.renderer.MatrixStack
+import org.aresclient.ares.renderer.*
 import org.lwjgl.opengl.GL11
 import java.awt.Font
 
@@ -15,14 +14,56 @@ object Renderer {
     fun getFontRenderer(size: Float, style: Int) = FONT_RENDERERS.getOrPut(style) { hashMapOf() }.getOrPut(size) { FontRenderer(FONT, size, style) }
     fun getFontRenderer(size: Float) = getFontRenderer(size, Font.PLAIN)
 
-    inline fun render(callback: () -> Unit) {
-        val state = begin(true)
+    data class Uniforms(val roundedRadius: Uniform.F1, val roundedSize: Uniform.F2)
+    data class Buffers(val triangle: Buffer, val triangleTex: Buffer, val triangleTexColor: Buffer, val ellipse: Buffer, val rounded: Buffer, val lines: Buffer, val uniforms: Uniforms)
+    val BUFFERS by lazy {
+        val roundedRadius = Shader.ROUNDED.uniformF1("radius")
+        val roundedSize = Shader.ROUNDED.uniformF2("size")
+        Buffers(
+            Buffer.createDynamic(Shader.POSITION_COLOR, VertexFormat.POSITION_COLOR),
+            Buffer.createDynamic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV),
+            Buffer.createDynamic(Shader.POSITION_TEXTURE_COLOR, VertexFormat.POSITION_UV_COLOR),
+            Buffer.createDynamic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR),
+            Buffer.createDynamic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR).uniform(roundedRadius).uniform(roundedSize),
+            Buffer.createDynamic(Shader.LINES, VertexFormat.LINES).lines(),
+            Uniforms(
+                roundedRadius,
+                roundedSize
+            )
+        )
+    }
+
+    inline fun Buffer.draw(matrixStack: MatrixStack? = null, callback: Buffer.() -> Unit) {
         callback()
+        draw(matrixStack ?: MatrixStack.EMPTY)
+        reset()
+    }
+
+    fun Buffers.reset() {
+        triangle.reset()
+        ellipse.reset()
+        lines.reset()
+    }
+
+    fun Buffers.draw(matrixStack: MatrixStack?) {
+        if(triangle.shouldRender()) triangle.draw(matrixStack ?: MatrixStack.EMPTY)
+        if(ellipse.shouldRender()) ellipse.draw(matrixStack ?: MatrixStack.EMPTY)
+        if(rounded.shouldRender()) rounded.draw(matrixStack ?: MatrixStack.EMPTY)
+        if(lines.shouldRender()) lines.draw(matrixStack ?: MatrixStack.EMPTY)
+    }
+
+    inline fun render(matrixStack: MatrixStack? = null, callback: (Buffers) -> Unit) {
+        val state = begin()
+
+        callback(BUFFERS)
+        BUFFERS.draw(matrixStack)
+        BUFFERS.reset()
+
         state.end()
     }
 
-    inline fun render3d(callback: (MatrixStack) -> Unit, disableCull: Boolean = true) {
-        val state = begin(disableCull)
+    inline fun render3d(callback: (Buffers, MatrixStack) -> Unit) {
+        val state = begin()
 
         // TODO: THIS DOES NOT WORK ON 1.12.2!!!
         val matrixStack = MatrixStack()
@@ -33,7 +74,10 @@ object Renderer {
                 .rotate(wrapDegrees(it.yaw + 180f).toRadians(), 0f, 1f, 0f)
                 .translate(-it.x.toFloat(), -it.y.toFloat(), -it.z.toFloat())
         }
-        callback(matrixStack)
+
+        callback(BUFFERS, matrixStack)
+        BUFFERS.draw(matrixStack)
+        BUFFERS.reset()
 
         state.end()
     }
@@ -49,9 +93,16 @@ object Renderer {
         return this / 180f * 3.1415927f
     }
 
-    data class State(val depth: Boolean, val blend: Boolean, val cull: Boolean,  val texture: Boolean, val alpha/*LEGACY*/: Boolean)
+    data class State(val depth: Boolean, val blend: Boolean, val cull: Boolean, val alpha: Boolean)
 
-    fun begin(disableCull: Boolean): State {
+    fun begin(): State {
+        val state = State(
+            GL11.glIsEnabled(GL11.GL_DEPTH_TEST),
+            GL11.glIsEnabled(GL11.GL_BLEND),
+            GL11.glIsEnabled(GL11.GL_CULL_FACE),
+            if(LEGACY) GL11.glIsEnabled(GL11.GL_ALPHA_TEST) else false
+        )
+
         if(LEGACY) {
             GL11.glMatrixMode(GL11.GL_MODELVIEW)
             GL11.glPushMatrix()
@@ -60,22 +111,16 @@ object Renderer {
             GL11.glPushMatrix()
             GL11.glLoadIdentity()
 
-            GL11.glEnable(GL11.GL_ALPHA_TEST)
+            GL11.glDisable(GL11.GL_ALPHA_TEST)
         }
-
-        if(disableCull) GL11.glDisable(GL11.GL_CULL_FACE)
 
         GL11.glDisable(GL11.GL_DEPTH_TEST)
         GL11.glEnable(GL11.GL_BLEND)
+        GL11.glDisable(GL11.GL_CULL_FACE)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+        GL11.glColorMask(true, true, true, true)
 
-        return State(
-            GL11.glIsEnabled(GL11.GL_DEPTH_TEST),
-            GL11.glIsEnabled(GL11.GL_BLEND),
-            GL11.glIsEnabled(GL11.GL_CULL_FACE),
-            if(LEGACY) GL11.glIsEnabled(GL11.GL_TEXTURE_2D) else false,
-            if(LEGACY) GL11.glIsEnabled(GL11.GL_ALPHA_TEST) else false
-        )
+        return state
     }
 
     fun State.end() {
@@ -84,7 +129,6 @@ object Renderer {
         cull.set(GL11.GL_CULL_FACE)
 
         if(LEGACY) {
-            texture.set(GL11.GL_TEXTURE_2D)
             alpha.set(GL11.GL_ALPHA_TEST)
 
             GL11.glMatrixMode(GL11.GL_PROJECTION)

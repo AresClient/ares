@@ -1,12 +1,11 @@
 package org.aresclient.ares.module
 
 enum class Category {
-    COMBAT,
-    EXPLOIT,
-    HUD,
-    MOVEMENT,
     PLAYER,
+    COMBAT,
+    MOVEMENT,
     RENDER,
+    HUD,
     MISC;
 
     val modules = arrayListOf<Module>()

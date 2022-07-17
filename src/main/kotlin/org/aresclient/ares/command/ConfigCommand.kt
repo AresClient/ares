@@ -57,7 +57,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         Ares.SETTINGS.write(Ares.SETTINGS_FILE)
 
         Ares.SETTINGS_FILE = file
-        Ares.SETTINGS.refreshFromFile(Ares.SETTINGS_FILE)
+        Ares.SETTINGS.read(Ares.SETTINGS_FILE)
     }
 
     private fun copyTo(command: ArrayList<String>) {
@@ -78,7 +78,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         }
 
         file.copyTo(Ares.SETTINGS_FILE, true)
-        Ares.SETTINGS.refreshFromFile(Ares.SETTINGS_FILE)
+        Ares.SETTINGS.read(Ares.SETTINGS_FILE)
     }
 
     private fun rename(command: ArrayList<String>) {
@@ -104,7 +104,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
             Ares.SETTINGS.write(Ares.SETTINGS_FILE)
             Ares.SETTINGS_FILE.renameTo(file)
             Ares.SETTINGS_FILE = file
-            Ares.SETTINGS.refreshFromFile(Ares.SETTINGS_FILE)
+            Ares.SETTINGS.read(Ares.SETTINGS_FILE)
         }
     }
 
@@ -130,27 +130,10 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         println("CURRENT CONFIG: ${Ares.SETTINGS_FILE.path.substring(13).removeSuffix(".json")}")
     }
 
-    private fun containsIllegalCharacters(name: String): Boolean {
-        if(name.contains('#')) return true
-        if(name.contains('%')) return true
-        if(name.contains('&')) return true
-        if(name.contains('{')) return true
-        if(name.contains('}')) return true
-        if(name.contains('\\')) return true
-        if(name.contains('<')) return true
-        if(name.contains('>')) return true
-        if(name.contains('*')) return true
-        if(name.contains('/')) return true
-        if(name.contains('$')) return true
-        if(name.contains('!')) return true
-        if(name.contains('\'')) return true
-        if(name.contains('\"')) return true
-        if(name.contains(':')) return true
-        if(name.contains('@')) return true
-        if(name.contains('+')) return true
-        if(name.contains('`')) return true
-        if(name.contains('|')) return true
-        if(name.contains('=')) return true
-        return false
-    }
+    private fun containsIllegalCharacters(name: String): Boolean =
+        '#' in name  || '$' in name  || '\\' in name || '@' in name  ||
+        '%' in name  || '!' in name  || '<' in name  || '+' in name  ||
+        '&' in name  || '\'' in name || '>' in name  || '`' in name  ||
+        '{' in name  || '\"' in name || '*' in name  || '|' in name  ||
+        '}' in name  || ':' in name  || '/' in name  || '=' in name
 }

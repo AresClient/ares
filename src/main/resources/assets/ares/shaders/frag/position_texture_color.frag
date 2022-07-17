@@ -9,4 +9,5 @@ out vec4 fragColor;
 
 void main() {
     fragColor = texture(theTexture, texCoord) * vertColor;
+    if(fragColor.a == 0.0) discard;
 }

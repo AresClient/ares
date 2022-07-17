@@ -232,6 +232,10 @@ public class Buffer {
         if(shader != null) shader.detach();
     }
 
+    public boolean shouldRender() {
+        return indexPos > 0;
+    }
+
     public Buffer uniform(Uniform uniform) {
         uniforms.add(uniform);
         return this;

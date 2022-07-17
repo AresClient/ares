@@ -10,17 +10,16 @@ import net.meshmc.mesh.event.events.client.PacketEvent
 import net.meshmc.mesh.event.events.client.ScreenOpenedEvent
 import net.meshmc.mesh.event.events.client.TickEvent
 import net.meshmc.mesh.event.events.render.RenderEvent
-import net.meshmc.mesh.util.render.Color
 import org.apache.logging.log4j.LogManager
 import org.aresclient.ares.command.*
-import org.aresclient.ares.gui.AresTitleScreen
-import org.aresclient.ares.gui.ClickGUI
 import org.aresclient.ares.global.Global
+import org.aresclient.ares.global.RenderGlobal
 import org.aresclient.ares.global.RotationGlobal
+import org.aresclient.ares.gui.impl.game.AresGameScreen
+import org.aresclient.ares.gui.impl.title.AresTitleScreen
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.module.render.ESP
 import org.aresclient.ares.module.render.TestModule
-import org.aresclient.ares.global.RenderGlobal
 import java.io.File
 
 /*
@@ -33,24 +32,22 @@ class Ares: Mesh.Initializer {
         val MESH = Mesh.getMesh()
         val LOGGER = LogManager.getLogger("Ares")
 
-        val RED = Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)
-        val GRAY = Color(0.09803922f, 0.09803922f, 0.09803922f, 1f)
-
         var SETTINGS_FILE = File("ares/configs/settings.json")
         val SETTINGS = Settings.read(SETTINGS_FILE) {
            prettyPrint = true
         }
-        val CUSTOM_MAIN_MENU = SETTINGS.boolean("Ares Main Menu", true)
 
         val GLOBALS = arrayListOf<Global>()
         val MODULES = arrayListOf<Module>()
 
-        //val CLICKGUI = ClickGUI()
+        val TITLE_SETTING = SETTINGS.boolean("title", true)
+        private val TITLE_SCREEN by lazy { AresTitleScreen() }
+        private val GAME_SCREEN by lazy { AresGameScreen() }
 
         @field:EventHandler
         private val screenOpenedEventListener = EventListener<ScreenOpenedEvent> { event ->
             // TODO: call delete() on screen after close
-            if(CUSTOM_MAIN_MENU.value && event.isMainMenu) MESH.minecraft.openScreen(AresTitleScreen().getScreen())
+            if(TITLE_SETTING.value && event.isMainMenu) MESH.minecraft.openScreen(TITLE_SCREEN.getScreen())
         }
 
         @field:EventHandler
@@ -84,9 +81,9 @@ class Ares: Mesh.Initializer {
 
         @field:EventHandler
         private val onInputKey = EventListener<InputEvent.Keyboard> { event ->
-            //if(ClickGUI.bind.value == event.key)
-            //    if(event.state == InputEvent.Keyboard.State.PRESSED)
-            //        MESH.minecraft.openScreen(CLICKGUI.getScreen())
+            if(AresGameScreen.BIND.value == event.key && event.state == InputEvent.Keyboard.State.PRESSED)
+                MESH.minecraft.openScreen(GAME_SCREEN.getScreen())
+
             for(module in MODULES) {
                 if(module.getBind() == event.key) {
                     when(event.state) {

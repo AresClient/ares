@@ -10,23 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public class FontRenderer {
-    private static final Shader SHADER = Shader.fromResources("/assets/ares/shaders/vert/font.vert", "/assets/ares/shaders/frag/font.frag");
-    private static final Uniform.F4 DIMENSIONS = SHADER.uniformF4("dimensions");
-    private static final Uniform.F3 COLOR = SHADER.uniformF3("color").set(1, 1, 1);
-    private static final Buffer BUFFER = Buffer
-            .createStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
-            .vertices(
-                    1, 1, 0,    1, 1,
-                    1, 0, 0,   1, 0,
-                    0, 1, 0,   0, 1,
-                    0, 0, 0,  0, 0
-            )
-            .indices(
-                    0, 1, 2,
-                    1, 2, 3
-            )
-            .uniform(DIMENSIONS)
-            .uniform(COLOR);
+    private static final Buffer BUFFER = Buffer.createDynamic(Shader.POSITION_TEXTURE_COLOR, VertexFormat.POSITION_UV_COLOR);
 
     private final Map<Character, Glyph> glyphMap = new HashMap<>();
     private final int[] colorCodes = new int[32];
@@ -111,26 +95,47 @@ public class FontRenderer {
         texture = new Texture(image);
     }
 
-    public double drawChar(MatrixStack matrixStack, char c, float x, float y, float r, float g, float b) {
+    public double drawChar(MatrixStack matrixStack, char c, float x, float y, float r, float g, float b, float a) {
+        double w = drawChar(BUFFER, c, x, y, r, g, b, a);
+        texture.bind();
+        BUFFER.draw(matrixStack);
+        BUFFER.reset();
+        return w;
+    }
+
+    public double drawChar(Buffer buffer, char c, float x, float y, float r, float g, float b, float a) {
         Glyph glyph = glyphMap.get(c);
         if(glyph == null) return 0;
 
         float w = glyph.width / 2f;
-        matrixStack.push();
-        matrixStack.model().translate(x, y, 0).scale(w, glyph.height / 2f, 1);
+        float h = glyph.height / 2f;
+        float tx = glyph.x / width;
+        float ty = glyph.y / height;
+        float tw = glyph.width / width;
+        float th = glyph.height / height;
 
-        DIMENSIONS.set(glyph.x / width, glyph.y / height, glyph.width / width, glyph.height / height);
-        COLOR.set(r, g, b);
-
-        texture.bind();
-        BUFFER.draw(matrixStack);
-
-        matrixStack.pop();
+        buffer.indicesOffset(
+                0, 1, 2,
+                1, 2, 3
+        );
+        buffer.vertices(
+                x + w, y + h, 0, tx + tw, ty + th, r, g, b, a,
+                x + w, y, 0, tx + tw, ty, r, g, b, a,
+                x, y + h, 0, tx, ty + th, r, g, b, a,
+                x, y, 0, tx, ty, r, g, b, a
+        );
 
         return w;
     }
 
-    public void drawString(MatrixStack matrixStack, String text, float x, float y, float r, float g, float b) {
+    public void drawString(MatrixStack matrixStack, String text, float x, float y, float r, float g, float b, float a) {
+        drawString(BUFFER, text, x, y, r, g, b, a);
+        texture.bind();
+        BUFFER.draw(matrixStack);
+        BUFFER.reset();
+    }
+
+    public void drawString(Buffer buffer, String text, float x, float y, float r, float g, float b, float a) {
         for(int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if(c == 167 && i + 1 < text.length()) {
@@ -142,7 +147,7 @@ public class FontRenderer {
                 b = (float) (color & 255) / 255.0F;
 
                 ++i;
-            } else x += drawChar(matrixStack, c, x, y, r, g, b);
+            } else x += drawChar(buffer, c, x, y, r, g, b, a);
         }
     }
 
@@ -165,6 +170,10 @@ public class FontRenderer {
         }
 
         return width;
+    }
+
+    public void bindTexture() {
+        texture.bind();
     }
 
     public void delete() {

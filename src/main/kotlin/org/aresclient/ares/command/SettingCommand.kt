@@ -3,12 +3,11 @@ package org.aresclient.ares.command
 import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.ListValues
 import org.aresclient.ares.RangeValues
-import org.aresclient.ares.global.Global
 import org.aresclient.ares.Setting
 import org.aresclient.ares.Settings
+import org.aresclient.ares.global.Global
 import org.aresclient.ares.module.Module
 import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * Spaces are used to separate parts of a command
