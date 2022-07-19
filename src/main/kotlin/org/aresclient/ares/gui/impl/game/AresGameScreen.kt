@@ -2,8 +2,9 @@ package org.aresclient.ares.gui.impl.game
 
 import net.meshmc.mesh.util.Keys
 import org.aresclient.ares.Ares
+import org.aresclient.ares.Settings
 import org.aresclient.ares.gui.api.ScreenElement
-import org.aresclient.ares.module.Category
+import org.aresclient.ares.module.Module
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.renderer.Texture
 import org.aresclient.ares.utils.Renderer
@@ -12,23 +13,47 @@ import org.aresclient.ares.utils.Theme
 
 class AresGameScreen: ScreenElement("Ares Game Screen") {
     companion object {
-        val SETTINGS = Ares.SETTINGS.category("gui")
+        val SETTINGS = Ares.SETTINGS.category("ClickGUI")
         val BIND = SETTINGS.integer("bind", Keys.DOWN)
     }
 
-    private val windows = Category.values().map {
-        val name = it.name.lowercase()
-        Window(
-            name.replaceFirstChar { it.uppercase() },
-            Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/icons/categories/$name.png"), false),
-            { 130f }, { expanded -> if(expanded) 300f else 0f }
-        )
+    private val windows = ArrayList<SettingsWindow>()
+
+    init {
+        Ares.SETTINGS.initWindow()
+        windows.add(Ares.SETTINGS.window!!)
+
+        Module.SETTINGS.map.values.forEach {
+            if(it is Settings) {
+                it.initWindow()
+                windows.add(it.window!!)
+            }
+        }
     }
     private val navigationBar = NavigationBar(38f, windows)
 
     override fun init() {
         pushChild(navigationBar)
-        pushChildren(windows)
+        initWindows(Ares.SETTINGS)
+    }
+
+    private fun initWindows(settings: Settings) {
+        settings.initWindow()
+        pushChild(settings.window!!)
+        settings.map.values.forEach {
+            if(it is Settings && it != Window.SETTINGS) initWindows(it)
+        }
+    }
+
+    private fun Settings.initWindow() {
+        if(window != null) return
+
+        window = SettingsWindow(
+            this,
+            if(getParent() == Ares.SETTINGS.get("Modules")) Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/icons/categories/${getName().lowercase()}.png"), false)
+            else Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/icons/ares_fg.png"), false),
+            { 130f }, { expanded -> if(expanded) 300f else 0f }
+        )
     }
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {

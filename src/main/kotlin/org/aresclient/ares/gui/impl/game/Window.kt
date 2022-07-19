@@ -1,5 +1,9 @@
 package org.aresclient.ares.gui.impl.game
 
+import org.aresclient.ares.Serializable
+import org.aresclient.ares.Setting
+import org.aresclient.ares.Settings
+import org.aresclient.ares.gui.api.BaseElementGroup
 import org.aresclient.ares.gui.api.Button
 import org.aresclient.ares.gui.api.DynamicElement
 import org.aresclient.ares.gui.api.Image
@@ -12,18 +16,18 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-open class Window(private val title: String, private val icon: Texture, width: (expanded: Boolean) -> Float, private val height: (expanded: Boolean) -> Float,
-                  defaultX: Float = 0f, defaultY: Float = 0f): DynamicElement() {
+open class Window(var title: String, path: String, private val icon: Texture, width: (expanded: Boolean) -> Float,
+                  private val height: (expanded: Boolean) -> Float, defaultX: Float = 0f, defaultY: Float = 0f): DynamicElement() {
     companion object {
-        private val SETTINGS = AresGameScreen.SETTINGS.category("windows")
+        val SETTINGS = AresGameScreen.SETTINGS.category("windows")
         private val FONT_RENDERER = Renderer.getFontRenderer(14f)
-        private const val TOP_SIZE = 18f
+        const val TOP_SIZE = 18f
     }
 
-    protected val settings = SETTINGS.category(title)
+    protected val settings = SETTINGS.category(path)
     private val x = settings.float("x", defaultX)
     private val y = settings.float("y", defaultY)
-    private val expanded = settings.boolean("expanded", false)
+    protected val expanded = settings.boolean("expanded", false)
     private val visible = settings.boolean("visible", false)
 
     private var holding = false
@@ -212,5 +216,59 @@ open class Window(private val title: String, private val icon: Texture, width: (
                 }
             }
         }
+    }
+}
+
+class SettingsWindow(
+    val root: Settings,
+    icon: Texture, width: (expanded: Boolean) -> Float,
+    height: (expanded: Boolean) -> Float,
+    defaultX: Float = 0f,
+    defaultY: Float = 0f): Window(root.getName(), root.getPath(), icon, width, height, defaultX, defaultY)
+{
+    private val group = BaseElementGroup(visible = expanded::value, y = Window::TOP_SIZE, childWidth = this::getWidth, childHeight = { SettingElement.HEIGHT })
+    var displayed: Serializable = root
+
+    init {
+        pushChild(group)
+
+        root.map.values.forEach {
+            if(!it.getName().first().isLowerCase())
+                group.pushChild(SettingElement.makeSettingElement(it, this))
+        }
+    }
+
+    fun nextPage(serializable: Serializable) {
+        if(serializable is Setting<*> && displayed !is Settings) throw java.lang.Exception("CANNOT PAGE TO CATEGORY FROM NON CATEGORY")
+
+        if(displayed is Settings) {
+            if(!(displayed as Settings).map.containsValue(serializable)) throw java.lang.Exception("CANNOT PAGE FROM SETTING ${displayed.getPath()} TO ${serializable.getPath()}: NOT DERIVATIVE")
+
+            displayed = serializable
+            if(displayed is Settings) refreshSettings()
+            if(displayed is Setting<*>) TODO("Handle Setting<*> - Particularly List Setting")
+        }
+    }
+
+    fun backPage() {
+        if(displayed == root) return
+
+        displayed = displayed.getParent()!!
+        refreshSettings()
+    }
+
+    private fun refreshSettings() {
+        if(displayed !is Settings) return
+
+        group.getChildren().clear()
+
+        if(displayed != root) group.pushChild(SettingElement.BackButton(this))
+
+        (displayed as Settings).map.values.forEach {
+            if(!it.getName().first().isLowerCase())
+                group.pushChild(SettingElement.makeSettingElement(it, this))
+        }
+
+        title = root.getName() + displayed.getPath().substringAfter(root.getPath())
     }
 }

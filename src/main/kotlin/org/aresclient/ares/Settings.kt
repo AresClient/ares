@@ -4,6 +4,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.Setting.Type.*
+import org.aresclient.ares.gui.impl.game.SettingsWindow
 import java.io.File
 
 import java.lang.Integer.*
@@ -12,10 +13,13 @@ import java.lang.Float.*
 import java.lang.Long.*
 
 interface Serializable {
+    fun getName(): String
+    fun getPath(): String
+    fun getParent(): Settings?
     fun toJSON(): JsonElement
 }
 
-open class Setting<T>(val name: String, val type: Type, var value: T, val possibleValues: PossibleValues<T> = PossibleValues()): Serializable {
+open class Setting<T>(private val name: String, val type: Type, private val parent: Settings, var value: T, val possibleValues: PossibleValues<T> = PossibleValues()): Serializable {
     enum class Type {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
@@ -75,6 +79,12 @@ open class Setting<T>(val name: String, val type: Type, var value: T, val possib
         } ?: default
     }
 
+    override fun getName(): String = name
+
+    override fun getPath(): String = getParent()!!.getPath() + '/' + name
+
+    override fun getParent(): Settings? = parent
+
     override fun toJSON(): JsonElement = when(type) {
         STRING -> JsonPrimitive(value as String)
         BOOLEAN -> JsonPrimitive(value as Boolean)
@@ -94,7 +104,7 @@ open class Setting<T>(val name: String, val type: Type, var value: T, val possib
     }
 }
 
-open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() -> Unit = {}): Serializable {
+open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() -> Unit = {}, private val name: String = "/", private val parent: Settings? = null): Serializable {
     companion object {
         fun read(file: File, jsonBuilder: JsonBuilder.() -> Unit = {}) = Settings(try {
             Json.parseToJsonElement(file.readText()).jsonObject
@@ -104,7 +114,8 @@ open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() ->
     }
 
     private val writer = Json(Json.Default, jsonBuilder)
-    private val map = mutableMapOf<String, Serializable>()
+    val map = mutableMapOf<String, Serializable>()
+    var window: SettingsWindow? = null
 
     fun get(name: String): Serializable? {
         return map[map.keys.find { it.contentEquals(name, true) }]
@@ -143,24 +154,39 @@ open class Settings(private var json: JsonObject, jsonBuilder: JsonBuilder.() ->
         }
     }
 
-    fun string(name: String, default: String) = Setting(name, STRING, default).read()
-    fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default).read()
-    fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, default).read()
-    fun color(name: String, default: Color) = Setting(name, COLOR, default).read()
-    fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, default, RangeValues(min, max)).read()
-    fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, default, RangeValues(min, max)).read()
-    fun float(name: String, default: Float, min: Float? = null, max: Float? = null) = Setting(name, FLOAT, default, RangeValues(min, max)).read()
-    fun long(name: String, default: Long, min: Long? = null, max: Long? = null) = Setting(name, LONG, default, RangeValues(min, max)).read()
-    fun <T> list(name: String, default: List<T>, possibleValues: List<T>) = Setting(name, LIST, default, ListValues(possibleValues)).read()
-    fun category(name: String) = Settings((json[name]?.jsonObject ?: JsonObject(emptyMap()))).also { map[name] = it }
+    fun string(name: String, default: String) = Setting(name, STRING, this, default).read()
+    fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, this, default).read()
+    fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, this, default).read()
+    fun color(name: String, default: Color) = Setting(name, COLOR, this, default).read()
+    fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, this, default, RangeValues(min, max)).read()
+    fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, this, default, RangeValues(min, max)).read()
+    fun float(name: String, default: Float, min: Float? = null, max: Float? = null) = Setting(name, FLOAT, this, default, RangeValues(min, max)).read()
+    fun long(name: String, default: Long, min: Long? = null, max: Long? = null) = Setting(name, LONG, this, default, RangeValues(min, max)).read()
+    fun <T> list(name: String, default: List<T>, possibleValues: List<T>) = Setting(name, LIST, this, default, ListValues(possibleValues)).read()
+    fun category(name: String) = Settings((json[name]?.jsonObject ?: JsonObject(emptyMap())), name = name, parent = this).also { map[name] = it }
 
     private fun <T> Setting<T>.read(): Setting<T> {
-        this@Settings.map[this.name] = this
+        this@Settings.map[this.getName()] = this
         this.value = this.fromJSON(this@Settings.json)
         return this
     }
 
     fun write(file: File) = file.writeText(writer.encodeToString(toJSON()))
+
+    override fun getName(): String = name
+
+    override fun getPath(): String {
+        var settings: Settings = this
+        var path = if(name == "/") "/" else "/$name"
+        while(settings.getParent() != null) {
+            settings = settings.getParent()!!
+            if(settings.name == "/") break
+            path = '/' + settings.name + path
+        }
+        return path
+    }
+
+    override fun getParent(): Settings? = parent
 
     override fun toJSON() = JsonObject(map.mapValues { it.value.toJSON() })
 }

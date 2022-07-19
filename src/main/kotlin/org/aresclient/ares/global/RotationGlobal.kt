@@ -12,7 +12,7 @@ import org.aresclient.ares.utils.Timer
 /**
  * TODO: Test any of this actually works
  */
-object RotationGlobal: Global("Rotation Global") {
+object RotationGlobal: Global("Rotation") {
     private var yawStep = settings.float("Yaw Step", 180F)
     private var pitchStep = settings.float("Pitch Step", 180F)
 

@@ -5,6 +5,7 @@ import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.floor
 
 abstract class Element {
@@ -23,7 +24,9 @@ abstract class Element {
     open fun getRenderY(): Float = getY() + (getParent()?.getRenderY() ?: 0f)
 
     fun getChildren(): Stack<Element> = children
+
     open fun pushChild(child: Element): Element = getChildren().push(child).setParent(this)
+
     fun pushChildren(vararg children: Element): Element {
         children.forEach { pushChild(it) }
         return this
@@ -75,13 +78,13 @@ abstract class Element {
     }
 
     open fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        getChildren().forEach {
+        ArrayList(getChildren()).forEach {
             if(it.isVisible()) it.click(mouseX, mouseY, mouseButton)
         }
     }
 
     open fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        getChildren().forEach {
+        ArrayList(getChildren()).forEach {
             if(it.isVisible()) it.release(mouseX, mouseY, mouseButton)
         }
     }
@@ -253,8 +256,8 @@ open class StaticElement(
     }
 }
 
-abstract class BaseElementGroup(
-    visible: () -> Boolean = { false },
+open class BaseElementGroup(
+    visible: () -> Boolean = { true },
     x: () -> Float = { 0f },
     y: () -> Float = { 0f },
     width: () -> Float = { 0f },
@@ -301,30 +304,44 @@ abstract class BaseElementGroup(
         return this
     }
 
-    override fun pushChild(child: Element): Element {
+    fun insertChild(child: Element, i: Int): Element {
+        child.setParent(this)
+        getChildren().insertElementAt(child, i)
         getChildren().forEach(this::adjustChildProperties)
-        return super.pushChild(child)
+        return child
+    }
+
+    override fun pushChild(child: Element): Element {
+        super.pushChild(child)
+        getChildren().forEach(this::adjustChildProperties)
+        return child
     }
 
     // TODO: should this override Element::pushChild instead?
-    fun addChildren(vararg children: DynamicElement): BaseElementGroup {
-        children.forEach(this::pushChild)
+    fun addChildren(vararg children: Element): BaseElementGroup {
+        children.forEach { getChildren().push(it).setParent(this) }
+        getChildren().forEach(this::adjustChildProperties)
+        return this
+    }
+
+    fun addChildren(children: Iterable<Element>): BaseElementGroup {
+        children.forEach { getChildren().push(it).setParent(this) }
         getChildren().forEach(this::adjustChildProperties)
         return this
     }
 
     private fun adjustChildProperties(child: Element) {
-        child as DynamicElement
-        child
-            .setWidth(childWidth::invoke).setHeight(childHeight::invoke)
-            .setX {
-                var i = getChildren().indexOf(child)
-                while(i + 1 > columns.invoke()) i -= columns.invoke()
-                i * childWidth.invoke() + i * padding.invoke() + edgePadding.invoke()
-            }
-            .setY {
-                val n = floor(getChildren().indexOf(child).toDouble() / columns.invoke()).toInt()
-                n * childHeight.invoke() + n * padding.invoke() + edgePadding.invoke()
-            }
+        if(child is DynamicElement)
+            child
+                .setWidth(childWidth::invoke).setHeight(childHeight::invoke)
+                .setX {
+                    var i = getChildren().indexOf(child)
+                    while (i + 1 > columns.invoke()) i -= columns.invoke()
+                    i * childWidth.invoke() + i * padding.invoke() + edgePadding.invoke()
+                }
+                .setY {
+                    val n = floor(getChildren().indexOf(child).toDouble() / columns.invoke()).toInt()
+                    n * childHeight.invoke() + n * padding.invoke() + edgePadding.invoke()
+                }
     }
 }

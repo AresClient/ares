@@ -13,7 +13,7 @@ import org.aresclient.ares.Ares
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 
-object RenderGlobal: Global("Render Global") {
+object RenderGlobal: Global("Render") {
     data class Event(val delta: Float, val buffers: Renderer.Buffers, val matrixStack: MatrixStack)
 
     @field:EventHandler

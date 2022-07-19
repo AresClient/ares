@@ -90,7 +90,7 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                     else null
                 if(b != null) {
                     (setting as Setting<Boolean>).value = b
-                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO ${setting.value.toString().uppercase(Locale.getDefault())}")
+                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.toString().uppercase(Locale.getDefault())}")
                 }
             }
             Setting.Type.ENUM -> {
@@ -99,7 +99,7 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                     val array = (setting as Setting<Enum<*>>).value.javaClass.enumConstants
                     if(ordinal <= array.size - 1 && ordinal > -1) {
                         setting.value = array[ordinal]
-                        println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO ${setting.value.name}")
+                        println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.name}")
                     }
                 }
                 else {
@@ -108,7 +108,7 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                     for(v in enumConstants)
                         if(v.toString().contentEquals(valEnum, true)) {
                             setting.value = v
-                            println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO ${setting.value.name}")
+                            println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.name}")
                         }
                 }
             }
@@ -123,18 +123,18 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                 }
 
                 (setting as Setting<Color>).value = Color(values[0], values[1], values[2], values[3])
-                println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO ${setting.value.red},${setting.value.green},${setting.value.blue},${setting.value.alpha}")
+                println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.red},${setting.value.green},${setting.value.blue},${setting.value.alpha}")
             }
             Setting.Type.INTEGER -> {
                 val int = value.toIntOrNull()
                 if(int != null) {
                     setting as Setting<Int>
                     if(!(setting.possibleValues as RangeValues).noBounds() && (int > setting.possibleValues.max!! || int < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $int: VALUE IS OUT OF BOUNDS")
+                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $int: VALUE IS OUT OF BOUNDS")
                         return
                     }
                     setting.value = int
-                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $int")
+                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $int")
                 }
             }
             Setting.Type.DOUBLE -> {
@@ -142,11 +142,11 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                 if(double != null) {
                     setting as Setting<Double>
                     if(!(setting.possibleValues as RangeValues).noBounds() && (double > setting.possibleValues.max!! || double < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $double: VALUE IS OUT OF BOUNDS")
+                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $double: VALUE IS OUT OF BOUNDS")
                         return
                     }
                     setting.value = double
-                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $double")
+                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $double")
                 }
             }
             Setting.Type.FLOAT -> {
@@ -154,11 +154,11 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                 if(float != null) {
                     setting as Setting<Float>
                     if(!(setting.possibleValues as RangeValues).noBounds() && (float > setting.possibleValues.max!! || float < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $float: VALUE IS OUT OF BOUNDS")
+                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $float: VALUE IS OUT OF BOUNDS")
                         return
                     }
                     setting.value = float
-                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $float")
+                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $float")
                 }
             }
             Setting.Type.LONG -> {
@@ -166,11 +166,11 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                 if(long != null) {
                     setting as Setting<Long>
                     if(!(setting.possibleValues as RangeValues).noBounds() && (long > setting.possibleValues.max!! || long < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.name.uppercase(Locale.getDefault())} TO $long: VALUE IS OUT OF BOUNDS")
+                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $long: VALUE IS OUT OF BOUNDS")
                         return
                     }
                     setting.value = long
-                    println("SUCCESSFULLY SET ${setting.name.uppercase(Locale.getDefault())} TO $long")
+                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $long")
                 }
             }
             Setting.Type.LIST -> {
@@ -208,7 +208,7 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                     }
 
                     (setting as Setting<List<*>>).value = newList
-                    println("ATTEMPTED TO ADD ${values[1]} TO LIST ${setting.name.uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
+                    println("ATTEMPTED TO ADD ${values[1]} TO LIST ${setting.getName().uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
                 }
 
                 else if(value == "REMOVE") {
@@ -233,7 +233,7 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
 
                     (setting as Setting<List<*>>).value = newList
 
-                    println("ATTEMPTED TO REMOVE ${values[1]} FROM LIST ${setting.name.uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
+                    println("ATTEMPTED TO REMOVE ${values[1]} FROM LIST ${setting.getName().uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
                 }
 
                 else if(value == "REPLACE") {
@@ -261,7 +261,7 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                         (setting as Setting<List<Enum<*>>>).value = newList
                     }
 
-                    println("ATTEMPTED TO SET LIST ${setting.name.uppercase(Locale.getDefault())} TO $value: USE \"GET\" TO CHECK")
+                    println("ATTEMPTED TO SET LIST ${setting.getName().uppercase(Locale.getDefault())} TO $value: USE \"GET\" TO CHECK")
                 }
 
                 else println("INVALID COMMAND")

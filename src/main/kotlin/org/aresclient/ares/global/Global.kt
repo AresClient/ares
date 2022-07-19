@@ -4,7 +4,7 @@ import org.aresclient.ares.Ares
 
 open class Global(val name: String) {
     companion object {
-        val SETTINGS = Ares.SETTINGS.category("globals")
+        val SETTINGS = Ares.SETTINGS.category("Globals")
         internal val MC = Ares.MESH.minecraft
     }
 

@@ -7,11 +7,19 @@ abstract class Module(
     val name: String, val description: String, val category: Category, enabled: Boolean = false,
     bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false) {
     companion object {
-        val SETTINGS = Ares.SETTINGS.category("modules")
+        val SETTINGS = Ares.SETTINGS.category("Modules")
+        private val CATEGORIES = arrayOf(
+            SETTINGS.category("Player"),
+            SETTINGS.category("Combat"),
+            SETTINGS.category("Movement"),
+            SETTINGS.category("Render"),
+            SETTINGS.category("HUD"),
+            SETTINGS.category("Misc"),
+        )
         val MC = Ares.MESH.minecraft
     }
 
-    protected val settings = SETTINGS.category(name)
+    protected val settings = CATEGORIES[category.ordinal].category(name)
     private var enabled = settings.boolean("enabled", enabled)
     private var bind = settings.integer("bind", bind)
     private var visible = settings.boolean("visible", visible)
