@@ -18,6 +18,7 @@ import org.aresclient.ares.global.RotationGlobal
 import org.aresclient.ares.gui.impl.game.AresGameScreen
 import org.aresclient.ares.gui.impl.title.AresTitleScreen
 import org.aresclient.ares.module.Module
+import org.aresclient.ares.module.player.AntiAFK
 import org.aresclient.ares.module.render.ESP
 import org.aresclient.ares.module.render.TestModule
 import java.io.File
@@ -127,6 +128,8 @@ class Ares: Mesh.Initializer {
         GLOBALS.forEach { MESH.eventManager.register(it.javaClass) }
 
         // load modules into classpath
+        AntiAFK
+
         ESP
         TestModule
 

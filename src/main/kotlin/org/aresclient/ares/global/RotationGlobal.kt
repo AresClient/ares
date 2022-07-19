@@ -6,15 +6,26 @@ import net.meshmc.mesh.api.math.Vec2f
 import net.meshmc.mesh.api.packet.client.CPacketMovePlayer
 import net.meshmc.mesh.event.MeshEvent
 import net.meshmc.mesh.event.events.client.PacketEvent
-import org.aresclient.ares.utils.Rotator
 import org.aresclient.ares.utils.Timer
+import kotlin.math.min
 
 /**
- * TODO: Test any of this actually works
+ * TODO: Conditional priority? (so that things don't always get overtaken by higher priority while executing)
+ * TODO: Test whether interaction packets have to be sent right after the final step packet,
+ *      at the end of the tick the packet's sent, or during the beginning of the next tick on strict;
+ *      if it has to be the next tick, how soon after the interaction can the rotation be drastically changed
  */
+interface Rotator {
+    fun getPriority(): Int
+    fun getYawStep(): Float = RotationGlobal.yaw_step.value
+    fun getPitchStep(): Float = RotationGlobal.pitch_step.value
+    fun isEmergencyInterruptor(): Boolean = false
+}
+
 object RotationGlobal: Global("Rotation") {
-    private var yawStep = settings.float("Yaw Step", 180F)
-    private var pitchStep = settings.float("Pitch Step", 180F)
+    val reset_delay = settings.long("Reset Delay", 10 , 0, 100)
+    val yaw_step = settings.float("Yaw Step", 180F)
+    val pitch_step = settings.float("Pitch Step", 180F)
 
     private var rotation: Vec2f? = null
 
@@ -31,12 +42,12 @@ object RotationGlobal: Global("Rotation") {
     }
 
     fun hasPriority(rotator: Rotator): Boolean {
-        return key == null || key!!.getRotationPriority() < rotator.getRotationPriority()
+        return key == null || key!!.getPriority() < rotator.getPriority()
     }
 
     fun getKeyPriority(): Int {
         if(key == null) return -1
-        return key!!.getRotationPriority()
+        return key!!.getPriority()
     }
 
     fun release(key: Rotator) {
@@ -124,7 +135,7 @@ object RotationGlobal: Global("Rotation") {
                     }
 
                     //TODO: Global settings (separate panel?)
-                    if(resetTimer.hasTicksPassed(10) && steppingComplete) {
+                    if(resetTimer.hasTicksPassed(reset_delay.value) && steppingComplete) {
                         rotation = null
                         key = null
                         released = true
@@ -135,8 +146,8 @@ object RotationGlobal: Global("Rotation") {
                     val lastRotNorm: Vec2f = normalizeRotation(lastRotation)
                     val rotNorm: Vec2f = normalizeRotation(rotation!!)
 
-                    val yawStep = key!!.getYawStep() //TODO: Math.min(globalYawStep, key!!.yawStep)
-                    val pitchStep = key!!.getPitchStep() //TODO: Math.min(globalPitchStep, key!!.pitchStep
+                    val yawStep = min(key!!.getYawStep(), yaw_step.value)
+                    val pitchStep = min(key!!.getPitchStep(), pitch_step.value)
 
                     if(lastRotNorm.x != rotNorm.x && (yawStep != 180F || pitchStep != 180F)) {
                         val xChange = getChange(lastRotNorm.x, rotNorm.x)
@@ -154,7 +165,7 @@ object RotationGlobal: Global("Rotation") {
                         if(tempRotation.x == rotation!!.x && tempRotation.y == rotation!!.y) steppingComplete = true
 
                         MC.player.setRenderHeadYaw(tempRotation.x)
-                        MC.player.setRenderBodyYaw(tempRotation.y)
+                        MC.player.setRenderBodyYaw(tempRotation.x)
                     } else {
                         packet.rotation = rotation
                         steppingComplete = true
