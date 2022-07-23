@@ -1,5 +1,6 @@
 package org.aresclient.ares.gui.impl.game
 
+import org.aresclient.ares.ListValues
 import org.aresclient.ares.Serializable
 import org.aresclient.ares.Setting
 import org.aresclient.ares.Settings
@@ -228,6 +229,7 @@ class SettingsWindow(
 {
     private val group = BaseElementGroup(visible = expanded::value, y = Window::TOP_SIZE, childWidth = this::getWidth, childHeight = { SettingElement.HEIGHT })
     var displayed: Serializable = root
+    // TODO: displayed group scrolling
 
     init {
         pushChild(group)
@@ -239,25 +241,22 @@ class SettingsWindow(
     }
 
     fun nextPage(serializable: Serializable) {
-        if(serializable is Setting<*> && displayed !is Settings) throw java.lang.Exception("CANNOT PAGE TO CATEGORY FROM NON CATEGORY")
+        if(displayed !is Settings) throw java.lang.Exception("CANNOT PAGE FROM NON CATEGORY DISPLAY")
+        if(!(displayed as Settings).map.containsValue(serializable)) throw java.lang.Exception("CANNOT PAGE FROM CATEGORY ${displayed.getPath()} TO ${serializable.getPath()}: NOT DERIVATIVE")
 
-        if(displayed is Settings) {
-            if(!(displayed as Settings).map.containsValue(serializable)) throw java.lang.Exception("CANNOT PAGE FROM SETTING ${displayed.getPath()} TO ${serializable.getPath()}: NOT DERIVATIVE")
-
-            displayed = serializable
-            if(displayed is Settings) refreshSettings()
-            if(displayed is Setting<*>) TODO("Handle Setting<*> - Particularly List Setting")
-        }
+        displayed = serializable
+        if(displayed is Settings) refreshCategory()
+        if(displayed is Setting<*>) refreshSetting()
     }
 
     fun backPage() {
         if(displayed == root) return
 
         displayed = displayed.getParent()!!
-        refreshSettings()
+        refreshCategory()
     }
 
-    private fun refreshSettings() {
+    private fun refreshCategory() {
         if(displayed !is Settings) return
 
         group.getChildren().clear()
@@ -270,5 +269,26 @@ class SettingsWindow(
         }
 
         title = root.getName() + displayed.getPath().substringAfter(root.getPath())
+    }
+
+    fun refreshSetting() {
+        when((displayed as Setting<*>).type) {
+            Setting.Type.LIST -> {
+                group.getChildren().clear()
+
+                group.pushChild(SettingElement.BackButton(this))
+
+                ((displayed as Setting<*>).value as List<*>).forEach {
+                    if(it is Enum<*>) group.pushChild(SettingElement.makeListSubElement(it.name, true, this))
+                    else if(it is String) group.pushChild(SettingElement.makeListSubElement(it, true, this))
+                }
+
+                ((displayed as Setting<*>).possibleValues as ListValues<*>).values.filterNot((((displayed as Setting<*>).value) as List<*>)::contains).forEach {
+                    if(it is Enum<*>) group.pushChild(SettingElement.makeListSubElement(it.name, false, this))
+                    else if(it is String) group.pushChild(SettingElement.makeListSubElement(it, false, this))
+                }
+            }
+            else -> TODO("Is it necessary to do any of the others?")
+        }
     }
 }
