@@ -1,23 +1,26 @@
 package org.aresclient.ares.gui.impl.game
 
+import org.aresclient.ares.Settings
 import org.aresclient.ares.gui.api.Button
 import org.aresclient.ares.gui.api.StaticElement
+import org.aresclient.ares.module.Category
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Renderer.draw
 import org.aresclient.ares.utils.Theme
 
-class NavigationBar(private val top: Float, private val windows: List<Window>): StaticElement() {
+class NavigationBar(private val context: WindowContext, private val top: Float): StaticElement() {
     val padding = top / 6f
 
     init {
-        windows.forEachIndexed { index, window ->
-            pushChild(NavButton(this, index, window))
+        pushChild(NavButton(this, 0, null))
+        Category.values().forEachIndexed { index, category ->
+            pushChild(NavButton(this, index + 1, category))
         }
     }
 
     override fun update() {
-        setWidth(windows.size * (top - 12 + padding) + padding)
+        setWidth((Category.values().size + 1) * (top - 12 + padding) + padding)
         setHeight(top)
         setX((getRootParent()!!.getWidth() / 2f) - (getWidth() / 2f))
 
@@ -42,8 +45,8 @@ class NavigationBar(private val top: Float, private val windows: List<Window>): 
 
         buffers.lines.draw(matrixStack) {
             vertices(
-                0f, 0f, 0f, 1f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
-                getWidth(), 0f, 0f, 1f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                0f, 0f, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                getWidth(), 0f, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
             )
             indices(0, 1)
         }
@@ -51,15 +54,38 @@ class NavigationBar(private val top: Float, private val windows: List<Window>): 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    private class NavButton(private val navigationBar: NavigationBar, index: Int, private val window: Window):
+    private class NavButton(private val navigationBar: NavigationBar, index: Int, private val category: Category?):
         Button((navigationBar.top - 12 + navigationBar.padding) * index + navigationBar.padding, 4f,
-        navigationBar.top - 12, navigationBar.top - 12, { window.setVisible(!window.isVisible()) }, clickAnimation = false) {
+        navigationBar.top - 12, navigationBar.top - 12, clickAnimation = false) {
+
+        private var open = false
+
+        init {
+            setAction {
+                if(!open) {
+                    if(category == null) navigationBar.context.open(Window(navigationBar.context).also { it.open(SettingsContent(Settings.new())) })
+                    else navigationBar.context.open(Window(navigationBar.context).also { window -> window.open(SettingsContent(
+                        Settings.new().also { it.string("setting", ":Modules:${category.prettyName}") })) })
+                }
+            }
+            category?.let {
+                navigationBar.context.getListeners().add {
+                    open = navigationBar.context.getWindows().any {
+                        it.getCurrentContent()?.let { content ->
+                            content is SettingsContent && content.getPath() == ":Modules:${category.prettyName}"
+                        } ?: false
+                    }
+                }
+            }
+        }
+
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
             if(holding) matrixStack.model().translate(0f, 1f, 0f)
 
-            window.getIcon().bind()
+            if(category != null) category.icon.bind()
+            else Window.DEFAULT_ICON.bind()
 
-            if(hovering && navigationBar.windows.none { it.isMouseOver(mouseX, mouseY) }) {
+            if(hovering && navigationBar.context.getWindows().none { it.isMouseOver(mouseX, mouseY) }) {
                 Renderer.clip({ draw(buffers, matrixStack) }) {
                     buffers.triangle.draw(matrixStack) {
                         vertices(
@@ -76,8 +102,8 @@ class NavigationBar(private val top: Float, private val windows: List<Window>): 
                 }
             } else draw(buffers, matrixStack)
 
-            if(window.isVisible()) {
-                val size = navigationBar.top / 28f
+            if(open) {
+                val size = navigationBar.top / 22f
 
                 matrixStack.model().translate(getWidth() / 2f, getHeight() + size + 3, 0f)
                 if(holding) matrixStack.model().translate(0f, -1f, 0f)

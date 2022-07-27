@@ -8,12 +8,12 @@ abstract class Module(
     bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("Modules")
-        private val CATEGORIES = arrayOf(
+        val CATEGORIES = arrayOf(
             SETTINGS.category("Player"),
             SETTINGS.category("Combat"),
             SETTINGS.category("Movement"),
             SETTINGS.category("Render"),
-            SETTINGS.category("HUD"),
+            SETTINGS.category("Hud"),
             SETTINGS.category("Misc"),
         )
         val MC = Ares.MESH.minecraft

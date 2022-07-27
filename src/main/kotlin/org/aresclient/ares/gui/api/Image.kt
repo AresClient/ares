@@ -4,7 +4,7 @@ import org.aresclient.ares.renderer.*
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 
-class Image(private val texture: Texture, x: Float, y: Float, width: Float, height: Float): StaticElement(x, y, width, height) {
+class Image(private var texture: Texture, x: Float, y: Float, width: Float, height: Float): StaticElement(x, y, width, height) {
     companion object {
         private val BUFFER = Buffer
             .createStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
@@ -27,5 +27,9 @@ class Image(private val texture: Texture, x: Float, y: Float, width: Float, heig
         BUFFER.draw(matrixStack)
         matrixStack.pop()
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
+    }
+
+    fun setTexture(texture: Texture) {
+        this.texture = texture
     }
 }

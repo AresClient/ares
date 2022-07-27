@@ -41,12 +41,16 @@ object Renderer {
 
     fun Buffers.reset() {
         triangle.reset()
+        triangleTex.reset()
+        triangleTexColor.reset()
         ellipse.reset()
         lines.reset()
     }
 
     fun Buffers.draw(matrixStack: MatrixStack?) {
         if(triangle.shouldRender()) triangle.draw(matrixStack ?: MatrixStack.EMPTY)
+        if(triangleTex.shouldRender()) triangleTex.draw(matrixStack ?: MatrixStack.EMPTY)
+        if(triangleTexColor.shouldRender()) triangleTexColor.draw(matrixStack ?: MatrixStack.EMPTY)
         if(ellipse.shouldRender()) ellipse.draw(matrixStack ?: MatrixStack.EMPTY)
         if(rounded.shouldRender()) rounded.draw(matrixStack ?: MatrixStack.EMPTY)
         if(lines.shouldRender()) lines.draw(matrixStack ?: MatrixStack.EMPTY)

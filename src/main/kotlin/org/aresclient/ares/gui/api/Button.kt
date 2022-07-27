@@ -8,7 +8,7 @@ import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import kotlin.math.min
 
-abstract class Button(x: Float, y: Float, width: Float, height: Float, private val action: () -> Unit, private val clickAnimation: Boolean = true):
+abstract class Button(x: Float, y: Float, width: Float, height: Float, private var action: () -> Unit = {}, private val clickAnimation: Boolean = true):
     StaticElement(x, y, width, height) {
     private companion object {
         private val CIRCLE = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
@@ -73,5 +73,9 @@ abstract class Button(x: Float, y: Float, width: Float, height: Float, private v
             holding = false
         }
         super.release(mouseX, mouseY, mouseButton)
+    }
+
+    fun setAction(action: () -> Unit) {
+        this.action = action
     }
 }

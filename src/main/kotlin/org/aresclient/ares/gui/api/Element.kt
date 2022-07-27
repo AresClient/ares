@@ -257,21 +257,21 @@ open class StaticElement(
 }
 
 open class BaseElementGroup(
-    visible: () -> Boolean = { true },
-    x: () -> Float = { 0f },
-    y: () -> Float = { 0f },
-    width: () -> Float = { 0f },
-    height: () -> Float = { 0f },
+    x: Float = 0f, y: Float = 0f,
+    width: Float = 0f, height: Float = 0f,
 
     private var columns: () -> Int = { 1 },
     private var childWidth: () -> Float = { 0f },
     private var childHeight: () -> Float = { 0f },
     private var padding: () -> Float = { 0f },
     private var edgePadding: () -> Float = { 0f }
-): DynamicElement(visible, x, y, width, height) {
+): StaticElement(x, y, width, height) {
     init {
         if(getColumns() < 1) throw RuntimeException("Fewer than 1 columns in GuiElementGroup is not possible")
     }
+
+    override fun getWidth(): Float = getParent()?.getWidth() ?: 0f
+    override fun getHeight(): Float = getParent()?.getHeight() ?: 0f
 
     fun getColumns(): Int = columns.invoke()
     fun getChildWidth(): Float = childWidth.invoke()

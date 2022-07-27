@@ -41,7 +41,7 @@ class Ares: Mesh.Initializer {
         val GLOBALS = arrayListOf<Global>()
         val MODULES = arrayListOf<Module>()
 
-        val TITLE_SETTING = SETTINGS.boolean("title", true)
+        val TITLE_SETTING = SETTINGS.boolean("Title", true)
         private val TITLE_SCREEN by lazy { AresTitleScreen() }
         private val GAME_SCREEN by lazy { AresGameScreen() }
 
