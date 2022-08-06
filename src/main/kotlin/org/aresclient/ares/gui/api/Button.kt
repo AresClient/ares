@@ -6,11 +6,19 @@ import org.aresclient.ares.renderer.Shader
 import org.aresclient.ares.renderer.VertexFormat
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
-abstract class Button(x: Float, y: Float, width: Float, height: Float, private var action: () -> Unit = {}, private val clickAnimation: Boolean = true):
-    StaticElement(x, y, width, height) {
-    private companion object {
+abstract class Button(
+    x: Float, y: Float, width: Float, height: Float, private var action: (Button) -> Unit = {},
+    private val clipping: Clipping = Clipping.STENCIL): StaticElement(x, y, width, height) {
+    enum class Clipping {
+        STENCIL,
+        SCISSOR,
+        NONE
+    }
+
+    companion object {
         private val CIRCLE = Buffer.createStatic(Shader.ELLIPSE, VertexFormat.POSITION_UV_COLOR, 4, 6)
             .vertices(
                 1f, 1f, 0f,     1f, 1f,      1f, 1f, 1f, 0.3f,
@@ -43,39 +51,55 @@ abstract class Button(x: Float, y: Float, width: Float, height: Float, private v
         } else hovering = false
 
         // draw click circle if holding
-        if(clickAnimation && holding) {
+        if(clipping != Clipping.NONE && holding) {
             val time = System.currentTimeMillis() - holdSince
 
-            Renderer.clip({ draw(theme, buffers, matrixStack, mouseX, mouseY) }) {
-                matrixStack.push()
-                matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
-                CIRCLE.draw(matrixStack)
-                matrixStack.pop()
+            if(clipping == Clipping.STENCIL) {
+                Renderer.clip({ draw(theme, buffers, matrixStack, mouseX, mouseY) }) {
+                    matrixStack.push()
+                    matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
+                    CIRCLE.draw(matrixStack)
+                    matrixStack.pop()
+                }
+            } else {
+                draw(theme, buffers, matrixStack, mouseX, mouseY)
+                Renderer.scissor(getRenderX(), getRenderY(), getWidth(), getHeight()) {
+                    matrixStack.push()
+                    matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
+                    CIRCLE.draw(matrixStack)
+                    matrixStack.pop()
+                }
             }
         } else draw(theme, buffers, matrixStack, mouseX, mouseY)
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        if(mouseButton == 0 && isMouseOver(mouseX, mouseY)) {
+    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        super.click(mouseX, mouseY, mouseButton, acted)
+
+        if(mouseButton == 0 && !acted.get() && isMouseOver(mouseX, mouseY)) {
             holdSince = System.currentTimeMillis()
             holdX = mouseX.toFloat()
             holdY = mouseY.toFloat()
             holding = true
+            acted.set(true)
         }
-        super.click(mouseX, mouseY, mouseButton)
     }
 
     override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
         if(mouseButton == 0) {
-            if(holding && isMouseOver(mouseX, mouseY)) action()
+            if(holding && isMouseOver(mouseX, mouseY)) click()
             holding = false
         }
         super.release(mouseX, mouseY, mouseButton)
     }
 
-    fun setAction(action: () -> Unit) {
+    fun setAction(action: (Button) -> Unit) {
         this.action = action
+    }
+
+    fun click() {
+        action(this)
     }
 }

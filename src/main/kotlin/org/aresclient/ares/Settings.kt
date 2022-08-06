@@ -105,7 +105,7 @@ open class Setting<T>(private val name: String, val type: Type, var value: T, va
     override fun getName(): String = name
 }
 
-open class Settings(private var json: JsonObject, private val jsonBuilder: JsonBuilder.() -> Unit = {}, private val name: String = "/"): Serializable {
+open class Settings(private var json: JsonObject, private val jsonBuilder: JsonBuilder.() -> Unit = {}, private val name: String = "Home"): Serializable {
     companion object {
         fun read(file: File, jsonBuilder: JsonBuilder.() -> Unit = {}) = Settings(try {
             Json.parseToJsonElement(file.readText()).jsonObject

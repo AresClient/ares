@@ -10,7 +10,7 @@ import kotlin.math.min
 import kotlin.math.pow
 
 class IconButton(private val texture: Texture, x: Float, y: Float, width: Float, height: Float,
-                 action: () -> Unit): Button(x, y, width, height, action) {
+                 action: (Button) -> Unit): Button(x, y, width, height, action) {
     private companion object {
         private const val BORDER = 0.03f
         private const val BOUNDS = 0.2f

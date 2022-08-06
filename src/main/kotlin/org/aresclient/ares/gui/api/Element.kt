@@ -1,10 +1,12 @@
 package org.aresclient.ares.gui.api
 
 import net.meshmc.mesh.api.render.Screen
+import org.aresclient.ares.Ares
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.collections.ArrayList
 import kotlin.math.floor
 
@@ -25,7 +27,11 @@ abstract class Element {
 
     fun getChildren(): Stack<Element> = children
 
-    open fun pushChild(child: Element): Element = getChildren().push(child).setParent(this)
+    open fun pushChild(child: Element): Element {
+        getChildren().push(child).setParent(this)
+        child.update()
+        return this
+    }
 
     fun pushChildren(vararg children: Element): Element {
         children.forEach { pushChild(it) }
@@ -77,9 +83,13 @@ abstract class Element {
         matrixStack.pop()
     }
 
-    open fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
-        ArrayList(getChildren()).forEach {
-            if(it.isVisible()) it.click(mouseX, mouseY, mouseButton)
+    // we have to make new arraylist because children may be mutated on click or release
+    // acted: mutated by child elements when click has been handled or acted upon
+    open fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        val tmp = ArrayList(getChildren())
+        for(i in (tmp.size - 1) downTo 0) { // reverse because rendering flips order on screen
+            val child = tmp[i]
+            if(child.isVisible()) child.click(mouseX, mouseY, mouseButton, acted)
         }
     }
 
@@ -95,9 +105,11 @@ abstract class Element {
         }
     }
 
-    open fun scroll(mouseX: Double, mouseY: Double, value: Double) {
-        getChildren().forEach {
-            if(it.isVisible()) it.scroll(mouseX, mouseY, value)
+    open fun scroll(mouseX: Int, mouseY: Int, value: Double, acted: AtomicBoolean) {
+        val children = getChildren()
+        for(i in (children.size - 1) downTo 0) { // reverse because rendering flips order on screen
+            val child = children[i]
+            if(child.isVisible()) child.scroll(mouseX, mouseY, value, acted)
         }
     }
 
@@ -138,7 +150,7 @@ open class ScreenElement(title: String): Element() {
         }
 
         override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
-            this@ScreenElement.click(mouseX, mouseY, mouseButton)
+            this@ScreenElement.click(mouseX, mouseY, mouseButton, AtomicBoolean(false))
             super.click(mouseX, mouseY, mouseButton)
         }
 
@@ -152,8 +164,8 @@ open class ScreenElement(title: String): Element() {
             super.type(typedChar, keyCode)
         }
 
-        override fun scroll(mouseX: Double, mouseY: Double, value: Double) {
-            this@ScreenElement.scroll(mouseX, mouseY, value)
+        override fun scroll(mouseX: Int, mouseY: Int, value: Double) {
+            this@ScreenElement.scroll(mouseX, mouseY, value, AtomicBoolean(false))
             super.scroll(mouseX, mouseY, value)
         }
 
@@ -271,7 +283,12 @@ open class BaseElementGroup(
     }
 
     override fun getWidth(): Float = getParent()?.getWidth() ?: 0f
-    override fun getHeight(): Float = getParent()?.getHeight() ?: 0f
+    override fun getHeight(): Float {
+        val e = edgePadding.invoke()
+        val n = floor(getChildren().size.toDouble() / columns.invoke()).toInt()
+        val y = n * childHeight.invoke() + n * padding.invoke() + e
+        return y + getChildHeight() + e
+    }
 
     fun getColumns(): Int = columns.invoke()
     fun getChildWidth(): Float = childWidth.invoke()
@@ -307,41 +324,45 @@ open class BaseElementGroup(
     fun insertChild(child: Element, i: Int): Element {
         child.setParent(this)
         getChildren().insertElementAt(child, i)
-        getChildren().forEach(this::adjustChildProperties)
+        getChildren().forEachIndexed(this::adjustChildProperties)
         return child
     }
 
     override fun pushChild(child: Element): Element {
         super.pushChild(child)
-        getChildren().forEach(this::adjustChildProperties)
+        getChildren().forEachIndexed(this::adjustChildProperties)
         return child
     }
 
     // TODO: should this override Element::pushChild instead?
     fun addChildren(vararg children: Element): BaseElementGroup {
         children.forEach { getChildren().push(it).setParent(this) }
-        getChildren().forEach(this::adjustChildProperties)
+        getChildren().forEachIndexed(this::adjustChildProperties)
         return this
     }
 
     fun addChildren(children: Iterable<Element>): BaseElementGroup {
         children.forEach { getChildren().push(it).setParent(this) }
-        getChildren().forEach(this::adjustChildProperties)
+        getChildren().forEachIndexed(this::adjustChildProperties)
         return this
     }
 
-    private fun adjustChildProperties(child: Element) {
+    private fun adjustChildProperties(i: Int, child: Element) {
+        var index = i
+        while (index + 1 > columns.invoke()) index -= columns.invoke()
+        val x = index * childWidth.invoke() + index * padding.invoke() + edgePadding.invoke()
+
+        val n = floor(i.toDouble() / columns.invoke()).toInt()
+        val y = n * childHeight.invoke() + n * padding.invoke() + edgePadding.invoke()
+
         if(child is DynamicElement)
-            child
-                .setWidth(childWidth::invoke).setHeight(childHeight::invoke)
-                .setX {
-                    var i = getChildren().indexOf(child)
-                    while (i + 1 > columns.invoke()) i -= columns.invoke()
-                    i * childWidth.invoke() + i * padding.invoke() + edgePadding.invoke()
-                }
-                .setY {
-                    val n = floor(getChildren().indexOf(child).toDouble() / columns.invoke()).toInt()
-                    n * childHeight.invoke() + n * padding.invoke() + edgePadding.invoke()
-                }
+            child.setWidth(childWidth::invoke).setHeight(childHeight::invoke).setX { x }.setY { y }
+        else if(child is StaticElement)
+            child.setWidth(getChildWidth()).setHeight(getChildHeight()).setX(x).setY(y)
+    }
+
+    override fun update() {
+        getChildren().forEachIndexed(this::adjustChildProperties)
+        super.update()
     }
 }

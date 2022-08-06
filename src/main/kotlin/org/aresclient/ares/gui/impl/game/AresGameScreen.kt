@@ -2,12 +2,7 @@ package org.aresclient.ares.gui.impl.game
 
 import net.meshmc.mesh.util.Keys
 import org.aresclient.ares.Ares
-import org.aresclient.ares.Settings
-import org.aresclient.ares.gui.api.ScreenElement
-import org.aresclient.ares.module.Category
-import org.aresclient.ares.module.Module
 import org.aresclient.ares.renderer.MatrixStack
-import org.aresclient.ares.renderer.Texture
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Renderer.draw
 import org.aresclient.ares.utils.Theme
@@ -15,7 +10,7 @@ import org.aresclient.ares.utils.Theme
 class AresGameScreen: WindowContext(SETTINGS, "Ares Game Screen") {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("ClickGUI")
-        val BIND = SETTINGS.integer("bind", Keys.DOWN)
+        val BIND = SETTINGS.integer("Bind", Keys.DOWN)
     }
 
     private val navigationBar = NavigationBar(this, 38f)

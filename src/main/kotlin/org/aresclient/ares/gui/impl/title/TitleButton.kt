@@ -11,7 +11,7 @@ import org.aresclient.ares.utils.Theme
 import java.awt.Font
 import kotlin.math.min
 
-class TitleButton(private val text: String, x: Float, y: Float, action: () -> Unit): Button(x, y, WIDTH, HEIGHT, action) {
+class TitleButton(private val text: String, x: Float, y: Float, action: (Button) -> Unit): Button(x, y, WIDTH, HEIGHT, action) {
     private companion object {
         private const val WIDTH = 150f
         private const val HEIGHT = 22f

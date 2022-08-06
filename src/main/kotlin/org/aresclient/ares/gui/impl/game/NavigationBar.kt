@@ -28,7 +28,7 @@ class NavigationBar(private val context: WindowContext, private val top: Float):
     }
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        buffers.uniforms.roundedRadius.set(0.1f)
+        buffers.uniforms.roundedRadius.set(0.09f)
         buffers.uniforms.roundedSize.set(getWidth(), getHeight() * 2)
         buffers.rounded.draw(matrixStack) {
             vertices(
@@ -56,7 +56,7 @@ class NavigationBar(private val context: WindowContext, private val top: Float):
 
     private class NavButton(private val navigationBar: NavigationBar, index: Int, private val category: Category?):
         Button((navigationBar.top - 12 + navigationBar.padding) * index + navigationBar.padding, 4f,
-        navigationBar.top - 12, navigationBar.top - 12, clickAnimation = false) {
+        navigationBar.top - 12, navigationBar.top - 12, clipping = Clipping.NONE) {
 
         private var open = false
 

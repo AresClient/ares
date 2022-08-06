@@ -20,17 +20,17 @@ abstract class Module(
     }
 
     protected val settings = CATEGORIES[category.ordinal].category(name)
-    private var enabled = settings.boolean("enabled", enabled)
-    private var bind = settings.integer("bind", bind)
-    private var visible = settings.boolean("visible", visible)
+    private var enabled = settings.boolean("Enabled", enabled)
+    private var visible = settings.boolean("Visible", visible)
+    private var bind = settings.integer("Bind", bind)
 
     enum class TogglesWhen {
-        PRESSED,
-        RELEASED,
-        HELD_DOWN
+        PRESS,
+        RELEASE,
+        HOLD
     }
 
-    private var toggleState = settings.enum("toggle when", TogglesWhen.PRESSED)
+    private var toggleState = settings.enum("Toggle On", TogglesWhen.PRESS)
     var pressed = false
 
     fun isEnabled() = enabled.value

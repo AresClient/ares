@@ -90,9 +90,9 @@ class Ares: Mesh.Initializer {
                     when(event.state) {
                         InputEvent.Keyboard.State.PRESSED -> {
                             if(!module.pressed) {
-                                if(module.getToggleState() == Module.TogglesWhen.PRESSED)
+                                if(module.getToggleState() == Module.TogglesWhen.PRESS)
                                     module.toggle()
-                                if(module.getToggleState() == Module.TogglesWhen.HELD_DOWN) {
+                                if(module.getToggleState() == Module.TogglesWhen.HOLD) {
                                     module.enable()
                                 }
 
@@ -100,10 +100,10 @@ class Ares: Mesh.Initializer {
                             }
                         }
                         InputEvent.Keyboard.State.RELEASED -> {
-                            if(module.getToggleState() == Module.TogglesWhen.RELEASED) {
+                            if(module.getToggleState() == Module.TogglesWhen.RELEASE) {
                                 module.toggle()
                             }
-                            if(module.getToggleState() == Module.TogglesWhen.HELD_DOWN) {
+                            if(module.getToggleState() == Module.TogglesWhen.HOLD) {
                                 module.disable()
                             }
 
