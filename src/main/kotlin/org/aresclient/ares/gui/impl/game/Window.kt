@@ -150,7 +150,7 @@ class Window(private val context: WindowContext, private val settings: Settings 
                 width, TOP_SIZE, 0f, 1f, topOffset, theme.secondary.red, theme.secondary.green, theme.secondary.blue, theme.secondary.alpha,
                 width, 0f, 0f, 1f, -1f, theme.secondary.red, theme.secondary.green, theme.secondary.blue, theme.secondary.alpha,
                 0f, TOP_SIZE, 0f, -1f, topOffset, theme.secondary.red, theme.secondary.green, theme.secondary.blue, theme.secondary.alpha,
-                0f, 0f, 0f, -1f, -1f, theme.secondary.red, theme.secondary.green, theme.secondary.blue, theme.secondary.alpha,
+                0f, 0f, 0f, -1f, -1f, theme.secondary.red, theme.secondary.green, theme.secondary.blue, theme.secondary.alpha
             )
             indices(
                 0, 1, 2,
@@ -202,7 +202,7 @@ class Window(private val context: WindowContext, private val settings: Settings 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         val prev = acted.get()
         super.click(mouseX, mouseY, mouseButton, acted)
-        currContent?.click(mouseX, mouseY, mouseButton, acted)
+        if(mouseY > getRenderY() + TOP_SIZE) currContent?.click(mouseX, mouseY, mouseButton, acted)
         val after = acted.get()
 
         if(mouseButton == 0 && !holding && isMouseOver(mouseX, mouseY)) {
