@@ -8,7 +8,7 @@ class Theme(_primary: Color, _secondary: Color, _background: Color, _lightground
         private val SETTING = Ares.SETTINGS.category("Theme")
         private val PRIMARY = SETTING.color("Primary", Color(0.37254903f, 0.019607844f, 0.019607844f, 1f))
         private val SECONDARY = SETTING.color("Secondary", Color(0.09803922f, 0.09803922f, 0.09803922f, 1f))
-        private val BACKGROUND = SETTING.color("Background", Color(0f, 0f, 0f, 0.8f))
+        private val BACKGROUND = SETTING.color("Background", Color(0f, 0f, 0f, 0.9f))
         private val LIGHTGROUND = SETTING.color("Lightground", Color.WHITE)
 
         private var CURRENT = Theme(PRIMARY.value, SECONDARY.value, BACKGROUND.value, LIGHTGROUND.value)

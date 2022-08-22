@@ -45,8 +45,8 @@ class NavigationBar(private val context: WindowContext, private val top: Float):
 
         buffers.lines.draw(matrixStack) {
             vertices(
-                0f, 0f, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
-                getWidth(), 0f, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                0f, 0f, 0f, 3f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                getWidth(), 0f, 0f, 3f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
             )
             indices(0, 1)
         }

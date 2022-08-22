@@ -1,19 +1,15 @@
 package org.aresclient.ares.gui.impl.game
 
-import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.*
 import org.aresclient.ares.gui.api.BaseElementGroup
 import org.aresclient.ares.gui.api.Button
-import org.aresclient.ares.gui.impl.game.setting.BooleanElement
-import org.aresclient.ares.gui.impl.game.setting.CategoryElement
-import org.aresclient.ares.gui.impl.game.setting.ListSubElement
+import org.aresclient.ares.gui.impl.game.setting.*
 import org.aresclient.ares.module.Category
 import org.aresclient.ares.module.Module
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Renderer.draw
 import org.aresclient.ares.utils.Theme
-import kotlin.math.pow
 
 private val FONT_RENDERER = Renderer.getFontRenderer(13f)
 private const val HEIGHT = 18f
@@ -62,6 +58,8 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
                     is Setting<*> -> when(it.type) {
                         Setting.Type.LIST -> CategoryElement(it, this)
                         Setting.Type.BOOLEAN -> BooleanElement(it as Setting<Boolean>)
+                        Setting.Type.ENUM -> EnumElement(it as Setting<Enum<*>>)
+                        Setting.Type.BIND -> BindElement(it as Setting<Int>)
                         else -> SettingElement(it.getName()) {}
                     }
                     else -> SettingElement(it.getName()) {}
@@ -77,8 +75,8 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
 
     @Suppress("UNCHECKED_CAST")
     private fun addListElements(any: Any?, added: Boolean) {
-        if(any is Enum<*>) group.pushChild(ListSubElement(any.name, added, this))
-        else if(any is String) group.pushChild(ListSubElement(any, added, this))
+        if(any is Enum<*>) group.pushChild(ListSubElement(EnumListElementAdapter(any), added, this))
+        else if(any is String) group.pushChild(ListSubElement(DefaultListElementAdapter(any), added, this))
     }
 
     fun forward(name: String): SettingsContent =
@@ -89,6 +87,8 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
 
 open class SettingElement(private val text: String, action: (Button) -> Unit):
     Button(0f, 0f, 0f, 0f, action, Clipping.SCISSOR) {
+    protected val fontRenderer = FONT_RENDERER
+
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
         buffers.lines.draw(matrixStack) {
             vertices(
@@ -102,47 +102,72 @@ open class SettingElement(private val text: String, action: (Button) -> Unit):
 
         FONT_RENDERER.drawString(
             matrixStack, text,
-            3f, 1f, 1f, 1f, 1f, 1f
+            3f, 1f,
+            theme.lightground.red, theme.lightground.green, theme.lightground.blue, theme.lightground.alpha
         )
+    }
+
+    protected fun String.formatToPretty(): String =
+        this.split('_').joinToString { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
+}
+
+abstract class SettingSubButton(action: (Button) -> Unit, private val size: Float = 0.7f, clipping: Clipping = Clipping.STENCIL):
+    Button(0f, 0f, 0f, 0f, action, clipping, 2) {
+    private val offset = (1f - size) / 2f
+
+    override fun getX(): Float = getParent()?.getWidth()?.let { it - getY() - getWidth()  } ?: 0f
+
+    override fun getY(): Float = getParent()?.getHeight()?.let { it * offset } ?: 0f
+
+    override fun getHeight(): Float = getParent()?.getHeight()?.let { it * size } ?: 0f
+
+    override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
+        if(holding) matrixStack.model().translate(0f, 1f, 0f)
     }
 }
 
-abstract class SettingSubButton(action: (Button) -> Unit): Button(0f, 0f, 0f, 0f, action) {
-    override fun getX(): Float = getParent()?.getWidth()?.let { it - getY() - getWidth()  } ?: 0f
+abstract class SettingSubToggleButton: SettingSubButton({
+    it as SettingSubToggleButton
+    it.setState(!it.getState())
+}, 0.5f) {
+    abstract fun getState(): Boolean
+    abstract fun setState(value: Boolean)
 
-    override fun getY(): Float = getParent()?.getHeight()?.let { it * 0.15f } ?: 0f
-
-    override fun getHeight(): Float = getParent()?.getHeight()?.let { it * 0.7f } ?: 0f
-}
-
-open class CircleSettingSubButton(action: (Button) -> Unit): SettingSubButton(action) {
     override fun getWidth(): Float = getHeight()
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
-        if(isMouseOver(mouseX, mouseY)) circle(buffers, matrixStack, theme.secondary)
-        else circle(buffers, matrixStack, theme.primary)
-    }
+        super.draw(theme, buffers, matrixStack, mouseX, mouseY)
 
-    private fun circle(buffers: Renderer.Buffers, matrixStack: MatrixStack, color: Color) {
         val size = getHeight()
 
-        buffers.ellipse.draw(matrixStack) {
+        buffers.lines.draw(matrixStack) {
             vertices(
-                size, size, 0f, 1f, 1f, color.red, color.green, color.blue, color.alpha,
-                size, 0f, 0f, 1f, -1f, color.red, color.green, color.blue, color.alpha,
-                0f, size, 0f, -1f, 1f, color.red, color.green, color.blue, color.alpha,
-                0f, 0f, 0f, -1f, -1f, color.red, color.green, color.blue, color.alpha
+                0f, 0f, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                size, 0f, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                size, size, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                0f, size, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
             )
             indices(
-                0, 1, 2,
-                1, 2, 3
+                0, 1,
+                1, 2,
+                2, 3,
+                3, 0
             )
         }
-    }
 
-    override fun isMouseOver(mouseX: Float, mouseY: Float): Boolean {
-        val halfW = getWidth() / 2f
-        val halfH = getHeight() / 2f
-        return (mouseX - getRenderX() - halfW).pow(2) / halfW.pow(2) + (mouseY - getRenderY() - halfH).pow(2) / halfH.pow(2) <= 1
+        if(getState()) {
+            buffers.triangle.draw(matrixStack) {
+                vertices(
+                    0f, 0f, 0f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                    size, 0f, 0f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                    size, size, 0f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                    0f, size, 0f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
+                )
+                indices(
+                    0, 1, 2,
+                    0, 3, 2
+                )
+            }
+        }
     }
 }

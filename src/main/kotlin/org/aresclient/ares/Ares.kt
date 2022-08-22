@@ -80,37 +80,52 @@ class Ares: Mesh.Initializer {
             }
         }
 
+        // TODO: MAYBE MOVE THIS TO THE SETTINGS CLASS?
         @field:EventHandler
-        private val onInputKey = EventListener<InputEvent.Keyboard> { event ->
-            if(AresGameScreen.BIND.value == event.key && event.state == InputEvent.Keyboard.State.PRESSED)
+        private val onInputEvent = EventListener<InputEvent> { event ->
+            var key: Int? = null
+            var state: Boolean? = null
+
+            when(event) {
+                is InputEvent.Keyboard -> {
+                    key = event.key
+                    state = event.state == InputEvent.Keyboard.State.PRESSED
+                }
+                is InputEvent.Mouse.Pressed -> {
+                    key = event.key
+                    state = true
+                }
+                is InputEvent.Mouse.Released -> {
+                    key = event.key
+                    state = false
+                }
+            }
+
+            if(key == null || state == null) return@EventListener
+
+            if(AresGameScreen.BIND.value == key && state)
                 MESH.minecraft.openScreen(GAME_SCREEN.getScreen())
 
-            for(module in MODULES) {
-                if(module.getBind() == event.key) {
-                    when(event.state) {
-                        InputEvent.Keyboard.State.PRESSED -> {
-                            if(!module.pressed) {
-                                if(module.getToggleState() == Module.TogglesWhen.PRESS)
-                                    module.toggle()
-                                if(module.getToggleState() == Module.TogglesWhen.HOLD) {
-                                    module.enable()
-                                }
-
-                                module.pressed = true
-                            }
+            for(module in MODULES) if(module.getBind() == key) {
+                if(state) {
+                    if(!module.pressed) {
+                        if(module.getToggleState() == Module.TogglesWhen.PRESS)
+                            module.toggle()
+                        if(module.getToggleState() == Module.TogglesWhen.HOLD) {
+                            module.enable()
                         }
-                        InputEvent.Keyboard.State.RELEASED -> {
-                            if(module.getToggleState() == Module.TogglesWhen.RELEASE) {
-                                module.toggle()
-                            }
-                            if(module.getToggleState() == Module.TogglesWhen.HOLD) {
-                                module.disable()
-                            }
 
-                            module.pressed = false
-                        }
-                        else -> Unit
+                        module.pressed = true
                     }
+                } else {
+                    if(module.getToggleState() == Module.TogglesWhen.RELEASE) {
+                        module.toggle()
+                    }
+                    if(module.getToggleState() == Module.TogglesWhen.HOLD) {
+                        module.disable()
+                    }
+
+                    module.pressed = false
                 }
             }
         }

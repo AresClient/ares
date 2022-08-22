@@ -237,6 +237,11 @@ class Window(private val context: WindowContext, private val settings: Settings 
         }
     }
 
+    override fun type(typedChar: Char?, keyCode: Int) {
+        super.type(typedChar, keyCode)
+        currContent?.type(typedChar, keyCode)
+    }
+
     fun getSettings(): Settings = settings
 
     fun getCurrentContent(): WindowContent? = currContent

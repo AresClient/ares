@@ -1,7 +1,6 @@
 package org.aresclient.ares.gui.api
 
 import net.meshmc.mesh.api.render.Screen
-import org.aresclient.ares.Ares
 import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
@@ -113,8 +112,8 @@ abstract class Element {
         }
     }
 
-    open fun delete() {
-        getChildren().forEach(Element::delete)
+    open fun close() {
+        getChildren().forEach(Element::close)
     }
 }
 
@@ -139,6 +138,7 @@ open class ScreenElement(title: String): Element() {
 
         override fun close() {
             super.close()
+            this@ScreenElement.close()
             open = false
         }
 

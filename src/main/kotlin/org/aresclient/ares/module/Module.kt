@@ -22,7 +22,7 @@ abstract class Module(
     protected val settings = CATEGORIES[category.ordinal].category(name)
     private var enabled = settings.boolean("Enabled", enabled)
     private var visible = settings.boolean("Visible", visible)
-    private var bind = settings.integer("Bind", bind)
+    private var bind = settings.bind("Bind", bind)
 
     enum class TogglesWhen {
         PRESS,

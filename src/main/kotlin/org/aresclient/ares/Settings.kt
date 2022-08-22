@@ -20,7 +20,8 @@ open class Setting<T>(private val name: String, val type: Type, var value: T, va
     enum class Type {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
-        FLOAT, LONG, LIST, ARRAY
+        FLOAT, LONG, LIST, ARRAY,
+        BIND
     }
 
     private val default: T = value
@@ -41,6 +42,7 @@ open class Setting<T>(private val name: String, val type: Type, var value: T, va
             BOOLEAN -> entry.jsonPrimitive.booleanOrNull as T?
             ENUM -> entry.jsonPrimitive.intOrNull?.let { value!!::class.java.enumConstants[it] as T }
             COLOR -> entry.jsonArray.map { it.jsonPrimitive.floatOrNull ?: 1f }.let { Color(it[0], it[1], it[2], it[3]) } as T?
+            BIND -> entry.jsonPrimitive.intOrNull as T?
             INTEGER -> {
                 possibleValues as RangeValues
                 entry.jsonPrimitive.intOrNull?.let { n ->
@@ -89,7 +91,7 @@ open class Setting<T>(private val name: String, val type: Type, var value: T, va
             val v = value as Color
             JsonArray(listOf(JsonPrimitive(v.red), JsonPrimitive(v.green), JsonPrimitive(v.blue), JsonPrimitive(v.alpha)))
         }
-        INTEGER, DOUBLE, FLOAT, LONG -> JsonPrimitive(value as Number)
+        INTEGER, DOUBLE, FLOAT, LONG, BIND -> JsonPrimitive(value as Number)
         LIST -> JsonArray((value as List<*>).mapNotNull {
             when(it) {
                 is String -> JsonPrimitive(it)
@@ -160,6 +162,7 @@ open class Settings(private var json: JsonObject, private val jsonBuilder: JsonB
     fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default).read()
     fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, default).read()
     fun color(name: String, default: Color) = Setting(name, COLOR, default).read()
+    fun bind(name: String, default: Int) = Setting(name, BIND, default).read()
     fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, default, RangeValues(min, max)).read()
     fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, default, RangeValues(min, max)).read()
     fun float(name: String, default: Float, min: Float? = null, max: Float? = null) = Setting(name, FLOAT, default, RangeValues(min, max)).read()

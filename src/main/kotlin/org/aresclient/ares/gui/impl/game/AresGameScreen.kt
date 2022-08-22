@@ -10,7 +10,7 @@ import org.aresclient.ares.utils.Theme
 class AresGameScreen: WindowContext(SETTINGS, "Ares Game Screen") {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("ClickGUI")
-        val BIND = SETTINGS.integer("Bind", Keys.DOWN)
+        val BIND = SETTINGS.bind("Bind", Keys.DOWN)
     }
 
     private val navigationBar = NavigationBar(this, 38f)

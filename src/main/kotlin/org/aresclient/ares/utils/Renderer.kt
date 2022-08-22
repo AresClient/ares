@@ -164,20 +164,23 @@ object Renderer {
         GL11.glDisable(GL11.GL_SCISSOR_TEST)
     }
 
-    inline fun clip(area: () -> Unit, callback: () -> Unit) {
+    // ref is the number of clips that this clip will be inside + 1
+    // so clip(ref = 2) would be for clipping inside of a clipped area
+    inline fun clip(area: () -> Unit, ref: Int = 1, callback: () -> Unit) {
         GL11.glStencilMask(0xFF)
-        GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF)
+        GL11.glStencilFunc(GL11.GL_ALWAYS, ref, 0xFF)
         GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE)
-        GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT)
+        if(ref == 1) GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT)
         GL11.glEnable(GL11.GL_STENCIL_TEST)
 
         area()
 
         GL11.glStencilMask(0x00)
-        GL11.glStencilFunc(GL11.GL_NOTEQUAL, 0, 0xFF)
+        GL11.glStencilFunc(GL11.GL_EQUAL, ref, 0xFF)
 
         callback()
 
-        GL11.glDisable(GL11.GL_STENCIL_TEST)
+        if(ref == 1) GL11.glDisable(GL11.GL_STENCIL_TEST)
+        else GL11.glStencilFunc(GL11.GL_EQUAL, ref - 1, 0xFF)
     }
 }
