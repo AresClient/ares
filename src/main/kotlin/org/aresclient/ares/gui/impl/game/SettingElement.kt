@@ -3,6 +3,7 @@ package org.aresclient.ares.gui.impl.game
 import org.aresclient.ares.*
 import org.aresclient.ares.gui.api.BaseElementGroup
 import org.aresclient.ares.gui.api.Button
+import org.aresclient.ares.gui.api.Element
 import org.aresclient.ares.gui.impl.game.setting.*
 import org.aresclient.ares.module.Category
 import org.aresclient.ares.module.Module
@@ -60,6 +61,7 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
                         Setting.Type.BOOLEAN -> BooleanElement(it as Setting<Boolean>)
                         Setting.Type.ENUM -> EnumElement(it as Setting<Enum<*>>)
                         Setting.Type.BIND -> BindElement(it as Setting<Int>)
+                        Setting.Type.STRING -> StringElement(it as Setting<String>)
                         else -> SettingElement(it.getName()) {}
                     }
                     else -> SettingElement(it.getName()) {}

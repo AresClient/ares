@@ -80,6 +80,9 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
             }
         }
 
-        FONT_RENDERER.drawString(matrixStack, text, textX, 3f, 1f, 1f, 1f, 1f)
+        FONT_RENDERER.drawString(
+            matrixStack, text, textX, 3f,
+            theme.lightground.red, theme.lightground.green, theme.lightground.blue, theme.lightground.alpha
+        )
     }
 }

@@ -13,7 +13,10 @@ class EnumElement<T: Enum<*>>(private val setting: Setting<T>): SettingElement(s
     private var name = setting.value.name.formatToPretty()
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        fontRenderer.drawString(matrixStack, name, getWidth() - fontRenderer.getStringWidth(name) - 2, 1f, 1f, 1f, 1f, 1f)
+        fontRenderer.drawString(
+            matrixStack, name, getWidth() - fontRenderer.getStringWidth(name) - 2, 1f,
+            theme.lightground.red, theme.lightground.green, theme.lightground.blue, theme.lightground.alpha
+        )
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }

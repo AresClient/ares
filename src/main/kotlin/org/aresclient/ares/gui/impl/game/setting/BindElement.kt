@@ -20,7 +20,10 @@ class BindElement(private val setting: Setting<Int>): SettingElement(setting.get
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val text = if(listening) "..." else name
-        fontRenderer.drawString(matrixStack, text, getWidth() - fontRenderer.getStringWidth(text) - 2, 1f, 1f, 1f, 1f, 1f)
+        fontRenderer.drawString(
+            matrixStack, text, getWidth() - fontRenderer.getStringWidth(text) - 2, 1f,
+            theme.lightground.red, theme.lightground.green, theme.lightground.blue, theme.lightground.alpha
+        )
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }

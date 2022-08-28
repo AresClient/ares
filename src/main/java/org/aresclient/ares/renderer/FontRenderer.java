@@ -6,7 +6,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public class FontRenderer {
@@ -16,13 +15,15 @@ public class FontRenderer {
     private final int[] colorCodes = new int[32];
     private final Texture texture;
     private final int width, height;
-    private final float charHeight;
+    private final float charHeight, fontSize;
 
     public FontRenderer(Font font, float size, int style) {
         this(font.deriveFont(style), size);
     }
 
     public FontRenderer(Font font, float size) {
+        this.fontSize = size;
+
         // generate color codes
         for(int i = 0; i < 32; ++i) {
             int j = (i >> 3 & 1) * 85;
@@ -95,15 +96,15 @@ public class FontRenderer {
         texture = new Texture(image);
     }
 
-    public double drawChar(MatrixStack matrixStack, char c, float x, float y, float r, float g, float b, float a) {
-        double w = drawChar(BUFFER, c, x, y, r, g, b, a);
+    public float drawChar(MatrixStack matrixStack, char c, float x, float y, float r, float g, float b, float a) {
+        float w = drawChar(BUFFER, c, x, y, r, g, b, a);
         texture.bind();
         BUFFER.draw(matrixStack);
         BUFFER.reset();
         return w;
     }
 
-    public double drawChar(Buffer buffer, char c, float x, float y, float r, float g, float b, float a) {
+    public float drawChar(Buffer buffer, char c, float x, float y, float r, float g, float b, float a) {
         Glyph glyph = glyphMap.get(c);
         if(glyph == null) return 0;
 
@@ -136,23 +137,32 @@ public class FontRenderer {
     }
 
     public void drawString(Buffer buffer, String text, float x, float y, float r, float g, float b, float a) {
+        drawColoredString(buffer, text, x, y, new float[] { r, g, b, a });
+    }
+
+    private void drawColoredString(Buffer buffer, String text, float x, float y, float[] rgba) {
         for(int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
-            if(c == 167 && i + 1 < text.length()) {
-                int colorCode = "0123456789abcdefklmnor".indexOf(String.valueOf(text.charAt(i + 1)).toLowerCase(Locale.ROOT).charAt(0));
-                int color = colorCodes[colorCode];
-
-                r = (float) (color >> 16 & 255) / 255.0F;
-                g = (float) (color >> 8 & 255) / 255.0F;
-                b = (float) (color & 255) / 255.0F;
-
-                ++i;
-            } else x += drawChar(buffer, c, x, y, r, g, b, a);
+            if(c == 167 && i + 1 < text.length()) color(text.charAt(++i), rgba);
+            else x += drawChar(buffer, c, x, y, rgba[0], rgba[1], rgba[2], rgba[3]);
         }
     }
 
+    public void color(char c, float[] rgba) {
+        int colorCode = "0123456789abcdefklmnor".indexOf(Character.toLowerCase(c));
+        int color = colorCodes[colorCode];
+
+        rgba[0] = (float) (color >> 16 & 255) / 255.0F;
+        rgba[1] = (float) (color >> 8 & 255) / 255.0F;
+        rgba[2] = (float) (color & 255) / 255.0F;
+    }
+
+    public float getFontSize() {
+        return fontSize;
+    }
+
     public float getCharHeight() {
-        return charHeight;
+        return charHeight / 2f;
     }
 
     public float getCharWidth(char c) {
