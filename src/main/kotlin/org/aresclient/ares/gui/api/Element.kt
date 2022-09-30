@@ -6,7 +6,6 @@ import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayList
 import kotlin.math.floor
 
 abstract class Element {

@@ -3,7 +3,6 @@ package org.aresclient.ares.gui.impl.game
 import org.aresclient.ares.*
 import org.aresclient.ares.gui.api.BaseElementGroup
 import org.aresclient.ares.gui.api.Button
-import org.aresclient.ares.gui.api.Element
 import org.aresclient.ares.gui.impl.game.setting.*
 import org.aresclient.ares.module.Category
 import org.aresclient.ares.module.Module

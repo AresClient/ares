@@ -1,12 +1,14 @@
 package org.aresclient.ares.gui.impl.game
 
-import org.aresclient.ares.*
+import org.aresclient.ares.Ares
+import org.aresclient.ares.Settings
 import org.aresclient.ares.gui.api.*
-import org.aresclient.ares.renderer.*
+import org.aresclient.ares.renderer.MatrixStack
+import org.aresclient.ares.renderer.Texture
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Renderer.draw
 import org.aresclient.ares.utils.Theme
-import java.util.Stack
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min

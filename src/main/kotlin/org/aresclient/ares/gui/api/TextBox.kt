@@ -68,7 +68,7 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
             var i = 0
             val unused = FloatArray(4)
             val rx = getRenderX()
-            val ry = getRenderX()
+            val ry = getRenderY()
 
             runText(unused) { c, cx, cy ->
                 val cw = fontRenderer.getCharWidth(c)

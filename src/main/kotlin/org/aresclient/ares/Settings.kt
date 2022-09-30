@@ -5,11 +5,14 @@ import kotlinx.serialization.json.*
 import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.Setting.Type.*
 import java.io.File
-
-import java.lang.Integer.*
-import java.lang.Double.*
-import java.lang.Float.*
-import java.lang.Long.*
+import java.lang.Double.max
+import java.lang.Double.min
+import java.lang.Float.max
+import java.lang.Float.min
+import java.lang.Integer.max
+import java.lang.Integer.min
+import java.lang.Long.max
+import java.lang.Long.min
 
 interface Serializable {
     fun getName(): String
