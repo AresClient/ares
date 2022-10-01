@@ -61,9 +61,13 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
                         Setting.Type.ENUM -> EnumElement(it as Setting<Enum<*>>)
                         Setting.Type.BIND -> BindElement(it as Setting<Int>)
                         Setting.Type.STRING -> StringElement(it as Setting<String>)
-                        else -> SettingElement(it.getName()) {}
+                        Setting.Type.INTEGER -> IntElement(it as Setting<Int>)
+                        Setting.Type.LONG -> LongElement(it as Setting<Long>)
+                        Setting.Type.FLOAT -> FloatElement(it as Setting<Float>)
+                        Setting.Type.DOUBLE -> DoubleElement(it as Setting<Double>)
+                        else -> EmptySettingElement(it.getName())
                     }
-                    else -> SettingElement(it.getName()) {}
+                    else -> EmptySettingElement(it.getName())
                 })
             }
             is Setting<*> -> if(serializable.type == Setting.Type.LIST) {
@@ -74,7 +78,6 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
         }
     }
 
-    @Suppress("UNCHECKED_CAST")
     private fun addListElements(any: Any?, added: Boolean) {
         if(any is Enum<*>) group.pushChild(ListSubElement(EnumListElementAdapter(any), added, this))
         else if(any is String) group.pushChild(ListSubElement(DefaultListElementAdapter(any), added, this))
@@ -86,9 +89,15 @@ class SettingsContent(settings: Settings): WindowContent(settings) {
     override fun getContentHeight(): Float = group.getHeight()
 }
 
-open class SettingElement(private val text: String, action: (Button) -> Unit):
+class EmptySettingElement(private val name: String): SettingElement({}) {
+    override fun getText(): String = name
+}
+
+abstract class SettingElement(action: (Button) -> Unit):
     Button(0f, 0f, 0f, 0f, action, Clipping.SCISSOR) {
     protected val fontRenderer = FONT_RENDERER
+
+    abstract fun getText(): String
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
         buffers.lines.draw(matrixStack) {
@@ -102,7 +111,7 @@ open class SettingElement(private val text: String, action: (Button) -> Unit):
         }
 
         FONT_RENDERER.drawString(
-            matrixStack, text,
+            matrixStack, getText(),
             3f, 1f,
             theme.lightground.red, theme.lightground.green, theme.lightground.blue, theme.lightground.alpha
         )

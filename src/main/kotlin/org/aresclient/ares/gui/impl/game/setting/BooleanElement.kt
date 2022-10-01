@@ -4,7 +4,7 @@ import org.aresclient.ares.Setting
 import org.aresclient.ares.gui.impl.game.SettingElement
 import org.aresclient.ares.gui.impl.game.SettingSubToggleButton
 
-class BooleanElement(setting: Setting<Boolean>): SettingElement(setting.getName(), {
+class BooleanElement(private val setting: Setting<Boolean>): SettingElement({
     (it as BooleanElement).button.click()
 }) {
     private val button = BooleanToggleButton(setting)
@@ -12,6 +12,8 @@ class BooleanElement(setting: Setting<Boolean>): SettingElement(setting.getName(
     init {
         pushChild(button)
     }
+
+    override fun getText(): String = setting.getName()
 
     private class BooleanToggleButton(private val setting: Setting<Boolean>): SettingSubToggleButton() {
         override fun getState(): Boolean = setting.value

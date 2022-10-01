@@ -12,12 +12,14 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 
 class CategoryElement(private val serializable: Serializable, content: SettingsContent):
-    SettingElement(serializable.getName(), { content.open(content.forward(serializable.getName())) }) {
+    SettingElement({ content.open(content.forward(serializable.getName())) }) {
     private val windowButton = WindowButton(serializable, content)
 
     init {
         pushChild(windowButton)
     }
+
+    override fun getText(): String = serializable.getName()
 
     private class WindowButton(serializable: Serializable, content: SettingsContent):
         SettingSubButton({ content.getWindow()?.duplicate()?.open(content.forward(serializable.getName())) }) {

@@ -12,11 +12,13 @@ import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(private val setting: Setting<Int>): SettingElement(setting.getName(), {
+class BindElement(private val setting: Setting<Int>): SettingElement({
     (it as BindElement).listen(true)
 }) {
     private var listening = false
     private var name = name()
+
+    override fun getText(): String = setting.getName()
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val text = if(listening) "..." else name

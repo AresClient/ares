@@ -18,14 +18,17 @@ class DefaultListElementAdapter<T>(value: T): ListElementAdapter<T>(value) {
     override fun formatted(): String = value.toString()
 }
 
-class ListSubElement(element: ListElementAdapter<*>, added: Boolean, content: SettingsContent): SettingElement(element.formatted(), {
+class ListSubElement(element: ListElementAdapter<*>, added: Boolean, content: SettingsContent): SettingElement({
     (it as ListSubElement).button.click()
 }) {
     private val button = ListElementToggleButton(added, element, content)
+    private val name = element.formatted()
 
     init {
         pushChild(button)
     }
+
+    override fun getText(): String = name
 
     // state is const because on toggle - content.refresh is called, so it creates a new toggle element
     private class ListElementToggleButton(private val state: Boolean, private val element: ListElementAdapter<*>,

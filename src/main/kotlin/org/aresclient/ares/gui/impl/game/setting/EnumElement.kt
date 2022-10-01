@@ -6,11 +6,13 @@ import org.aresclient.ares.renderer.MatrixStack
 import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 
-class EnumElement<T: Enum<*>>(private val setting: Setting<T>): SettingElement(setting.getName(), {
+class EnumElement<T: Enum<*>>(private val setting: Setting<T>): SettingElement({
     setting.value = setting.value.javaClass.enumConstants[(setting.value.ordinal + 1) % setting.value.javaClass.enumConstants.size]
     (it as EnumElement<*>).updateName()
 }) {
     private var name = setting.value.name.formatToPretty()
+
+    override fun getText(): String = setting.getName()
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         fontRenderer.drawString(
