@@ -72,7 +72,7 @@ abstract class NumberElement<T: Number>(private val setting: Setting<T>): Settin
         } else if(mouse) {
             val diff = System.currentTimeMillis() - time
             if(diff > 500) {
-                multiplier += 0.1
+                multiplier += 0.05
                 increment(mouseX)
                 time = 0
             }
