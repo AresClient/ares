@@ -4,9 +4,7 @@ import org.aresclient.ares.Setting
 import org.aresclient.ares.gui.api.TextBox
 import org.aresclient.ares.gui.impl.game.SettingElement
 
-class StringElement(private val setting: Setting<String>): SettingElement({
-    (it as StringElement).textBox.setFocused(true)
-}) {
+class StringElement(private val setting: Setting<String>, defaultHeight: Float): SettingElement(defaultHeight) {
     private val textBox = SettingTextBox(this)
 
     init {

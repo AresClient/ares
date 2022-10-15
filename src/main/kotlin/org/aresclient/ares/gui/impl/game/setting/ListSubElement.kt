@@ -2,7 +2,6 @@ package org.aresclient.ares.gui.impl.game.setting
 
 import org.aresclient.ares.Setting
 import org.aresclient.ares.gui.impl.game.SettingElement
-import org.aresclient.ares.gui.impl.game.SettingSubToggleButton
 import org.aresclient.ares.gui.impl.game.SettingsContent
 
 abstract class ListElementAdapter<T>(val value: T) {
@@ -18,21 +17,20 @@ class DefaultListElementAdapter<T>(value: T): ListElementAdapter<T>(value) {
     override fun formatted(): String = value.toString()
 }
 
-class ListSubElement(element: ListElementAdapter<*>, added: Boolean, content: SettingsContent): SettingElement({
-    (it as ListSubElement).button.click()
-}) {
-    private val button = ListElementToggleButton(added, element, content)
+class ListSubElement(element: ListElementAdapter<*>, added: Boolean, content: SettingsContent, defaultHeight: Float): SettingElement(defaultHeight) {
+    private val button = ListElementToggleButton(added, element, content, defaultHeight)
     private val name = element.formatted()
 
     init {
         pushChild(button)
+        pushChild(SettingElementButton(this) { button.click() })
     }
 
     override fun getText(): String = name
 
     // state is const because on toggle - content.refresh is called, so it creates a new toggle element
     private class ListElementToggleButton(private val state: Boolean, private val element: ListElementAdapter<*>,
-                                          private val content: SettingsContent): SettingSubToggleButton() {
+                                          private val content: SettingsContent, height: Float): SettingSubToggleButton(height) {
         override fun getState(): Boolean = state
 
         @Suppress("UNCHECKED_CAST")

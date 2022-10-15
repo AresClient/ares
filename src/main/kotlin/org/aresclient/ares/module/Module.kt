@@ -1,11 +1,12 @@
 package org.aresclient.ares.module
 
+import net.meshmc.mesh.util.Keys
 import org.aresclient.ares.Ares
 import org.aresclient.ares.global.RenderGlobal
 
 abstract class Module(
     val name: String, val description: String, val category: Category, enabled: Boolean = false,
-    bind: Int = 0, visible: Boolean = true, private val alwaysListening: Boolean = false) {
+    bind: Int = Keys.UNKNOWN, visible: Boolean = true, private val alwaysListening: Boolean = false) {
     companion object {
         val SETTINGS = Ares.SETTINGS.category("Modules")
         val CATEGORIES = arrayOf(

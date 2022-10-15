@@ -17,9 +17,15 @@ import java.lang.Long.min
 interface Serializable {
     fun getName(): String
     fun toJSON(): JsonElement
+    fun getParent(): Serializable?
+
+    fun getFullName(): String {
+        return (getParent()?.getFullName()?.let { "$it:" } ?: "") + getName()
+    }
 }
 
-open class Setting<T>(private val name: String, val type: Type, var value: T, val possibleValues: PossibleValues<T> = PossibleValues()): Serializable {
+open class Setting<T>(private val name: String, val type: Type, var value: T,
+val possibleValues: PossibleValues<T> = PossibleValues(), private val parent: Serializable): Serializable {
     enum class Type {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
@@ -108,9 +114,12 @@ open class Setting<T>(private val name: String, val type: Type, var value: T, va
     }
 
     override fun getName(): String = name
+
+    override fun getParent(): Serializable? = parent
 }
 
-open class Settings(private var json: JsonObject, private val jsonBuilder: JsonBuilder.() -> Unit = {}, private val name: String = "Home"): Serializable {
+open class Settings(private var json: JsonObject, private val jsonBuilder: JsonBuilder.() -> Unit = {},
+                    private val name: String = "Home", private val parent: Serializable? = null): Serializable {
     companion object {
         fun read(file: File, jsonBuilder: JsonBuilder.() -> Unit = {}) = Settings(try {
             Json.parseToJsonElement(file.readText()).jsonObject
@@ -161,18 +170,18 @@ open class Settings(private var json: JsonObject, private val jsonBuilder: JsonB
         }
     }
 
-    fun string(name: String, default: String) = Setting(name, STRING, default).read()
-    fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default).read()
-    fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, default).read()
-    fun color(name: String, default: Color) = Setting(name, COLOR, default).read()
-    fun bind(name: String, default: Int) = Setting(name, BIND, default).read()
-    fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, default, RangeValues(min, max)).read()
-    fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, default, RangeValues(min, max)).read()
-    fun float(name: String, default: Float, min: Float? = null, max: Float? = null) = Setting(name, FLOAT, default, RangeValues(min, max)).read()
-    fun long(name: String, default: Long, min: Long? = null, max: Long? = null) = Setting(name, LONG, default, RangeValues(min, max)).read()
-    fun <T> list(name: String, default: ArrayList<T>, possibleValues: List<T>) = Setting(name, LIST, default, ListValues(possibleValues)).read()
-    fun array(name: String, default: ArrayList<Settings> = arrayListOf()) = Setting(name, ARRAY, default).read()
-    fun category(name: String) = Settings((json[name]?.jsonObject ?: JsonObject(emptyMap())), name = name).also { map[name] = it }
+    fun string(name: String, default: String) = Setting(name, STRING, default, parent = this).read()
+    fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default, parent = this).read()
+    fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, default, parent = this).read()
+    fun color(name: String, default: Color) = Setting(name, COLOR, default, parent = this).read()
+    fun bind(name: String, default: Int) = Setting(name, BIND, default, parent = this).read()
+    fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, default, RangeValues(min, max), this).read()
+    fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, default, RangeValues(min, max), this).read()
+    fun float(name: String, default: Float, min: Float? = null, max: Float? = null) = Setting(name, FLOAT, default, RangeValues(min, max), this).read()
+    fun long(name: String, default: Long, min: Long? = null, max: Long? = null) = Setting(name, LONG, default, RangeValues(min, max), this).read()
+    fun <T> list(name: String, default: ArrayList<T>, possibleValues: List<T>) = Setting(name, LIST, default, ListValues(possibleValues), this).read()
+    fun array(name: String, default: ArrayList<Settings> = arrayListOf()) = Setting(name, ARRAY, default, parent = this).read()
+    fun category(name: String) = Settings((json[name]?.jsonObject ?: JsonObject(emptyMap())), name = name, parent = this).also { map[name] = it }
 
     fun clone(): Settings = Settings(toJSON(), jsonBuilder)
 
@@ -190,6 +199,8 @@ open class Settings(private var json: JsonObject, private val jsonBuilder: JsonB
     fun getMap(): MutableMap<String, Serializable> = map
 
     override fun toJSON() = JsonObject(map.mapValues { it.value.toJSON() })
+
+    override fun getParent(): Serializable? = parent
 }
 
 open class PossibleValues<T>

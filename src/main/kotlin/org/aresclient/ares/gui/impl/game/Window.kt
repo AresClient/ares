@@ -174,8 +174,8 @@ class Window(private val context: WindowContext, private val settings: Settings 
         // line under window top
         buffers.lines.draw(matrixStack) {
             vertices(
-                0f, TOP_SIZE, 0f, 1f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
-                width, TOP_SIZE, 0f, 1f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
+                0f, TOP_SIZE, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                width, TOP_SIZE, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
             )
             indices(0, 1)
         }

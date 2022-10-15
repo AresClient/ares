@@ -12,11 +12,13 @@ import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(private val setting: Setting<Int>): SettingElement({
-    (it as BindElement).listen(true)
-}) {
+class BindElement(private val setting: Setting<Int>, defaultHeight: Float): SettingElement(defaultHeight) {
     private var listening = false
     private var name = name()
+
+    init {
+        pushChild(SettingElementButton(this) { listen(true) })
+    }
 
     override fun getText(): String = setting.getName()
 

@@ -13,7 +13,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 // TODO: DONT CONVERT TO DOUBLE
-abstract class NumberElement<T: Number>(private val setting: Setting<T>): SettingElement({}) {
+abstract class NumberElement<T: Number>(private val setting: Setting<T>, defaultHeight: Float): SettingElement(defaultHeight) {
     protected val range = setting.possibleValues as RangeValues
     // 0 = max && min != null    1 = max && min == null
     // 2 = min == null           3 = max == null
@@ -64,8 +64,8 @@ abstract class NumberElement<T: Number>(private val setting: Setting<T>): Settin
 
             buffers.lines.draw(matrixStack) {
                 vertices(
-                    0f, getHeight() - 2, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
-                    (setting.value.toFloat() - range.min!!.toFloat()) / (range.max!!.toFloat() - range.min.toFloat()) * getWidth(), getHeight() - 2, 0f, 2f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
+                    0f, getHeight() - 2, 0f, 3f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha,
+                    (setting.value.toFloat() - range.min!!.toFloat()) / (range.max!!.toFloat() - range.min.toFloat()) * getWidth(), getHeight() - 2, 0f, 3f, theme.primary.red, theme.primary.green, theme.primary.blue, theme.primary.alpha
                 )
                 indices(0, 1)
             }
@@ -93,7 +93,7 @@ abstract class NumberElement<T: Number>(private val setting: Setting<T>): Settin
     }
 }
 
-class DoubleElement(private val setting: Setting<Double>): NumberElement<Double>(setting) {
+class DoubleElement(private val setting: Setting<Double>, defaultHeight: Float): NumberElement<Double>(setting, defaultHeight) {
     override fun increment(value: Double) {
         val num = setting.value + value
         when(mode) {
@@ -110,7 +110,7 @@ class DoubleElement(private val setting: Setting<Double>): NumberElement<Double>
     override fun formatted(): String = round(setting.value.toString())
 }
 
-class FloatElement(private val setting: Setting<Float>): NumberElement<Float>(setting) {
+class FloatElement(private val setting: Setting<Float>, defaultHeight: Float): NumberElement<Float>(setting, defaultHeight) {
     override fun increment(value: Double) {
         val num = setting.value + value.toFloat()
         when(mode) {
@@ -127,7 +127,7 @@ class FloatElement(private val setting: Setting<Float>): NumberElement<Float>(se
     override fun formatted(): String = round(setting.value.toString())
 }
 
-class IntElement(private val setting: Setting<Int>): NumberElement<Int>(setting) {
+class IntElement(private val setting: Setting<Int>, defaultHeight: Float): NumberElement<Int>(setting, defaultHeight) {
     private fun addClamp(a: Int, b: Int): Int {
         val sum = a + b
         return if(((a xor sum) and (b xor sum)) < 0) {
@@ -153,7 +153,7 @@ class IntElement(private val setting: Setting<Int>): NumberElement<Int>(setting)
     override fun formatted(): String = setting.value.toString()
 }
 
-class LongElement(private val setting: Setting<Long>): NumberElement<Long>(setting) {
+class LongElement(private val setting: Setting<Long>, defaultHeight: Float): NumberElement<Long>(setting, defaultHeight) {
     private fun addClamp(a: Long, b: Long): Long {
         val sum = a + b
         return if(((a xor sum) and (b xor sum)) < 0L) {

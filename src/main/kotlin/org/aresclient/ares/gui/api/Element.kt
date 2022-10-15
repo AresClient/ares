@@ -6,7 +6,7 @@ import org.aresclient.ares.utils.Renderer
 import org.aresclient.ares.utils.Theme
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.floor
+import kotlin.math.max
 
 abstract class Element {
     private val children = Stack<Element>()
@@ -226,7 +226,7 @@ open class DynamicElement(
  }
 
 
-// an element that dosent change dimension or size
+// an element that doesn't change dimension or size
 open class StaticElement(
     private var x: Float = 0f,
     private var y: Float = 0f,
@@ -267,101 +267,32 @@ open class StaticElement(
     }
 }
 
-open class BaseElementGroup(
-    x: Float = 0f, y: Float = 0f,
-    width: Float = 0f, height: Float = 0f,
-
-    private var columns: () -> Int = { 1 },
-    private var childWidth: () -> Float = { 0f },
-    private var childHeight: () -> Float = { 0f },
-    private var padding: () -> Float = { 0f },
-    private var edgePadding: () -> Float = { 0f }
-): StaticElement(x, y, width, height) {
+open class DynamicElementGroup(private val columns: Int, private val columnWidth: () -> Float, private val childHeight: Float,
+                               x: Float = 0f, y: Float = 0f): StaticElement(x, y, 0f, 0f) {
     init {
-        if(getColumns() < 1) throw RuntimeException("Fewer than 1 columns in GuiElementGroup is not possible")
-    }
-
-    override fun getWidth(): Float = getParent()?.getWidth() ?: 0f
-    override fun getHeight(): Float {
-        val e = edgePadding.invoke()
-        val n = floor(getChildren().size.toDouble() / columns.invoke()).toInt()
-        val y = n * childHeight.invoke() + n * padding.invoke() + e
-        return y + getChildHeight() + e
-    }
-
-    fun getColumns(): Int = columns.invoke()
-    fun getChildWidth(): Float = childWidth.invoke()
-    fun getChildHeight(): Float = childHeight.invoke()
-    fun getPadding(): Float = padding.invoke()
-    fun getEdgePadding(): Float = edgePadding.invoke()
-
-    fun setColumns(value: () -> Int): BaseElementGroup {
-        this.columns = value
-        return this
-    }
-
-    fun setChildWidth(value: () -> Float): BaseElementGroup {
-        this.childWidth = value
-        return this
-    }
-
-    fun setChildHeight(value: () -> Float): BaseElementGroup {
-        this.childHeight = value
-        return this
-    }
-
-    fun setPadding(value: () -> Float): BaseElementGroup {
-        this.padding = value
-        return this
-    }
-
-    fun setEdgePadding(value: () -> Float): BaseElementGroup {
-        this.edgePadding = value
-        return this
-    }
-
-    fun insertChild(child: Element, i: Int): Element {
-        child.setParent(this)
-        getChildren().insertElementAt(child, i)
-        getChildren().forEachIndexed(this::adjustChildProperties)
-        return child
+        if(columns < 1) throw RuntimeException("Fewer than 1 columns in GuiElementGroup is not possible")
     }
 
     override fun pushChild(child: Element): Element {
-        super.pushChild(child)
-        getChildren().forEachIndexed(this::adjustChildProperties)
-        return child
+        if(child !is DynamicElement) throw RuntimeException("Cannot add static element to dynamic group!")
+
+        val curr = getChildren().size
+        val column = curr % columns
+
+        child.setX { column * columnWidth.invoke() }
+        child.setWidth(columnWidth)
+        child.setHeight { childHeight }
+        child.setVisible { isVisible() }
+
+        if(curr >= columns) {
+            val prev = getChildren()[max(column, curr - columns)]
+            child.setY { prev.getY() + prev.getHeight() }
+        } else child.setY { 0f }
+
+        return super.pushChild(child)
     }
 
-    // TODO: should this override Element::pushChild instead?
-    fun addChildren(vararg children: Element): BaseElementGroup {
-        children.forEach { getChildren().push(it).setParent(this) }
-        getChildren().forEachIndexed(this::adjustChildProperties)
-        return this
-    }
-
-    fun addChildren(children: Iterable<Element>): BaseElementGroup {
-        children.forEach { getChildren().push(it).setParent(this) }
-        getChildren().forEachIndexed(this::adjustChildProperties)
-        return this
-    }
-
-    private fun adjustChildProperties(i: Int, child: Element) {
-        var index = i
-        while (index + 1 > columns.invoke()) index -= columns.invoke()
-        val x = index * childWidth.invoke() + index * padding.invoke() + edgePadding.invoke()
-
-        val n = floor(i.toDouble() / columns.invoke()).toInt()
-        val y = n * childHeight.invoke() + n * padding.invoke() + edgePadding.invoke()
-
-        if(child is DynamicElement)
-            child.setWidth(childWidth::invoke).setHeight(childHeight::invoke).setX { x }.setY { y }
-        else if(child is StaticElement)
-            child.setWidth(getChildWidth()).setHeight(getChildHeight()).setX(x).setY(y)
-    }
-
-    override fun update() {
-        getChildren().forEachIndexed(this::adjustChildProperties)
-        super.update()
+    override fun getHeight(): Float {
+        return if(getChildren().size > 0) getChildren().peek().let { it.getY() + it.getHeight() } else 0f
     }
 }
