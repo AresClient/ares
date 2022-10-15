@@ -24,6 +24,12 @@ interface Serializable {
     }
 }
 
+open class PossibleValues<T>
+data class ListValues<T>(val values: List<T>): PossibleValues<ArrayList<T>>()
+data class RangeValues<T: Number>(val min: T?, val max: T?): PossibleValues<T>() {
+    fun noBounds(): Boolean = min == null || max == null
+}
+
 open class Setting<T>(private val name: String, val type: Type, var value: T,
 val possibleValues: PossibleValues<T> = PossibleValues(), private val parent: Serializable): Serializable {
     enum class Type {
@@ -50,7 +56,13 @@ val possibleValues: PossibleValues<T> = PossibleValues(), private val parent: Se
             STRING -> entry.jsonPrimitive.contentOrNull as T?
             BOOLEAN -> entry.jsonPrimitive.booleanOrNull as T?
             ENUM -> entry.jsonPrimitive.intOrNull?.let { value!!::class.java.enumConstants[it] as T }
-            COLOR -> entry.jsonArray.map { it.jsonPrimitive.floatOrNull ?: 1f }.let { Color(it[0], it[1], it[2], it[3]) } as T?
+            COLOR -> {
+                val obj = entry.jsonObject
+                val rgba = obj["rgba"]?.jsonArray?.map { it.jsonPrimitive.floatOrNull ?: 1f }
+                val rainbow = obj["rainbow"]?.jsonPrimitive?.booleanOrNull
+                if(rgba == null || rainbow == null) null
+                else SColor(rgba[0], rgba[1], rgba[2], rgba[3], rainbow) as T?
+            }
             BIND -> entry.jsonPrimitive.intOrNull as T?
             INTEGER -> {
                 possibleValues as RangeValues
@@ -97,8 +109,11 @@ val possibleValues: PossibleValues<T> = PossibleValues(), private val parent: Se
         BOOLEAN -> JsonPrimitive(value as Boolean)
         ENUM -> JsonPrimitive((value as Enum<*>).ordinal)
         COLOR -> {
-            val v = value as Color
-            JsonArray(listOf(JsonPrimitive(v.red), JsonPrimitive(v.green), JsonPrimitive(v.blue), JsonPrimitive(v.alpha)))
+            val v = value as SColor
+            JsonObject(mapOf(
+                "rgba" to JsonArray(listOf(JsonPrimitive(v.red), JsonPrimitive(v.green), JsonPrimitive(v.blue), JsonPrimitive(v.alpha))),
+                "rainbow" to JsonPrimitive(v.rainbow)
+            ))
         }
         INTEGER, DOUBLE, FLOAT, LONG, BIND -> JsonPrimitive(value as Number)
         LIST -> JsonArray((value as List<*>).mapNotNull {
@@ -173,7 +188,8 @@ open class Settings(private var json: JsonObject, private val jsonBuilder: JsonB
     fun string(name: String, default: String) = Setting(name, STRING, default, parent = this).read()
     fun boolean(name: String, default: Boolean) = Setting(name, BOOLEAN, default, parent = this).read()
     fun <T: Enum<*>> enum(name: String, default: T) = Setting(name, ENUM, default, parent = this).read()
-    fun color(name: String, default: Color) = Setting(name, COLOR, default, parent = this).read()
+    fun color(name: String, default: SColor) = Setting(name, COLOR, default, parent = this).read()
+    fun color(name: String, default: Color) = color(name, SColor(default.red, default.green, default.blue, default.alpha, false))
     fun bind(name: String, default: Int) = Setting(name, BIND, default, parent = this).read()
     fun integer(name: String, default: Int, min: Int? = null, max: Int? = null) = Setting(name, INTEGER, default, RangeValues(min, max), this).read()
     fun double(name: String, default: Double, min: Double? = null, max: Double? = null) = Setting(name, DOUBLE, default, RangeValues(min, max), this).read()
@@ -182,6 +198,7 @@ open class Settings(private var json: JsonObject, private val jsonBuilder: JsonB
     fun <T> list(name: String, default: ArrayList<T>, possibleValues: List<T>) = Setting(name, LIST, default, ListValues(possibleValues), this).read()
     fun array(name: String, default: ArrayList<Settings> = arrayListOf()) = Setting(name, ARRAY, default, parent = this).read()
     fun category(name: String) = Settings((json[name]?.jsonObject ?: JsonObject(emptyMap())), name = name, parent = this).also { map[name] = it }
+    fun <T, R: GroupTrait> grouped(name: String, default: ArrayList<Group<T, R>>, possibles: List<T>, init: (Settings) -> R) = Grouped(this, name, default, possibles, init)
 
     fun clone(): Settings = Settings(toJSON(), jsonBuilder)
 
@@ -203,8 +220,72 @@ open class Settings(private var json: JsonObject, private val jsonBuilder: JsonB
     override fun getParent(): Serializable? = parent
 }
 
-open class PossibleValues<T>
-data class ListValues<T>(val values: List<T>): PossibleValues<List<T>>()
-data class RangeValues<T: Number>(val min: T?, val max: T?): PossibleValues<T>() {
-    fun noBounds(): Boolean = min == null || max == null
+class SColor(val red: Float, val green: Float, val blue: Float, val alpha: Float, var rainbow: Boolean) {
+    companion object {
+        fun rainbow(): SColor = SColor(0f, 0f, 0f, 0f, true)
+
+        fun Color.toSColor(): SColor = SColor(red, green, blue, alpha, false)
+    }
+
+    private var color = Color(red, green, blue, alpha)
+
+    fun getColor(offset: Long = 0L): Color = if(rainbow) rainbow(offset) else color
+
+    fun getColors(size: Int): Array<Color> {
+        val offset = 10240L / size
+        return Array(size) { getColor(offset * it) }
+    }
+
+    private fun rainbow(offset: Long = 0L): Color {
+        val hue = ((System.currentTimeMillis() + offset) % 10240L).toFloat() / 10240.0f
+        return Color(Color.HSBtoRGB(hue, 1.0f, 1.0f))
+    }
+}
+
+data class Group<T, R: GroupTrait>(val name: String, val trait: R, val values: ArrayList<T>)
+open class GroupTrait(val settings: Settings)
+class Grouped<T, R: GroupTrait>(parent: Settings, name: String, default: ArrayList<Group<T, R>>, private val possibles: List<T>, init: (Settings) -> R) {
+    private val array = parent.array(name, ArrayList(default.map { write(it) }))
+    private val groups = arrayListOf<Group<T, R>>().also {
+        array.value.forEachIndexed { i, settings ->
+            it.add(Group(settings.string("name", "Group $i").value, init(settings.category("trait")), settings.list("values", arrayListOf(), possibles).value))
+        }
+    }
+    private val cache = hashMapOf<T, R?>()
+
+    fun read(): List<Group<T, R>> = groups
+
+    fun transform(call: (ArrayList<Group<T, R>>) -> Unit) {
+        call(groups)
+        write()
+        cache.clear()
+    }
+
+    fun trait(key: T): R? = cache.getOrPut(key) {
+        for(group in groups) {
+            for(value in group.values) {
+                if(value == key) return@getOrPut group.trait
+            }
+        }
+        return@getOrPut null
+    }
+
+    private fun write() {
+        array.value.clear()
+        groups.forEach { group ->
+            array.value.add(write(group))
+        }
+    }
+
+    private fun write(group: Group<T, R>) = Settings.new().also { settings ->
+        settings.string("name", group.name)
+        settings.list("values", group.values, possibles)
+        settings.getMap()["trait"] = group.trait.settings
+    }
+
+    fun possibles(): List<T> {
+        val possible = ArrayList(possibles)
+        groups.forEach { group -> group.values.forEach { possible.remove(it) } }
+        return possible
+    }
 }

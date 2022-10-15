@@ -2,8 +2,9 @@ package org.aresclient.ares.utils
 
 import net.meshmc.mesh.util.render.Color
 import org.aresclient.ares.Ares
+import org.aresclient.ares.SColor
 
-class Theme(_primary: Color, _secondary: Color, _background: Color, _lightground: Color) {
+class Theme(_primary: SColor, _secondary: SColor, _background: SColor, _lightground: SColor) {
     companion object {
         private val SETTING = Ares.SETTINGS.category("Theme")
         private val PRIMARY = SETTING.color("Primary", Color(0.37254903f, 0.019607844f, 0.019607844f, 1f))

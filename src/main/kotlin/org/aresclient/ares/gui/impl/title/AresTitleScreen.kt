@@ -87,8 +87,8 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
 
         matrixStack.push()
         matrixStack.model().translate(PANE.getX(), PANE.getY(), 0f)
-        buffers.triangleTexColor.drawHelmet(matrixStack, LOGO_BG, theme.secondary)
-        buffers.triangleTexColor.drawHelmet(matrixStack, LOGO_FG, theme.primary)
+        buffers.triangleTexColor.drawHelmet(matrixStack, LOGO_BG, theme.secondary.getColor())
+        buffers.triangleTexColor.drawHelmet(matrixStack, LOGO_FG, theme.primary.getColor())
         matrixStack.pop()
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)

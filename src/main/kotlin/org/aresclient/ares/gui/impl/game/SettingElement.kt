@@ -113,7 +113,7 @@ abstract class SettingElement(protected val defaultHeight: Float, private val st
     protected val fontRenderer = Renderer.getFontRenderer(defaultHeight * 13f/18f)
 
     abstract fun getText(): String
-    open fun getTextColor(theme: Theme): Color = theme.lightground
+    open fun getTextColor(theme: Theme): SColor = theme.lightground
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         buffers.lines.draw(matrixStack) {

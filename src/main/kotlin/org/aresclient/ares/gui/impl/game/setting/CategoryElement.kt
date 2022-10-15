@@ -1,6 +1,6 @@
 package org.aresclient.ares.gui.impl.game.setting
 
-import net.meshmc.mesh.util.render.Color
+import org.aresclient.ares.SColor
 import org.aresclient.ares.Serializable
 import org.aresclient.ares.Setting
 import org.aresclient.ares.Settings
@@ -39,7 +39,7 @@ class CategoryElement(private val serializable: Serializable, private val conten
     }
 
     override fun getText(): String = serializable.getName()
-    override fun getTextColor(theme: Theme): Color = if(enabled?.value == true) theme.primary else theme.lightground
+    override fun getTextColor(theme: Theme): SColor = if(enabled?.value == true) theme.primary else theme.lightground
 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         if(openable && isMouseOver(mouseX, mouseY) && !acted.get() && mouseY <= getRenderY() + defaultHeight && (mouseButton == 1
