@@ -118,8 +118,6 @@ class CategoryElement(private val serializable: Serializable, private val conten
         override fun getX(): Float = categoryElement.getWidth() - getY() - getWidth()
 
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
-            super.draw(theme, buffers, matrixStack, mouseX, mouseY)
-
             var color = theme.primary
             buffers.ellipse.draw(matrixStack) {
                 vertices(
@@ -167,8 +165,6 @@ class CategoryElement(private val serializable: Serializable, private val conten
         override fun getX(): Float = element.getX() - getY() - getWidth()
 
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
-            super.draw(theme, buffers, matrixStack, mouseX, mouseY)
-
             var color = theme.primary
             buffers.ellipse.draw(matrixStack) {
                 vertices(

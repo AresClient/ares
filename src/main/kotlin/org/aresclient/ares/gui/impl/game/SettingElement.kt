@@ -160,8 +160,6 @@ abstract class SettingElement(protected val defaultHeight: Float, private val st
         abstract fun setState(value: Boolean)
 
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
-            super.draw(theme, buffers, matrixStack, mouseX, mouseY)
-
             val size = getHeight()
 
             buffers.lines.draw(matrixStack) {
