@@ -63,4 +63,8 @@ public interface ISelf {
     void setNoClip(boolean noClip);
 
     int getRidingEntity();
+
+    boolean collidedHorizontally();
+
+    V3D getPositionDelta();
 }
