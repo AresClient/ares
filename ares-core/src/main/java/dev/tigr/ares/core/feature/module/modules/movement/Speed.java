@@ -1,13 +1,16 @@
 package dev.tigr.ares.core.feature.module.modules.movement;
 
+import dev.tigr.ares.core.event.movement.MovePlayerEvent;
 import dev.tigr.ares.core.feature.module.Category;
 import dev.tigr.ares.core.feature.module.Module;
 import dev.tigr.ares.core.setting.Setting;
 import dev.tigr.ares.core.setting.settings.BooleanSetting;
 import dev.tigr.ares.core.setting.settings.EnumSetting;
-import dev.tigr.ares.core.setting.settings.numerical.FloatSetting;
 import dev.tigr.ares.core.util.entity.SelfUtils;
 import dev.tigr.ares.core.util.math.doubles.V2D;
+import dev.tigr.simpleevents.listener.EventHandler;
+import dev.tigr.simpleevents.listener.EventListener;
+import dev.tigr.simpleevents.listener.Priority;
 
 /**
  * @author Tigermouthbear
@@ -22,66 +25,147 @@ public class Speed extends Module {
         INSTANCE = this;
     }
 
-    public final Setting<Float> jump = register(new FloatSetting("Jump Height", 0.42f, 0.38f, 0.44f));
-    private final Setting<mode> modeSetting = register(new EnumSetting<mode>("Mode", mode.STRAFE));
-    private final Setting<Boolean> forceJump = register(new BooleanSetting("Jump", true)).setVisibility(() -> modeSetting.getValue().equals(mode.STRAFE));
-    private final Setting<Float> speedVal = register(new FloatSetting("Strafe Speed", 0.38f, 0.2f, 0.6f)).setVisibility(() -> modeSetting.getValue() == mode.STRAFE);
-    private final Setting<Float> groundVal = register(new FloatSetting("Ground Speed", 1f, 1f, 2f)).setVisibility(() -> modeSetting.getValue() == mode.STRAFE);
-    private final Setting<Float> yportSpeed = register(new FloatSetting("YPort Speed", 1.75f, 0.1f, 3)).setVisibility(() -> !(modeSetting.getValue() == mode.STRAFE));
+    private final Setting<Mode> modeSetting = register(new EnumSetting<>("Mode", Mode.STRAFE));
+    private final Setting<Boolean> strictSetting = register(new BooleanSetting("Strict", false).setVisibility(() -> modeSetting.getValue().equals(Mode.STRAFE)));
 
-    float speedF;
-    boolean lastOG;
-
-    public void onTick() {
-        if(((SELF.getInputMovementForward() != 0 || SELF.getInputMovementSideways() != 0) && SELF.isOnGround())
-                && !(!forceJump.getValue() && modeSetting.getValue().equals(mode.STRAFE))) {
-            if(SELF.isPotionActive(8))
-                SELF.setVelocity(
-                        SELF.getVelocity().x,
-                        (SELF.getPotionAmplifier(8) + 1) * 0.1f + jump.getValue(),
-                        SELF.getVelocity().z
-                );
-            else
-                SELF.setVelocity(
-                        SELF.getVelocity().x,
-                        jump.getValue(),
-                        SELF.getVelocity().z
-                );
-        }
-
-        if(SELF.isOnGround()) lastOG = true;
+    enum Mode {
+        Y_PORT,
+        STRAFE
     }
 
-    @Override
-    public void onMotion() {
-        if(modeSetting.getValue() == mode.YPORT) {
-            if(SELF.isOnGround()) return;
-            else SELF.setVelocity(SELF.getVelocity().x, -jump.getValue() - 0.25, SELF.getVelocity().z);
+    double lastDist = .2873;
+    double speed = .2873;
 
-            SELF.setVelocity(
-                    SELF.getVelocity().x * yportSpeed.getValue(),
-                    SELF.getVelocity().y,
-                    SELF.getVelocity().z * yportSpeed.getValue()
-            );
-        } else if (modeSetting.getValue() == mode.STRAFE) {
-            speedF *= getFric();
+    Mode lastMode = null;
 
-            V2D dir = SelfUtils.getMovement(Math.max(speedVal.getValue() * speedF * (getBaseMoveSpeed() / 0.15321), 0.15321));
-            V2D gDir = SelfUtils.getMovement(0.2873 * groundVal.getValue());
+    int phase = 0;
 
-            if(!SELF.isOnGround()) SELF.setVelocity(dir.a, SELF.getVelocity().y, dir.b);
-            else {
-                speedF = 1;
-                SELF.setVelocity(gDir.a, SELF.getVelocity().y, gDir.b);
+    public void onTick() {
+
+        lastDist = Math.hypot(SELF.getPositionDelta().x, SELF.getPositionDelta().z);
+
+        // 1.0888 timer
+        UTILS.setTickLength(45.92212f);
+
+        if (modeSetting.getValue() != lastMode) {
+            lastMode = modeSetting.getValue();
+            lastDist = speed = phase = 0;
+        }
+
+    }
+
+    @EventHandler
+    private final EventListener<MovePlayerEvent> moveEvent = new EventListener<>(Priority.HIGH, event -> {
+
+        double v = .2873;
+        double y = SELF.getVelocity().y;
+
+        if (SELF.isPotionActive(1)) {
+            final int amplifier = SELF.getPotionAmplifier(1);
+            v *= 1.0 + 0.2 * (amplifier + 1);
+        }
+
+        switch (modeSetting.getValue()) {
+
+            case STRAFE: {
+
+                if (SELF.getInputMovementForward() == 0 && SELF.getInputMovementSideways() == 0) {
+                    speed = phase = 0;
+                    event.set(new V2D(0, 0));
+                    event.setCancelled(true);
+                    return;
+                }
+
+                if (SELF.isOnGround() || SELF.collidedHorizontally()) {
+                    speed = phase = 0;
+                }
+
+                switch (phase) {
+
+                    case 0: {
+
+                        if (SELF.isOnGround()) {
+                            y = .42;
+                            speed = v * (strictSetting.getValue() ? 1.87 : 1.91);
+                            phase++;
+                        }
+
+                        break;
+
+                    }
+
+                    case 1: {
+
+                        speed -= .66 * v;
+                        phase++;
+
+                        break;
+
+                    }
+
+                    default: {
+
+                        speed = lastDist - lastDist / 159;
+
+                        break;
+
+                    }
+
+                }
+
+                break;
+            }
+
+            case Y_PORT: {
+
+                if (SELF.collidedHorizontally())
+                    phase = 0;
+
+                if (SELF.getInputMovementForward() == 0 && SELF.getInputMovementSideways() == 0) {
+                    speed = phase = 0;
+                    event.set(new V2D(0, 0));
+                    event.setCancelled(true);
+                    return;
+                }
+
+                switch (phase) {
+
+                    case 0: {
+                        phase++;
+                        y = -1;
+                        speed = v;
+                        break;
+                    }
+
+                    case 1: {
+
+                        speed *= 2.149;
+                        y = .42;
+                        phase++;
+
+                        break;
+                    }
+
+                    case 2: {
+
+                        speed = lastDist - .66 * (lastDist - v);
+                        phase--;
+                        y = -1;
+
+                        break;
+                    }
+
+                }
             }
         }
 
-        if(!Timer.INSTANCE.getEnabled())
-            UTILS.setTpsMultiplier(1.088F);
+        V2D dir = SelfUtils.getMovement(Math.max(v, speed));
 
-        if(SELF.isOnGround())
-            lastOG = true;
-    }
+        SELF.setVelocity(dir.a, y, dir.b);
+        event.setX(SELF.getVelocity().x).setY(SELF.getVelocity().y).setZ(SELF.getVelocity().z);
+        event.setCancelled(true);
+
+    });
 
     @Override
     public void onDisable() {
@@ -89,29 +173,11 @@ public class Speed extends Module {
             UTILS.setTickLength(50);
     }
 
-    enum mode {YPORT, STRAFE}
-
-    float getFric() {
-        // bypass friction check
-        float AIR_FRICTION = 0.98f;
-        float WATER_FRICTION = 0.89f;
-        float LAVA_FRICTION = 0.535f;
-
-        if (SELF.isInLava())
-            return LAVA_FRICTION;
-        if (SELF.isInWater())
-            return WATER_FRICTION;
-
-        return AIR_FRICTION;
-
+    @Override
+    public void onEnable() {
+        speed = 0;
+        lastDist = .2873;
+        phase = 0;
     }
 
-    public static double getBaseMoveSpeed() {
-        double baseSpeed = 0.15321;
-        if(SELF.isPotionActive(1)) {
-            final int amplifier = SELF.getPotionAmplifier(1);
-            baseSpeed *= 1.0 + 0.2 * (amplifier + 1);
-        }
-        return baseSpeed;
-    }
 }

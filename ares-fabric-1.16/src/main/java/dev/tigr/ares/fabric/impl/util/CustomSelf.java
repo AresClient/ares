@@ -131,4 +131,14 @@ public class CustomSelf implements ISelf {
     public int getRidingEntity() {
         return MC.player.getVehicle().getEntityId();
     }
+
+    @Override
+    public boolean collidedHorizontally() {
+        return MC.player.horizontalCollision;
+    }
+
+    @Override
+    public V3D getPositionDelta() {
+        return new V3D(MC.player.getPos().x - MC.player.prevX, MC.player.getPos().y - MC.player.prevY, MC.player.getPos().z - MC.player.prevZ);
+    }
 }
