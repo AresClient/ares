@@ -1,0 +1,28 @@
+plugins {
+    id "fabric-loom" version "1.0-SNAPSHOT"
+}
+
+group = project.mavenGroup
+version = project.modVersion
+archivesBaseName = project.modid + "-" + project.name
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraftVersion}"
+    mappings "net.fabricmc:yarn:${project.yarnMappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:0.14.11"
+
+    implementation project(":core")
+}
+
+tasks.withType(JavaCompile) {
+    options.release.set(17)
+    options.encoding = "UTF-8"
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}

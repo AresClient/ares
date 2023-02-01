@@ -1,1 +1,12 @@
-rootProject.name = "ares"
+pluginManagement {
+    repositories {
+        maven {
+            name = "Fabric"
+            url = "https://maven.fabricmc.net/"
+        }
+        gradlePluginPortal()
+    }
+}
+
+include "core"
+include "version:v1_19_x"

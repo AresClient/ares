@@ -1,0 +1,36 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.aresclient.ares.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "BufferRendererAccessor",
+    "ClientPlayNetworkHandlerAccessor",
+    "MixinClientPlayerEntity",
+    "MixinFrameBuffer",
+    "MixinGameRenderer",
+    "MixinInGameHud",
+    "MixinKeyboard",
+    "MixinMinecraftClient",
+    "MixinMouse",
+    "MixinScreen",
+    "MixinTextRenderer",
+    "VertexBufferAccessor"
+  ],
+  "mixins": [
+    "MixinEntityType",
+    "MixinNetworkConnection",
+    "math.MixinBlockPos",
+    "math.MixinBox",
+    "math.MixinDirection",
+    "math.MixinVec2f",
+    "math.MixinVec3d",
+    "math.MixinVec3i",
+    "packet.MixinChatMessageC2SPacket",
+    "packet.MixinPlayerMoveC2SPacket",
+    "packet.MixinPlayerMoveC2SPacketFull",
+    "packet.MixinPlayerMoveC2SPacketLookAndOnGround",
+    "packet.MixinPlayerMoveC2SPacketOnGround",
+    "packet.MixinPlayerMoveC2SPacketPositionAndOnGround"
+  ]
+}

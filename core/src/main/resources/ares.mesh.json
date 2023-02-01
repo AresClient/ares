@@ -1,0 +1,20 @@
+{
+  "id": "ares",
+  "name": "Ares",
+  "version": "${version}",
+  "description": "Ares is a free open source Minecraft utility client aimed at anarchy servers",
+  "website": "https://aresclient.org/",
+  "authors": [
+    "Tigermouthbear",
+    "Makrennel"
+  ],
+  "initializers": [
+    "org.aresclient.Ares"
+  ],
+  "interfaces": [
+    "org.aresclient.ares.impl"
+  ],
+  "mixins": [
+    "ares.mixins.json"
+  ]
+}
