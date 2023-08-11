@@ -122,6 +122,7 @@ public class CrystalAura extends Module {
     private final LinkedHashMap<EntityEnderCrystal, AtomicInteger> spawnedCrystals = new LinkedHashMap<>();
     private final LinkedHashMap<EntityEnderCrystal, Integer> lostCrystals = new LinkedHashMap<>();
     private EntityPlayer targetPlayer;
+    private boolean lastTickHasTarget;
     private double pingWindow = 0;
 
     final int key = Priorities.Rotation.CRYSTAL_AURA;
@@ -134,16 +135,16 @@ public class CrystalAura extends Module {
 
     @Override
     public String getInfo() {
-        if (targetPlayer != null
-                && !targetPlayer.isDead
-                && !(targetPlayer.getHealth() <= 0)
-                && !(MC.player.getDistance(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8)
-        ) return targetPlayer.getGameProfile().getName();
+        if(isTargetPlayerValid()) return targetPlayer.getGameProfile().getName();
         else return "null";
     }
 
     @Override
     public void onDisable() {
+        if(isTargetPlayerValid()) {
+            HOTBAR_TRACKER.reset();
+            lastTickHasTarget = false;
+        }
         ROTATIONS.setCompletedAction(key, true);
     }
 
@@ -155,6 +156,13 @@ public class CrystalAura extends Module {
     private void run() {
         // Get ping for timing how long to wait before a crystal is lost
         pingWindow = MC.player.connection.getPlayerInfo(MC.player.getUniqueID()).getResponseTime() / 50D;
+
+        // Reset the hotbar if the target is no longer alive or in reach
+        if(isTargetPlayerValid()) lastTickHasTarget = true;
+        else if(lastTickHasTarget) {
+            HOTBAR_TRACKER.reset();
+            lastTickHasTarget = false;
+        }
 
         // Ensure it doesn't spam illegal place and break interactions without being rotated
         if(rotateMode.getValue() == Rotations.PACKET) {
@@ -603,5 +611,12 @@ public class CrystalAura extends Module {
             else return false;
         }
         return true;
+    }
+
+    private boolean isTargetPlayerValid() {
+        return targetPlayer != null
+                && !targetPlayer.isDead
+                && !(targetPlayer.getHealth() <= 0)
+                && !(MC.player.getDistance(targetPlayer) > Math.max(placeRange.getValue(), breakRange.getValue()) + 8);
     }
 }
