@@ -9,7 +9,7 @@ archivesBaseName = project.modid + "-" + project.name
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraftVersion}"
     mappings "net.fabricmc:yarn:${project.yarnMappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:0.14.11"
+    modImplementation "net.fabricmc:fabric-loader:${project.fabricLoaderVersion}"
 
     implementation project(":core")
 }

@@ -9,7 +9,7 @@
     "Makrennel"
   ],
   "initializers": [
-    "org.aresclient.Ares"
+    "org.aresclient.ares.Ares"
   ],
   "interfaces": [
     "org.aresclient.ares.impl"
