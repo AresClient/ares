@@ -19,7 +19,7 @@ object ESP: Module("ESP", "See outlines of players through walls", Category.REND
         val color = settings.color("Color", defaultColor)
     }
 
-    private val entities = settings.grouped("liEntities", arrayListOf(
+    private val entities = settings.grouped("Entities", arrayListOf(
         Group("Player", EntityTrait(SColor.rainbow()), arrayListOf(EntityType.PLAYER))
     ), EntityType.values().asList()) { EntityTrait(Color.RED.toSColor(), it) }
 

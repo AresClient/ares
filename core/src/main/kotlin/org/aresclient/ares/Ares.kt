@@ -35,7 +35,7 @@ class Ares: Mod.Initializer {
         val LOGGER = LogManager.getLogger("Ares")
         val EVENT_MANAGER = EventManager()
 
-        var SETTINGS_FILE = File("assets.ares/configs/settings.json")
+        var SETTINGS_FILE = File("ares/configs/settings.json")
         val SETTINGS = Settings.read(SETTINGS_FILE) {
             prettyPrint = true
         }
@@ -165,8 +165,8 @@ class Ares: Mod.Initializer {
             BlurFrameBuffer.clear()
             MSAAFrameBuffer.clear()
             SkyBox.clear()*/
-            if(!File("assets.ares").exists()) File("assets.ares").mkdir()
-            if(!File("assets.ares/configs").exists()) File("assets.ares/configs").mkdir()
+            if(!File("ares").exists()) File("ares").mkdir()
+            if(!File("ares/configs").exists()) File("ares/configs").mkdir()
             SETTINGS.write(SETTINGS_FILE)
         })
 
