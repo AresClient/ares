@@ -4,9 +4,9 @@
   "package": "org.aresclient.ares.mixins",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "BufferRendererAccessor",
-    "ClientPlayNetworkHandlerAccessor",
+    "MixinBufferRenderer",
     "MixinClientPlayerEntity",
+    "MixinClientPlayNetworkHandler",
     "MixinFrameBuffer",
     "MixinGameRenderer",
     "MixinInGameHud",
@@ -15,7 +15,7 @@
     "MixinMouse",
     "MixinScreen",
     "MixinTextRenderer",
-    "VertexBufferAccessor"
+    "MixinVertexBuffer"
   ],
   "mixins": [
     "MixinEntityType",

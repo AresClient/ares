@@ -1,5 +1,6 @@
 package org.aresclient.ares.impl
 
+import net.meshmc.mesh.loader.Mod.Interface
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.DemoScreen
@@ -13,9 +14,10 @@ import org.aresclient.ares.api.ICreator
 import org.aresclient.ares.api.math.*
 import org.aresclient.ares.api.packet.ChatMessageC2SPacket
 import org.aresclient.ares.api.packet.PlayerMoveC2SPacket.*
-import org.aresclient.ares.mixins.ClientPlayNetworkHandlerAccessor
+import org.aresclient.ares.mixininterface.IClientPlayNetworkHandler
 import java.time.Instant
 
+@Interface
 class Creator: ICreator {
     override fun blockPos(x: Int, y: Int, z: Int): BlockPos {
         return net.minecraft.util.math.BlockPos(x, y, z) as BlockPos
@@ -75,7 +77,7 @@ class Creator: ICreator {
     }
 
     override fun createCPacketChatMessage(message: String, timestamp: Instant, salt: Long): ChatMessageC2SPacket {
-        val a = (MinecraftClient.getInstance().player!!.networkHandler as ClientPlayNetworkHandlerAccessor).lastSeenMessagesCollector.collect()
+        val a = (MinecraftClient.getInstance().player!!.networkHandler as IClientPlayNetworkHandler).lastSeenMessagesCollector.collect()
         return net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket(message, timestamp, salt, null, a.update) as ChatMessageC2SPacket
     }
 

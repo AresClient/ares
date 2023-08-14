@@ -1,22 +1,25 @@
 package org.aresclient.ares.impl
 
 import org.aresclient.ares.api.BufferRenderer
-import org.aresclient.ares.mixins.BufferRendererAccessor
-import org.aresclient.ares.mixins.VertexBufferAccessor
+import org.aresclient.ares.mixininterface.IBufferRenderer
+import org.aresclient.ares.mixininterface.IVertexBuffer
 
 object BufferRendererWrapper: BufferRenderer {
-    override fun getVertexArray(): Int = (BufferRendererAccessor.getCurrentVertexBuffer() as VertexBufferAccessor).vertexArrayId
+    // Instantiate to workaround Accessor bug for now
+    private val br = net.minecraft.client.render.BufferRenderer()
+
+    override fun getVertexArray(): Int = ((br as IBufferRenderer).getCurrentVertexBuffer() as IVertexBuffer).vertexArrayId
     override fun setVertexArray(vao: Int) {
-        (BufferRendererAccessor.getCurrentVertexBuffer() as VertexBufferAccessor).vertexArrayId = vao
+        ((br as IBufferRenderer).getCurrentVertexBuffer() as IVertexBuffer).vertexArrayId = vao
     }
 
-    override fun getVertexBuffer(): Int = (BufferRendererAccessor.getCurrentVertexBuffer() as VertexBufferAccessor).vertexBufferId
+    override fun getVertexBuffer(): Int = ((br as IBufferRenderer).getCurrentVertexBuffer() as IVertexBuffer).vertexBufferId
     override fun setVertexBuffer(vbo: Int) {
-        (BufferRendererAccessor.getCurrentVertexBuffer() as VertexBufferAccessor).vertexBufferId = vbo
+        ((br as IBufferRenderer).getCurrentVertexBuffer() as IVertexBuffer).vertexBufferId = vbo
     }
 
-    override fun getElementBuffer(): Int = (BufferRendererAccessor.getCurrentVertexBuffer() as VertexBufferAccessor).indexBufferId
+    override fun getElementBuffer(): Int = ((br as IBufferRenderer).getCurrentVertexBuffer() as IVertexBuffer).indexBufferId
     override fun setElementBuffer(ibo: Int) {
-        (BufferRendererAccessor.getCurrentVertexBuffer() as VertexBufferAccessor).indexBufferId = ibo
+        ((br as IBufferRenderer).getCurrentVertexBuffer() as IVertexBuffer).indexBufferId = ibo
     }
 }
