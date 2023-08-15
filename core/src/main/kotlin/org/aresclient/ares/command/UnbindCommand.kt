@@ -5,7 +5,7 @@ import org.aresclient.ares.api.Keys
 import java.util.*
 
 object UnbindCommand: Command("Unbinds modules from keys", "unbind", "ub") {
-    override fun execute(command: ArrayList<String>) {
+    override fun execute(command: LinkedList<String>) {
         if(command.size == 1) {
             println("NO MODULE SPECIFIED")
             return

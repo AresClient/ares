@@ -5,7 +5,7 @@ import java.io.File
 import java.util.*
 
 object ConfigCommand: Command("allows the creation and loading of different configurations", "config", "conf", "configuration") {
-    override fun execute(command: ArrayList<String>) {
+    override fun execute(command: LinkedList<String>) {
         if(command.size > 2) command[2] = command[2].replace('_', ' ')
         when(command[1].lowercase(Locale.getDefault())) {
             "new" -> new(command)
@@ -24,7 +24,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         }
     }
 
-    private fun new(command: ArrayList<String>) {
+    private fun new(command: LinkedList<String>) {
         if(!File("assets.ares/configs").exists()) File("assets.ares/configs").mkdir()
 
         if(containsIllegalCharacters(command[2])) {
@@ -39,7 +39,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         Ares.SETTINGS.default()
     }
 
-    private fun delete(command: ArrayList<String>) {
+    private fun delete(command: LinkedList<String>) {
         val file = File("ares/configs/${command[2]}.json")
         if(!file.exists()) {
             println("CONFIG ${command[2]} NOT FOUND")
@@ -48,7 +48,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         file.delete()
     }
 
-    private fun load(command: ArrayList<String>) {
+    private fun load(command: LinkedList<String>) {
         val file = File("ares/configs/${command[2]}.json")
         if(!file.exists()) {
             println("CONFIG ${command[2]} NOT FOUND")
@@ -60,7 +60,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         Ares.SETTINGS.read(Ares.SETTINGS_FILE)
     }
 
-    private fun copyTo(command: ArrayList<String>) {
+    private fun copyTo(command: LinkedList<String>) {
         if(containsIllegalCharacters(command[2])) {
             println("FILENAME CONTAINS ILLEGAL CHARACTERS")
             return
@@ -70,7 +70,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         Ares.SETTINGS_FILE.copyTo(File("ares/configs/${command[2]}.json"), true)
     }
 
-    private fun copyFrom(command: ArrayList<String>) {
+    private fun copyFrom(command: LinkedList<String>) {
         val file = File("ares/configs/${command[2]}.json")
         if(!file.exists()) {
             println("CONFIG ${command[2]} NOT FOUND")
@@ -81,7 +81,7 @@ object ConfigCommand: Command("allows the creation and loading of different conf
         Ares.SETTINGS.read(Ares.SETTINGS_FILE)
     }
 
-    private fun rename(command: ArrayList<String>) {
+    private fun rename(command: LinkedList<String>) {
         val file = File("ares/configs/${command[2]}.json")
         if(command.size == 4) {
             if(containsIllegalCharacters(command[2])) {

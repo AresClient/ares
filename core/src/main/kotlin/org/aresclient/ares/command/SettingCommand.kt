@@ -1,11 +1,6 @@
 package org.aresclient.ares.command
 
-import org.aresclient.ares.ListValues
-import org.aresclient.ares.RangeValues
-import org.aresclient.ares.Setting
-import org.aresclient.ares.Settings
-import org.aresclient.ares.global.Global
-import org.aresclient.ares.module.Module
+import org.aresclient.ares.*
 import org.aresclient.ares.renderer.Color
 import java.util.*
 
@@ -15,191 +10,289 @@ import java.util.*
  * Values in lists/arrays are separated by commas - Color / List settings
  */
 object SettingCommand: Command("Used to get or set the value for settings", "setting", "set", "settings") {
-    override fun execute(command: ArrayList<String>) {
-        if(command.size == 1) {
-            println("NOTHING SPECIFIED")
+    override fun execute(command: LinkedList<String>) {
+        if(command.size == 0) {
+            outputText("SETTING COMMAND: NOTHING SPECIFIED")
             return
         }
 
-        if(command.size == 2) {
-            println("TARGET AND SETTING NOT SPECIFIED")
+        when (command.poll()) {
+            "list","l","ls" -> listArg(command)
+            "get","g" -> getArg(command)
+            "set","s" -> setArg(command)
+            "help","h" -> helpArg(command)
+            else -> {
+                outputText("SETTING COMMAND: ARGUMENT NOT FOUND")
+                outputText("Enter \"-setting help\" for information on how to use this command")
+                return
+            }
+        }
+    }
+    
+    private fun helpArg(command: LinkedList<String>) {
+        outputText("=======================")
+        outputText("Setting Command Help:")
+        outputText("=======================")
+        outputText("Valid Arguments:")
+        outputText("_______________________")
+        outputText(" l")
+        outputText(" ls")
+        outputText(" list - Lists the settings or paths that are contained in the specified path")
+        outputText(" -- syntax: -setting list path/to_list")
+        outputText("_______________________")
+        outputText(" g")
+        outputText(" get - Returns the current value and description of a setting or path")
+        outputText(" -- syntax: -setting get path_to/setting")
+        outputText("_______________________")
+        outputText(" s")
+        outputText(" set - Sets the current value of a setting to a different value")
+        outputText(" -- syntax (normal): -setting set path_to/setting value")
+        outputText(" -- syntax (color): -setting set path_to/setting r,g,b,a")
+        outputText(" -- syntax (list): -setting set path_to/setting add/remove/replace v,v,v...")
+        outputText("_______________________")
+        outputText(" h")
+        outputText(" help - Prints this dialogue")
+        outputText("=======================")
+        
+    }
+
+    private fun processPath(path: String): Serializable? {
+        // Split the path into individual names
+        val parts = path.split('/').toLinkedList()
+
+        // Replace underscores with spaces - paths are given with underscores where spaces are found in the name
+        for ((index, s) in parts.withIndex()) {
+            parts[index] = s.replace('_',' ')
+        }
+
+        // Get to the bottom of the given path, or return null if impossible
+        var current: Serializable? = Ares.SETTINGS
+        while (parts.size != 0) {
+            if (current !is Settings) {
+                if (current != null) outputText("SETTING COMMAND: ${current.getName()} IS NOT A PATH")
+                if (current == null) outputText("SETTING COMMAND: NOT A VALID PATH")
+                return null
+            }
+            current = nextSerializable(parts.poll(), current)
+        }
+
+        if (current == null) outputText("SETTING COMMAND: NOT A VALID PATH")
+        return current
+    }
+
+    private fun nextSerializable(next: String, last: Settings): Serializable? {
+        // Search for the correct key and return its value
+        for (entry in last.getMap().entries) {
+            if (entry.key.contentEquals(next, true)) {
+                return entry.value
+            }
+        }
+
+        return null
+    }
+
+    // Prints a list of all serializable types in a path
+    private fun listArg(command: LinkedList<String>) {
+        val serializable = processPath(command.poll()) ?: return
+
+        // Obviously, can't list from a Setting
+        if (serializable is Setting<*>) {
+            outputText("SETTING COMMAND: ${serializable.getFullName()} IS A SETTING, NOT A PATH")
             return
         }
 
-        for(i in 2 until command.size)
-            command[i] = command[i].replace('_', ' ').uppercase(Locale.getDefault())
-
-        val setting =
-            if(command[2].endsWith("GLOBAL"))
-                getSetting(command, Global.SETTINGS)
-            else
-                getSetting(command, Module.SETTINGS)
-
-        if(setting == null) return
-
-        if(command[1].startsWith("g")) get(setting)
-
-        val sVal =
-            if(setting.type == Setting.Type.LIST)
-                arrayOf(command[command.size -2], command[command.size -1])
-            else
-                arrayOf(command[command.size -1])
-
-        if(command[1].startsWith("s")) set(setting, sVal)
+        // List each value with what the value does
+        outputText("${serializable.getFullName()} Contents:")
+        for (entry in (serializable as Settings).getMap().entries) {
+            val type = if (entry.value is Setting<*>) (entry.value as Setting<*>).type.name else "PATH"
+            val subVal = if (entry.value is Setting<*>) " : ${(entry.value as Setting<*>).value.toString()}" else " ===>"
+            outputText("$type : ${entry.key} $subVal")
+        }
     }
 
-    private fun getSetting(command: ArrayList<String>, settings: Settings): Setting<*>? {
-        var i = 2
-        var current = settings.get(command[i])
+    // Get a specific serializable and print details about it
+    private fun getArg(command: LinkedList<String>) {
+        val serializable = processPath(command.poll()) ?: return
 
-        if(current == null) {
-            println("COMMAND INDEX OF 2 NOT FOUND")
-            return null
-        }
+        outputText("${serializable.getName()} Details:")
+        if (serializable.getParent() != null) outputText("Parent: ${serializable.getParent()!!.getName()}")
 
-        // to account for nested categories
-        while(current is Settings) {
-            if(++i == command.size) {
-                println("NO SETTING SPECIFIED")
-                return null
+        // Print a description for the serializable
+        // TODO: Description
+
+        // Nothing more to do for categories
+        if (serializable !is Setting<*>) return
+
+        // Print setting type specific details
+        outputText("Current Value: ${serializable.value.toString()}")
+        when (serializable.type) {
+            Setting.Type.INTEGER, Setting.Type.DOUBLE, Setting.Type.FLOAT, Setting.Type.LONG -> {
+                serializable.possibleValues as RangeValues
+                outputText("Minimum: ${serializable.possibleValues.min ?: "No Limit"}")
+                outputText("Maximum: ${serializable.possibleValues.max ?: "No Limit"}")
             }
-
-            current = current.get(command[i])
-            if(current == null) {
-                println("COMMAND INDEX OF $i NOT FOUND")
-                return null
+            Setting.Type.ENUM -> {
+                outputText("Possible Values:")
+                serializable as Setting<Enum<*>>
+                for (opt in serializable.value.javaClass.enumConstants) outputText("${opt.ordinal} - ${opt.name}")
             }
+            Setting.Type.LIST -> {
+                // Because of how many values lists can have, do not show them all by default
+                if (command.poll().contentEquals("SHOW_VALUES", true)) {
+                    outputText("Possible Values:")
+                    serializable.possibleValues as ListValues<*>
+                    for (opt in serializable.possibleValues.values) outputText("--- ${opt.toString()}")
+                }
+                else outputText("To see a list of available values, repeat this command and add SHOW_VALUES as the final argument")
+            }
+            else -> Unit
         }
-
-        return current as Setting<*>
-    }
-
-    private fun get(setting: Setting<*>) {
-        println(setting.value.toString())
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun set(setting: Setting<*>, values: Array<String>) {
-        val value = values[0]
-        when(setting.type) {
-            Setting.Type.STRING -> (setting as Setting<String>).value = value
+    private fun setArg(command: LinkedList<String>) {
+        val serializable = processPath(command.poll())
+
+        if (serializable !is Setting<*>) {
+            outputText("SETTING COMMAND: ADDRESS DOES NOT POINT TO A SETTING")
+            return
+        }
+
+        val oldVal = serializable.value.toString()
+        val newVal = command.poll()
+
+        when (serializable.type) {
+            Setting.Type.STRING -> (serializable as Setting<String>).value = newVal
             Setting.Type.BOOLEAN -> {
-                val b =
-                    if(value.startsWith('T')) true
-                    else if(value.startsWith('F')) false
-                    else null
-                if(b != null) {
-                    (setting as Setting<Boolean>).value = b
-                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.toString().uppercase(Locale.getDefault())}")
+                serializable as Setting<Boolean>
+                if (newVal.contentEquals("T", true) || newVal.contentEquals("true", true)) serializable.value = true
+                else if (newVal.contentEquals("F", true) || newVal.contentEquals("false", true)) serializable.value = false
+                else {
+                    outputText("SETTING COMMAND: $newVal IS NOT A VALID VALUE FOR BOOLEAN")
+                    return
                 }
             }
             Setting.Type.ENUM -> {
-                val ordinal = value.toIntOrNull()
-                if(ordinal != null) {
-                    val array = (setting as Setting<Enum<*>>).value.javaClass.enumConstants
-                    if(ordinal <= array.size - 1 && ordinal > -1) {
-                        setting.value = array[ordinal]
-                        println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.name}")
-                    }
-                }
-                else {
-                    val valEnum = value.replace(' ', '_')
-                    val enumConstants = (setting as Setting<Enum<*>>).value.javaClass.enumConstants ?: return
-                    for(v in enumConstants)
-                        if(v.toString().contentEquals(valEnum, true)) {
-                            setting.value = v
-                            println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.name}")
+                serializable as Setting<Enum<*>>
+                val enumConstants = serializable.value.javaClass.enumConstants
+                var success = false
+                val ordinal = newVal.toIntOrNull()
+                if (ordinal == null) {
+                    for (value in enumConstants)
+                        if (value.toString().contentEquals(newVal, true)) {
+                            serializable.value = value
+                            success = true
                         }
+                }
+                else if (ordinal <= enumConstants.size - 1 && ordinal > -1) {
+                    serializable.value = enumConstants[ordinal]
+                    success = true
+                }
+
+                if (!success) {
+                    outputText("SETTING COMMAND: $newVal IS NOT A VALID VALUE FOR THIS ${serializable.getName()}")
+                    return
                 }
             }
             Setting.Type.COLOR -> {
-                val s = value.split(',')
-                if(s.size != 4) return
+                serializable as Setting<Color>
+
+                val rgba = newVal.split(',')
+                if(rgba.size != 4) {
+                    outputText("SETTING COMMAND: ONLY ${rgba.size} VALUES WERE GIVEN AND FOUR ARE REQUIRED")
+                    return
+                }
 
                 val values = floatArrayOf(0F,0F,0F,0F)
                 for(i in 0 until 4) {
-                    val temp = s[i].toFloatOrNull() ?: return
-                    values[i] = temp
-                }
-
-                (setting as Setting<Color>).value = Color(values[0], values[1], values[2], values[3])
-                println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO ${setting.value.red},${setting.value.green},${setting.value.blue},${setting.value.alpha}")
-            }
-            Setting.Type.INTEGER -> {
-                val int = value.toIntOrNull()
-                if(int != null) {
-                    setting as Setting<Int>
-                    if(!(setting.possibleValues as RangeValues).noBounds() && (int > setting.possibleValues.max!! || int < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $int: VALUE IS OUT OF BOUNDS")
+                    val v = rgba[i].toFloatOrNull()
+                    if (v == null) {
+                        outputText("SETTING COMMAND: AN INVALID VALUE WAS GIVEN")
                         return
                     }
-                    setting.value = int
-                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $int")
+                    values[i] = v
+                }
+
+                serializable.value = Color(values[0], values[1], values[2], values[3])
+            }
+            Setting.Type.INTEGER -> {
+                val int = newVal.toIntOrNull()
+                if(int != null) {
+                    serializable as Setting<Int>
+                    if(!(serializable.possibleValues as RangeValues).noBounds() && (int > serializable.possibleValues.max!! || int < serializable.possibleValues.min!!)) {
+                        outputText("SETTING COMMAND: CANNOT SET ${serializable.getName()} TO $int: VALUE IS OUT OF BOUNDS")
+                        return
+                    }
+                    serializable.value = int
                 }
             }
             Setting.Type.DOUBLE -> {
-                val double = value.toDoubleOrNull()
+                val double = newVal.toDoubleOrNull()
                 if(double != null) {
-                    setting as Setting<Double>
-                    if(!(setting.possibleValues as RangeValues).noBounds() && (double > setting.possibleValues.max!! || double < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $double: VALUE IS OUT OF BOUNDS")
+                    serializable as Setting<Double>
+                    if(!(serializable.possibleValues as RangeValues).noBounds() && (double > serializable.possibleValues.max!! || double < serializable.possibleValues.min!!)) {
+                        outputText("SETTING COMMAND: CANNOT SET ${serializable.getName()} TO $double: VALUE IS OUT OF BOUNDS")
                         return
                     }
-                    setting.value = double
-                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $double")
+                    serializable.value = double
                 }
             }
             Setting.Type.FLOAT -> {
-                val float = value.toFloatOrNull()
+                val float = newVal.toFloatOrNull()
                 if(float != null) {
-                    setting as Setting<Float>
-                    if(!(setting.possibleValues as RangeValues).noBounds() && (float > setting.possibleValues.max!! || float < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $float: VALUE IS OUT OF BOUNDS")
+                    serializable as Setting<Float>
+                    if(!(serializable.possibleValues as RangeValues).noBounds() && (float > serializable.possibleValues.max!! || float < serializable.possibleValues.min!!)) {
+                        outputText("SETTING COMMAND: CANNOT SET ${serializable.getName()} TO $float: VALUE IS OUT OF BOUNDS")
                         return
                     }
-                    setting.value = float
-                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $float")
+                    serializable.value = float
                 }
             }
             Setting.Type.LONG -> {
-                val long = value.toLongOrNull()
+                val long = newVal.toLongOrNull()
                 if(long != null) {
-                    setting as Setting<Long>
-                    if(!(setting.possibleValues as RangeValues).noBounds() && (long > setting.possibleValues.max!! || long < setting.possibleValues.min!!)) {
-                        println("CANNOT SET ${setting.getName().uppercase(Locale.getDefault())} TO $long: VALUE IS OUT OF BOUNDS")
+                    serializable as Setting<Long>
+                    if(!(serializable.possibleValues as RangeValues).noBounds() && (long > serializable.possibleValues.max!! || long < serializable.possibleValues.min!!)) {
+                        outputText("SETTING COMMAND: CANNOT SET ${serializable.getName()} TO $long: VALUE IS OUT OF BOUNDS")
                         return
                     }
-                    setting.value = long
-                    println("SUCCESSFULLY SET ${setting.getName().uppercase(Locale.getDefault())} TO $long")
+                    serializable.value = long
                 }
             }
             Setting.Type.LIST -> {
-                val list = values[1].split(",")
-                setting.possibleValues as ListValues<*>
+                val list = command.poll().split(',')
+                serializable.possibleValues as ListValues<*>
+
+                // Is it a list of enums or a list of strings
                 val type: Int
-                val sett =
-                    if(setting.possibleValues.values[0] is String) {
+                val setting =
+                    if(serializable.possibleValues.values[0] is String) {
                         type = 0
-                        setting.possibleValues as ListValues<String>
+                        serializable.possibleValues as ListValues<String>
                     }
                     else {
                         type = 1
-                        setting.possibleValues as ListValues<Enum<*>>
+                        serializable.possibleValues as ListValues<Enum<*>>
                     }
 
-                if(value == "ADD") {
-                    val newList = (setting.value as List<*>).toMutableList()
+                // Add values to list
+                if(newVal.contentEquals("add", true)) {
+                    // Create a mutable copy of the current list
+                    val newList = (serializable.value as List<*>).toMutableList()
+                    
+                    // String List
                     if(type == 0) {
                         list.forEach {
-                            if(sett.values.contains(it) && !newList.contains(it)) newList.add(it)
+                            if(setting.values.contains(it) && !newList.contains(it)) newList.add(it)
                         }
                     }
 
+                    //Enum List
                     else {
                         for(str in list) {
                             var enum: Enum<*>? = null
-                            sett.values[0].javaClass.enumConstants.forEach {
-                                if((it as Enum<*>).name.uppercase(Locale.getDefault()) == str.uppercase(Locale.getDefault())) enum = it
+                            setting.values[0].javaClass.enumConstants.forEach {
+                                if((it as Enum<*>).name.contentEquals(str, true)) enum = it
                             }
 
                             if(enum == null) continue
@@ -207,23 +300,28 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                         }
                     }
 
-                    (setting as Setting<List<*>>).value = newList
-                    println("ATTEMPTED TO ADD ${values[1]} TO LIST ${setting.getName().uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
+                    // Set serializable to new list
+                    (serializable as Setting<List<*>>).value = newList
                 }
 
-                else if(value == "REMOVE") {
-                    val newList = (setting.value as List<*>).toMutableList()
+                // Remove values from list
+                else if(newVal.contentEquals("remove", true)) {
+                    // Create a mutable copy of the current list
+                    val newList = (serializable.value as List<*>).toMutableList()
+                    
+                    // String List
                     if(type == 0) {
                         list.forEach {
                             if(newList.contains(it)) newList.remove(it)
                         }
                     }
 
+                    // Enum List
                     else {
                         for(str in list) {
                             var enum: Enum<*>? = null
-                            sett.values[0].javaClass.enumConstants.forEach {
-                                if((it as Enum<*>).name.uppercase(Locale.getDefault()) == str.uppercase(Locale.getDefault())) enum = it
+                            setting.values[0].javaClass.enumConstants.forEach {
+                                if((it as Enum<*>).name.contentEquals(str, true)) enum = it
                             }
 
                             if(enum == null) continue
@@ -231,41 +329,54 @@ object SettingCommand: Command("Used to get or set the value for settings", "set
                         }
                     }
 
-                    (setting as Setting<List<*>>).value = newList
-
-                    println("ATTEMPTED TO REMOVE ${values[1]} FROM LIST ${setting.getName().uppercase(Locale.getDefault())}: USE \"GET\" TO CHECK")
+                    // Set serializable to new list
+                    (serializable as Setting<List<*>>).value = newList
                 }
 
-                else if(value == "REPLACE") {
+                // Replace the current list with a new list of values
+                else if(newVal.contentEquals("replace", true)) {
+                    // String List
                     if(type == 0) {
-                        val newList = ArrayList<String>()
+                        val newList = LinkedList<String>()
                         list.forEach {
-                            if(sett.values.contains(it)) newList.add(it)
+                            if(setting.values.contains(it)) newList.add(it)
                         }
 
-                        (setting as Setting<List<String>>).value = newList
+                        (serializable as Setting<List<String>>).value = newList
                     }
 
+                    // Enum list
                     else {
-                        val newList = ArrayList<Enum<*>>()
+                        val newList = LinkedList<Enum<*>>()
                         for(str in list) {
                             var enum: Enum<*>? = null
-                            sett.values[0].javaClass.enumConstants.forEach {
-                                if((it as Enum<*>).name.uppercase(Locale.getDefault()) == str.uppercase(Locale.getDefault())) enum = it
+                            setting.values[0].javaClass.enumConstants.forEach {
+                                if((it as Enum<*>).name.contentEquals(str, true)) enum = it
                             }
 
                             if(enum == null) continue
                             newList.add(enum!!)
                         }
 
-                        (setting as Setting<List<Enum<*>>>).value = newList
+                        (serializable as Setting<List<Enum<*>>>).value = newList
                     }
-
-                    println("ATTEMPTED TO SET LIST ${setting.getName().uppercase(Locale.getDefault())} TO $value: USE \"GET\" TO CHECK")
                 }
 
-                else println("INVALID COMMAND")
+                else {
+                    outputText("SETTING COMMAND: A VALID COMMAND WAS NOT GIVEN TO SET ${serializable.getName()}")
+                    outputText("Valid Commands:")
+                    outputText(" add     - Adds values to the current list")
+                    outputText(" remove  - Removes values from the current list")
+                    outputText(" replace - Replaces the current list with a new list of values")
+                    return
+                }
             }
+            Setting.Type.ARRAY -> TODO()
+            Setting.Type.BIND -> TODO()
         }
+
+        outputText("Successfully applied new value to ${serializable.getName()}!")
+        outputText("Old Value: $oldVal")
+        outputText("New Value: ${serializable.value.toString()}")
     }
 }

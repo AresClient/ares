@@ -5,7 +5,7 @@ import org.aresclient.ares.api.Keys
 import java.util.*
 
 object BindCommand: Command("Binds keys to modules", "bind", "kb", "keybind") {
-    override fun execute(command: ArrayList<String>) {
+    override fun execute(command: LinkedList<String>) {
         if(command.size == 1) {
             println("NO MODULE AND KEY SPECIFIED")
             return
