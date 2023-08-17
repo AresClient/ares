@@ -22,7 +22,11 @@ dependencies {
 processResources {
     inputs.property "version", project.version
 
-    filesMatching("${project.modid}.mesh.json") {
+    filesMatching("*.json") {
         expand "version": project.version
     }
+}
+
+jar {
+    exclude "org/aresclient/ares/AresStatics.class"
 }
