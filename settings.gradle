@@ -8,5 +8,7 @@ pluginManagement {
     }
 }
 
+rootProject.name = "ares"
+
 include "core"
 include "version:v1_19_x"

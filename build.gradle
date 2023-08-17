@@ -22,12 +22,17 @@ subprojects {
             name = "Fabric"
             url = "https://maven.fabricmc.net"
         }
+        maven {
+            name = "Minecraft"
+            url = "https://libraries.minecraft.net"
+        }
     }
 
     dependencies {
         implementation "net.meshmc:mesh-loader:$loaderVersion"
-
         implementation "dev.tigr:simpleevents:1.3"
+        implementation "com.mojang:brigadier:1.0.18"
+        implementation "com.mojang:authlib:1.5.21"
 
         implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"

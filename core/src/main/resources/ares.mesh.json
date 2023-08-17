@@ -9,10 +9,10 @@
     "Makrennel"
   ],
   "initializers": [
-    "org.aresclient.ares.Ares"
+    "org.aresclient.ares.impl.AresPlugin"
   ],
   "interfaces": [
-    "org.aresclient.ares.impl"
+    "org.aresclient.ares.impl.iface"
   ],
   "mixins": [
     "ares.mixins.json"

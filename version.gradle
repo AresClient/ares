@@ -22,7 +22,7 @@ tasks.withType(JavaCompile) {
 processResources {
     inputs.property "version", project.version
 
-    filesMatching("fabric.mod.json") {
+    filesMatching("*.mesh.json") {
         expand "version": project.version
     }
 }
