@@ -11,5 +11,6 @@ object ClickGUI: Module(Category.MISC, "ClickGUI", "Opens the Ares ClickGUI", De
 
     override fun onEnable() {
         Ares.getMinecraft().openScreen(screen.getScreen())
+        isEnabled = false
     }
 }

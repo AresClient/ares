@@ -13,7 +13,7 @@ import org.aresclient.ares.api.render.Texture
 val DEFAULT_ICON =
     Texture(NavigationBar::class.java.getResourceAsStream("/assets/ares/textures/icons/gears.png"))
 
-class NavigationBar(private val windowManager: WindowManager<*>, private val top: Float): StaticElement() {
+class NavigationBar(private val windowManager: WindowManager, private val top: Float): StaticElement() {
     val padding = top / 6f
 
     init {
@@ -65,6 +65,9 @@ class NavigationBar(private val windowManager: WindowManager<*>, private val top
         private var open = false
 
         init {
+            setAction {
+                navigationBar.windowManager.open("test")
+            }
             /*setAction {
                 if(!open) {
                     if(category == null) navigationBar.context.open(Window(navigationBar.context).also { it.open(SettingsContent(Settings.new())) })

@@ -1,6 +1,6 @@
 package org.aresclient.ares.impl.gui.impl.game
 
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.Ares
 import org.aresclient.ares.impl.gui.api.Button
 import org.aresclient.ares.impl.gui.api.DynamicElement
 import org.aresclient.ares.impl.util.RenderHelper
@@ -8,9 +8,11 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.impl.gui.api.DynamicElementGroup
+import org.aresclient.ares.impl.gui.impl.game.setting.*
 
-/*
-class SettingsGroup(private val serializable: Serializable, private val content: SettingsContent, columns: Int,
+class SettingsGroup(private val setting: Setting<*>, columns: Int,
                     columnWidth: () -> Float, private val childHeight: Float, x: Float = 0f, y: Float = 0f,
                     private val skipEnabled: Boolean = false): DynamicElementGroup(columns, columnWidth, childHeight, x, y) {
     init {
@@ -20,97 +22,81 @@ class SettingsGroup(private val serializable: Serializable, private val content:
     fun refresh() {
         getChildren().clear()
 
-        when(serializable) {
-            is Settings -> serializable.map.values.forEach {
-                if(it.name.first() != '.' && (!skipEnabled || it.name != "Enabled")) pushChild(when(it) {
-                    is Settings -> CategoryElement(it, content, childHeight)
-                    is Setting<*> -> when(it.type) {
-                        Setting.Type.LIST -> CategoryElement(it, content, childHeight)
-                        Setting.Type.BOOLEAN -> BooleanElement(it as Setting.Boolean, childHeight)
-                        Setting.Type.ENUM -> EnumElement(it as Setting.Enum<*>, childHeight)
-                        Setting.Type.BIND -> BindElement(it as Setting.Bind, childHeight)
-                        Setting.Type.STRING -> StringElement(it as Setting.String, childHeight)
-                        Setting.Type.INTEGER -> IntElement(it as Setting.Integer, childHeight)
-                        Setting.Type.LONG -> LongElement(it as Setting.Long, childHeight)
-                        Setting.Type.FLOAT -> FloatElement(it as Setting.Float, childHeight)
-                        Setting.Type.DOUBLE -> DoubleElement(it as Setting.Double, childHeight)
-                        else -> EmptySettingElement(it.getName(), childHeight)
-                    }
-                    else -> EmptySettingElement(it.name, childHeight)
-                })
-            }
-            is Setting<*> -> if(serializable.type == Setting.Type.LIST) {
-                (serializable.value as List<*>).forEach { addListElements(it, true) }
-                (serializable.possibleValues as ListValues<*>).values
-                    .filterNot((serializable.value as List<*>)::contains).forEach { addListElements(it, false) }
-            }
+        if (setting.type == Setting.Type.MAP) (setting as Setting.Map<*>).value.forEach { (name, setting) ->
+            if(name.first() != '.' && (!skipEnabled || name != "Enabled")) pushChild(when(setting.type) {
+                //Setting.Type.LIST -> CategoryElement(it, content, childHeight)
+                Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, childHeight)
+                Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, childHeight)
+                Setting.Type.BIND -> BindElement(setting as Setting.Bind, childHeight)
+                Setting.Type.STRING -> StringElement(setting as Setting.String, childHeight)
+                Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, childHeight)
+                Setting.Type.LONG -> LongElement(setting as Setting.Long, childHeight)
+                Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, childHeight)
+                Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, childHeight)
+                else -> EmptySettingElement(setting.getName(), childHeight)
+            })
         }
+        // TODO: LIST AND OTHER SETTINGS FULLSCREEN
+        /*is Setting<*> -> if(serializable.type == Setting.Type.LIST) {
+            (serializable.value as List<*>).forEach { addListElements(it, true) }
+            (serializable.possibleValues as ListValues<*>).values
+                .filterNot((serializable.value as List<*>)::contains).forEach { addListElements(it, false) }
+        }*/
     }
 
-    private fun addListElements(any: Any?, added: Boolean) {
+    /*private fun addListElements(any: Any?, added: Boolean) {
         if(any is Enum<*>) pushChild(ListSubElement(EnumListElementAdapter(any), added, content, childHeight))
         else if(any is String) pushChild(ListSubElement(DefaultListElementAdapter(any), added, content, childHeight))
-    }
+    }*/
 }
 
-class SettingsContent(settings: Settings): WindowContent(settings) {
-    companion object {
-        fun Window.open(serializable: Serializable) {
-            open(SettingsContent(Settings.new().also { it.string("setting", serializable.getFullName()) }))
-        }
-
-        fun WindowContent.open(serializable: Serializable) {
-            open(SettingsContent(Settings.new().also { it.string("setting", serializable.getFullName()) }))
-        }
-    }
-
-    private val setting = settings.addString("setting", "")
-    private val serializable = setting.let {
-        var serializable: Serializable = AresMod.SETTINGS
-        val split = it.value.split(":")
+class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
+    private val name = settings.addString("setting", "")
+    private val setting = with(name) {
+        var curr: Setting<*>? = Ares.getSettings()
+        val split = value.split(":")
         for(name in split) {
-            if(serializable is Settings) serializable = serializable.getMap()[name] ?: continue
-            else break
+            curr = (when (curr?.type) {
+                Setting.Type.MAP -> (curr as Setting.Map<*>).value[name]
+                Setting.Type.LIST -> name.toIntOrNull()?.let { (curr as Setting.List<*>).value[it] }
+                else -> null
+            }) ?: break
         }
-        serializable
+        curr ?: Ares.getSettings()
     }
-    private val group = SettingsGroup(serializable, this, 1, this::getWidth, 18f)
+    private val group = SettingsGroup(setting,  1, this::getWidth, 18f)
 
     init {
-        setTitle(serializable.getName())
-
         // set icon if category
-        for((ind, cat) in Module.CATEGORIES.withIndex()) {
+        /*for((ind, cat) in Module.CATEGORIES.withIndex()) {
             if(cat == serializable) {
                 setIcon(Category.values()[ind].icon)
                 break
             }
-        }
+        }*/
 
         pushChild(group)
     }
 
-    fun getSerializable(): Serializable = serializable
 
-    fun getPath(): String = setting.value
+    override fun getTitle(): String = setting.getName() ?: "Home"
 
     fun refresh() {
         group.refresh()
     }
 
-    override fun getContentHeight(): Float = group.getHeight()
+    //override fun getContentHeight(): Float = group.getHeight()
 }
- */
 
 class EmptySettingElement(private val name: String, height: Float): SettingElement(height) {
     override fun getText(): String = name
 }
 
-abstract class SettingElement(protected val defaultHeight: Float, private val start: Float = 3f): DynamicElement() {
+abstract class SettingElement(defaultHeight: Float, private val start: Float = 3f): DynamicElement() {
     protected val fontRenderer = RenderHelper.getFontRenderer(defaultHeight * 13f/18f)
 
     abstract fun getText(): String
-    open fun getTextColor(theme: Theme): Setting.Color<*> = theme.lightground
+    open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         buffers.lines.draw(matrixStack) {

@@ -18,7 +18,7 @@ interface Rotator {
 }
 
 object RotationGlobal: Global("Rotation") {
-    val reset_delay = settings.addLong("Reset Delay", 10 , 0, 100)
+    val reset_delay = settings.addLong("Reset Delay", 10).setMin(0).setMax(100)
     val yaw_step = settings.addFloat("Yaw Step", 180F)
     val pitch_step = settings.addFloat("Pitch Step", 180F)
 

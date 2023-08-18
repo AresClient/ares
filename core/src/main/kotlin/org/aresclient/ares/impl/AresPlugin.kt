@@ -5,6 +5,7 @@ import net.meshmc.mesh.loader.Mod.Instance
 import org.aresclient.ares.api.Ares
 import org.aresclient.ares.impl.command.EchoCommand
 import org.aresclient.ares.impl.command.HelpCommand
+import org.aresclient.ares.impl.module.hud.MiniMap
 import org.aresclient.ares.impl.module.misc.ClickGUI
 import org.aresclient.ares.impl.module.misc.TitleScreen
 import org.aresclient.ares.impl.module.player.AntiAFK
@@ -22,6 +23,7 @@ class AresPlugin: Ares.Plugin(), Mod.Initializer {
             AntiAFK,
             ClickGUI,
             ESP,
+            MiniMap,
             TestModule,
             TitleScreen
         ))

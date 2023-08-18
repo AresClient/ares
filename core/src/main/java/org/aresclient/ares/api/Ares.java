@@ -211,7 +211,7 @@ public class Ares {
             state = false;
         } else return;
 
-        for(Setting.Bind<?> bind: Setting.Bind.getAll()) {
+        for(Setting.Bind bind: Setting.Bind.getAll()) {
             if(bind.getValue() != key) continue;
             bind.getCallback().accept(state);
         }

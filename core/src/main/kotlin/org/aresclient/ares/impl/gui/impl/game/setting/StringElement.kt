@@ -4,7 +4,7 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.TextBox
 import org.aresclient.ares.impl.gui.impl.game.SettingElement
 
-class StringElement(private val setting: Setting.String<*>, defaultHeight: Float): SettingElement(defaultHeight) {
+class StringElement(private val setting: Setting.String, defaultHeight: Float): SettingElement(defaultHeight) {
     private val textBox = SettingTextBox(this)
 
     init {

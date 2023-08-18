@@ -1,9 +1,9 @@
 package org.aresclient.ares.api.module;
 
 import org.aresclient.ares.api.Ares;
-import org.aresclient.ares.api.setting.Setting;
 import org.aresclient.ares.api.render.MatrixStack;
 import org.aresclient.ares.api.render.Renderer;
+import org.aresclient.ares.api.setting.Setting;
 import org.aresclient.ares.api.util.Keys;
 
 public class Module {
@@ -48,10 +48,10 @@ public class Module {
     private final Defaults defaults;
 
     protected final Setting.Map<?> settings;
-    private final Setting.Boolean<?> enabled;
-    private final Setting.Bind<?> bind;
-    private final Setting.Boolean<?> visible;
-    private final Setting.Enum<TogglesOn, ?> togglesOn;
+    private final Setting.Boolean enabled;
+    private final Setting.Bind bind;
+    private final Setting.Boolean visible;
+    private final Setting.Enum<TogglesOn> togglesOn;
 
     public Module(Category category, String name, String description) {
         this(category, name, description, new Defaults());
@@ -65,7 +65,7 @@ public class Module {
 
         settings = category.getSettings().addMap(name);
         enabled = settings.addBoolean("Enabled", defaults.enabled);
-        bind = settings.addBind("Bind", defaults.bind, state -> {
+        bind = settings.addBind("Bind", defaults.bind).setCallback(state -> {
             TogglesOn toggles = getTogglesOn();
             if(toggles == TogglesOn.PRESS && state) toggle();
             else if(toggles == TogglesOn.RELEASE && !state) toggle();
@@ -171,12 +171,6 @@ public class Module {
 
     public void setTogglesOn(TogglesOn value) {
         togglesOn.setValue(value);
-    }
-
-    public void setDefaults() {
-        // setEnabled needs to be called to update events
-        setEnabled(enabled.getDefaultValue());
-        settings.defaults();
     }
 
     public boolean isListening() {

@@ -1,103 +1,76 @@
 package org.aresclient.ares.impl.gui.impl.game
 
-/*
-abstract class WindowContentOld(private val settings: Settings): StaticElement(0f, Window.TOP_SIZE, 0f, 0f) {
-    private var window: Window? = null
-    private var icon = Window.DEFAULT_ICON
-    private var title = ""
+import org.aresclient.ares.api.Ares
+import org.aresclient.ares.impl.gui.api.Button
+import org.aresclient.ares.impl.gui.api.DynamicElement
+import org.aresclient.ares.impl.gui.api.Image
+import org.aresclient.ares.impl.gui.api.StaticElement
+import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.render.Texture
+import org.aresclient.ares.api.setting.Setting
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 
-    override fun getWidth(): Float = getParent()?.getWidth() ?: 0f
-    override fun getHeight(): Float = getContentHeight()
+private val FONT_RENDERER = RenderHelper.getFontRenderer(14f)
+private const val TOP_SIZE = 18f
 
-    abstract fun getContentHeight(): Float
-
-    fun open(content: WindowContent) {
-        val parent = getParent()
-        if(parent is Window) parent.open(content)
+class WindowManager(private val settings: Setting.List<Setting.Map<*>>): StaticElement() {
+    init {
+        settings.value.forEach { map ->
+            pushChild(WindowElement(map, this))
+        }
     }
 
-    fun getSettings(): Settings = settings
-
-    fun getWindow(): Window? = window
-    fun setWindow(window: Window?) {
-        this.window = window
+    fun open(name: String) {
+        val map = Setting.Map(Ares.getSettings().serializer)
+        settings.value.add(map)
+        pushChild(WindowElement(map, this).also {
+            it.open(name)
+        })
     }
 
-    fun getIcon(): Texture = icon
-    protected fun setIcon(texture: Texture) {
-        icon = texture
+    fun close(window: WindowElement) {
+        settings.value.remove(window.settings)
+        getChildren().remove(window)
     }
-
-    fun getTitle(): String = title
-    protected fun setTitle(string: String) {
-        title = string
-    }
-}
-
-open class WindowContext(rootSettings: Settings, title: String): ScreenElement(title) {
-    private val settings = rootSettings.addList(".windows")
-    private val windows = settings.value.map { Window(this, it) }.toMutableList()
-    private val listeners = arrayListOf<() -> Unit>()
-
-    override fun init() {
-        windows.forEach { pushChild(it) }
-        listeners.forEach { it.invoke() }
-    }
-
-    fun open(window: Window) {
-        windows.add(window)
-        pushChild(window)
-        settings.value.add(window.getSettings())
-        listeners.forEach { it.invoke() }
-    }
-
-    fun close(window: Window) {
-        windows.remove(window)
+    
+    fun float(window: WindowElement) {
         removeChild(window)
-        settings.value.remove(window.getSettings())
-        listeners.forEach { it.invoke() }
+        pushChild(window)
     }
-
-    fun getWindows(): List<Window> = windows
-    fun getListeners(): ArrayList<() -> Unit> = listeners
 }
 
-// TODO: RESIZABLE WINDOWS?
-class Window(private val context: WindowContext, private val settings: Settings = Settings.new(),
-         defaultWidth: Float = 130f, defaultHeight: Float = 300f, defaultX: Float = 0f, defaultY: Float = 0f): DynamicElement() {
-    companion object {
-        private val FONT_RENDERER = RenderHelper.getFontRenderer(14f)
-        internal const val TOP_SIZE = 18f
-        val DEFAULT_ICON = Texture(Window::class.java.getResourceAsStream("/assets/ares/textures/icons/gears.png"))
-    }
+class TestContent(settings: Setting.Map<*>): WindowContent(settings) {
+    override fun getTitle() = "TEST"
+}
 
-    private val x = settings.addFloat("x", defaultX)
-    private val y = settings.addFloat("y", defaultY)
-    private val width = settings.addFloat("width", defaultWidth)
-    private val height = settings.addFloat("height", defaultHeight)
+abstract class WindowContent(internal val settings: Setting.Map<*>): StaticElement() {
+    abstract fun getTitle(): String
+    open fun getIcon(): Texture = DEFAULT_ICON
+}
+
+class WindowElement(internal val settings: Setting.Map<*>, private val windowManager: WindowManager): DynamicElement() {
+    private val content = settings.addList<Setting.Map<*>>(Setting.Type.MAP, "content")
+    private val x = settings.addFloat("x", 0f)
+    private val y = settings.addFloat("y", 0f)
+    private val width = settings.addFloat("width", 130f)
+    private val height = settings.addFloat("height", 300f)
 
     private var holding = false
     private var holdX = 0f
     private var holdY = 0f
 
+    private var window: WindowContent? = null
     private val icon = Image(DEFAULT_ICON, 2f, 1f, TOP_SIZE - 2, TOP_SIZE - 2)
-    private val closeButton = CloseButton({ getWidth() }) { context.close(this) }
-    private val backButton = BackButton({ closeButton.getX() }, { content.size > 1 }, { back() })
-
-    private var currContent: WindowContent? = null
-    private var contentSetting = settings.addList("content")
-    private var content = Stack<WindowContent>().also {
-        it.addAll(contentSetting.value.mapNotNull {
-            val clazz = it.addString("class", "")
-            if(clazz.value.isEmpty()) null
-            else Class.forName(clazz.value).getConstructor(Settings::class.java).newInstance(it.addCategory("data")) as WindowContent
-        })
-        if(!it.empty()) it.peek().also { curr ->
-            curr.setWindow(this)
-            icon.setTexture(curr.getIcon())
-            setCurrentContent(curr)
-        }
-    }
+    private val closeButton = CloseButton({ getWidth() }) { windowManager.close(this) }
+    private val backButton = BackButton({ closeButton.getX() }, { content.value.size > 1 }, { back() })
 
     init {
         setX { x.value }
@@ -110,11 +83,30 @@ class Window(private val context: WindowContext, private val settings: Settings 
             backButton,
             icon
         )
+
+        for(map in content.value) open(map)
     }
 
-    override fun update() {
-        currContent?.update()
-        super.update()
+    private fun open(map: Setting.Map<*>, type: String = "settings") {
+        map.addString("type", type)
+        window = SettingsContent(map.addMap("data"))
+    }
+
+    fun open(type: String) {
+        val map = Setting.Map(settings.serializer)
+        content.value.add(map)
+        open(map, type)
+    }
+
+    private fun back() {
+        // TODO: FIX THIS
+        if(window == null || content.value.size == 1) return
+        content.value.removeLast()
+        window = content.value.lastOrNull()?.let {
+            val clazz = it.addString("clazz", "")
+            if(clazz.value.isNullOrEmpty()) null
+            else Class.forName(clazz.value)?.constructors?.get(0)?.newInstance(it.addMap("data")) as? WindowContent
+        }
     }
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
@@ -135,9 +127,11 @@ class Window(private val context: WindowContext, private val settings: Settings 
         buffers.uniforms.roundedSize.set(width, height)
         buffers.rounded.draw(matrixStack) {
             vertices(
-                width, TOP_SIZE, 0f, 1f, topOffset, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+                width,
+                TOP_SIZE, 0f, 1f, topOffset, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
                 width, 0f, 0f, 1f, -1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
-                0f, TOP_SIZE, 0f, -1f, topOffset, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+                0f,
+                TOP_SIZE, 0f, -1f, topOffset, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
                 0f, 0f, 0f, -1f, -1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha
             )
             indices(
@@ -147,12 +141,11 @@ class Window(private val context: WindowContext, private val settings: Settings 
         }
 
         // window title text
-        if(!content.empty()) {
-            val title = content.peek().getTitle()
+        window?.getTitle()?.let {
             FONT_RENDERER.drawString(
-                matrixStack, title,
+                matrixStack, it,
                 ((backButton.getX() - icon.getX() - icon.getWidth()) / 2f
-                        + icon.getX() + icon.getWidth()) - FONT_RENDERER.getStringWidth(title) / 2f,
+                        + icon.getX() + icon.getWidth()) - FONT_RENDERER.getStringWidth(it) / 2f,
                 1f, 1f, 1f, 1f, 1f
             )
         }
@@ -160,8 +153,10 @@ class Window(private val context: WindowContext, private val settings: Settings 
         // line under window top
         buffers.lines.draw(matrixStack) {
             vertices(
-                0f, TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                width, TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                0f,
+                TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                width,
+                TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
             )
             indices(0, 1)
         }
@@ -171,9 +166,11 @@ class Window(private val context: WindowContext, private val settings: Settings 
             buffers.rounded.draw(matrixStack) {
                 vertices(
                     width, height, 0f, 1f, 1f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                    width, TOP_SIZE, 0f, 1f, bottomOffset, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                    width,
+                    TOP_SIZE, 0f, 1f, bottomOffset, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
                     0f, height, 0f, -1f, 1f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                    0f, TOP_SIZE, 0f, -1f, bottomOffset, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
+                    0f,
+                    TOP_SIZE, 0f, -1f, bottomOffset, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
                 )
                 indices(
                     0, 1, 2,
@@ -181,7 +178,7 @@ class Window(private val context: WindowContext, private val settings: Settings 
                 )
             }
         }) {
-            currContent?.render(theme, buffers, matrixStack, mouseX, mouseY, delta)
+            window?.render(theme, buffers, matrixStack, mouseX, mouseY, delta)
         }
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
@@ -190,15 +187,11 @@ class Window(private val context: WindowContext, private val settings: Settings 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         val prev = acted.get()
         super.click(mouseX, mouseY, mouseButton, acted)
-        if(mouseY > getRenderY() + TOP_SIZE) currContent?.click(mouseX, mouseY, mouseButton, acted)
+        if(mouseY > getRenderY() + TOP_SIZE) window?.click(mouseX, mouseY, mouseButton, acted)
         val after = acted.get()
 
         if(mouseButton == 0 && !holding && isMouseOver(mouseX, mouseY)) {
-            if(prev == after && !prev) {
-                context.removeChild(this)
-                context.pushChild(this)
-            }
-
+            if(prev == after && !prev) windowManager.float(this)
             if(mouseY <= getRenderY() + 15f && !after) {
                 holding = true
                 holdX = mouseX.toFloat() - getRenderX()
@@ -211,67 +204,18 @@ class Window(private val context: WindowContext, private val settings: Settings 
     override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
         if(mouseButton == 0) holding = false
         super.release(mouseX, mouseY, mouseButton)
-        currContent?.release(mouseX, mouseY, mouseButton)
+        window?.release(mouseX, mouseY, mouseButton)
     }
 
     override fun scroll(mouseX: Int, mouseY: Int, value: Double, acted: AtomicBoolean) {
         super.scroll(mouseX, mouseY, value, acted)
 
         if(!acted.get() && isMouseOver(mouseX, mouseY) && mouseY >= getRenderY() + TOP_SIZE) {
-            currContent?.let {
+            window?.let {
                 it.setY(min(TOP_SIZE, max((it.getY() + value).toFloat(), getHeight() - it.getHeight() + TOP_SIZE)))
             }
             acted.set(true)
         }
-    }
-
-    override fun type(typedChar: Char?, keyCode: Int) {
-        super.type(typedChar, keyCode)
-        currContent?.type(typedChar, keyCode)
-    }
-
-    fun getSettings(): Settings = settings
-
-    fun getCurrentContent(): WindowContent? = currContent
-    private fun setCurrentContent(content: WindowContent) {
-        currContent?.setParent(null)
-        content.setParent(this)
-        content.update()
-        currContent = content
-    }
-
-    fun open(windowContent: WindowContent) {
-        windowContent.setWindow(this)
-
-        setCurrentContent(windowContent)
-        icon.setTexture(windowContent.getIcon())
-
-        content.push(windowContent)
-        contentSetting.value.add(Settings.new().also {
-            it.string("class", windowContent.javaClass.name)
-            it.getMap()["data"] = windowContent.getSettings()
-        })
-
-        context.getListeners().forEach { it.invoke() }
-    }
-
-    fun back() {
-        if(content.size < 2) return
-
-        content.pop()?.setWindow(null)
-        contentSetting.value.removeLast()
-
-        content.peek()?.let { content ->
-            setCurrentContent(content)
-            icon.setTexture(content.getIcon())
-        }
-
-        context.getListeners().forEach { it.invoke() }
-    }
-
-    fun duplicate(): Window = Window(context, settings.clone()).also {
-        it.x.value += (if(it.x.value >= context.getWidth() - getWidth() * 2 - 2) -1 else 1) * getWidth() + 2
-        context.open(it)
     }
 
     private open class ActionButton(private val rightX: () -> Float, action: (Button) -> Unit): Button(0f, OFFSET, SIZE, SIZE, action) {
@@ -364,5 +308,3 @@ class Window(private val context: WindowContext, private val settings: Settings 
         }
     }
 }
-
- */

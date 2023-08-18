@@ -4,7 +4,7 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.AresPlugin
 import org.aresclient.ares.api.util.Color
 
-data class Theme(val primary: Setting.Color<*>, val secondary: Setting.Color<*>, val background: Setting.Color<*>, val lightground: Setting.Color<*>) {
+data class Theme(val primary: Setting.Color, val secondary: Setting.Color, val background: Setting.Color, val lightground: Setting.Color) {
     companion object {
         private val SETTING = AresPlugin.INSTANCE.settings.addMap("Theme")
         private val THEME = Theme(

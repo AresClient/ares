@@ -1,8 +1,8 @@
 package org.aresclient.ares.api.module;
 
 import org.aresclient.ares.api.Ares;
-import org.aresclient.ares.api.setting.Setting;
 import org.aresclient.ares.api.render.Texture;
+import org.aresclient.ares.api.setting.Setting;
 
 import java.io.InputStream;
 import java.util.ArrayList;

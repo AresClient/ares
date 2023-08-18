@@ -3,15 +3,15 @@ package org.aresclient.ares.impl.gui.impl.game.setting
 import dev.tigr.simpleevents.listener.EventListener
 import org.aresclient.ares.api.Ares
 import org.aresclient.ares.api.event.client.InputEvent
-import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.impl.game.SettingElement
 import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.util.Keys
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(private val setting: Setting.Bind<*>, defaultHeight: Float): SettingElement(defaultHeight) {
+class BindElement(private val setting: Setting.Bind, defaultHeight: Float): SettingElement(defaultHeight) {
     private var listening = false
     private var name = name()
 
