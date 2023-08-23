@@ -11,7 +11,7 @@ interface Prioritizer {
 /**
  * TODO: Conditional priority? (so that things don't always get overtaken by higher priority while executing halfway)
  */
-object Priority: Global("Priority") {
+object Priority: Global("Priority", "Handles the priority of different modules so that Rotations and Interactions happen in an optimal order") {
     private var key: Prioritizer? = null
     private var released = true
 

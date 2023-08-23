@@ -15,7 +15,7 @@ interface Rotator: Prioritizer {
     fun pitchStep(): Float = Rotation.pitch_step.value
 }
 
-object Rotation: Global("Rotation") {
+object Rotation: Global("Rotation", "Handles player rotations so that the server thinks the player is facing a certain direction") {
     val reset_delay = settings.addLong("Reset Delay", 10).setMin(0).setMax(100)
     val yaw_step = settings.addFloat("Yaw Step", 180F)
     val pitch_step = settings.addFloat("Pitch Step", 180F)

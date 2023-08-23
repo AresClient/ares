@@ -9,7 +9,7 @@ import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Color
 
-object Render: Global("Render") {
+object Render: Global("Render", "Handles render related tasks which are held in common between multiple modules") {
     data class Event(val delta: Float, val buffers: Renderer.Buffers, val matrixStack: MatrixStack)
 
     /** Util object to hold functions for drawing filled quads, and boxes */
