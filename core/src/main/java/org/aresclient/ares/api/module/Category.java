@@ -13,7 +13,8 @@ public class Category {
     private static final List<Category> CATEGORIES = new ArrayList<>();
 
     public static final Category PLAYER = new Category("Player");
-    public static final Category COMBAT = new Category("Combat");
+    public static final Category OFFENSE = new Category("Offense");
+    public static final Category DEFENSE = new Category("Defense");
     public static final Category MOVEMENT = new Category("Movement");
     public static final Category RENDER = new Category("Render");
     public static final Category HUD = new Category("Hud");
