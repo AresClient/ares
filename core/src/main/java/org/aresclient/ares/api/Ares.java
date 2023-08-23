@@ -17,6 +17,7 @@ import org.aresclient.ares.api.event.client.InputEvent;
 import org.aresclient.ares.api.event.client.ShutdownEvent;
 import org.aresclient.ares.api.event.client.TickEvent;
 import org.aresclient.ares.api.event.render.RenderEvent;
+import org.aresclient.ares.api.global.Global;
 import org.aresclient.ares.api.minecraft.Minecraft;
 import org.aresclient.ares.api.module.Module;
 import org.aresclient.ares.api.setting.Setting;
@@ -36,6 +37,7 @@ public class Ares {
         private String version;
         private String[] authors;
 
+        private final List<Global> globals = new ArrayList<>();
         private final List<Module> modules = new ArrayList<>();
         private final List<Command> commands = new ArrayList<>();
         private Setting.Map<?> settings;
@@ -57,6 +59,11 @@ public class Ares {
 
             init();
 
+            for(Global global: globals) {
+                Ares.getEventManager().register(global);
+                Ares.getEventManager().register(global.getClass());
+            }
+
             for(Module module: modules) {
                 if(module.isListening()) {
                     Ares.getEventManager().register(module);
@@ -65,8 +72,8 @@ public class Ares {
                 MeshLoader.getInstance().registerInterfaces(module);
             }
 
-            logger.info("Loaded {} modules and {} commands in {} milliseconds",
-                modules.size(), commands.size(), System.currentTimeMillis() - start);
+            logger.info("Loaded {} globals, {} modules and {} commands in {} milliseconds",
+                globals.size(), modules.size(), commands.size(), System.currentTimeMillis() - start);
         }
 
         public void init(Mod mod) {
@@ -94,6 +101,10 @@ public class Ares {
 
         public String[] getAuthors() {
             return authors;
+        }
+
+        public List<Global> getGlobals() {
+            return globals;
         }
 
         public List<Module> getModules() {
@@ -143,7 +154,10 @@ public class Ares {
     }
 
     public static void tickClient() {
-        for(Plugin plugin: PLUGINS) plugin.getModules().forEach(Module::tick);
+        for(Plugin plugin: PLUGINS) {
+            plugin.getGlobals().forEach(Global::tick);
+            plugin.getModules().forEach(Module::tick);
+        }
     }
 
     public static void renderHud(float delta, Renderer.Buffers buffers, MatrixStack matrixStack) {

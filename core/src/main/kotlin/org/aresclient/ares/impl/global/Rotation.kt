@@ -1,5 +1,6 @@
 package org.aresclient.ares.impl.global
 
+import org.aresclient.ares.api.global.Global
 import org.aresclient.ares.api.minecraft.math.Vec2f
 import org.aresclient.ares.impl.util.Timer
 
@@ -12,12 +13,12 @@ import org.aresclient.ares.impl.util.Timer
  */
 interface Rotator {
     fun getPriority(): Int
-    fun getYawStep(): Float = RotationGlobal.yaw_step.value
-    fun getPitchStep(): Float = RotationGlobal.pitch_step.value
+    fun getYawStep(): Float = Rotation.yaw_step.value
+    fun getPitchStep(): Float = Rotation.pitch_step.value
     fun isEmergencyInterruptor(): Boolean = false
 }
 
-object RotationGlobal: Global("Rotation") {
+object Rotation: Global("Rotation") {
     val reset_delay = settings.addLong("Reset Delay", 10).setMin(0).setMax(100)
     val yaw_step = settings.addFloat("Yaw Step", 180F)
     val pitch_step = settings.addFloat("Pitch Step", 180F)
@@ -46,7 +47,7 @@ object RotationGlobal: Global("Rotation") {
     }
 
     fun release(key: Rotator) {
-        if(RotationGlobal.key == key) released = true
+        if(Rotation.key == key) released = true
     }
 
     fun getReleased(): Boolean {
@@ -66,12 +67,12 @@ object RotationGlobal: Global("Rotation") {
     }
 
     fun setRotation(rotation: Vec2f, key: Rotator, instant: Boolean): Boolean {
-        if(RotationGlobal.rotation == null || released || keyMatches(key) || hasPriority(key)) {
+        if(Rotation.rotation == null || released || keyMatches(key) || hasPriority(key)) {
             // Rotate instantly if specified, but only if the rotation does not match (no need to spam)
             //if(instant && this.rotation != rotation) PlayerMoveC2SPacket.Rotation.create(rotation, MC.getPlayer().isOnGround) //TODO: send packet (once possible in mesh)
 
-            RotationGlobal.rotation = rotation
-            RotationGlobal.key = key
+            Rotation.rotation = rotation
+            Rotation.key = key
             released = false
             resetTimer.reset()
             steppingComplete = false

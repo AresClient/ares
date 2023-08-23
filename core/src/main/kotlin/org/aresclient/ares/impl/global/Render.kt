@@ -1,5 +1,6 @@
 package org.aresclient.ares.impl.global
 
+import org.aresclient.ares.api.global.Global
 import org.aresclient.ares.api.minecraft.math.Box
 import org.aresclient.ares.api.minecraft.math.Facing
 import org.aresclient.ares.api.minecraft.math.Vec3d
@@ -8,10 +9,10 @@ import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Color
 
-object RenderGlobal: Global("Render") {
+object Render: Global("Render") {
     data class Event(val delta: Float, val buffers: Renderer.Buffers, val matrixStack: MatrixStack)
 
-    // move to render?, also maybe we can clean up unused funcs
+    /** Util object to hold functions for drawing filled quads, and boxes */
     object Fill {
         fun quad(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, color1: Color, color2: Color, color3: Color, color4: Color) {
             Renderer.getBuffers().triangle.indicesOffset(
@@ -87,7 +88,8 @@ object RenderGlobal: Global("Render") {
         fun box(box: Box, colorBottom: Color, colorTop: Color, vararg excludedSides: Facing) = box(box.minX.toFloat(), box.minY.toFloat(), box.minZ.toFloat(), box.maxX.toFloat(), box.maxY.toFloat(), box.maxZ.toFloat(), colorBottom, colorBottom, colorBottom, colorBottom, colorTop, colorTop, colorTop, colorTop, excludedSides = excludedSides)
         fun box(box: Box, color: Color, vararg excludedSides: Facing) = box(box.minX.toFloat(), box.minY.toFloat(), box.minZ.toFloat(), box.maxX.toFloat(), box.maxY.toFloat(), box.maxZ.toFloat(), color, color, color, color, color, color, color, color, excludedSides = excludedSides)
     }
-    
+
+    /** Util object to hold functions for drawing quad, and box outlines */
     object Lines {
         fun quad(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, color1: Color, color2: Color, color3: Color, color4: Color, w1: Float, w2: Float, w3: Float, w4: Float) {
             Renderer.getBuffers().lines.indicesOffset(

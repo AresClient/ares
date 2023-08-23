@@ -2,7 +2,7 @@ package org.aresclient.ares.impl.module.player
 
 import org.aresclient.ares.api.module.Category
 import org.aresclient.ares.api.module.Module
-import org.aresclient.ares.impl.global.RotationGlobal
+import org.aresclient.ares.impl.global.Rotation
 import org.aresclient.ares.impl.global.Rotator
 import org.aresclient.ares.impl.util.Timer
 
@@ -24,6 +24,6 @@ object AntiAFK: Module(Category.PLAYER, "AntiAFK", "Prevents player from being k
             a += 90
             timer.reset()
         }
-        RotationGlobal.setRotation(a, 0f, this)
+        Rotation.setRotation(a, 0f, this)
     }
 }

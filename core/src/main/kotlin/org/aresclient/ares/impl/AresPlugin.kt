@@ -5,6 +5,8 @@ import net.meshmc.mesh.loader.Mod.Instance
 import org.aresclient.ares.api.Ares
 import org.aresclient.ares.impl.command.EchoCommand
 import org.aresclient.ares.impl.command.HelpCommand
+import org.aresclient.ares.impl.global.Render
+import org.aresclient.ares.impl.global.Rotation
 import org.aresclient.ares.impl.module.misc.ClickGUI
 import org.aresclient.ares.impl.module.misc.TitleScreen
 import org.aresclient.ares.impl.module.player.AntiAFK
@@ -18,6 +20,11 @@ class AresPlugin: Ares.Plugin(), Mod.Initializer {
     }
 
     override fun init() {
+        globals.addAll(arrayOf(
+            Render,
+            Rotation
+        ))
+
         modules.addAll(arrayOf(
             AntiAFK,
             ClickGUI,
