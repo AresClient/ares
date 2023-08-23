@@ -13,8 +13,8 @@ import org.aresclient.ares.impl.util.Timer
 object AntiAFK: Module(Category.PLAYER, "AntiAFK", "Prevents player from being kicked due to being AFK"), Rotator {
     private val yaw_step = settings.addFloat("Yaw Step", 15F)
 
-    override fun getPriority(): Int = 0
-    override fun getYawStep(): Float = yaw_step.value
+    override fun priority(): Int = 0
+    override fun yawStep(): Float = yaw_step.value
 
     var a = 0f
     val timer = Timer()

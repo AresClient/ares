@@ -6,16 +6,13 @@ import org.aresclient.ares.impl.util.Timer
 
 /**
  * TODO: I broke this, needs to be fixed -Tigermouthbear
- * TODO: Conditional priority? (so that things don't always get overtaken by higher priority while executing)
  * TODO: Test whether interaction packets have to be sent right after the final step packet,
  *      at the end of the tick the packet's sent, or during the beginning of the next tick on strict;
  *      if it has to be the next tick, how soon after the interaction can the rotation be drastically changed
  */
-interface Rotator {
-    fun getPriority(): Int
-    fun getYawStep(): Float = Rotation.yaw_step.value
-    fun getPitchStep(): Float = Rotation.pitch_step.value
-    fun isEmergencyInterruptor(): Boolean = false
+interface Rotator: Prioritizer {
+    fun yawStep(): Float = Rotation.yaw_step.value
+    fun pitchStep(): Float = Rotation.pitch_step.value
 }
 
 object Rotation: Global("Rotation") {
@@ -33,27 +30,6 @@ object Rotation: Global("Rotation") {
         return rotation?.duplicate()
     }
 
-    fun keyMatches(rotator: Rotator): Boolean {
-        return key == rotator
-    }
-
-    fun hasPriority(rotator: Rotator): Boolean {
-        return key == null || key!!.getPriority() < rotator.getPriority()
-    }
-
-    fun getKeyPriority(): Int {
-        if(key == null) return -1
-        return key!!.getPriority()
-    }
-
-    fun release(key: Rotator) {
-        if(Rotation.key == key) released = true
-    }
-
-    fun getReleased(): Boolean {
-        return released
-    }
-
     fun setRotation(yaw: Float, pitch: Float, key: Rotator): Boolean {
         return setRotation(yaw, pitch, key, false)
     }
@@ -67,7 +43,7 @@ object Rotation: Global("Rotation") {
     }
 
     fun setRotation(rotation: Vec2f, key: Rotator, instant: Boolean): Boolean {
-        if(Rotation.rotation == null || released || keyMatches(key) || hasPriority(key)) {
+        if(Rotation.rotation == null || released || Priority.keyMatches(key) || Priority.hasPriority(key)) {
             // Rotate instantly if specified, but only if the rotation does not match (no need to spam)
             //if(instant && this.rotation != rotation) PlayerMoveC2SPacket.Rotation.create(rotation, MC.getPlayer().isOnGround) //TODO: send packet (once possible in mesh)
 
