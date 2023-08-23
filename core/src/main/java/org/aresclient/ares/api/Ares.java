@@ -127,7 +127,7 @@ public class Ares {
     private static final List<Plugin> PLUGINS = new ArrayList<>();
     private static final EventManager EVENT_MANAGER = new AresEventManager();
 
-    private static final File SETTINGS_FILE = new File("ares/settings.json");
+    private static final File SETTINGS_FILE = new File("ares/config/settings.json");
     private static final JsonSettingSerializer SETTINGS_SERIALIZER = new JsonSettingSerializer(settings -> {
         settings.setPrettyPrint(true);
         return Unit.INSTANCE; // kotlin moment
