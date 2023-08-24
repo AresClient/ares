@@ -34,7 +34,11 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
         MILLISECOND // TODO: Separate Multithreaded Millisecond tick
     }
 
-    val rateType = settings.addEnum("Rate Type", RateType.TICK)
+    val rateType = settings.addEnum("Rate Type", RateType.TICK,
+        "The way delays are timed",
+        "Tick - Minecraft's client tick which runs once every twentieth of a second (1/20)",
+        "Millisecond - Use a separate thread which runs once every thousandth of a second (1/1000)"
+    )
 
     // Use as a percentage with one decimal point so that it makes sense as both a tick and millisecond setting
     val placeRate = settings.addDouble("Block Place Rate %", 100.0).setMin(0.0).setMax(100.0) // TODO: Visually clamp setting to 1 decimal point

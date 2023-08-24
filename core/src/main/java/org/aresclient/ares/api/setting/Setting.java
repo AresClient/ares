@@ -13,6 +13,7 @@ public class Setting<T> {
     }
 
     private java.lang.String name = null;
+    private java.lang.String[] description = null;
     private ReadInfo<T> readInfo = null;
     private final Type type;
     private T value;
@@ -30,6 +31,14 @@ public class Setting<T> {
 
     public void setName(java.lang.String name) {
         this.name = name;
+    }
+
+    public java.lang.String[] getDescription() {
+        return description;
+    }
+
+    public void setDescription(java.lang.String[] description) {
+        this.description = description;
     }
 
     public ReadInfo<T> getReadInfo() {
@@ -177,7 +186,7 @@ public class Setting<T> {
             this(serializer, new HashMap<>());
         }
 
-        private <T, S extends Setting<T>> S add(ReadInfo<T> readInfo, java.lang.String name) {
+        private <T, S extends Setting<T>> S add(ReadInfo<T> readInfo, java.lang.String name, java.lang.String... description) {
             Setting<?> prev = getValue().get(name);
             if(prev != null) {
                 assert prev.getReadInfo().type != readInfo.type;
@@ -187,60 +196,61 @@ public class Setting<T> {
             S setting = (S) serializer.read(readInfo, data.get(name));
             setting.setName(name);
             setting.setReadInfo(readInfo);
+            setting.setDescription(description);
             getValue().put(name, setting);
             return setting;
         }
 
-        public Setting.String addString(java.lang.String name, java.lang.String defaultValue) {
-            return add(new ReadInfo<>(Type.STRING, defaultValue), name);
+        public Setting.String addString(java.lang.String name, java.lang.String defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.STRING, defaultValue), name, description);
         }
 
-        public Setting.Boolean addBoolean(java.lang.String name, boolean defaultValue) {
-            return add(new ReadInfo<>(Type.BOOLEAN, defaultValue), name);
+        public Setting.Boolean addBoolean(java.lang.String name, boolean defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.BOOLEAN, defaultValue), name, description);
         }
 
-        public <T extends java.lang.Enum<?>> Setting.Enum<T> addEnum(java.lang.String name, T defaultValue) {
-            return add(new ReadInfo<>(Type.ENUM, defaultValue), name);
+        public <T extends java.lang.Enum<?>> Setting.Enum<T> addEnum(java.lang.String name, T defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.ENUM, defaultValue), name, description);
         }
 
-        public Setting.Color addColor(java.lang.String name, org.aresclient.ares.api.util.Color defaultValue) {
-            return add(new ReadInfo<>(Type.COLOR, defaultValue), name);
+        public Setting.Color addColor(java.lang.String name, org.aresclient.ares.api.util.Color defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.COLOR, defaultValue), name, description);
         }
 
-        public Setting.Bind addBind(java.lang.String name, int defaultValue) {
-            return add(new ReadInfo<>(Type.BIND, defaultValue), name);
+        public Setting.Bind addBind(java.lang.String name, int defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.BIND, defaultValue), name, description);
         }
 
-        public Setting.Integer addInteger(java.lang.String name, int defaultValue) {
-            return add(new ReadInfo<>(Type.INTEGER, defaultValue), name);
+        public Setting.Integer addInteger(java.lang.String name, int defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.INTEGER, defaultValue), name, description);
         }
 
-        public Setting.Double addDouble(java.lang.String name, double defaultValue) {
-            return add(new ReadInfo<>(Type.DOUBLE, defaultValue), name);
+        public Setting.Double addDouble(java.lang.String name, double defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.DOUBLE, defaultValue), name, description);
         }
 
-        public Setting.Float addFloat(java.lang.String name, float defaultValue) {
-            return add(new ReadInfo<>(Type.FLOAT, defaultValue), name);
+        public Setting.Float addFloat(java.lang.String name, float defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.FLOAT, defaultValue), name, description);
         }
 
-        public Setting.Long addLong(java.lang.String name, long defaultValue) {
-            return add(new ReadInfo<>(Type.LONG, defaultValue), name);
+        public Setting.Long addLong(java.lang.String name, long defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.LONG, defaultValue), name, description);
         }
 
         /*public <S, R extends Setting.GroupTrait> Setting.Grouped<S, R> addGrouped(java.lang.String name, HashMap<S, R> defaultValue) {
             return add(new Setting.Grouped<>(name, this, defaultValue));
         }*/
 
-        public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, java.util.List<T> defaultValue) {
-            return add(new ReadInfo<>(Type.LIST, elementType, defaultValue), name);
+        public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, java.util.List<T> defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.LIST, elementType, defaultValue), name, description);
         }
 
-        public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name) {
+        public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, java.lang.String... description) {
             return addList(elementType, name, new ArrayList<>());
         }
 
-        public Setting.Map<R> addMap(java.lang.String name) {
-            return add(new ReadInfo<>(Type.MAP, new HashMap<>()), name);
+        public Setting.Map<R> addMap(java.lang.String name, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.MAP, new HashMap<>()), name, description);
         }
 
         public ISerializer<R> getSerializer() {
