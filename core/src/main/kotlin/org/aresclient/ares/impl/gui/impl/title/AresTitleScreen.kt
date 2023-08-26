@@ -8,15 +8,11 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.api.ScreenElement
+import org.aresclient.ares.impl.gui.impl.AresSkybox
 import org.aresclient.ares.impl.module.misc.TitleScreen
 
 class AresTitleScreen: ScreenElement("Ares Title Screen") {
     companion object {
-        private val SKYBOX =
-            SkyBox("/assets/ares/textures/panorama/2b2t")
-        private val SKYBOX_STACK = MatrixStack()
-            .also { it.model().rotate(Math.toRadians(45.0).toFloat(), 0f, 1f, 0f) }
-
         private val LOGO_BG =
             Texture(Ares::class.java.getResourceAsStream("/assets/ares/textures/icons/ares_bg.png"))
         private val LOGO_FG =
@@ -67,7 +63,7 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
     }
 
     override fun update() {
-        SKYBOX_STACK.projection().setPerspective(1.5f, getWidth() / getHeight(), 0.1f, 2f)
+        AresSkybox.update(getWidth(), getHeight())
 
         PANE.setX(getWidth() / 2f - 153f)
         PANE.setY(getHeight() / 2f - 63f)
@@ -75,8 +71,7 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
         EXIT_BUTTON.setX(getWidth() - 35f)
     }
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        SKYBOX.render(SKYBOX_STACK)
-        SKYBOX_STACK.model().rotate((0.0002 * delta).toFloat(), 0f, 1f, 0f)
+        AresSkybox.draw(delta)
 
         matrixStack.push()
         matrixStack.model().translate(PANE.getX(), PANE.getY(), 0f)

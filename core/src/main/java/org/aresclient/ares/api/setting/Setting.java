@@ -12,6 +12,7 @@ public class Setting<T> {
         GROUPED, LIST, MAP
     }
 
+    private Setting<?> parent = null;
     private java.lang.String name = null;
     private java.lang.String[] description = null;
     private ReadInfo<T> readInfo = null;
@@ -21,6 +22,14 @@ public class Setting<T> {
     private Setting(Type type, T value) {
         this.type = type;
         this.value = value;
+    }
+
+    public Setting<?> getParent() {
+        return parent;
+    }
+
+    public void setParent(Setting<?> parent) {
+        this.parent = parent;
     }
 
     public java.lang.String getName() {
@@ -59,6 +68,12 @@ public class Setting<T> {
 
     public void setValue(T value) {
         this.value = value;
+    }
+
+    public java.lang.String getPath() {
+        java.lang.String prefix = null;
+        if(getParent() != null) prefix = getParent().getName();
+        return prefix == null ? getName() : prefix + ":" + getName();
     }
 
     public static class String extends Setting<java.lang.String> {
@@ -165,6 +180,17 @@ public class Setting<T> {
     public static class List<T extends Setting<?>> extends Setting<java.util.List<T>> {
         public List(java.util.List<T> value) {
             super(Type.LIST, value);
+            for(T setting: value) setting.setParent(this);
+        }
+
+        public void add(T setting) {
+            setting.setParent(this);
+            getValue().add(setting);
+        }
+
+        public void remove(T setting) {
+            setting.setParent(null);
+            getValue().remove(setting);
         }
     }
 
@@ -194,6 +220,7 @@ public class Setting<T> {
             }
 
             S setting = (S) serializer.read(readInfo, data.get(name));
+            setting.setParent(this);
             setting.setName(name);
             setting.setReadInfo(readInfo);
             setting.setDescription(description);

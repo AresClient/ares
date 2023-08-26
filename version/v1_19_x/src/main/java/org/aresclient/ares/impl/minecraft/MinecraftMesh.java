@@ -65,4 +65,9 @@ public class MinecraftMesh extends AbstractMesh<MinecraftClient> implements Mine
     public void shutdown() {
         getMeshValue().scheduleStop();
     }
+
+    @Override
+    public boolean isInWorld() {
+        return getMeshValue().world != null;
+    }
 }

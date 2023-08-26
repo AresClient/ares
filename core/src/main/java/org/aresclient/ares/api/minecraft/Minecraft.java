@@ -22,4 +22,6 @@ public interface Minecraft {
     Renderer getRenderer();
 
     void shutdown();
+
+    boolean isInWorld();
 }

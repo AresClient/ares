@@ -33,7 +33,7 @@ public class MSAAFrameBuffer {
     private int width, height;
 
     public MSAAFrameBuffer(int samples, Resolution resolution) {
-        this(samples, resolution.getScaledWidth(), resolution.getScaledHeight());
+        this(samples, resolution.getWidth(), resolution.getHeight());
     }
 
     public MSAAFrameBuffer(int samples, int width, int height) {
@@ -41,14 +41,16 @@ public class MSAAFrameBuffer {
         this.width = width;
         this.height = height;
 
-        // create MSAA framebuffer and rbo
+        // create main MSAA framebuffer
+        int drawFBO = GL30.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        int readFBO = GL30.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebuffer);
-
         GL11.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, msTexture);
         GL32.glTexImage2DMultisample(GL32.GL_TEXTURE_2D_MULTISAMPLE, samples, GL11.GL_RGB, width, height, true);
         GL11.glBindTexture(GL32.GL_TEXTURE_2D_MULTISAMPLE, 0);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL32.GL_TEXTURE_2D_MULTISAMPLE, msTexture, 0);
 
+        // create rbo
         GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, rbo);
         GL30.glRenderbufferStorageMultisample(GL30.GL_RENDERBUFFER, samples, GL30.GL_DEPTH24_STENCIL8, width, height);
         GL30.glBindRenderbuffer(GL30.GL_RENDERBUFFER, 0);
@@ -56,22 +58,22 @@ public class MSAAFrameBuffer {
 
         if(GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER) != GL30.GL_FRAMEBUFFER_COMPLETE)
             throw new RuntimeException("Failed to create msaa framebuffer");
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
 
         // create intermediate buffer that renders texture of msaa frame buffer
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, intermediate);
-
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, texture);
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGB, width, height, 0, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, (ByteBuffer) null);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, texture, 0);
+
+        if(GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER) != GL30.GL_FRAMEBUFFER_COMPLETE)
+            throw new RuntimeException("Failed to create intermediate msaa framebuffer");
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
 
-        int test;
-        if((test = GL30.glCheckFramebufferStatus(GL30.GL_FRAMEBUFFER)) != GL30.GL_FRAMEBUFFER_COMPLETE)
-            throw new RuntimeException("Failed to create intermediate msaa framebuffer " + test);
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, drawFBO);
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, readFBO);
 
         MSAAS.add(this);
     }

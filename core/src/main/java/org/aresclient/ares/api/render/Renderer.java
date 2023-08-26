@@ -4,6 +4,7 @@ import net.meshmc.mesh.loader.MeshLoader;
 import org.aresclient.ares.api.Ares;
 import org.aresclient.ares.api.minecraft.render.Camera;
 import org.aresclient.ares.api.minecraft.render.Framebuffer;
+import org.aresclient.ares.impl.AresPlugin;
 import org.lwjgl.opengl.GL11;
 
 public class Renderer {
@@ -261,5 +262,14 @@ public class Renderer {
 
     public static void clipEnd() {
         clipEnd(1);
+    }
+
+    public static void cleanup() {
+        BlurFrameBuffer.clear();
+        MSAAFrameBuffer.clear();
+        Buffer.clear();
+        Shader.clear();
+        Texture.clear();
+        SkyBox.clear();
     }
 }

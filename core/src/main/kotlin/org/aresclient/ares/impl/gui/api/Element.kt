@@ -85,10 +85,8 @@ abstract class Element {
     // we have to make new arraylist because children may be mutated on click or release
     // acted: mutated by child elements when click has been handled or acted upon
     open fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
-        val tmp = ArrayList(getChildren())
-        for(i in (tmp.size - 1) downTo 0) { // reverse because rendering flips order on screen
-            val child = tmp[i]
-            if(child.isVisible()) child.click(mouseX, mouseY, mouseButton, acted)
+        getChildren().reversed().forEach {
+            if(it.isVisible()) it.click(mouseX, mouseY, mouseButton, acted)
         }
     }
 
@@ -255,10 +253,11 @@ open class StaticElement(
     }
 }
 
-open class DynamicElementGroup(private val columns: Int, private val columnWidth: () -> Float, private val childHeight: Float,
-                               x: Float = 0f, y: Float = 0f): StaticElement(x, y, 0f, 0f) {
+open class DynamicElementGroup(private val columns: Int,
+   visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
+   width: () -> Float = { 0f }, height: () -> Float = { 0f }): DynamicElement(visible, x, y, width, height) {
     init {
-        if(columns < 1) throw RuntimeException("Fewer than 1 columns in GuiElementGroup is not possible")
+        if(columns < 1) throw RuntimeException("Fewer than 1 columns in DynamicElementGroup is not possible")
     }
 
     override fun pushChild(child: Element): Element {
@@ -267,13 +266,11 @@ open class DynamicElementGroup(private val columns: Int, private val columnWidth
         val curr = getChildren().size
         val column = curr % columns
 
-        child.setX { column * columnWidth.invoke() }
-        child.setWidth(columnWidth)
-        child.setHeight { childHeight }
-        child.setVisible { isVisible() }
+        child.setX { column * getColumnWidth() }
+        child.setWidth(this::getColumnWidth)
 
         if(curr >= columns) {
-            val prev = getChildren()[max(column, curr - columns)]
+            val prev = getChildren()[curr - columns]
             child.setY { prev.getY() + prev.getHeight() }
         } else child.setY { 0f }
 
@@ -283,4 +280,6 @@ open class DynamicElementGroup(private val columns: Int, private val columnWidth
     override fun getHeight(): Float {
         return if(getChildren().size > 0) getChildren().peek().let { it.getY() + it.getHeight() } else 0f
     }
+
+    private fun getColumnWidth() = getWidth() / columns
 }

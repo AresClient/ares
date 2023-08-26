@@ -31,18 +31,18 @@ public class BlurFrameBuffer {
     private final int framebuffer = GL30.glGenFramebuffers();
     private final int first = GL11.glGenTextures();
     private final int second = GL11.glGenTextures();
-    private int x, y, width, height;
+    private int width, height;
 
     public BlurFrameBuffer(Resolution resolution) {
-        this(0, 0, resolution.getScaledWidth(), resolution.getScaledHeight());
+        this(resolution.getWidth(), resolution.getHeight());
     }
 
-    public BlurFrameBuffer(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
+    public BlurFrameBuffer(int width, int height) {
         this.width = width;
         this.height = height;
 
+        int drawFBO = GL30.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        int readFBO = GL30.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebuffer);
 
         genTexture(first);
@@ -52,6 +52,9 @@ public class BlurFrameBuffer {
             throw new RuntimeException("Failed to create blur framebuffer");
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, drawFBO);
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, readFBO);
 
         BLURS.add(this);
     }
@@ -64,19 +67,22 @@ public class BlurFrameBuffer {
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, id, 0);
     }
 
-    public void render(int fbo, MatrixStack matrixStack, float renderX, float renderY, float renderWidth, float renderHeight, float rx, float ry) {
+    public void render(float rx, float ry) {
         RESOLUTION.set(width, height);
 
         // IMPORTANT!! setup viewport to be same size as framebuffer, and keep track of prev size
         int[] viewport = Buffer.getViewport();
         GL11.glViewport(0, 0, width, height); // this took me so long to figure out :(
 
-        // blit from main framebuffer to blur framebuffer
-        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, fbo);
+        int drawFBO = GL30.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        int readFBO = GL30.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, drawFBO);
         GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, framebuffer);
+
+        // blit from main framebuffer to blur framebuffer
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, first, 0);
-        GL30.glBlitFramebuffer(x, y + height, x + width, y, 0, 0, width, height, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
+        GL30.glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
 
         // first pass, writing back to framebuffer
         GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebuffer);
@@ -87,34 +93,30 @@ public class BlurFrameBuffer {
         BUFFER.draw();
 
         // second pass, render onto main buffer
-        float hWidth = renderWidth / 2f;
-        float hHeight = renderHeight / 2f;
-        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, fbo);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, drawFBO);
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, readFBO);
         GL11.glViewport(viewport[0], viewport[1], viewport[2], viewport[3]); // reset viewport for rendering to main buffer
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, second);
-        matrixStack.push();
-        matrixStack.model().translate(renderX + hWidth, renderY + hHeight, 0).scale(hWidth, hHeight, 0);
         DIRECTION.set(0, ry);
-        BUFFER.draw(matrixStack);
-        matrixStack.pop();
+        BUFFER.draw();
     }
 
     public void resize(int width, int height) {
         boolean update = width != this.width || height != this.height;
+        if(!update) return;
 
         this.width = width;
         this.height = height;
 
-        if(!update) return;
+        int drawFBO = GL30.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
+        int readFBO = GL30.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
+        GL30.glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebuffer);
 
         genTexture(first);
         genTexture(second);
-    }
 
-    public void resize(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        resize(width, height);
+        GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, drawFBO);
+        GL30.glBindFramebuffer(GL30.GL_READ_FRAMEBUFFER, readFBO);
     }
 
     public void resize(Resolution resolution) {
@@ -122,17 +124,17 @@ public class BlurFrameBuffer {
     }
 
     public void delete() {
-        GL30.glDeleteFramebuffers(framebuffer);
         GL11.glDeleteTextures(first);
         GL11.glDeleteTextures(second);
+        GL30.glDeleteFramebuffers(framebuffer);
         BLURS.remove(this);
     }
 
     public static void clear() {
         for(BlurFrameBuffer blur: BLURS) {
-            GL30.glDeleteFramebuffers(blur.framebuffer);
             GL11.glDeleteTextures(blur.first);
             GL11.glDeleteTextures(blur.second);
+            GL30.glDeleteFramebuffers(blur.framebuffer);
         }
         BLURS.clear();
     }

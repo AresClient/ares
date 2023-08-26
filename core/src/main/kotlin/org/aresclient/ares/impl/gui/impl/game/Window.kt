@@ -28,11 +28,11 @@ class WindowManager(private val settings: Setting.List<Setting.Map<*>>): StaticE
         }
     }
 
-    fun open(name: String) {
+    fun <T: WindowContent> open(creator: Setting.Map<*>.() -> Class<T>?) {
         val map = Setting.Map(Ares.getSettings().serializer)
         settings.value.add(map)
         pushChild(WindowElement(map, this).also {
-            it.open(name)
+            it.open(creator)
         })
     }
 
@@ -40,20 +40,22 @@ class WindowManager(private val settings: Setting.List<Setting.Map<*>>): StaticE
         settings.value.remove(window.settings)
         getChildren().remove(window)
     }
-    
+
     fun float(window: WindowElement) {
         removeChild(window)
         pushChild(window)
     }
 }
 
-class TestContent(settings: Setting.Map<*>): WindowContent(settings) {
-    override fun getTitle() = "TEST"
+class ErrorWindowContent(settings: Setting.Map<*>): WindowContent(settings) {
+    override fun getTitle() = "ERROR"
 }
 
 abstract class WindowContent(internal val settings: Setting.Map<*>): StaticElement() {
     abstract fun getTitle(): String
     open fun getIcon(): Texture = DEFAULT_ICON
+
+    fun getWindow() = getParent() as? WindowElement
 }
 
 class WindowElement(internal val settings: Setting.Map<*>, private val windowManager: WindowManager): DynamicElement() {
@@ -84,28 +86,41 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
             icon
         )
 
-        for(map in content.value) open(map)
+        content.value.lastOrNull()?.let { open<WindowContent>(map = it) }
     }
 
-    private fun open(map: Setting.Map<*>, type: String = "settings") {
-        map.addString("type", type)
-        window = SettingsContent(map.addMap("data"))
+    private fun <T: WindowContent> open(map: Setting.Map<*>, defaults: Setting.Map<*>.() -> Class<T>? = {null}) {
+        val data = map.addMap("data")
+        val default = defaults(data)
+        val type = map.addString("class", default?.name ?: ErrorWindowContent::class.java.name)
+        if(type.value == null) return
+
+        setWindow(Class.forName(type.value).constructors.firstOrNull()?.newInstance(data) as? WindowContent)
     }
 
-    fun open(type: String) {
+    fun <T: WindowContent> open(defaults: Setting.Map<*>.() -> Class<T>? = {null}) {
         val map = Setting.Map(settings.serializer)
         content.value.add(map)
-        open(map, type)
+        open(map, defaults)
     }
 
     private fun back() {
-        // TODO: FIX THIS
         if(window == null || content.value.size == 1) return
         content.value.removeLast()
-        window = content.value.lastOrNull()?.let {
-            val clazz = it.addString("clazz", "")
+        setWindow(content.value.lastOrNull()?.let {
+            val clazz = it.addString("class", "")
             if(clazz.value.isNullOrEmpty()) null
             else Class.forName(clazz.value)?.constructors?.get(0)?.newInstance(it.addMap("data")) as? WindowContent
+        })
+    }
+
+    private fun setWindow(window: WindowContent?) {
+        this.window = window?.also {
+            it.setParent(this)
+            it.setY(TOP_SIZE)
+            it.setWidth(getWidth())
+            it.setHeight(getHeight() - TOP_SIZE)
+            icon.setTexture(it.getIcon())
         }
     }
 
@@ -186,18 +201,17 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         val prev = acted.get()
+        window?.click(mouseX, mouseY, mouseButton, acted)
         super.click(mouseX, mouseY, mouseButton, acted)
-        if(mouseY > getRenderY() + TOP_SIZE) window?.click(mouseX, mouseY, mouseButton, acted)
-        val after = acted.get()
 
-        if(mouseButton == 0 && !holding && isMouseOver(mouseX, mouseY)) {
-            if(prev == after && !prev) windowManager.float(this)
-            if(mouseY <= getRenderY() + 15f && !after) {
+        if(!acted.get() && isMouseOver(mouseX, mouseY)) {
+            windowManager.float(this)
+            if(acted.get() == prev && mouseButton == 0 && !holding && mouseY <= getRenderY() + TOP_SIZE) {
                 holding = true
                 holdX = mouseX.toFloat() - getRenderX()
                 holdY = mouseY.toFloat() - getRenderY()
-                acted.set(true)
             }
+            acted.set(true)
         }
     }
 

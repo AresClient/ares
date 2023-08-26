@@ -20,10 +20,9 @@ import org.aresclient.ares.api.event.render.RenderEvent;
 import org.aresclient.ares.api.global.Global;
 import org.aresclient.ares.api.minecraft.Minecraft;
 import org.aresclient.ares.api.module.Module;
+import org.aresclient.ares.api.render.*;
 import org.aresclient.ares.api.setting.Setting;
 import org.aresclient.ares.impl.JsonSettingSerializer;
-import org.aresclient.ares.api.render.MatrixStack;
-import org.aresclient.ares.api.render.Renderer;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -184,6 +183,7 @@ public class Ares {
     private static final EventListener<ShutdownEvent> shutdownListener = new EventListener<>(event -> {
         SETTINGS_FILE.mkdirs();
         SETTINGS_SERIALIZER.write(SETTINGS, SETTINGS_FILE);
+        Renderer.cleanup();
     });
 
     @EventHandler

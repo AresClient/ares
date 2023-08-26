@@ -12,42 +12,29 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.DynamicElementGroup
 import org.aresclient.ares.impl.gui.impl.game.setting.*
 
-class SettingsGroup(private val setting: Setting<*>, columns: Int,
-                    columnWidth: () -> Float, private val childHeight: Float, x: Float = 0f, y: Float = 0f,
-                    private val skipEnabled: Boolean = false): DynamicElementGroup(columns, columnWidth, childHeight, x, y) {
+class SettingsGroup(setting: Setting<*>, columns: Int, private val content: WindowContent, private val skipEnabled: Boolean = false,
+    private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f }, width: () -> Float = { 0f },
+    height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
     init {
-        refresh()
-    }
-
-    fun refresh() {
-        getChildren().clear()
-
-        if (setting.type == Setting.Type.MAP) (setting as Setting.Map<*>).value.forEach { (name, setting) ->
-            if(name.first() != '.' && (!skipEnabled || name != "Enabled")) pushChild(when(setting.type) {
-                //Setting.Type.LIST -> CategoryElement(it, content, childHeight)
-                Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, childHeight)
-                Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, childHeight)
-                Setting.Type.BIND -> BindElement(setting as Setting.Bind, childHeight)
-                Setting.Type.STRING -> StringElement(setting as Setting.String, childHeight)
-                Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, childHeight)
-                Setting.Type.LONG -> LongElement(setting as Setting.Long, childHeight)
-                Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, childHeight)
-                Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, childHeight)
-                else -> EmptySettingElement(setting.getName(), childHeight)
-            })
+        if(setting.type == Setting.Type.MAP) (setting as Setting.Map<*>).value.forEach { (name, setting) ->
+            if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled")) {
+                pushChild(when(setting.type) {
+                    //Setting.Type.LIST -> CategoryElement(it, content, childHeight)
+                    Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, settingHeight)
+                    Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, settingHeight)
+                    Setting.Type.BIND -> BindElement(setting as Setting.Bind, settingHeight)
+                    Setting.Type.STRING -> StringElement(setting as Setting.String, settingHeight)
+                    Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, settingHeight)
+                    Setting.Type.LONG -> LongElement(setting as Setting.Long, settingHeight)
+                    Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
+                    Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
+                    Setting.Type.MAP -> MapElement(content, setting as Setting.Map<*>, settingHeight)
+                    else -> EmptySettingElement(setting.getName(), settingHeight)
+                })
+            }
         }
         // TODO: LIST AND OTHER SETTINGS FULLSCREEN
-        /*is Setting<*> -> if(serializable.type == Setting.Type.LIST) {
-            (serializable.value as List<*>).forEach { addListElements(it, true) }
-            (serializable.possibleValues as ListValues<*>).values
-                .filterNot((serializable.value as List<*>)::contains).forEach { addListElements(it, false) }
-        }*/
     }
-
-    /*private fun addListElements(any: Any?, added: Boolean) {
-        if(any is Enum<*>) pushChild(ListSubElement(EnumListElementAdapter(any), added, content, childHeight))
-        else if(any is String) pushChild(ListSubElement(DefaultListElementAdapter(any), added, content, childHeight))
-    }*/
 }
 
 class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
@@ -64,7 +51,7 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
         }
         curr ?: Ares.getSettings()
     }
-    private val group = SettingsGroup(setting,  1, this::getWidth, 18f)
+    private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
 
     init {
         // set icon if category
@@ -81,10 +68,6 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
 
     override fun getTitle(): String = setting.getName() ?: "Home"
 
-    fun refresh() {
-        group.refresh()
-    }
-
     //override fun getContentHeight(): Float = group.getHeight()
 }
 
@@ -92,7 +75,7 @@ class EmptySettingElement(private val name: String, height: Float): SettingEleme
     override fun getText(): String = name
 }
 
-abstract class SettingElement(defaultHeight: Float, private val start: Float = 3f): DynamicElement() {
+abstract class SettingElement(defaultHeight: Float, private val start: Float = 3f): DynamicElement(height = { defaultHeight }) {
     protected val fontRenderer = RenderHelper.getFontRenderer(defaultHeight * 13f/18f)
 
     abstract fun getText(): String
@@ -102,9 +85,15 @@ abstract class SettingElement(defaultHeight: Float, private val start: Float = 3
         buffers.lines.draw(matrixStack) {
             vertices(
                 0f, getHeight(), 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                getWidth(), getHeight(), 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                getWidth(), getHeight(), 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                0f, 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                getWidth(), 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
             )
-            indices(0, 1)
+            indices(
+                0, 1,
+                0, 2,
+                1, 3
+            )
         }
 
         val color = getTextColor(theme)
