@@ -273,7 +273,7 @@ public class Setting<T> {
         }
 
         public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, java.lang.String... description) {
-            return addList(elementType, name, new ArrayList<>());
+            return addList(elementType, name, new ArrayList<>(), description);
         }
 
         public Setting.Map<R> addMap(java.lang.String name, java.lang.String... description) {

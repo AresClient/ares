@@ -21,6 +21,7 @@ class AresPlugin: Ares.Plugin(), Mod.Initializer {
         lateinit var INSTANCE: AresPlugin
     }
 
+    // TODO: fix seam in skybox corners on title screen
     override fun init() {
         globals.addAll(arrayOf(
             Interaction,
