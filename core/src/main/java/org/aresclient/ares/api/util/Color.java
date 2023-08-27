@@ -86,22 +86,22 @@ public class Color {
         return a;
     }
 
-    public Color setR(float value) {
+    public Color setRed(float value) {
         r = value;
         return this;
     }
 
-    public Color setG(float value) {
+    public Color setGreen(float value) {
         g = value;
         return this;
     }
 
-    public Color setB(float value) {
+    public Color setBlue(float value) {
         b = value;
         return this;
     }
 
-    public Color setA(float value) {
+    public Color setAlpha(float value) {
         a = value;
         return this;
     }

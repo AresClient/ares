@@ -1,6 +1,7 @@
 package org.aresclient.ares.impl.gui.impl.game
 
 import org.aresclient.ares.api.Ares
+import org.aresclient.ares.api.module.Category
 import org.aresclient.ares.impl.gui.api.Button
 import org.aresclient.ares.impl.gui.api.DynamicElement
 import org.aresclient.ares.impl.util.RenderHelper
@@ -11,27 +12,33 @@ import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.DynamicElementGroup
 import org.aresclient.ares.impl.gui.impl.game.setting.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 class SettingsGroup(setting: Setting<*>, columns: Int, private val content: WindowContent, private val skipEnabled: Boolean = false,
-    private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f }, width: () -> Float = { 0f },
-    height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
+    private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
+    width: () -> Float = { 0f }, height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
     init {
-        if(setting.type == Setting.Type.MAP) (setting as Setting.Map<*>).value.forEach { (name, setting) ->
-            if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled")) {
-                pushChild(when(setting.type) {
-                    //Setting.Type.LIST -> CategoryElement(it, content, childHeight)
-                    Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, settingHeight)
-                    Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, settingHeight)
-                    Setting.Type.BIND -> BindElement(setting as Setting.Bind, settingHeight)
-                    Setting.Type.STRING -> StringElement(setting as Setting.String, settingHeight)
-                    Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, settingHeight)
-                    Setting.Type.LONG -> LongElement(setting as Setting.Long, settingHeight)
-                    Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
-                    Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
-                    Setting.Type.MAP -> MapElement(content, setting as Setting.Map<*>, settingHeight)
-                    else -> EmptySettingElement(setting.getName(), settingHeight)
-                })
+        when(setting.type) {
+            Setting.Type.MAP -> (setting as Setting.Map<*>).value.forEach { (name, setting) ->
+                if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled")) {
+                    pushChild(when(setting.type) {
+                        Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, settingHeight)
+                        Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, settingHeight)
+                        Setting.Type.BIND -> BindElement(setting as Setting.Bind, settingHeight)
+                        Setting.Type.STRING -> StringElement(setting as Setting.String, settingHeight) // TODO: FIX
+                        Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, settingHeight)
+                        Setting.Type.LONG -> LongElement(setting as Setting.Long, settingHeight)
+                        Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
+                        Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
+                        Setting.Type.COLOR -> ColorElement(content, setting as Setting.Color, settingHeight)
+                        Setting.Type.GROUPED -> EmptySettingElement(setting.name, settingHeight) // TODO
+                        Setting.Type.LIST -> EmptySettingElement(setting.name, settingHeight) // TODO
+                        Setting.Type.MAP -> MapElement(content, setting as Setting.Map<*>, settingHeight)
+                    })
+                }
             }
+            Setting.Type.COLOR -> pushChild(ColorElement.Selector(setting as Setting.Color, settingHeight))
+            else -> throw RuntimeException("Can't open setting of type ${setting.type.name} in window")
         }
         // TODO: LIST AND OTHER SETTINGS FULLSCREEN
     }
@@ -51,43 +58,43 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
         }
         curr ?: Ares.getSettings()
     }
-    private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
 
     init {
         // set icon if category
-        /*for((ind, cat) in Module.CATEGORIES.withIndex()) {
-            if(cat == serializable) {
-                setIcon(Category.values()[ind].icon)
+        for(category in Category.getAll()) {
+            if(category.settings == setting) {
+                setIcon(category.icon)
                 break
             }
-        }*/
+        }
 
-        pushChild(group)
+        // TODO: RESIZING WINDOWS?
+        pushChild(SettingsGroup(setting,  1, this, width = this::getWidth))
     }
 
-
     override fun getTitle(): String = setting.getName() ?: "Home"
-
-    //override fun getContentHeight(): Float = group.getHeight()
 }
 
-class EmptySettingElement(private val name: String, height: Float): SettingElement(height) {
+class EmptySettingElement(private val name: String, scale: Float): SettingElement(scale) {
     override fun getText(): String = name
 }
 
-abstract class SettingElement(defaultHeight: Float, private val start: Float = 3f): DynamicElement(height = { defaultHeight }) {
-    protected val fontRenderer = RenderHelper.getFontRenderer(defaultHeight * 13f/18f)
+abstract class SettingElement(scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
+    protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
 
     abstract fun getText(): String
     open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        val width = getWidth()
+        val height = getHeight()
+
         buffers.lines.draw(matrixStack) {
             vertices(
-                0f, getHeight(), 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                getWidth(), getHeight(), 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                0f, height, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                width, height, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
                 0f, 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                getWidth(), 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                width, 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
             )
             indices(
                 0, 1,
@@ -117,14 +124,14 @@ abstract class SettingElement(defaultHeight: Float, private val start: Float = 3
         }
     }
 
-    protected abstract class SettingSubButton(height: Float, action: (Button) -> Unit, size: Float = 0.7f, clipping: Clipping = Clipping.STENCIL):
-    Button(0f, height * (1 - size) / 2f, height * size, height * size, action, clipping, 2) {
+    protected abstract class SettingSubButton(scale: Float, action: (Button) -> Unit, size: Float = 0.7f, clipping: Clipping = Clipping.STENCIL):
+    Button(0f, scale * (1 - size) / 2f, scale * size, scale * size, action, clipping, 2) {
         private val offset = (1f - size) / 2f
 
         override fun getX(): Float = getParent()?.getWidth()?.let { it - getY() - getWidth()  } ?: 0f
     }
 
-    protected abstract class SettingSubToggleButton(height: Float): SettingSubButton(height, {
+    protected abstract class SettingSubToggleButton(scale: Float): SettingSubButton(scale, {
         it as SettingSubToggleButton
         it.setState(!it.getState())
     }, 0.5f) {
@@ -162,6 +169,83 @@ abstract class SettingElement(defaultHeight: Float, private val start: Float = 3
                         0, 3, 2
                     )
                 }
+            }
+        }
+    }
+}
+
+private const val DROPDOWN_PADDING = 1f
+abstract class DropDownSettingElement(private val scale: Float): SettingElement(scale, scale) {
+    protected var element: DynamicElement? = null
+        set(value) {
+            value?.setX { DROPDOWN_PADDING }
+            value?.setY { scale }
+            value?.setWidth { getWidth() - DROPDOWN_PADDING }
+            value?.setVisible { open }
+            element?.let { removeChild(it) }
+            value?.let { pushChild(it) }
+            field = value
+        }
+    protected var open = false
+
+    override fun getHeight(): Float {
+        return if(open) (element?.getHeight() ?: 0f) + scale
+        else scale
+    }
+
+    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        if(isMouseOver(mouseX, mouseY) && !acted.get() && mouseY <= getRenderY() + scale && (mouseButton == 1
+                    || (mouseButton == 0 && mouseX <= getRenderX() + scale))) {
+            open = !open
+            acted.set(true)
+        }
+
+        super.click(mouseX, mouseY, mouseButton, acted)
+    }
+
+    override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
+
+        buffers.lines.draw(matrixStack) {
+            val padding = scale / 4f
+            val half = scale / 2f
+            if(open) {
+                vertices(
+                    padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                    scale - padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                )
+                indices(0, 1)
+            } else {
+                vertices(
+                    padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                    scale - padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                    half, padding, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                    half, scale - padding, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
+                )
+                indices(0, 1, 2, 3)
+            }
+        }
+
+        if(open) {
+            buffers.triangle.draw(matrixStack) {
+                vertices(
+                    0f, scale, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                    DROPDOWN_PADDING, scale, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                    0f, getHeight(), 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                    DROPDOWN_PADDING, getHeight(), 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                )
+                indices(
+                    0, 1, 2,
+                    1, 2, 3
+                )
+            }
+
+            buffers.lines.draw(matrixStack) {
+                vertices(
+                    0f, scale, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                    getWidth(), scale, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                )
+                indices(0, 1)
             }
         }
     }

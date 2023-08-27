@@ -13,8 +13,8 @@ import org.aresclient.ares.api.render.Texture
 val DEFAULT_ICON =
     Texture(NavigationBar::class.java.getResourceAsStream("/assets/ares/textures/icons/gears.png"))
 
-class NavigationBar(private val windowManager: WindowManager, private val top: Float): StaticElement() {
-    val padding = top / 6f
+class NavigationBar(private val windowManager: WindowManager, private val scale: Float): StaticElement() {
+    val padding = scale / 6f
 
     init {
         pushChild(NavButton(this, 0, null))
@@ -24,8 +24,8 @@ class NavigationBar(private val windowManager: WindowManager, private val top: F
     }
 
     override fun update() {
-        setWidth((Category.getAll().size + 1) * (top - 12 + padding) + padding)
-        setHeight(top)
+        setWidth((Category.getAll().size + 1) * (scale - 12 + padding) + padding)
+        setHeight(scale)
         setX((getRootParent()!!.getWidth() / 2f) - (getWidth() / 2f))
 
         super.update()
@@ -59,8 +59,8 @@ class NavigationBar(private val windowManager: WindowManager, private val top: F
     }
 
     private class NavButton(private val navigationBar: NavigationBar, index: Int, private val category: Category?):
-        Button((navigationBar.top - 12 + navigationBar.padding) * index + navigationBar.padding, 4f,
-        navigationBar.top - 12, navigationBar.top - 12, clipping = Clipping.NONE) {
+        Button((navigationBar.scale - 12 + navigationBar.padding) * index + navigationBar.padding, (navigationBar.scale / 2) - (navigationBar.scale - 12) / 2,
+        navigationBar.scale - 12, navigationBar.scale - 12, clipping = Clipping.NONE) {
 
         private var open = false
 
@@ -71,22 +71,6 @@ class NavigationBar(private val windowManager: WindowManager, private val top: F
                     SettingsContent::class.java
                 }
             }
-            /*setAction {
-                if(!open) {
-                    if(category == null) navigationBar.context.open(Window(navigationBar.context).also { it.open(SettingsContent(Settings.new())) })
-                    else navigationBar.context.open(Window(navigationBar.context).also { window -> window.open(SettingsContent(
-                        Settings.new().also { it.string("setting", ":Modules:${category.prettyName}") })) })
-                }
-            }
-            category?.let {
-                navigationBar.context.getListeners().add {
-                    open = navigationBar.context.getWindows().any {
-                        it.getCurrentContent()?.let { content ->
-                            content is SettingsContent && content.getPath() == ":Modules:${category.prettyName}"
-                        } ?: false
-                    }
-                }
-            }*/
         }
 
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
@@ -113,7 +97,7 @@ class NavigationBar(private val windowManager: WindowManager, private val top: F
             } else draw(buffers, matrixStack)
 
             if(open) {
-                val size = navigationBar.top / 22f
+                val size = navigationBar.scale / 22f
 
                 matrixStack.model().translate(getWidth() / 2f, getHeight() + size + 3, 0f)
                 if(holding) matrixStack.model().translate(0f, -1f, 0f)

@@ -12,7 +12,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 // TODO: DONT CONVERT TO DOUBLE
-abstract class NumberElement<T: Number>(private val setting: Setting.Number<*>, defaultHeight: Float): SettingElement(defaultHeight) {
+abstract class NumberElement<T: Number>(private val setting: Setting.Number<*>, scale: Float): SettingElement(scale) {
     // 0 = max && min != null    1 = max && min == null
     // 2 = min == null           3 = max == null
     protected val mode = if(setting.max == null || setting.min == null) (if(setting.min == null) (if(setting.max == null) 1 else 2) else 3 ) else 0

@@ -6,7 +6,7 @@ import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
 
-class EnumElement<T: Enum<*>>(private val setting: Setting.Enum<*>, defaultHeight: Float): SettingElement(defaultHeight) {
+class EnumElement<T: Enum<*>>(private val setting: Setting.Enum<*>, scale: Float): SettingElement(scale) {
     private var name = setting.value.name.formatToPretty()
 
     init {

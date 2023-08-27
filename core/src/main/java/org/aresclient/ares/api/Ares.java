@@ -30,7 +30,6 @@ import java.util.List;
 
 public class Ares {
     public static class Plugin {
-        private String id;
         private String name;
         private String description;
         private String version;
@@ -42,16 +41,15 @@ public class Ares {
         private Setting.Map<?> settings;
         private Logger logger;
 
-        public void init(String id, String name, String description, String version, String[] authors) {
+        public void init(String name, String description, String version, String[] authors) {
             long start = System.currentTimeMillis();
 
-            this.id = id;
             this.name = name;
             this.description = description;
             this.version = version;
             this.authors = authors;
 
-            settings = PLUGIN_SETTINGS.addMap(id);
+            settings = PLUGIN_SETTINGS.addMap(name);
             logger = LogManager.getLogger(name);
 
             PLUGINS.add(this);
@@ -76,14 +74,10 @@ public class Ares {
         }
 
         public void init(Mod mod) {
-            init(mod.getId(), mod.getName(), mod.getDescription(), mod.getVersion(), mod.getAuthors());
+            init(mod.getName(), mod.getDescription(), mod.getVersion(), mod.getAuthors());
         }
 
         public void init() {
-        }
-
-        public String getId() {
-            return id;
         }
 
         public String getName() {

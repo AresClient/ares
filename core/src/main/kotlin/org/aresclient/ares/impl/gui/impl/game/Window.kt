@@ -52,8 +52,14 @@ class ErrorWindowContent(settings: Setting.Map<*>): WindowContent(settings) {
 }
 
 abstract class WindowContent(internal val settings: Setting.Map<*>): StaticElement() {
+    private var icon = DEFAULT_ICON
+
     abstract fun getTitle(): String
-    open fun getIcon(): Texture = DEFAULT_ICON
+
+    fun getIcon() = icon
+    fun setIcon(icon: Texture) {
+        this.icon = icon
+    }
 
     fun getWindow() = getParent() as? WindowElement
 }
@@ -138,7 +144,7 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
         }
 
         // top window bar background
-        buffers.uniforms.roundedRadius.set(0.04f)
+        buffers.uniforms.roundedRadius.set(0.03f)
         buffers.uniforms.roundedSize.set(width, height)
         buffers.rounded.draw(matrixStack) {
             vertices(
@@ -161,7 +167,7 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
                 matrixStack, it,
                 ((backButton.getX() - icon.getX() - icon.getWidth()) / 2f
                         + icon.getX() + icon.getWidth()) - FONT_RENDERER.getStringWidth(it) / 2f,
-                1f, 1f, 1f, 1f, 1f
+                1f, theme.lightground.value
             )
         }
 
@@ -230,6 +236,11 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
             }
             acted.set(true)
         }
+    }
+
+    override fun type(typedChar: Char?, keyCode: Int) {
+        super.type(typedChar, keyCode)
+        window?.type(typedChar, keyCode)
     }
 
     private open class ActionButton(private val rightX: () -> Float, action: (Button) -> Unit): Button(0f, OFFSET, SIZE, SIZE, action) {

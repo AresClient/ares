@@ -32,20 +32,20 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             Setting.Type.STRING -> Setting.String(data?.jsonPrimitive?.contentOrNull ?: readInfo.defaultValue as String)
             Setting.Type.BOOLEAN -> Setting.Boolean(data?.jsonPrimitive?.booleanOrNull ?: readInfo.defaultValue as Boolean)
             Setting.Type.ENUM -> Setting.Enum((data?.jsonPrimitive?.intOrNull?.let { readInfo.defaultValue!!::class.java.enumConstants[it] } ?: readInfo.defaultValue) as Enum<*>)
-            Setting.Type.COLOR -> Setting.Color(data?.jsonObject?.let {  Color(
+            Setting.Type.COLOR -> data?.jsonObject?.let {  Setting.Color(Color(
                 it["red"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["green"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["blue"]?.jsonPrimitive?.floatOrNull ?: 1f,
-                it["alpha"]?.jsonPrimitive?.floatOrNull ?: 1f
-            )} ?: readInfo.defaultValue as Color)
+                it["alpha"]?.jsonPrimitive?.floatOrNull ?: 1f),
+                it["rainbow"]?.jsonPrimitive?.booleanOrNull ?: false
+                )} ?: Setting.Color(readInfo.defaultValue as Color, readInfo.isRainbow)
             Setting.Type.INTEGER -> Setting.Integer(data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
             Setting.Type.DOUBLE -> Setting.Double(data?.jsonPrimitive?.doubleOrNull ?: readInfo.defaultValue as Double)
             Setting.Type.FLOAT -> Setting.Float(data?.jsonPrimitive?.floatOrNull ?: readInfo.defaultValue as Float)
             Setting.Type.LONG -> Setting.Long(data?.jsonPrimitive?.longOrNull ?: readInfo.defaultValue as Long)
             Setting.Type.BIND -> Setting.Bind(data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
             Setting.Type.GROUPED -> TODO()
-            Setting.Type.LIST -> Setting.List(data?.jsonArray?.map { read(
-                Setting.ReadInfo(readInfo.elementType, null), it) } ?: ArrayList())
+            Setting.Type.LIST -> Setting.List(data?.jsonArray?.map { read(Setting.ReadInfo(readInfo.elementType, null), it) } ?: ArrayList())
             Setting.Type.MAP -> Setting.Map(this, data?.jsonObject ?: mutableMapOf())
             null -> throw NullPointerException()
         }
@@ -60,7 +60,8 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
                 "red" to JsonPrimitive(red),
                 "green" to JsonPrimitive(green),
                 "blue" to JsonPrimitive(blue),
-                "alpha" to JsonPrimitive(alpha)
+                "alpha" to JsonPrimitive(alpha),
+                "rainbow" to JsonPrimitive((setting as Setting.Color).isRainbow)
             ))}
             Setting.Type.INTEGER -> JsonPrimitive(setting.value as Int)
             Setting.Type.DOUBLE -> JsonPrimitive(setting.value as Double)

@@ -1,13 +1,11 @@
 package org.aresclient.ares.impl.gui.api
 
-import org.aresclient.ares.api.Ares
 import org.aresclient.ares.api.minecraft.render.Screen
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.impl.util.Theme
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.max
 
 abstract class Element {
     private val children = Stack<Element>()

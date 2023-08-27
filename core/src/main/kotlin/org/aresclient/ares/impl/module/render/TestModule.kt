@@ -12,7 +12,8 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 // a simple mesh test module
 object TestModule: Module(Category.RENDER, "Test", "A simple test module", Defaults().setBind(Keys.Y).setEnabled(true)) {
     private val renderer by lazy { RenderHelper.getFontRenderer(24f) }
-    private var text = settings.addString("Text", "Hello World!")
+    private val text = settings.addString("Text", "Hello World!")
+    private val color = settings.addColor("Color", Color.WHITE)
 
     override fun onRenderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack?) {
         buffers.triangle.draw(matrixStack) {
@@ -28,6 +29,6 @@ object TestModule: Module(Category.RENDER, "Test", "A simple test module", Defau
             )
         }
 
-        renderer.drawString(matrixStack, text.value, 100f, 0f, Color.rainbow())
+        renderer.drawString(matrixStack, text.value, 100f, 0f, color.value)
     }
 }

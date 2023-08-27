@@ -15,6 +15,7 @@ public class Setting<T> {
     private Setting<?> parent = null;
     private java.lang.String name = null;
     private java.lang.String[] description = null;
+    private Consumer<T> listener = null;
     private ReadInfo<T> readInfo = null;
     private final Type type;
     private T value;
@@ -50,6 +51,15 @@ public class Setting<T> {
         this.description = description;
     }
 
+    public Consumer<T> getListener() {
+        return listener;
+    }
+
+    public <R extends Setting<T>> R setListener(Consumer<T> listener) {
+        this.listener = listener;
+        return (R) this;
+    }
+
     public ReadInfo<T> getReadInfo() {
         return readInfo;
     }
@@ -67,12 +77,14 @@ public class Setting<T> {
     }
 
     public void setValue(T value) {
+        T prev = this.value;
         this.value = value;
+        if(listener != null && prev != value) listener.accept(value);
     }
 
     public java.lang.String getPath() {
         java.lang.String prefix = null;
-        if(getParent() != null) prefix = getParent().getName();
+        if(getParent() != null) prefix = getParent().getPath();
         return prefix == null ? getName() : prefix + ":" + getName();
     }
 
@@ -95,8 +107,32 @@ public class Setting<T> {
     }
 
     public static class Color extends Setting<org.aresclient.ares.api.util.Color> {
-        public Color(org.aresclient.ares.api.util.Color value) {
+        private boolean rainbow;
+
+        public Color(org.aresclient.ares.api.util.Color value, boolean rainbow) {
             super(Type.COLOR, value);
+            this.rainbow = rainbow;
+        }
+
+        public Color(org.aresclient.ares.api.util.Color value) {
+            this(value, false);
+        }
+
+        @Override
+        public org.aresclient.ares.api.util.Color getValue() {
+            return rainbow ? org.aresclient.ares.api.util.Color.rainbow().setAlpha(super.getValue().getAlpha()) : super.getValue();
+        }
+
+        public void setAlpha(float alpha) {// HOLY SHIT THIS BUGGED ME FOREVER, kept tryna set the alpha of rainbow color in getValue above :(
+            super.getValue().setAlpha(alpha);
+        }
+
+        public boolean isRainbow() {
+            return rainbow;
+        }
+
+        public void setRainbow(boolean rainbow) {
+            this.rainbow = rainbow;
         }
     }
 
@@ -240,8 +276,12 @@ public class Setting<T> {
             return add(new ReadInfo<>(Type.ENUM, defaultValue), name, description);
         }
 
+        public Setting.Color addColor(java.lang.String name, org.aresclient.ares.api.util.Color defaultValue, boolean rainbow, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.COLOR, defaultValue).setRainbow(rainbow), name, description);
+        }
+
         public Setting.Color addColor(java.lang.String name, org.aresclient.ares.api.util.Color defaultValue, java.lang.String... description) {
-            return add(new ReadInfo<>(Type.COLOR, defaultValue), name, description);
+            return addColor(name, defaultValue, false, description);
         }
 
         public Setting.Bind addBind(java.lang.String name, int defaultValue, java.lang.String... description) {
@@ -289,6 +329,7 @@ public class Setting<T> {
         private final Type type;
         private final Type elementType;
         private final T defaultValue;
+        private boolean rainbow = false; // Setting.Color needs to know if default is rainbow
 
         ReadInfo(Type type, Type elementType, T defaultValue) {
             this.type = type;
@@ -310,6 +351,15 @@ public class Setting<T> {
 
         public T getDefaultValue() {
             return defaultValue;
+        }
+
+        public boolean isRainbow() {
+            return rainbow;
+        }
+
+        public ReadInfo<T> setRainbow(boolean rainbow) {
+            this.rainbow = rainbow;
+            return this;
         }
     }
 }

@@ -11,7 +11,7 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.util.Keys
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(private val setting: Setting.Bind, defaultHeight: Float): SettingElement(defaultHeight) {
+class BindElement(private val setting: Setting.Bind, height: Float): SettingElement(height) {
     private var listening = false
     private var name = name()
 
@@ -48,17 +48,14 @@ class BindElement(private val setting: Setting.Bind, defaultHeight: Float): Sett
     private val onInputEvent: EventListener<InputEvent> = EventListener<InputEvent> { event ->
         if(event.type == InputEvent.Type.KEYBOARD) {
             event as InputEvent.Keyboard
-
             if(event.state == InputEvent.Keyboard.State.PRESSED) {
                 if(event.key == Keys.ESCAPE) listen(false)
                 else set(event.key)
             }
         } else if (event.type == InputEvent.Type.MOUSE) {
             event as InputEvent.Mouse
-
             if(event.state == InputEvent.Mouse.State.PRESSED) {
                 event as InputEvent.Mouse.Pressed
-
                 if(event.key != Keys.MOUSE_LEFT && event.key != Keys.MOUSE_RIGHT)
                     set(event.key)
             }

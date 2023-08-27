@@ -4,12 +4,15 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.TextBox
 import org.aresclient.ares.impl.gui.impl.game.SettingElement
 
-class StringElement(private val setting: Setting.String, defaultHeight: Float): SettingElement(defaultHeight) {
+class StringElement(private val setting: Setting.String, scale: Float): SettingElement(scale) {
     private val textBox = SettingTextBox(this)
 
     init {
         textBox.setText(setting.value)
         textBox.setCursor(setting.value.length)
+        pushChild(SettingElementButton(this) {
+            textBox.setFocused(true)
+        })
         pushChild(textBox)
     }
 

@@ -64,7 +64,21 @@ public class Module {
         this.defaults = defaults;
 
         settings = category.getSettings().addMap(name);
-        enabled = settings.addBoolean("Enabled", defaults.enabled);
+        enabled = settings.addBoolean("Enabled", defaults.enabled).setListener(value -> {
+            if(value) {
+                if(!defaults.alwaysListening) {
+                    Ares.getEventManager().register(this);
+                    Ares.getEventManager().register(getClass());
+                }
+                onEnable();
+            } else {
+                if(!defaults.alwaysListening) {
+                    Ares.getEventManager().unregister(this);
+                    Ares.getEventManager().unregister(getClass());
+                }
+                onDisable();
+            }
+        });
         bind = settings.addBind("Bind", defaults.bind).setCallback(state -> {
             TogglesOn toggles = getTogglesOn();
             if(toggles == TogglesOn.PRESS && state) toggle();
@@ -126,23 +140,7 @@ public class Module {
     }
 
     public void setEnabled(boolean value) {
-        boolean prev = enabled.getValue();
         enabled.setValue(value);
-        if(prev != value) {
-            if(value) {
-                if(!defaults.alwaysListening) {
-                    Ares.getEventManager().register(this);
-                    Ares.getEventManager().register(getClass());
-                }
-                onEnable();
-            } else {
-                if(!defaults.alwaysListening) {
-                    Ares.getEventManager().unregister(this);
-                    Ares.getEventManager().unregister(getClass());
-                }
-                onDisable();
-            }
-        }
     }
 
     public void toggle() {
