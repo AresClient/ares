@@ -37,6 +37,8 @@ public class Module extends Instrument {
         }
     }
 
+    static final Setting.Map<?> SETTINGS = Ares.getSettings().addMap("Modules");
+
     private final Category category;
     private final Defaults defaults;
 
@@ -55,18 +57,10 @@ public class Module extends Instrument {
 
         enabled = settings.addBoolean("Enabled", defaults.enabled).setListener(value -> {
             if(value) {
-                if(!defaults.alwaysListening) {
-                    Ares.getEventManager().register(this);
-                    Ares.getEventManager().register(getClass());
-                    registerComponents();
-                }
+                if(!defaults.alwaysListening) registerEvents();
                 onEnable();
             } else {
-                if(!defaults.alwaysListening) {
-                    Ares.getEventManager().unregister(this);
-                    Ares.getEventManager().unregister(getClass());
-                    unregisterComponents();
-                }
+                if(!defaults.alwaysListening) unregisterEvents();
                 onDisable();
             }
         });

@@ -1,6 +1,5 @@
 package org.aresclient.ares.api.instrument.module;
 
-import org.aresclient.ares.api.Ares;
 import org.aresclient.ares.api.render.Texture;
 import org.aresclient.ares.api.setting.Setting;
 
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Category {
-    private static final Setting.Map<?> SETTINGS = Ares.getSettings().addMap("Modules");
     private static final List<Category> CATEGORIES = new ArrayList<>();
 
     public static final Category PLAYER = new Category("Player");
@@ -31,7 +29,7 @@ public class Category {
     public Category(String name, InputStream icon) {
         this.name = name;
         this.icon = icon;
-        this.settings = SETTINGS.addMap(name);
+        this.settings = Module.SETTINGS.addMap(name);
         CATEGORIES.add(this);
     }
 

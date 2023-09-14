@@ -36,7 +36,10 @@ public abstract class Instrument {
             settingsComponent.setSettings(this.settings.addMap(settingsComponent.getPathName()));
     }
 
-    public void registerComponents() {
+    public void registerEvents() {
+        Ares.getEventManager().register(this);
+        Ares.getEventManager().register(getClass());
+
         for(Component<?> component : components) {
             if(component instanceof Component.Listener<?,?>) {
                 Ares.getEventManager().register(component);
@@ -45,7 +48,10 @@ public abstract class Instrument {
         }
     }
 
-    public void unregisterComponents() {
+    public void unregisterEvents() {
+        Ares.getEventManager().unregister(this);
+        Ares.getEventManager().unregister(getClass());
+
         for(Component<?> component : components) {
             if(component instanceof Component.Listener<?,?>) {
                 Ares.getEventManager().unregister(component);

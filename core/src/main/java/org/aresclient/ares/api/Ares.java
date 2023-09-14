@@ -58,17 +58,12 @@ public class Ares {
             init();
 
             for(Global global: globals) {
-                Ares.getEventManager().register(global);
-                Ares.getEventManager().register(global.getClass());
-                global.registerComponents();
+                global.registerEvents();
+                MeshLoader.getInstance().registerInterfaces(global);
             }
 
             for(Module module: modules) {
-                if(module.isListening()) {
-                    Ares.getEventManager().register(module);
-                    Ares.getEventManager().register(module.getClass());
-                    module.registerComponents();
-                }
+                if(module.isListening()) module.registerEvents();
                 MeshLoader.getInstance().registerInterfaces(module);
             }
 
