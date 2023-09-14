@@ -1,8 +1,11 @@
 package org.aresclient.ares.api.setting;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class Setting<T> {
     public enum Type {
@@ -14,9 +17,10 @@ public class Setting<T> {
 
     private Setting<?> parent = null;
     private java.lang.String name = null;
-    private java.lang.String[] description = null;
+    private LinkedList<java.lang.String> description = null;
     private Consumer<T> listener = null;
     private ReadInfo<T> readInfo = null;
+    private Supplier<java.lang.Boolean> hidden = () -> false;
     private final Type type;
     private T value;
 
@@ -43,12 +47,20 @@ public class Setting<T> {
         this.name = name;
     }
 
-    public java.lang.String[] getDescription() {
+    public LinkedList<java.lang.String> getDescription() {
         return description;
     }
 
-    public void setDescription(java.lang.String[] description) {
-        this.description = description;
+    public Setting<T> setDescription(java.lang.String... description) {
+        if(this.description == null) this.description = new LinkedList<>();
+        Collections.addAll(this.description, description);
+        return this;
+    }
+
+    public Setting<T> appendLine(java.lang.String line) {
+        if(description == null) description = new LinkedList<>();
+        description.add(line);
+        return this;
     }
 
     public Consumer<T> getListener() {
@@ -66,6 +78,15 @@ public class Setting<T> {
 
     public void setReadInfo(ReadInfo<T> readInfo) {
         this.readInfo = readInfo;
+    }
+
+    public java.lang.Boolean isHidden() {
+        return hidden.get();
+    }
+
+    public Setting<T> setHidden(Supplier<java.lang.Boolean> hiddenIf) {
+        hidden = hiddenIf;
+        return this;
     }
 
     public Type getType() {
@@ -166,6 +187,24 @@ public class Setting<T> {
 
         private Number(Type type, T value) {
             super(type, value);
+        }
+
+        @Override
+        public Setting.Number<T> setDescription(java.lang.String... description) {
+            super.setDescription(description);
+            return this;
+        }
+
+        @Override
+        public Setting.Number<T> appendLine(java.lang.String line) {
+            super.appendLine(line);
+            return this;
+        }
+
+        @Override
+        public Setting.Number<T> setHidden(Supplier<java.lang.Boolean> hiddenIf) {
+            super.setHidden(hiddenIf);
+            return this;
         }
 
         public T getMin() {
