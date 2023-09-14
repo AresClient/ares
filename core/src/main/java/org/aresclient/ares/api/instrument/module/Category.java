@@ -1,4 +1,4 @@
-package org.aresclient.ares.api.module;
+package org.aresclient.ares.api.instrument.module;
 
 import org.aresclient.ares.api.Ares;
 import org.aresclient.ares.api.render.Texture;

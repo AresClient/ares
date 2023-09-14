@@ -1,6 +1,6 @@
-package org.aresclient.ares.impl.global
+package org.aresclient.ares.impl.instrument.global
 
-import org.aresclient.ares.api.global.Global
+import org.aresclient.ares.api.instrument.global.Global
 
 interface Prioritizer {
     fun priority(): Int
@@ -15,9 +15,9 @@ object Priority: Global("Priority", "Handles the priority of different modules s
     private var key: Prioritizer? = null
     private var released = true
 
-    fun keyMatches(key: Prioritizer): Boolean = key == this.key
+    fun keyMatches(key: Prioritizer): Boolean = key == Priority.key
 
-    fun hasPriority(key: Prioritizer): Boolean = this.key == null || this.key!!.priority() < key.priority()
+    fun hasPriority(key: Prioritizer): Boolean = Priority.key == null || Priority.key!!.priority() < key.priority()
 
     fun getCurrentPriority(): Int = if(key == null) -1 else key!!.priority()
 

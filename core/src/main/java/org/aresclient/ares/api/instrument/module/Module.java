@@ -1,18 +1,18 @@
-package org.aresclient.ares.api.module;
+package org.aresclient.ares.api.instrument.module;
 
 import org.aresclient.ares.api.Ares;
+import org.aresclient.ares.api.instrument.Instrument;
 import org.aresclient.ares.api.render.MatrixStack;
 import org.aresclient.ares.api.render.Renderer;
 import org.aresclient.ares.api.setting.Setting;
 import org.aresclient.ares.api.util.Keys;
 
-public class Module {
+public class Module extends Instrument {
     public enum TogglesOn { PRESS, RELEASE, HOLD }
 
     public static class Defaults {
         private boolean enabled = false;
         private int bind = Keys.UNKNOWN;
-        private boolean visible = true;
         private TogglesOn togglesOn = TogglesOn.PRESS;
         private boolean alwaysListening = false;
 
@@ -23,11 +23,6 @@ public class Module {
 
         public Defaults setBind(int bind) {
             this.bind = bind;
-            return this;
-        }
-
-        public Defaults setVisible(boolean visible) {
-            this.visible = visible;
             return this;
         }
 
@@ -43,14 +38,10 @@ public class Module {
     }
 
     private final Category category;
-    private final String name;
-    private final String description;
     private final Defaults defaults;
 
-    protected final Setting.Map<?> settings;
     private final Setting.Boolean enabled;
     private final Setting.Bind bind;
-    private final Setting.Boolean visible;
     private final Setting.Enum<TogglesOn> togglesOn;
 
     public Module(Category category, String name, String description) {
@@ -58,23 +49,23 @@ public class Module {
     }
 
     public Module(Category category, String name, String description, Defaults defaults) {
+        super(name, description, category.getSettings());
         this.category = category;
-        this.name = name;
-        this.description = description;
         this.defaults = defaults;
 
-        settings = category.getSettings().addMap(name);
         enabled = settings.addBoolean("Enabled", defaults.enabled).setListener(value -> {
             if(value) {
                 if(!defaults.alwaysListening) {
                     Ares.getEventManager().register(this);
                     Ares.getEventManager().register(getClass());
+                    registerComponents();
                 }
                 onEnable();
             } else {
                 if(!defaults.alwaysListening) {
                     Ares.getEventManager().unregister(this);
                     Ares.getEventManager().unregister(getClass());
+                    unregisterComponents();
                 }
                 onDisable();
             }
@@ -85,11 +76,11 @@ public class Module {
             else if(toggles == TogglesOn.RELEASE && !state) toggle();
             else if(toggles == TogglesOn.HOLD) setEnabled(state);
         });
-        visible = settings.addBoolean("Visible", defaults.visible);
         togglesOn = settings.addEnum("Toggles On", defaults.togglesOn);
     }
 
-    public void tick() {
+    @Override
+    public final void tick() {
         if(isListening()) onTick();
     }
 
@@ -127,14 +118,6 @@ public class Module {
         return category;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public boolean isEnabled() {
         return enabled.getValue();
     }
@@ -153,14 +136,6 @@ public class Module {
 
     public void setBind(int value) {
         bind.setValue(value);
-    }
-
-    public boolean isVisible() {
-        return visible.getValue();
-    }
-
-    public void setVisible(boolean value) {
-        visible.setValue(value);
     }
 
     public TogglesOn getTogglesOn() {

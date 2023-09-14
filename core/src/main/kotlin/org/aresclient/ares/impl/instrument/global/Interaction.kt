@@ -1,6 +1,6 @@
-package org.aresclient.ares.impl.global
+package org.aresclient.ares.impl.instrument.global
 
-import org.aresclient.ares.api.global.Global
+import org.aresclient.ares.api.instrument.global.Global
 import kotlin.math.round
 
 interface Placer: Prioritizer {

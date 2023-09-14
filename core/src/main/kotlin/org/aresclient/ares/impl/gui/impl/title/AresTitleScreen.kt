@@ -9,7 +9,7 @@ import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.api.ScreenElement
 import org.aresclient.ares.impl.gui.impl.AresSkybox
-import org.aresclient.ares.impl.module.misc.TitleScreen
+import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 
 class AresTitleScreen: ScreenElement("Ares Title Screen") {
     companion object {

@@ -1,6 +1,6 @@
 package org.aresclient.ares.impl.gui.impl.game
 
-import org.aresclient.ares.api.module.Category
+import org.aresclient.ares.api.instrument.module.Category
 import org.aresclient.ares.impl.gui.api.Button
 import org.aresclient.ares.impl.gui.api.StaticElement
 import org.aresclient.ares.impl.util.RenderHelper

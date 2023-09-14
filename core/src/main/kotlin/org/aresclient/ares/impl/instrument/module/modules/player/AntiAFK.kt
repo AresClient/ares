@@ -1,9 +1,9 @@
-package org.aresclient.ares.impl.module.player
+package org.aresclient.ares.impl.instrument.module.modules.player
 
-import org.aresclient.ares.api.module.Category
-import org.aresclient.ares.api.module.Module
-import org.aresclient.ares.impl.global.Rotation
-import org.aresclient.ares.impl.global.Rotator
+import org.aresclient.ares.api.instrument.module.Category
+import org.aresclient.ares.api.instrument.module.Module
+import org.aresclient.ares.impl.instrument.global.Rotation
+import org.aresclient.ares.impl.instrument.global.Rotator
 import org.aresclient.ares.impl.util.Timer
 
 /**

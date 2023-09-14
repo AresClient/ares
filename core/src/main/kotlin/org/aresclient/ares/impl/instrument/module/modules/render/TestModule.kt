@@ -1,7 +1,7 @@
-package org.aresclient.ares.impl.module.render
+package org.aresclient.ares.impl.instrument.module.modules.render
 
-import org.aresclient.ares.api.module.Category
-import org.aresclient.ares.api.module.Module
+import org.aresclient.ares.api.instrument.module.Category
+import org.aresclient.ares.api.instrument.module.Module
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Color

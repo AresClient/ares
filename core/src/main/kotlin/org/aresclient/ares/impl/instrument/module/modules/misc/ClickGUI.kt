@@ -1,8 +1,8 @@
-package org.aresclient.ares.impl.module.misc
+package org.aresclient.ares.impl.instrument.module.modules.misc
 
 import org.aresclient.ares.api.Ares
-import org.aresclient.ares.api.module.Category
-import org.aresclient.ares.api.module.Module
+import org.aresclient.ares.api.instrument.module.Category
+import org.aresclient.ares.api.instrument.module.Module
 import org.aresclient.ares.impl.gui.impl.game.AresClickGUI
 import org.aresclient.ares.api.util.Keys
 

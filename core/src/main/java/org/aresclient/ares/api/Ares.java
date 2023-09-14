@@ -17,10 +17,11 @@ import org.aresclient.ares.api.event.client.InputEvent;
 import org.aresclient.ares.api.event.client.ShutdownEvent;
 import org.aresclient.ares.api.event.client.TickEvent;
 import org.aresclient.ares.api.event.render.RenderEvent;
-import org.aresclient.ares.api.global.Global;
+import org.aresclient.ares.api.instrument.global.Global;
+import org.aresclient.ares.api.instrument.module.Module;
 import org.aresclient.ares.api.minecraft.Minecraft;
-import org.aresclient.ares.api.module.Module;
-import org.aresclient.ares.api.render.*;
+import org.aresclient.ares.api.render.MatrixStack;
+import org.aresclient.ares.api.render.Renderer;
 import org.aresclient.ares.api.setting.Setting;
 import org.aresclient.ares.impl.JsonSettingSerializer;
 
@@ -59,12 +60,14 @@ public class Ares {
             for(Global global: globals) {
                 Ares.getEventManager().register(global);
                 Ares.getEventManager().register(global.getClass());
+                global.registerComponents();
             }
 
             for(Module module: modules) {
                 if(module.isListening()) {
                     Ares.getEventManager().register(module);
                     Ares.getEventManager().register(module.getClass());
+                    module.registerComponents();
                 }
                 MeshLoader.getInstance().registerInterfaces(module);
             }

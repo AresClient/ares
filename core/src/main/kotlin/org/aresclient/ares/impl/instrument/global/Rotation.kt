@@ -1,6 +1,6 @@
-package org.aresclient.ares.impl.global
+package org.aresclient.ares.impl.instrument.global
 
-import org.aresclient.ares.api.global.Global
+import org.aresclient.ares.api.instrument.global.Global
 import org.aresclient.ares.api.minecraft.math.Vec2f
 import org.aresclient.ares.impl.util.Timer
 

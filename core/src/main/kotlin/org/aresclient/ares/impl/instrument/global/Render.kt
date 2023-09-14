@@ -1,6 +1,6 @@
-package org.aresclient.ares.impl.global
+package org.aresclient.ares.impl.instrument.global
 
-import org.aresclient.ares.api.global.Global
+import org.aresclient.ares.api.instrument.global.Global
 import org.aresclient.ares.api.minecraft.math.Box
 import org.aresclient.ares.api.minecraft.math.Facing
 import org.aresclient.ares.api.minecraft.math.Vec3d

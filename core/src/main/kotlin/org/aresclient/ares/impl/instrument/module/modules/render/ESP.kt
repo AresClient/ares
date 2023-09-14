@@ -1,7 +1,7 @@
-package org.aresclient.ares.impl.module.render
+package org.aresclient.ares.impl.instrument.module.modules.render
 
-import org.aresclient.ares.api.module.Category
-import org.aresclient.ares.api.module.Module
+import org.aresclient.ares.api.instrument.module.Category
+import org.aresclient.ares.api.instrument.module.Module
 
 object ESP: Module(Category.RENDER, "ESP", "See outlines of players through walls") {
     /*private class EntityTrait(defaultColor: Color, settings: Settings = Settings.new()): GroupTrait(settings) {
