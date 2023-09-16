@@ -51,15 +51,9 @@ public class Setting<T> {
         return description;
     }
 
-    public Setting<T> setDescription(java.lang.String... description) {
-        if(this.description == null) this.description = new LinkedList<>();
-        Collections.addAll(this.description, description);
-        return this;
-    }
-
-    public Setting<T> appendLine(java.lang.String line) {
+    public Setting<T> appendLines(java.lang.String... line) {
         if(description == null) description = new LinkedList<>();
-        description.add(line);
+        Collections.addAll(description, line);
         return this;
     }
 
@@ -185,19 +179,15 @@ public class Setting<T> {
         private T min = null;
         private T max = null;
 
+        /** Does not affect long */
+        private java.lang.Integer precision = null;
+
         private Number(Type type, T value) {
             super(type, value);
         }
 
-        @Override
-        public Setting.Number<T> setDescription(java.lang.String... description) {
-            super.setDescription(description);
-            return this;
-        }
-
-        @Override
-        public Setting.Number<T> appendLine(java.lang.String line) {
-            super.appendLine(line);
+        public Setting.Number<T> appendLines(java.lang.String... line) {
+            super.appendLines(line);
             return this;
         }
 
@@ -224,11 +214,33 @@ public class Setting<T> {
             this.max = max;
             return this;
         }
+
+        public java.lang.Integer getPrecision() {
+            return precision;
+        }
+
+        public Setting.Number<T> setPrecision(java.lang.Integer precision) {
+            if(this.getValue() instanceof java.lang.Double
+                    || this.getValue() instanceof java.lang.Float
+                    || this.getValue() instanceof java.lang.Integer)
+                this.precision = precision;
+            return this;
+        }
     }
 
     public static class Integer extends Setting.Number<java.lang.Integer> {
         public Integer(java.lang.Integer value) {
             super(Type.INTEGER, value);
+        }
+
+        @Override
+        public void setValue(java.lang.Integer value) {
+            if(getPrecision() != null) {
+                int scale = (int) Math.pow(10, getPrecision());
+                value = (int) (Math.round(value.doubleValue() / scale) * scale);
+            }
+
+            super.setValue(value);
         }
     }
 
@@ -236,11 +248,31 @@ public class Setting<T> {
         public Double(java.lang.Double value) {
             super(Type.DOUBLE, value);
         }
+
+        @Override
+        public void setValue(java.lang.Double value) {
+            if(getPrecision() != null) {
+                int scale = (int) Math.pow(10, getPrecision());
+                value = (double) (Math.round(value * scale) / scale);
+            }
+
+            super.setValue(value);
+        }
     }
 
     public static class Float extends Setting.Number<java.lang.Float> {
         public Float(java.lang.Float value) {
             super(Type.FLOAT, value);
+        }
+
+        @Override
+        public void setValue(java.lang.Float value) {
+            if(getPrecision() != null) {
+                int scale = (int) Math.pow(10, getPrecision());
+                value = (float) (Math.round(value * scale) / scale);
+            }
+
+            super.setValue(value);
         }
     }
 
@@ -298,7 +330,7 @@ public class Setting<T> {
             setting.setParent(this);
             setting.setName(name);
             setting.setReadInfo(readInfo);
-            setting.setDescription(description);
+            setting.appendLines(description);
             getValue().put(name, setting);
             return setting;
         }
