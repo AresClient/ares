@@ -1,9 +1,8 @@
 package org.aresclient.ares.api.setting;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
+import kotlin.Pair;
+
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -116,8 +115,26 @@ public class Setting<T> {
     }
 
     public static class Enum<T extends java.lang.Enum<?>> extends Setting<T> {
+        private final HashMap<T, Pair<Supplier<java.lang.Boolean>, java.lang.String>> restrictions = new HashMap<>();
+
         public Enum(T value) {
             super(Type.ENUM, value);
+        }
+
+        @Override
+        public void setValue(T value) {
+            for(java.util.Map.Entry<T, Pair<Supplier<java.lang.Boolean>, java.lang.String>> restriction: restrictions.entrySet()) {
+                if(value == restriction.getKey() && restriction.getValue().getFirst().get()) {
+                    // TODO: Error Message - "Error setting Enum value: " + restriction.getValue().getSecond()
+                    return;
+                }
+            }
+            super.setValue(value);
+        }
+
+        public Enum<T> addRestriction(T value, Supplier<java.lang.Boolean> restrictor, java.lang.String errorMessage) {
+            restrictions.put(value, new Pair<>(restrictor, errorMessage));
+            return this;
         }
     }
 
