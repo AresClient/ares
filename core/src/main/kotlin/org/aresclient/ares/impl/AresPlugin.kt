@@ -11,6 +11,7 @@ import org.aresclient.ares.impl.instrument.global.Render
 import org.aresclient.ares.impl.instrument.global.Rotation
 import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
+import org.aresclient.ares.impl.instrument.module.modules.offense.CrystalAura
 import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
 import org.aresclient.ares.impl.instrument.module.modules.render.ESP
 import org.aresclient.ares.impl.instrument.module.modules.render.TestModule
@@ -33,6 +34,7 @@ class AresPlugin: Ares.Plugin(), Mod.Initializer {
         modules.addAll(arrayOf(
             AntiAFK,
             ClickGUI,
+            CrystalAura,
             ESP,
             TestModule,
             TitleScreen

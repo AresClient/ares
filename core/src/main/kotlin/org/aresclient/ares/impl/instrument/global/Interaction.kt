@@ -50,6 +50,12 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
         .setPrecision(1)
         .appendLines(*percentageMeasureArray)
 
+    fun tickOnlyDelay(settings: Setting.Map<*>, name: String, default: Int): Setting.Number<Int> = settings
+        .addInteger(name, default)
+        .setMin(0)
+        .setMax(20)
+        .appendLines(tickMeasure)
+
     val block_place_delay = standardDelay(settings, "Block Place Delay", 5.0)
 
     val place_per_instant = settings
