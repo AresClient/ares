@@ -15,9 +15,19 @@ import java.util.function.Supplier;
  * @param <I> The module a particular component pertains to
  */
 public class Component<I extends Instrument> {
-    public I master;
+    private I master;
+
+    protected Component() {
+    }
 
     public Component(I master) {
+        setMaster(master);
+    }
+
+    /**
+     * This must be called once in the constructor of any class inheriting from Component
+     */
+    protected void setMaster(I master) {
         this.master = master;
         this.master.addComponent(this);
     }
@@ -76,8 +86,8 @@ public class Component<I extends Instrument> {
         private Setting.Map<?> settings;
 
         protected Settings(I master, String pathName) {
-            super(master);
             this.pathName = pathName;
+            setMaster(master);
         }
 
         protected Setting.Map<?> getSettings() {
