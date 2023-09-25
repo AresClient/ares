@@ -58,6 +58,7 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
         }
         curr ?: Ares.getSettings()
     }
+    private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
 
     init {
         // set icon if category
@@ -69,10 +70,12 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
         }
 
         // TODO: RESIZING WINDOWS?
-        pushChild(SettingsGroup(setting,  1, this, width = this::getWidth))
+        pushChild(group)
     }
 
-    override fun getTitle(): String = setting.getName() ?: "Home"
+    override fun getTitle() = setting.getName() ?: "Home"
+
+    override fun getHeight() = group.getHeight()
 }
 
 class EmptySettingElement(private val name: String, scale: Float): SettingElement(scale) {

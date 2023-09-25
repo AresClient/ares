@@ -84,7 +84,7 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
         setX { x.value }
         setY { y.value }
         setWidth { width.value }
-        setHeight { height.value + TOP_SIZE }
+        setHeight { (window?.getHeight()?.let { min(it, height.value) } ?: height.value) + TOP_SIZE }
 
         pushChildren(
             closeButton,
@@ -125,7 +125,6 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
             it.setParent(this)
             it.setY(TOP_SIZE)
             it.setWidth(getWidth())
-            it.setHeight(getHeight() - TOP_SIZE)
             icon.setTexture(it.getIcon())
         }
     }
@@ -133,8 +132,6 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val width = getWidth()
         val height = getHeight()
-        val topOffset = -1 + (2 * TOP_SIZE / height)
-        val bottomOffset = -(height - TOP_SIZE) / height
 
         // move window if dragging
         if(holding) {
@@ -143,17 +140,52 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
             y.value = max(0f, min(parent.getHeight() - TOP_SIZE, mouseY.toFloat() - holdY))
         }
 
-        // top window bar background
-        buffers.uniforms.roundedRadius.set(0.03f)
-        buffers.uniforms.roundedSize.set(width, height)
-        buffers.rounded.draw(matrixStack) {
+        window?.let { window ->
+            val windowHeight = window.getHeight()
+            val maxHeight = this.height.value
+
+            // fix window scroll when window height changes
+            val minY = TOP_SIZE - max(0f, windowHeight - maxHeight)
+            if(window.getY() < minY) window.setY(minY)
+
+            // scroll indicator
+            if(windowHeight > maxHeight) {
+                val size = maxHeight * maxHeight / windowHeight
+                val offset = (TOP_SIZE - window.getY()) * (maxHeight - size) / (windowHeight - maxHeight)
+                buffers.lines.draw(matrixStack) {
+                    vertices(
+                        width, TOP_SIZE + offset, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                        width, TOP_SIZE + offset + size, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
+                    )
+                    indices(0, 1)
+                }
+            }
+        }
+
+        RenderHelper.clip({
+            buffers.triangle.draw(matrixStack) {
+                vertices(
+                    width, height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                    width, TOP_SIZE, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                    0f, height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                    0f, TOP_SIZE, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
+                )
+                indices(
+                    0, 1, 2,
+                    1, 2, 3
+                )
+            }
+        }){
+            window?.render(theme, buffers, matrixStack, mouseX, mouseY, delta)
+        }
+
+        // title bar
+        buffers.triangle.draw(matrixStack) {
             vertices(
-                width,
-                TOP_SIZE, 0f, 1f, topOffset, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
-                width, 0f, 0f, 1f, -1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
-                0f,
-                TOP_SIZE, 0f, -1f, topOffset, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
-                0f, 0f, 0f, -1f, -1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha
+                width, TOP_SIZE, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+                width, 0f, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+                0f, TOP_SIZE, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+                0f, 0f, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha
             )
             indices(
                 0, 1, 2,
@@ -161,7 +193,6 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
             )
         }
 
-        // window title text
         window?.getTitle()?.let {
             FONT_RENDERER.drawString(
                 matrixStack, it,
@@ -174,32 +205,10 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
         // line under window top
         buffers.lines.draw(matrixStack) {
             vertices(
-                0f,
-                TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                width,
-                TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                0f, TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                width, TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
             )
             indices(0, 1)
-        }
-
-        // window body, with content clipped
-        RenderHelper.clip({
-            buffers.rounded.draw(matrixStack) {
-                vertices(
-                    width, height, 0f, 1f, 1f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                    width,
-                    TOP_SIZE, 0f, 1f, bottomOffset, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                    0f, height, 0f, -1f, 1f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                    0f,
-                    TOP_SIZE, 0f, -1f, bottomOffset, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
-                )
-                indices(
-                    0, 1, 2,
-                    1, 2, 3
-                )
-            }
-        }) {
-            window?.render(theme, buffers, matrixStack, mouseX, mouseY, delta)
         }
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
@@ -207,7 +216,8 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         val prev = acted.get()
-        window?.click(mouseX, mouseY, mouseButton, acted)
+        if(isMouseOver(mouseX, mouseY) && mouseY > getRenderY() + TOP_SIZE)
+            window?.click(mouseX, mouseY, mouseButton, acted)
         super.click(mouseX, mouseY, mouseButton, acted)
 
         if(!acted.get() && isMouseOver(mouseX, mouseY)) {
@@ -232,7 +242,7 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
 
         if(!acted.get() && isMouseOver(mouseX, mouseY) && mouseY >= getRenderY() + TOP_SIZE) {
             window?.let {
-                it.setY(min(TOP_SIZE, max((it.getY() + value).toFloat(), getHeight() - it.getHeight() + TOP_SIZE)))
+                it.setY(min(TOP_SIZE, max((it.getY() + value).toFloat(), getHeight() - it.getHeight())))
             }
             acted.set(true)
         }
