@@ -185,9 +185,17 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
                 width, TOP_SIZE, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
                 width, 0f, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
                 0f, TOP_SIZE, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
-                0f, 0f, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha
+                0f, 0f, 0f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+
+                width + 1f, TOP_SIZE + 1f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                width + 1f, -1f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                -1f, TOP_SIZE + 1f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                -1f, -1f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
             )
             indices(
+                4, 5, 6,
+                5, 6, 7,
+
                 0, 1, 2,
                 1, 2, 3
             )
@@ -200,15 +208,6 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
                         + icon.getX() + icon.getWidth()) - FONT_RENDERER.getStringWidth(it) / 2f,
                 1f, theme.lightground.value
             )
-        }
-
-        // line under window top
-        buffers.lines.draw(matrixStack) {
-            vertices(
-                0f, TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                width, TOP_SIZE, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
-            )
-            indices(0, 1)
         }
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)

@@ -11,9 +11,9 @@ import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.math.min
 
-class ColorElement(private val content: WindowContent, private val setting: Setting.Color, scale: Float): DropDownSettingElement(scale) {
+class ColorElement(private val content: WindowContent, setting: Setting.Color, scale: Float):
+    DropDownSettingElement<Setting.Color>(setting, scale) {
     private val button = ColorSelectButton(this, scale)
 
     init {
@@ -26,8 +26,6 @@ class ColorElement(private val content: WindowContent, private val setting: Sett
         pushChild(button)
         element = Selector(setting, scale * 0.87f * 0.87f)
     }
-
-    override fun getText(): String = setting.name
 
     class Selector(val setting: Setting.Color, scale: Float): DynamicElement() {
         private val selector = ColorSelector(this, if(setting.isRainbow) ColorSelector.Type.RNBW else ColorSelector.Type.RGB, scale)

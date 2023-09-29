@@ -11,15 +11,13 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.util.Keys
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(private val setting: Setting.Bind, height: Float): SettingElement(height) {
+class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.Bind>(setting, height) {
     private var listening = false
     private var name = name()
 
     init {
         pushChild(SettingElementButton(this) { listen(true) })
     }
-
-    override fun getText(): String = setting.name
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val text = if(listening) "..." else name

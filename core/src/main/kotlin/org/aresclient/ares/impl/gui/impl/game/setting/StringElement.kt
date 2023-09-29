@@ -4,7 +4,7 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.TextBox
 import org.aresclient.ares.impl.gui.impl.game.SettingElement
 
-class StringElement(private val setting: Setting.String, scale: Float): SettingElement(scale) {
+class StringElement(setting: Setting.String, scale: Float): SettingElement<Setting.String>(setting, scale) {
     private val textBox = SettingTextBox(this)
 
     init {
@@ -15,8 +15,6 @@ class StringElement(private val setting: Setting.String, scale: Float): SettingE
         })
         pushChild(textBox)
     }
-
-    override fun getText(): String = setting.name
 
     override fun getHeight(): Float = textBox.getHeight() + textBox.getY() * 2
 

@@ -12,6 +12,8 @@ import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.DynamicElementGroup
 import org.aresclient.ares.impl.gui.impl.game.setting.*
+import org.joml.Quaterniond
+import org.joml.Quaternionf
 import java.util.concurrent.atomic.AtomicBoolean
 
 class SettingsGroup(setting: Setting<*>, columns: Int, private val content: WindowContent, private val skipEnabled: Boolean = false,
@@ -31,8 +33,8 @@ class SettingsGroup(setting: Setting<*>, columns: Int, private val content: Wind
                         Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
                         Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
                         Setting.Type.COLOR -> ColorElement(content, setting as Setting.Color, settingHeight)
-                        Setting.Type.GROUPED -> EmptySettingElement(setting.name, settingHeight) // TODO
-                        Setting.Type.LIST -> EmptySettingElement(setting.name, settingHeight) // TODO
+                        Setting.Type.GROUPED -> SettingElement<Setting<*>>(setting, settingHeight) // TODO
+                        Setting.Type.LIST -> SettingElement<Setting<*>>(setting, settingHeight) // TODO
                         Setting.Type.MAP -> MapElement(content, setting as Setting.Map<*>, settingHeight)
                     })
                 }
@@ -78,14 +80,10 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
     override fun getHeight() = group.getHeight()
 }
 
-class EmptySettingElement(private val name: String, scale: Float): SettingElement(scale) {
-    override fun getText(): String = name
-}
-
-abstract class SettingElement(scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
+open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
     protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
 
-    abstract fun getText(): String
+    open fun getText(): String = setting.name
     open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
@@ -115,10 +113,19 @@ abstract class SettingElement(scale: Float, private val start: Float = 3f): Dyna
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
+    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        if(mouseButton == 2 && !acted.get() && isMouseOver(mouseX, mouseY)) {
+            setting.value = setting.readInfo.defaultValue // TODO: THIS SHIT NOT WORKING
+            acted.set(true)
+        }
+
+        super.click(mouseX, mouseY, mouseButton, acted)
+    }
+
     protected fun String.formatToPretty(): String =
         this.split('_').joinToString { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 
-    protected class SettingElementButton(private val element: SettingElement, action: (Button) -> Unit): Button(0f, 0f, 0f, 0f,
+    protected class SettingElementButton(private val element: SettingElement<*>, action: (Button) -> Unit): Button(0f, 0f, 0f, 0f,
         action, Clipping.SCISSOR) {
         override fun getWidth(): Float = element.getWidth()
         override fun getHeight(): Float = element.getHeight()
@@ -178,7 +185,7 @@ abstract class SettingElement(scale: Float, private val start: Float = 3f): Dyna
 }
 
 private const val DROPDOWN_PADDING = 1f
-abstract class DropDownSettingElement(private val scale: Float): SettingElement(scale, scale) {
+abstract class DropDownSettingElement<T: Setting<*>>(setting: T, private val scale: Float): SettingElement<T>(setting, scale, scale) {
     protected var element: DynamicElement? = null
         set(value) {
             value?.setX { DROPDOWN_PADDING }
@@ -209,25 +216,21 @@ abstract class DropDownSettingElement(private val scale: Float): SettingElement(
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
 
+        val fourth = scale / 4f
+        val third = scale / 3f
+        val half = scale / 2f
+
+        matrixStack.push()
+        if(open) matrixStack.model().translate(half, half, 0f).rotateZ((Math.PI / 2).toFloat()).translate(-half, -half, 0f)
         buffers.lines.draw(matrixStack) {
-            val padding = scale / 4f
-            val half = scale / 2f
-            if(open) {
-                vertices(
-                    padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
-                    scale - padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
-                )
-                indices(0, 1)
-            } else {
-                vertices(
-                    padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
-                    scale - padding, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
-                    half, padding, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
-                    half, scale - padding, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
-                )
-                indices(0, 1, 2, 3)
-            }
+            vertices(
+                third, fourth, 0f, 1f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                scale - third, half, 0f, 2f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha,
+                third, scale - fourth, 0f, 1f, theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
+            )
+            indices(0, 1, 1, 2)
         }
+        matrixStack.pop()
 
         if(open) {
             buffers.triangle.draw(matrixStack) {

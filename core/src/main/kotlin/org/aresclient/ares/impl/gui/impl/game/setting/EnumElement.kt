@@ -6,7 +6,7 @@ import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
 
-class EnumElement<T: Enum<*>>(private val setting: Setting.Enum<*>, scale: Float): SettingElement(scale) {
+class EnumElement<T: Enum<*>>(setting: Setting.Enum<T>, scale: Float): SettingElement<Setting.Enum<T>>(setting, scale) {
     private var name = setting.value.name.formatToPretty()
 
     init {
@@ -15,8 +15,6 @@ class EnumElement<T: Enum<*>>(private val setting: Setting.Enum<*>, scale: Float
             name = setting.value.name.formatToPretty()
         })
     }
-
-    override fun getText(): String = setting.name
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         fontRenderer.drawString(
