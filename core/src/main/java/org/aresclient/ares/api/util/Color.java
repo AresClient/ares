@@ -1,5 +1,8 @@
 package org.aresclient.ares.api.util;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class Color {
     public static final Color BLACK = new Color(0, 0, 0, 1);
     public static final Color GRAY = new Color(0.5f, 0.5f, 0.5f, 1);
@@ -9,10 +12,10 @@ public class Color {
     public static final Color BLUE = new Color(0, 0, 1, 1);
     public static final Color COLORLESS = new Color(0,0,0,0);
 
-    private float r;
-    private float g;
-    private float b;
-    private float a;
+    private final float r;
+    private final float g;
+    private final float b;
+    private final float a;
 
     public Color(int rgb) {
         this((float) (rgb >> 16) / 255.0F, (float) (rgb >> 8 & 255) / 255.0F, (float) (rgb & 255) / 255.0F, 1);
@@ -86,24 +89,20 @@ public class Color {
         return a;
     }
 
-    public Color setRed(float value) {
-        r = value;
-        return this;
+    public Color deriveRed(float value) {
+        return new Color(value, g, b, a);
     }
 
-    public Color setGreen(float value) {
-        g = value;
-        return this;
+    public Color deriveGreen(float value) {
+        return new Color(r, value, b, a);
     }
 
-    public Color setBlue(float value) {
-        b = value;
-        return this;
+    public Color deriveBlue(float value) {
+        return new Color(r, g, value, a);
     }
 
-    public Color setAlpha(float value) {
-        a = value;
-        return this;
+    public Color deriveAlpha(float value) {
+        return new Color(r, g, b, value);
     }
 
     public int getRGB() {
@@ -136,5 +135,23 @@ public class Color {
                 b = (color1.getBlue() + color2.getBlue()) /2,
                 a = (color1.getAlpha() + color2.getAlpha()) /2;
         return new Color(r,g,b,a);
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(new float[] { getRed(), getGreen(), getBlue(), getAlpha() });
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        Color color = (Color) o;
+        return Float.compare(r, color.r) == 0 && Float.compare(g, color.g) == 0 && Float.compare(b, color.b) == 0 && Float.compare(a, color.a) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(r, g, b, a);
     }
 }

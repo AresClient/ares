@@ -18,23 +18,23 @@ object ValiditySettings: Settings<CrystalAura>(CrystalAura, "Validity") {
 
     val prevent_suicide = settings
         .addBoolean("Prevent Suicide", true)
-        .appendLines("Prevents you from killing yourself if the allowed self")
-        .appendLines("inflicted damage is higher than your remaining health.")
+        .setDescription("Prevents you from killing yourself if the allowed self")
+        .setDescription("inflicted damage is higher than your remaining health.")
 
     val place_maximum_friendly_fire = damageSetting("Place Maximum Friendly Fire", 1F)
     val break_maximum_friendly_fire = damageSetting("Break Maximum Friendly Fire", 1F)
 
     val prevent_fratricide = settings
         .addBoolean("Prevent Fratricide", true)
-        .appendLines("Prevents you from killing your friend if the allowed")
-        .appendLines("friendly fire damage is higher than his remaining health.")
+        .setDescription("Prevents you from killing your friend if the allowed")
+        .setDescription("friendly fire damage is higher than his remaining health.")
 
     fun ratio(name: String, default: Int): Setting.Number<Int> = settings
         .addInteger(name, default)
         .setMin(1)
         .setMax(15)
-        .appendLines("The minimum ratio of self inflicted or friendly fire to damage")
-        .appendLines("dealt in a ratio of 1 to the value of this setting.")
+        .setDescription("The minimum ratio of self inflicted or friendly fire to damage")
+        .setDescription("dealt in a ratio of 1 to the value of this setting.")
 
     val minimum_place_ratio = ratio("Minimum Place Ratio", 10)
     val minimum_break_ratio = ratio("Minimum Break Ratio", 10)
@@ -44,23 +44,23 @@ object ValiditySettings: Settings<CrystalAura>(CrystalAura, "Validity") {
 
     val strict_sides = settings
         .addBoolean("Strict Sides", true)
-        .appendLines("Only place against block sides which are facing towards you")
-        .appendLines("and are not against another block.")
-        .appendLines("If CrystalAura/Validity/Place_Crystal_At is set to Strict_Side")
-        .appendLines("it will target the center of the strict blockface.")
+        .setDescription("Only place against block sides which are facing towards you")
+        .setDescription("and are not against another block.")
+        .setDescription("If CrystalAura/Validity/Place_Crystal_At is set to Strict_Side")
+        .setDescription("it will target the center of the strict blockface.")
 
     val one_point_twelve_placements = settings
         .addBoolean("1.12 Placements", false)
-        .appendLines("Only attempt to place a crystal if there are two blocks of")
-        .appendLines("air above the block, instead of one.")
+        .setDescription("Only attempt to place a crystal if there are two blocks of")
+        .setDescription("air above the block, instead of one.")
 
     val place_crystal_at = settings
         .addEnum("Place Crystal At", InteractionPoint.CLOSEST_POINT)
         .addRestriction(InteractionPoint.STRICT_SIDE, { !strict_sides.value }, "Cannot set Place_Crystal_At to STRICT_SIDE when Strict_Sides is disabled.")
-        .appendLines("The point of the block at which to interact with when placing a crystal")
-        .appendLines("Closest Point - Interact with the block at the closest point relative to the player's eyelevel")
-        .appendLines("Strict Sides - Only to be used with CrystalAura/Validity/Strict_Sides enabled - see Strict Sides for info")
-        .appendLines("Center - Interact with the block at the center of the block")
+        .setDescription("The point of the block at which to interact with when placing a crystal")
+        .setDescription("Closest Point - Interact with the block at the closest point relative to the player's eyelevel")
+        .setDescription("Strict Sides - Only to be used with CrystalAura/Validity/Strict_Sides enabled - see Strict Sides for info")
+        .setDescription("Center - Interact with the block at the center of the block")
 
     enum class InteractionPoint {
         CLOSEST_POINT,
@@ -70,8 +70,8 @@ object ValiditySettings: Settings<CrystalAura>(CrystalAura, "Validity") {
 
     val measure_range_to = settings
         .addEnum("Measure Range To", MeasurePoint.CLOSEST_POINT)
-        .appendLines("The point of the block or entity box from which to")
-        .appendLines("measure the distance to the player's eyelevel.")
+        .setDescription("The point of the block or entity box from which to")
+        .setDescription("measure the distance to the player's eyelevel.")
 
     enum class MeasurePoint {
         CLOSEST_POINT,
@@ -80,5 +80,5 @@ object ValiditySettings: Settings<CrystalAura>(CrystalAura, "Validity") {
 
     val use_game_range = settings
         .addBoolean("Use Game Range", true)
-        .appendLines("Use the default range provided in the game's interaction manager")
+        .setDescription("Use the default range provided in the game's interaction manager")
 }

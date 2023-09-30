@@ -12,8 +12,6 @@ import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.DynamicElementGroup
 import org.aresclient.ares.impl.gui.impl.game.setting.*
-import org.joml.Quaterniond
-import org.joml.Quaternionf
 import java.util.concurrent.atomic.AtomicBoolean
 
 class SettingsGroup(setting: Setting<*>, columns: Int, private val content: WindowContent, private val skipEnabled: Boolean = false,
@@ -82,11 +80,20 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
 
 open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
     protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
+    private var prev = setting.value
 
     open fun getText(): String = setting.name
     open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
 
+    open fun change() {
+    }
+
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        if(setting.value != prev) {
+            change()
+            prev = setting.value
+        }
+
         val width = getWidth()
         val height = getHeight()
 
@@ -114,12 +121,12 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     }
 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        super.click(mouseX, mouseY, mouseButton, acted)
+
         if(mouseButton == 2 && !acted.get() && isMouseOver(mouseX, mouseY)) {
-            setting.value = setting.readInfo.defaultValue // TODO: THIS SHIT NOT WORKING
+            setting.setDefault()
             acted.set(true)
         }
-
-        super.click(mouseX, mouseY, mouseButton, acted)
     }
 
     protected fun String.formatToPretty(): String =

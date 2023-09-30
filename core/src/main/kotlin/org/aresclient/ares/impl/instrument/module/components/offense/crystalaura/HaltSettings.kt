@@ -5,7 +5,7 @@ import org.aresclient.ares.impl.instrument.module.modules.offense.CrystalAura
 
 object HaltSettings: Settings<CrystalAura>(CrystalAura, "Halt") {
     init {
-        settings.appendLines("Settings which pause or disable the module with certain conditions")
+        settings.setDescription("Settings which pause or disable the module with certain conditions")
     }
 
     val pause_on_eat = settings

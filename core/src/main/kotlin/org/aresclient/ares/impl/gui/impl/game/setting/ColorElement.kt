@@ -28,9 +28,9 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
     }
 
     class Selector(val setting: Setting.Color, scale: Float): DynamicElement() {
-        private val selector = ColorSelector(this, if(setting.isRainbow) ColorSelector.Type.RNBW else ColorSelector.Type.RGB, scale)
-        private val rnbw = RNBWColorSelectElement(this, scale).setVisible { selector.value == ColorSelector.Type.RNBW }
-        private val rgb = RGBColorSelectElement(this, scale).setVisible { selector.value == ColorSelector.Type.RGB }
+        private val selector = ColorSelector(this, scale)
+        private val rgb = RGBColorSelectElement(this, scale).setVisible { !setting.isRainbow }
+        private val rnbw = RNBWColorSelectElement(this, scale).setVisible { setting.isRainbow }
         val fontRenderer = RenderHelper.getFontRenderer(scale * 0.87f)
 
         init {
@@ -47,10 +47,10 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
     private class RGBColorSelectElement(val element: Selector, private val scale: Float): DynamicElement(height = { scale * 4 }) {
         init {
             arrayOf(
-                Slider(element, "Red", 0f, 1f, { element.setting.value.red }) { element.setting.value.red = it },
-                Slider(element, "Green", 0f, 1f, { element.setting.value.green }) { element.setting.value.green = it },
-                Slider(element, "Blue", 0f, 1f, { element.setting.value.blue }) { element.setting.value.blue = it },
-                Slider(element, "Alpha", 0f, 1f, { element.setting.value.alpha }) { element.setting.value.alpha = it }
+                Slider(element, "Red", 0f, 1f, { element.setting.value.red }) { element.setting.setRed(it) },
+                Slider(element, "Green", 0f, 1f, { element.setting.value.green }) { element.setting.setGreen(it) },
+                Slider(element, "Blue", 0f, 1f, { element.setting.value.blue }) { element.setting.setBlue(it) },
+                Slider(element, "Alpha", 0f, 1f, { element.setting.value.alpha }) { element.setting.setAlpha(it) }
             ).forEachIndexed { ind, it ->
                 it.setY(ind * scale)
                 it.setHeight(scale)
@@ -120,22 +120,17 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
         }
     }
 
-    private class ColorSelector(private val element: Selector, var value: ColorSelector.Type, scale: Float): StaticElement(height = scale) {
-        enum class Type {
-            RGB,
-            RNBW
-        }
-
+    private class ColorSelector(private val element: Selector, scale: Float): StaticElement(height = scale) {
         init {
-            Type.values().forEach { pushChild(ColorSelectionTypeButton(this, it)) }
+            pushChild(ColorSelectionTypeButton(this, "RGBA", false))
+            pushChild(ColorSelectionTypeButton(this, "RNBW", true))
         }
 
         override fun getWidth() = getParent()?.getWidth() ?: 0f
 
-        private class ColorSelectionTypeButton(private val selector: ColorSelector, private val value: Type):
+        private class ColorSelectionTypeButton(private val selector: ColorSelector, private val name: String, private val rainbow: Boolean):
         Button(0f, 0f, 0f, 0f, {
-            selector.value = value
-            selector.element.setting.isRainbow = value == Type.RNBW
+            selector.element.setting.isRainbow = rainbow
         }, clipping = Clipping.SCISSOR) {
             override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
                 val width = getWidth()
@@ -156,7 +151,7 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
                     )
                 }
 
-                if(selector.value == value) buffers.triangle.draw(matrixStack) {
+                if(selector.element.setting.isRainbow == rainbow) buffers.triangle.draw(matrixStack) {
                     vertices(
                         0f, 0f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
                         width, 0f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
@@ -169,12 +164,12 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
                     )
                 }
 
-                val textWidth = selector.element.fontRenderer.getStringWidth(value.name)
-                selector.element.fontRenderer.drawString(matrixStack, value.name, width / 2f - textWidth / 2f, height / 2f - selector.element.fontRenderer.charHeight / 2f, theme.lightground.value)
+                val textWidth = selector.element.fontRenderer.getStringWidth(name)
+                selector.element.fontRenderer.drawString(matrixStack, name, width / 2f - textWidth / 2f, height / 2f - selector.element.fontRenderer.charHeight / 2f, theme.lightground.value)
             }
 
-            override fun getX() = value.ordinal * getWidth()
-            override fun getWidth() = (getParent()?.getWidth() ?: 0f) / selector.value.javaClass.enumConstants.size
+            override fun getX() = (if(rainbow) 1f else 0f) * getWidth()
+            override fun getWidth() = (getParent()?.getWidth() ?: 0f) / 2f
             override fun getHeight() = getParent()?.getHeight() ?: 0f
         }
     }

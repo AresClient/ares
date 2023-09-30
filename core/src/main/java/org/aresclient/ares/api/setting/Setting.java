@@ -16,10 +16,10 @@ public class Setting<T> {
 
     private Setting<?> parent = null;
     private java.lang.String name = null;
-    private LinkedList<java.lang.String> description = null;
+    private java.lang.String[] description = null;
+    private Supplier<java.lang.Boolean> hidden = () -> false;
     private Consumer<T> listener = null;
     private ReadInfo<T> readInfo = null;
-    private Supplier<java.lang.Boolean> hidden = () -> false;
     private final Type type;
     private T value;
 
@@ -46,13 +46,21 @@ public class Setting<T> {
         this.name = name;
     }
 
-    public LinkedList<java.lang.String> getDescription() {
+    public java.lang.String[] getDescription() {
         return description;
     }
 
-    public Setting<T> appendLines(java.lang.String... line) {
-        if(description == null) description = new LinkedList<>();
-        Collections.addAll(description, line);
+    public Setting<T> setDescription(java.lang.String... lines) {
+        this.description = lines;
+        return this;
+    }
+
+    public java.lang.Boolean isHidden() {
+        return hidden.get();
+    }
+
+    public Setting<T> setHidden(Supplier<java.lang.Boolean> hidden) {
+        this.hidden = hidden;
         return this;
     }
 
@@ -73,15 +81,6 @@ public class Setting<T> {
         this.readInfo = readInfo;
     }
 
-    public java.lang.Boolean isHidden() {
-        return hidden.get();
-    }
-
-    public Setting<T> setHidden(Supplier<java.lang.Boolean> hiddenIf) {
-        hidden = hiddenIf;
-        return this;
-    }
-
     public Type getType() {
         return type;
     }
@@ -100,6 +99,10 @@ public class Setting<T> {
         java.lang.String prefix = null;
         if(getParent() != null) prefix = getParent().getPath();
         return prefix == null ? getName() : prefix + ":" + getName();
+    }
+
+    public void setDefault() {
+        setValue(readInfo.defaultValue);
     }
 
     public static class String extends Setting<java.lang.String> {
@@ -152,11 +155,29 @@ public class Setting<T> {
 
         @Override
         public org.aresclient.ares.api.util.Color getValue() {
-            return rainbow ? org.aresclient.ares.api.util.Color.rainbow().setAlpha(super.getValue().getAlpha()) : super.getValue();
+            return rainbow ? org.aresclient.ares.api.util.Color.rainbow().deriveAlpha(super.getValue().getAlpha()) : super.getValue();
         }
 
-        public void setAlpha(float alpha) {// HOLY SHIT THIS BUGGED ME FOREVER, kept tryna set the alpha of rainbow color in getValue above :(
-            super.getValue().setAlpha(alpha);
+        @Override
+        public void setDefault() {
+            setRainbow(getReadInfo().isRainbow());
+            super.setDefault();
+        }
+
+        public void setRed(float red) {
+            super.setValue(super.getValue().deriveRed(red));
+        }
+
+        public void setGreen(float green) {
+            super.setValue(super.getValue().deriveGreen(green));
+        }
+
+        public void setBlue(float blue) {
+            super.setValue(super.getValue().deriveBlue(blue));
+        }
+
+        public void setAlpha(float alpha) {
+            super.getValue().deriveAlpha(alpha);
         }
 
         public boolean isRainbow() {
@@ -203,8 +224,8 @@ public class Setting<T> {
             super(type, value);
         }
 
-        public Setting.Number<T> appendLines(java.lang.String... line) {
-            super.appendLines(line);
+        public Setting.Number<T> setDescription(java.lang.String... line) {
+            super.setDescription(line);
             return this;
         }
 
@@ -316,6 +337,11 @@ public class Setting<T> {
             setting.setParent(null);
             getValue().remove(setting);
         }
+
+        @Override
+        public void setDefault() {
+            getValue().forEach(Setting::setDefault);
+        }
     }
 
     public static class Map<R> extends Setting<java.util.Map<java.lang.String, Setting<?>>> {
@@ -329,11 +355,16 @@ public class Setting<T> {
         }
 
         public Map(ISerializer<R> serializer, java.util.Map<java.lang.String, R> data) {
-            this(serializer, data, new HashMap<>());
+            this(serializer, data, new LinkedHashMap<>());
         }
 
         public Map(ISerializer<R> serializer) {
             this(serializer, new HashMap<>());
+        }
+
+        @Override
+        public void setDefault() {
+            getValue().values().forEach(Setting::setDefault);
         }
 
         private <T, S extends Setting<T>> S add(ReadInfo<T> readInfo, java.lang.String name, java.lang.String... description) {
@@ -347,7 +378,7 @@ public class Setting<T> {
             setting.setParent(this);
             setting.setName(name);
             setting.setReadInfo(readInfo);
-            setting.appendLines(description);
+            setting.setDescription(description);
             getValue().put(name, setting);
             return setting;
         }

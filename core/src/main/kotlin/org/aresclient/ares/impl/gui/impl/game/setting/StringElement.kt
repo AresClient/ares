@@ -3,6 +3,7 @@ package org.aresclient.ares.impl.gui.impl.game.setting
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.api.TextBox
 import org.aresclient.ares.impl.gui.impl.game.SettingElement
+import java.util.concurrent.atomic.AtomicBoolean
 
 class StringElement(setting: Setting.String, scale: Float): SettingElement<Setting.String>(setting, scale) {
     private val textBox = SettingTextBox(this)
@@ -18,6 +19,10 @@ class StringElement(setting: Setting.String, scale: Float): SettingElement<Setti
 
     override fun getHeight(): Float = textBox.getHeight() + textBox.getY() * 2
 
+    override fun change() {
+        textBox.setText(setting.value)
+    }
+
     private class SettingTextBox(private val element: StringElement, size: Float = 0.7f):
         TextBox(0f, 0f, 75f, element.fontRenderer.fontSize * size, 1, horizPadFactor = 0.2f) {
         private val offset = (1f - size) / 2f
@@ -31,7 +36,7 @@ class StringElement(setting: Setting.String, scale: Float): SettingElement<Setti
 
         override fun type(typedChar: Char?, keyCode: Int) {
             super.type(typedChar, keyCode)
-            element.setting.value = getText()
+            if(isFocused()) element.setting.value = getText()
         }
     }
 }

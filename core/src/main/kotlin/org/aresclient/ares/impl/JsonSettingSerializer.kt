@@ -74,5 +74,4 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             null -> throw NullPointerException()
         }
     }
-
 }
