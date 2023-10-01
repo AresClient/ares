@@ -10,7 +10,9 @@ import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.api.DynamicElementGroup
+import org.aresclient.ares.impl.gui.api.ScreenElement
 import org.aresclient.ares.impl.gui.impl.game.setting.*
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -88,15 +90,23 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     open fun change() {
     }
 
+    open fun shouldRenderTooltip(mouseX: Int, mouseY: Int): Boolean {
+        return isMouseOver(mouseX, mouseY)
+    }
+
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+        if(isMouseOver(mouseX, mouseY))
+            (getRootParent() as? ScreenElement)?.setTooltip(*setting.description)
+
+        // detect changes to value, then propagate to subclasses
         if(setting.value != prev) {
             change()
             prev = setting.value
         }
 
+        // outline
         val width = getWidth()
         val height = getHeight()
-
         buffers.lines.draw(matrixStack) {
             vertices(
                 0f, height, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,

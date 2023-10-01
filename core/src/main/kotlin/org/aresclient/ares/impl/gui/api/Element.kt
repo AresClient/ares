@@ -3,6 +3,9 @@ package org.aresclient.ares.impl.gui.api
 import org.aresclient.ares.api.minecraft.render.Screen
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -116,6 +119,12 @@ abstract class Element {
 open class ScreenElement(title: String): Element() {
     private var open = false
     private val matrixStack = MatrixStack()
+
+    private var tooltip: Array<out String>? = null
+    private var prevMouseX = 0
+    private var prevMouseY = 0
+    private var mouseTime = 0f
+
     private val screen = object: Screen(title) {
         override fun update() {
             open = true
@@ -129,9 +138,64 @@ open class ScreenElement(title: String): Element() {
         }
 
         override fun render(mouseX: Int, mouseY: Int, delta: Float) {
+            if(mouseX == prevMouseX && mouseY == prevMouseY) mouseTime += delta
+            else {
+                prevMouseX = mouseX
+                prevMouseY = mouseY
+                mouseTime = 0f
+            }
+
+            // render children
             val state = Renderer.begin2d()
-            this@ScreenElement.draw(Theme.current(), state.buffers, matrixStack, mouseX, mouseY, delta) // we don't need to push matrices for screen drawing
-            Renderer.end(state)
+            val theme = Theme.current()
+            this@ScreenElement.draw(theme, state.buffers, matrixStack, mouseX, mouseY, delta) // we don't need to push matrices for screen drawing
+
+            // draw tooltip
+            if(tooltip?.isNotEmpty() == true && mouseTime > 10f) {
+                matrixStack.push()
+                matrixStack.model().translate(mouseX.toFloat(), mouseY.toFloat(), 0f)
+
+                val padding = 2f
+                val fontRenderer = RenderHelper.getFontRenderer(10f)
+                val width = tooltip!!.maxOf { fontRenderer.getStringWidth(it) } + padding * 2
+                val height = tooltip!!.size * fontRenderer.charHeight + padding * 2
+
+                state.buffers.triangle.draw(matrixStack) {
+                    vertices(
+                        0f, -height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                        width, 0f, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                        width, -height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                        0f, 0f, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
+                    )
+                    indices(
+                        0, 1, 2,
+                        0, 1, 3
+                    )
+                }
+
+                state.buffers.lines.draw(matrixStack) {
+                    vertices(
+                        0f, -height, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                        width, -height, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                        width, 0f, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                        0f, 0f, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                    )
+                    indices(0, 1, 1, 2, 2, 3, 3, 0)
+                }
+
+                fontRenderer.bindTexture()
+                state.buffers.triangleTexColor.draw(matrixStack) {
+                    for((i, line) in tooltip!!.withIndex()) {
+                        fontRenderer.drawString(this, line,
+                            padding, padding - height + i * fontRenderer.charHeight, Color.WHITE)
+                    }
+                }
+
+                matrixStack.pop()
+                tooltip = null
+            }
+
+            Renderer.end(state) // cleanup
             super.render(mouseX, mouseY, delta)
         }
 
@@ -167,6 +231,10 @@ open class ScreenElement(title: String): Element() {
     override fun getHeight(): Float = screen.height.toFloat()
 
     fun getScreen(): Screen = screen
+
+    fun setTooltip(vararg tooltip: String) {
+        this.tooltip = tooltip
+    }
 }
 
 // an element with constantly changing dimensions or position

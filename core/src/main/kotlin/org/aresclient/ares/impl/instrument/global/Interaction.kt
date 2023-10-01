@@ -38,9 +38,11 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
     val instantDefine = "One instant is one tick or millisecond, depending on whatever Global/Interaction/Delay_Type is set to"
 
     val delay_type = settings.addEnum("Delay Type", RateType.TICK)
-        .setDescription("The way delays are timed",)
-        .setDescription("Tick - Minecraft's client tick which runs once every twentieth of a second (1/20)")
-        .setDescription("Millisecond - Use a separate thread which runs once every thousandth of a second (1/1000)")
+        .setDescription(
+            "The way delays are timed",
+            "Tick - Minecraft's client tick which runs once every twentieth of a second (1/20)",
+            "Millisecond - Use a separate thread which runs once every thousandth of a second (1/1000)"
+        )
 
     // Use as a percentage with one decimal point so that it makes sense as both a tick and millisecond setting
     fun standardDelay(settings: Setting.Map<*>, name: String, default: Double): Setting.Number<Double> = settings

@@ -15,8 +15,10 @@ object DelaySettings: Settings<CrystalAura>(CrystalAura, "Delays") {
     val offhand_break = Interaction.standardDelay(settings, "Offhand Break", 5.0)
 
     val minimum_break_age = Interaction.tickOnlyDelay(settings, "Minimum Break Age", 2)
-        .setDescription("The minimum age, in ticks, the crystal must be before attempting to break it")
-        .setDescription("Recommendation for 2b2t: 4 ticks")
+        .setDescription(
+            "The minimum age, in ticks, the crystal must be before attempting to break it",
+            "Recommendation for 2b2t: 4 ticks"
+        )
 
     val break_on_spawn = settings
         .addBoolean("Break On Spawn", false)
@@ -25,8 +27,10 @@ object DelaySettings: Settings<CrystalAura>(CrystalAura, "Delays") {
 
     val conserve = settings
         .addBoolean("Conserve", true)
-        .setDescription("Attempt to conserve crystal inventory by automatically adjusting")
-        .setDescription("delays within the specified range situationally.")
+        .setDescription(
+            "Attempt to conserve crystal inventory by automatically adjusting",
+            "delays within the specified range situationally."
+        )
 
     val maximum_place = Interaction.standardDelay(settings, "Maximum Place", 5.0)
         .setHidden { !conserve.value }
@@ -38,9 +42,11 @@ object DelaySettings: Settings<CrystalAura>(CrystalAura, "Delays") {
 
     val maximum_break_age = Interaction.tickOnlyDelay(settings, "Maximum Break Age", 10)
         .setHidden { !conserve.value }
-        .setDescription("The maximum number of ticks to intentionally wait after a crystal")
-        .setDescription("has spawned before attempting to break it while conserving.")
-        .setDescription("FYI: damage is dealt at a maximum of once every 10 ticks.")
+        .setDescription(
+            "The maximum number of ticks to intentionally wait after a crystal",
+            "has spawned before attempting to break it while conserving.",
+            "FYI: damage is dealt at a maximum of once every 10 ticks."
+        )
 
     val post_swap = Interaction.standardDelay(settings, "Post Swap", 0.0)
         .setDescription("The delay after swapping to crystals in the mainhand to wait before attempting to place")

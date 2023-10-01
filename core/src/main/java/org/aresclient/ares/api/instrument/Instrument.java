@@ -17,6 +17,7 @@ public abstract class Instrument {
         this.name = name;
         this.description = description;
         this.settings = parentSettings.addMap(name);
+        this.settings.setDescription(description);
     }
 
     public void tick() {
