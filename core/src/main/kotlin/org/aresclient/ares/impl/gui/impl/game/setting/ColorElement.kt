@@ -24,10 +24,10 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
             }
         })
         pushChild(button)
-        element = Selector(setting, scale * 0.87f * 0.87f)
+        element = DropDown(setting, scale * 0.87f * 0.87f)
     }
 
-    class Selector(val setting: Setting.Color, scale: Float): DynamicElement() {
+    class DropDown(val setting: Setting.Color, scale: Float): DynamicElement() {
         private val selector = ColorSelector(this, scale)
         private val rgb = RGBColorSelectElement(this, scale).setVisible { !setting.isRainbow }
         private val rnbw = RNBWColorSelectElement(this, scale).setVisible { setting.isRainbow }
@@ -44,7 +44,7 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
         }
     }
 
-    private class RGBColorSelectElement(val element: Selector, private val scale: Float): DynamicElement(height = { scale * 4 }) {
+    private class RGBColorSelectElement(val element: DropDown, private val scale: Float): DynamicElement(height = { scale * 4 }) {
         init {
             arrayOf(
                 Slider(element, "Red", 0f, 1f, { element.setting.value.red }) { element.setting.setRed(it) },
@@ -74,7 +74,7 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
         }
     }
 
-    private class RNBWColorSelectElement(val element: Selector, scale: Float): DynamicElement(height = { scale }) {
+    private class RNBWColorSelectElement(val element: DropDown, scale: Float): DynamicElement(height = { scale }) {
         init {
             Slider(element, "Alpha", 0f, 1f, { element.setting.value.alpha }) { element.setting.setAlpha(it) }.also {
                 it.setHeight(scale)
@@ -120,7 +120,7 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
         }
     }
 
-    private class ColorSelector(private val element: Selector, scale: Float): StaticElement(height = scale) {
+    private class ColorSelector(private val element: DropDown, scale: Float): StaticElement(height = scale) {
         init {
             pushChild(ColorSelectionTypeButton(this, "RGBA", false))
             pushChild(ColorSelectionTypeButton(this, "RNBW", true))
@@ -174,7 +174,7 @@ class ColorElement(private val content: WindowContent, setting: Setting.Color, s
         }
     }
 
-    private class Slider(private val element: Selector, private val name: String, private val min: Float, private val max: Float,
+    private class Slider(private val element: DropDown, private val name: String, private val min: Float, private val max: Float,
                          private val get: () -> Float, private val set: (Float) -> Unit): StaticElement() {
         private var holding = false
 

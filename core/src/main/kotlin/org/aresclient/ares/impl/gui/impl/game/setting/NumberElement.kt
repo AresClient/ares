@@ -37,6 +37,12 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
         }
     }
 
+    override fun getSecondaryText(): String? {
+        var string = formatted()
+        if(mode == 1 || mode == 3 || (mode == 2 && setting.value != setting.max)) string += " +"
+        return string
+    }
+
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 0 && !acted.get() && isMouseOver(mouseX, mouseY)) {
             multiplier = 1.0
@@ -72,13 +78,6 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
                 time = 0
             }
         }
-
-        var string = formatted()
-        if(mode == 1 || mode == 3 || (mode == 2 && setting.value != setting.max)) string += " +"
-        fontRenderer.drawString(
-            matrixStack, string, getWidth() - fontRenderer.getStringWidth(string) - 2, 1f,
-            theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
-        )
 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }

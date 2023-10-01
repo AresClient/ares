@@ -187,7 +187,7 @@ open class ScreenElement(title: String): Element() {
                 state.buffers.triangleTexColor.draw(matrixStack) {
                     for((i, line) in tooltip!!.withIndex()) {
                         fontRenderer.drawString(this, line,
-                            padding, padding - height + i * fontRenderer.charHeight, Color.WHITE)
+                            padding, padding - height + i * fontRenderer.charHeight, theme.lightground.value)
                     }
                 }
 

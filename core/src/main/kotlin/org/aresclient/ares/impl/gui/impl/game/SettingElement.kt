@@ -10,11 +10,13 @@ import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
-import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.api.DynamicElementGroup
 import org.aresclient.ares.impl.gui.api.ScreenElement
 import org.aresclient.ares.impl.gui.impl.game.setting.*
 import java.util.concurrent.atomic.AtomicBoolean
+
+fun String.formatToPretty(): String =
+    this.split('_').joinToString(separator = " ") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 
 class SettingsGroup(setting: Setting<*>, columns: Int, private val content: WindowContent, private val skipEnabled: Boolean = false,
     private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
@@ -36,13 +38,13 @@ class SettingsGroup(setting: Setting<*>, columns: Int, private val content: Wind
                         Setting.Type.GROUPED -> SettingElement<Setting<*>>(setting, settingHeight) // TODO
                         Setting.Type.LIST -> SettingElement<Setting<*>>(setting, settingHeight) // TODO
                         Setting.Type.MAP -> MapElement(content, setting as Setting.Map<*>, settingHeight)
+                        else -> SettingElement<Setting<*>>(setting, settingHeight)
                     })
                 }
             }
-            Setting.Type.COLOR -> pushChild(ColorElement.Selector(setting as Setting.Color, settingHeight))
+            Setting.Type.COLOR -> pushChild(ColorElement.DropDown(setting as Setting.Color, settingHeight))
             else -> throw RuntimeException("Can't open setting of type ${setting.type.name} in window")
         }
-        // TODO: LIST AND OTHER SETTINGS FULLSCREEN
     }
 }
 
@@ -86,6 +88,7 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
 
     open fun getText(): String = setting.name
     open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
+    open fun getSecondaryText(): String? = null
 
     open fun change() {
     }
@@ -127,6 +130,13 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
             color.value.red, color.value.green, color.value.blue, color.value.alpha
         )
 
+        getSecondaryText()?.let {
+            fontRenderer.drawString(
+                matrixStack, it, getWidth() - fontRenderer.getStringWidth(it) - 2, 1f,
+                theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
+            )
+        }
+
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
@@ -138,9 +148,6 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
             acted.set(true)
         }
     }
-
-    protected fun String.formatToPretty(): String =
-        this.split('_').joinToString { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 
     protected class SettingElementButton(private val element: SettingElement<*>, action: (Button) -> Unit): Button(0f, 0f, 0f, 0f,
         action, Clipping.SCISSOR) {

@@ -33,15 +33,15 @@ object MiscellaneousSettings: Settings<CrystalAura>(CrystalAura, "Miscellaneous"
     }
 
     val remove_when = settings
-        .addEnum("Remove When", RemoveWhen.EXPLOSION_PACKET_RECEIVED)
+        .addEnum("Remove When", RemoveWhen.EXPLOSION)
         .setDescription(
-            "Explosion Packet Received - Remove crystals as soon as the explosion packet is received from the corresponding location.",
+            "Explosion - Remove crystals as soon as the explosion packet is received from the corresponding location.",
             "Attacked - Removes the crystal as soon as it is attacked by the player.",
             "Normal - Don't attempt to remove crystals early."
         )
 
     enum class RemoveWhen {
-        EXPLOSION_PACKET_RECEIVED,
+        EXPLOSION,
         ATTACKED,
         NORMAL
     }

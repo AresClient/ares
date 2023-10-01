@@ -9,6 +9,7 @@ import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.util.Keys
+import org.aresclient.ares.impl.gui.impl.game.formatToPretty
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.Bind>(setting, height) {
@@ -23,15 +24,7 @@ class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.
         text = if(setting.value == Keys.UNKNOWN) "None" else Keys.getName(setting.value).formatToPretty()
     }
 
-    override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        val text = if(listening) "..." else text
-        fontRenderer.drawString(
-            matrixStack, text, getWidth() - fontRenderer.getStringWidth(text) - 2, 1f,
-            theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
-        )
-
-        super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
-    }
+    override fun getSecondaryText() = if(listening) "..." else text
 
     override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 1 && !acted.get() && isMouseOver(mouseX, mouseY)) {
