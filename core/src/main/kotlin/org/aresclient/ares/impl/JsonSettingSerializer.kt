@@ -45,7 +45,7 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             Setting.Type.LONG -> Setting.Long(data?.jsonPrimitive?.longOrNull ?: readInfo.defaultValue as Long)
             Setting.Type.BIND -> Setting.Bind(data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
             Setting.Type.GROUPED -> TODO()
-            Setting.Type.LIST -> Setting.List(data?.jsonArray?.map { read(Setting.ReadInfo(readInfo.elementType, null), it) } ?: ArrayList())
+            Setting.Type.LIST -> Setting.List(data?.jsonArray?.map { read(Setting.ReadInfo(readInfo.elementType, null), it) }?.toTypedArray() ?: arrayOf())
             Setting.Type.MAP -> Setting.Map(this, data?.jsonObject ?: mutableMapOf())
             null -> throw NullPointerException()
         }
@@ -69,7 +69,7 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             Setting.Type.LONG -> JsonPrimitive(setting.value as Long)
             Setting.Type.BIND -> JsonPrimitive(setting.value as Int)
             Setting.Type.GROUPED -> TODO()
-            Setting.Type.LIST -> JsonArray((setting.value as List<Setting<*>>).map { write(it) })
+            Setting.Type.LIST -> JsonArray((setting.value as Array<Setting<*>>).map { write(it) })
             Setting.Type.MAP -> JsonObject((setting.value as Map<String, Setting<*>>).mapValues { write(it.value) })
             null -> throw NullPointerException()
         }

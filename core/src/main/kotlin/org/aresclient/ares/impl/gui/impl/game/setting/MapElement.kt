@@ -4,7 +4,7 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.gui.impl.game.*
 import org.aresclient.ares.impl.util.Theme
 
-class MapElement(private val content: WindowContent, setting: Setting.Map<*>, scale: Float):
+class MapElement(private val content: SettingsContent, setting: Setting.Map<*>, scale: Float):
     DropDownSettingElement<Setting.Map<*>>(setting, scale) {
     private val enabled: Setting<Boolean>? = setting.value["Enabled"] as? Setting.Boolean
 

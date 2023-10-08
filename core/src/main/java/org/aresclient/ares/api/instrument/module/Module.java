@@ -55,7 +55,7 @@ public class Module extends Instrument {
         this.category = category;
         this.defaults = defaults;
 
-        enabled = settings.addBoolean("Enabled", defaults.enabled).setListener(value -> {
+        enabled = (Setting.Boolean) settings.addBoolean("Enabled", defaults.enabled).addListener(value -> {
             if(value) {
                 if(!defaults.alwaysListening) registerEvents();
                 onEnable();

@@ -30,14 +30,14 @@ class WindowManager(private val settings: Setting.List<Setting.Map<*>>): StaticE
 
     fun <T: WindowContent> open(creator: Setting.Map<*>.() -> Class<T>?) {
         val map = Setting.Map(Ares.getSettings().serializer)
-        settings.value.add(map)
+        settings.add(map)
         pushChild(WindowElement(map, this).also {
             it.open(creator)
         })
     }
 
     fun close(window: WindowElement) {
-        settings.value.remove(window.settings)
+        settings.remove(window.settings)
         getChildren().remove(window)
     }
 
@@ -62,10 +62,12 @@ abstract class WindowContent(internal val settings: Setting.Map<*>): StaticEleme
     }
 
     fun getWindow() = getParent() as? WindowElement
+
+    override fun getWidth() = getParent()?.getWidth() ?: 0f
 }
 
 class WindowElement(internal val settings: Setting.Map<*>, private val windowManager: WindowManager): DynamicElement() {
-    private val content = settings.addList<Setting.Map<*>>(Setting.Type.MAP, "content")
+    private val content = settings.addList<Setting.Map<*>>(Setting.Type.MAP, "Content")
     private val x = settings.addFloat("x", 0f)
     private val y = settings.addFloat("y", 0f)
     private val width = settings.addFloat("width", 130f)
@@ -106,13 +108,13 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
 
     fun <T: WindowContent> open(defaults: Setting.Map<*>.() -> Class<T>? = {null}) {
         val map = Setting.Map(settings.serializer)
-        content.value.add(map)
+        content.add(map)
         open(map, defaults)
     }
 
     private fun back() {
         if(window == null || content.value.size == 1) return
-        content.value.removeLast()
+        if(content.value.isNotEmpty()) content.remove(content.value.size - 1)
         setWindow(content.value.lastOrNull()?.let {
             val clazz = it.addString("class", "")
             if(clazz.value.isNullOrEmpty()) null
@@ -124,7 +126,6 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
         this.window = window?.also {
             it.setParent(this)
             it.setY(TOP_SIZE)
-            it.setWidth(getWidth())
             icon.setTexture(it.getIcon())
         }
     }

@@ -18,31 +18,25 @@ import java.util.concurrent.atomic.AtomicBoolean
 fun String.formatToPretty(): String =
     this.split('_').joinToString(separator = " ") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 
-class SettingsGroup(setting: Setting<*>, columns: Int, private val content: WindowContent, private val skipEnabled: Boolean = false,
+class SettingsGroup(private val setting: Setting<*>, columns: Int, private val content: SettingsContent, private val skipEnabled: Boolean = false,
     private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
     width: () -> Float = { 0f }, height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
+
     init {
+        refresh()
+    }
+
+    fun refresh() {
+        getChildren().clear()
         when(setting.type) {
             Setting.Type.MAP -> (setting as Setting.Map<*>).value.forEach { (name, setting) ->
-                if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled")) {
-                    pushChild(when(setting.type) {
-                        Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, settingHeight)
-                        Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, settingHeight)
-                        Setting.Type.BIND -> BindElement(setting as Setting.Bind, settingHeight)
-                        Setting.Type.STRING -> StringElement(setting as Setting.String, settingHeight) // TODO: FIX
-                        Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, settingHeight)
-                        Setting.Type.LONG -> LongElement(setting as Setting.Long, settingHeight)
-                        Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
-                        Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
-                        Setting.Type.COLOR -> ColorElement(content, setting as Setting.Color, settingHeight)
-                        Setting.Type.GROUPED -> SettingElement<Setting<*>>(setting, settingHeight) // TODO
-                        Setting.Type.LIST -> SettingElement<Setting<*>>(setting, settingHeight) // TODO
-                        Setting.Type.MAP -> MapElement(content, setting as Setting.Map<*>, settingHeight)
-                        else -> SettingElement<Setting<*>>(setting, settingHeight)
-                    })
-                }
+                if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled"))
+                    pushChild(content.createSettingElement(setting, settingHeight))
             }
             Setting.Type.COLOR -> pushChild(ColorElement.DropDown(setting as Setting.Color, settingHeight))
+            Setting.Type.LIST -> (setting as Setting.List<*>).value.forEach {
+                pushChild(content.createSettingElement(it, settingHeight))
+            }
             else -> throw RuntimeException("Can't open setting of type ${setting.type.name} in window")
         }
     }
@@ -80,16 +74,33 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
     override fun getTitle() = setting.getName() ?: "Home"
 
     override fun getHeight() = group.getHeight()
+
+    fun createSettingElement(setting: Setting<*>, settingHeight: Float = 18f): SettingElement<*> = when(setting.type) {
+        Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, settingHeight)
+        Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, settingHeight)
+        Setting.Type.BIND -> BindElement(setting as Setting.Bind, settingHeight)
+        Setting.Type.STRING -> StringElement(setting as Setting.String, settingHeight)
+        Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, settingHeight)
+        Setting.Type.LONG -> LongElement(setting as Setting.Long, settingHeight)
+        Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
+        Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
+        Setting.Type.COLOR -> ColorElement(this, setting as Setting.Color, settingHeight)
+        Setting.Type.LIST -> ListElement(this, setting as Setting.List<*>, settingHeight)
+        Setting.Type.GROUPED -> SettingElement(setting, settingHeight) // TODO
+        Setting.Type.MAP -> MapElement(this, setting as Setting.Map<*>, settingHeight)
+        else -> SettingElement(setting, settingHeight)
+    }
 }
 
 open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
     protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
     private var prev = setting.value
 
-    open fun getText(): String = setting.name
+    open fun getText(): String = setting.name ?: "<null>"
     open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
     open fun getSecondaryText(): String? = null
 
+    // TODO: maybe change to Setting::addListener, would have to also removeListener on close
     open fun change() {
     }
 
@@ -98,7 +109,7 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     }
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        if(isMouseOver(mouseX, mouseY))
+        if(setting.description != null && isMouseOver(mouseX, mouseY))
             (getRootParent() as? ScreenElement)?.setTooltip(*setting.description)
 
         // detect changes to value, then propagate to subclasses

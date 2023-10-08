@@ -18,7 +18,7 @@ public class Setting<T> {
     private java.lang.String name = null;
     private java.lang.String[] description = null;
     private Supplier<java.lang.Boolean> hidden = () -> false;
-    private Consumer<T> listener = null;
+    private final java.util.List<Consumer<T>> listeners = new ArrayList<Consumer<T>>();
     private ReadInfo<T> readInfo = null;
     private final Type type;
     private T value;
@@ -37,8 +37,8 @@ public class Setting<T> {
     }
 
     public java.lang.String getName() {
-        if(this instanceof Setting.List<?>)
-            return java.lang.String.valueOf(((Setting.List<?>) this).getValue().indexOf(value));
+        if(getParent() instanceof Setting.List<?>)
+            return java.lang.String.valueOf(((Setting.List<?>) getParent()).indexOf(this));
         return name;
     }
 
@@ -64,13 +64,18 @@ public class Setting<T> {
         return this;
     }
 
-    public Consumer<T> getListener() {
-        return listener;
+    public Setting<T> addListener(Consumer<T> listener) {
+        listeners.add(listener);
+        return this;
     }
 
-    public <R extends Setting<T>> R setListener(Consumer<T> listener) {
-        this.listener = listener;
-        return (R) this;
+    public Setting<T> removeListener(Consumer<T> listener) {
+        listeners.remove(listener);
+        return this;
+    }
+
+    public java.util.List<Consumer<T>> getListeners() {
+        return listeners;
     }
 
     public ReadInfo<T> getReadInfo() {
@@ -92,7 +97,9 @@ public class Setting<T> {
     public void setValue(T value) {
         T prev = this.value;
         this.value = value;
-        if(listener != null && prev != value) listener.accept(value);
+        if(prev != value)
+            for(Consumer<T> consumer: listeners)
+                consumer.accept(value);
     }
 
     public java.lang.String getPath() {
@@ -229,12 +236,6 @@ public class Setting<T> {
             return this;
         }
 
-        @Override
-        public Setting.Number<T> setHidden(Supplier<java.lang.Boolean> hiddenIf) {
-            super.setHidden(hiddenIf);
-            return this;
-        }
-
         public T getMin() {
             return min;
         }
@@ -322,25 +323,49 @@ public class Setting<T> {
 
     // TODO: GROUPED
 
-    public static class List<T extends Setting<?>> extends Setting<java.util.List<T>> {
-        public List(java.util.List<T> value) {
+    public static class List<T extends Setting<?>> extends Setting<T[]> {
+        public List(T[] value) {
             super(Type.LIST, value);
             for(T setting: value) setting.setParent(this);
         }
 
         public void add(T setting) {
             setting.setParent(this);
-            getValue().add(setting);
+
+            T[] prev = getValue();
+            Setting[] value = new Setting[prev.length + 1];
+
+            System.arraycopy(prev, 0, value, 0, prev.length);
+            value[prev.length] = setting;
+            setValue((T[]) value);
+        }
+
+        public void remove(int index) {
+            T[] prev = getValue();
+            Setting[] value = new Setting[prev.length - 1];
+
+            int i = 0;
+            for(; i < index; i++) value[i] = prev[i];
+            prev[i++].setParent(null);
+            for(; i < prev.length; i++) value[i - 1] = prev[i];
+
+            setValue((T[]) value);
         }
 
         public void remove(T setting) {
-            setting.setParent(null);
-            getValue().remove(setting);
+            int index = indexOf(setting);
+            if(index != -1) remove(index);
+        }
+
+        public <R> int indexOf(R setting) {
+            for(int i = 0; i < getValue().length; i++)
+                if(getValue()[i] == setting) return i;
+            return -1;
         }
 
         @Override
         public void setDefault() {
-            getValue().forEach(Setting::setDefault);
+            for(T setting: getValue()) setting.setDefault();
         }
     }
 
@@ -427,12 +452,12 @@ public class Setting<T> {
             return add(new Setting.Grouped<>(name, this, defaultValue));
         }*/
 
-        public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, java.util.List<T> defaultValue, java.lang.String... description) {
+        public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, T[] defaultValue, java.lang.String... description) {
             return add(new ReadInfo<>(Type.LIST, elementType, defaultValue), name, description);
         }
 
         public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, java.lang.String... description) {
-            return addList(elementType, name, new ArrayList<>(), description);
+            return addList(elementType, name, (T[]) new Setting[]{}, description);
         }
 
         public Setting.Map<R> addMap(java.lang.String name, java.lang.String... description) {
