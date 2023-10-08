@@ -22,7 +22,7 @@ object DelaySettings: Settings<CrystalAura>(CrystalAura, "Delays") {
 
     val break_on_spawn = settings
         .addBoolean("Break On Spawn", false)
-        .setHidden { minimum_break_age.value > 0 }
+        .setVisibility { minimum_break_age.value <= 0 }
         .setDescription("Attempt to break a crystal as soon as it spawns into the world")
 
     val conserve = settings
@@ -33,15 +33,15 @@ object DelaySettings: Settings<CrystalAura>(CrystalAura, "Delays") {
         )
 
     val maximum_place = Interaction.standardDelay(settings, "Maximum Place", 5.0)
-        .setHidden { !conserve.value }
+        .setVisibility { conserve.value }
         .setDescription("The maximum place delay to intentionally wait while conserving.")
 
     val maximum_break = Interaction.standardDelay(settings, "Maximum Break", 5.0)
-        .setHidden { !conserve.value }
+        .setVisibility { conserve.value }
         .setDescription("The maximum break delay to intentionally wait while conserving.")
 
     val maximum_break_age = Interaction.tickOnlyDelay(settings, "Maximum Break Age", 10)
-        .setHidden { !conserve.value }
+        .setVisibility { conserve.value }
         .setDescription(
             "The maximum number of ticks to intentionally wait after a crystal",
             "has spawned before attempting to break it while conserving.",

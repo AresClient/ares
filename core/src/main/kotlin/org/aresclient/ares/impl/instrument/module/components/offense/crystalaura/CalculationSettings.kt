@@ -35,7 +35,7 @@ object CalculationSettings: Settings<CrystalAura>(CrystalAura, "Calculation") {
 
     val pre_occlude_surround = settings
         .addBoolean("Pre Occlude Surround", true)
-        .setHidden { !predict_surround_opening.value }
+        .setVisibility { predict_surround_opening.value }
         .setDescription(
             "When predicting that the surround openings, attempt to",
             "occlude the surround block early by placing a crystal next",
@@ -45,7 +45,7 @@ object CalculationSettings: Settings<CrystalAura>(CrystalAura, "Calculation") {
 
     val occlude_while_mining = settings
         .addBoolean("Occlude While Mining", true)
-        .setHidden { !pre_occlude_surround.value }
+        .setVisibility { pre_occlude_surround.value }
         .setDescription(
             "Allow CrystalAura to attempt to place crystals while packet",
             "mining blocks to pre-occlude the surround."
@@ -60,7 +60,7 @@ object CalculationSettings: Settings<CrystalAura>(CrystalAura, "Calculation") {
 
     val use_predict_for_short_circuit = settings
         .addBoolean("Use Predict For Short Circuit", false)
-        .setHidden { !surround_short_circuit.value }
+        .setVisibility { surround_short_circuit.value }
         .setDescription(
             "Uses the surround opening prediction to try and predict timing for",
             "short circuiting to break the surround."

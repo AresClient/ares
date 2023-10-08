@@ -17,7 +17,7 @@ public class Setting<T> {
     private Setting<?> parent = null;
     private java.lang.String name = null;
     private java.lang.String[] description = null;
-    private Supplier<java.lang.Boolean> hidden = () -> false;
+    private Supplier<java.lang.Boolean> visible = () -> true;
     private final java.util.List<Consumer<T>> listeners = new ArrayList<Consumer<T>>();
     private ReadInfo<T> readInfo = null;
     private final Type type;
@@ -55,12 +55,12 @@ public class Setting<T> {
         return this;
     }
 
-    public java.lang.Boolean isHidden() {
-        return hidden.get();
+    public java.lang.Boolean isVisible() {
+        return visible.get();
     }
 
-    public Setting<T> setHidden(Supplier<java.lang.Boolean> hidden) {
-        this.hidden = hidden;
+    public Setting<T> setVisibility(Supplier<java.lang.Boolean> hidden) {
+        this.visible = hidden;
         return this;
     }
 

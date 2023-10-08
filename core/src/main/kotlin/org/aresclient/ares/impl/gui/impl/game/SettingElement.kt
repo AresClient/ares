@@ -96,6 +96,10 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
     private var prev = setting.value
 
+    init {
+        setVisible { setting.isVisible }
+    }
+
     open fun getText(): String = setting.name ?: "<null>"
     open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
     open fun getSecondaryText(): String? = null

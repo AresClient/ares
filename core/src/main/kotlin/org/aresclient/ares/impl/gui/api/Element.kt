@@ -337,7 +337,7 @@ open class DynamicElementGroup(private val columns: Int,
 
         if(curr >= columns) {
             val prev = getChildren()[curr - columns]
-            child.setY { prev.getY() + prev.getHeight() }
+            child.setY { prev.getY() + if(prev.isVisible()) prev.getHeight() else 0f }
         } else child.setY { 0f }
 
         return super.pushChild(child)

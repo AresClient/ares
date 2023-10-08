@@ -8,11 +8,11 @@ object TargetSettings: Settings<CrystalAura>(CrystalAura, "Target") {
 
     val friends = settings
         .addBoolean("Friends", false)
-        .setHidden { !players.value }
+        .setVisibility { players.value }
 
     val prioritize_player = settings
         .addString("Prioritize Player", "Fit")
-        .setHidden { !players.value }
+        .setVisibility { players.value }
 
     val mobs = settings.addBoolean("Mobs", false)
     val animals = settings.addBoolean("Animals", false)

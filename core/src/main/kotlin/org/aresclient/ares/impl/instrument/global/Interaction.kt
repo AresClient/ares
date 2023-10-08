@@ -64,7 +64,7 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
         .addInteger("Blocks Placed Per Instant", 1)
         .setMin(1)
         .setMax(20)
-        .setHidden { block_place_delay.value == 0.0 }
+        .setVisibility { block_place_delay.value != 0.0 }
         .setDescription(*percentageMeasureArray)
 
     val block_break_delay = standardDelay(settings, "Block Break Delay", 5.0)
