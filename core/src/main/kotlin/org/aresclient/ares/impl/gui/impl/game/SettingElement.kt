@@ -86,7 +86,6 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
         Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
         Setting.Type.COLOR -> ColorElement(this, setting as Setting.Color, settingHeight)
         Setting.Type.LIST -> ListElement(this, setting as Setting.List<*>, settingHeight)
-        Setting.Type.GROUPED -> SettingElement(setting, settingHeight) // TODO
         Setting.Type.MAP -> MapElement(this, setting as Setting.Map<*>, settingHeight)
         else -> SettingElement(setting, settingHeight)
     }

@@ -1,13 +1,13 @@
 package org.aresclient.ares.impl.iface.module.movement
 
-import net.meshmc.mesh.loader.Mod.Interface
+import net.meshmc.mesh.loader.Mod
 import net.minecraft.client.MinecraftClient
 import org.aresclient.ares.impl.instrument.module.modules.movement.Strafe
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-@Interface
+@Mod.Interface
 class StrafeVSC: Strafe.VSC {
     override fun strafe(strafe: Strafe) {
         val mc = MinecraftClient.getInstance()

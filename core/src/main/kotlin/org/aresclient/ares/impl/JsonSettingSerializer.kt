@@ -29,25 +29,24 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
 
     override fun read(readInfo: Setting.ReadInfo<*>?, data: JsonElement?): Setting<*> {
         return when(readInfo?.type) {
-            Setting.Type.STRING -> Setting.String(data?.jsonPrimitive?.contentOrNull ?: readInfo.defaultValue as String)
-            Setting.Type.BOOLEAN -> Setting.Boolean(data?.jsonPrimitive?.booleanOrNull ?: readInfo.defaultValue as Boolean)
-            Setting.Type.ENUM -> Setting.Enum((data?.jsonPrimitive?.intOrNull?.let { readInfo.defaultValue!!::class.java.enumConstants[it] } ?: readInfo.defaultValue) as Enum<*>)
-            Setting.Type.COLOR -> data?.jsonObject?.let {  Setting.Color(Color(
+            Setting.Type.STRING -> Setting.String(this, data?.jsonPrimitive?.contentOrNull ?: readInfo.defaultValue as String)
+            Setting.Type.BOOLEAN -> Setting.Boolean(this, data?.jsonPrimitive?.booleanOrNull ?: readInfo.defaultValue as Boolean)
+            Setting.Type.ENUM -> Setting.Enum(this, (data?.jsonPrimitive?.intOrNull?.let { readInfo.enumClass.enumConstants[it] } ?: readInfo.defaultValue ?: readInfo.enumClass.enumConstants.firstOrNull()) as Enum<*>)
+            Setting.Type.COLOR -> data?.jsonObject?.let {  Setting.Color(this, Color(
                 it["red"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["green"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["blue"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["alpha"]?.jsonPrimitive?.floatOrNull ?: 1f),
                 it["rainbow"]?.jsonPrimitive?.booleanOrNull ?: false
-                )} ?: Setting.Color(readInfo.defaultValue as Color, readInfo.isRainbow)
-            Setting.Type.INTEGER -> Setting.Integer(data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
-            Setting.Type.DOUBLE -> Setting.Double(data?.jsonPrimitive?.doubleOrNull ?: readInfo.defaultValue as Double)
-            Setting.Type.FLOAT -> Setting.Float(data?.jsonPrimitive?.floatOrNull ?: readInfo.defaultValue as Float)
-            Setting.Type.LONG -> Setting.Long(data?.jsonPrimitive?.longOrNull ?: readInfo.defaultValue as Long)
-            Setting.Type.BIND -> Setting.Bind(data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
-            Setting.Type.GROUPED -> TODO()
-            Setting.Type.LIST -> Setting.List(data?.jsonArray?.map { read(Setting.ReadInfo(readInfo.elementType, null), it) }?.toTypedArray() ?: arrayOf())
+                )} ?: Setting.Color(this, readInfo.defaultValue as Color, readInfo.isRainbow)
+            Setting.Type.INTEGER -> Setting.Integer(this, data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
+            Setting.Type.DOUBLE -> Setting.Double(this, data?.jsonPrimitive?.doubleOrNull ?: readInfo.defaultValue as Double)
+            Setting.Type.FLOAT -> Setting.Float(this, data?.jsonPrimitive?.floatOrNull ?: readInfo.defaultValue as Float)
+            Setting.Type.LONG -> Setting.Long(this, data?.jsonPrimitive?.longOrNull ?: readInfo.defaultValue as Long)
+            Setting.Type.BIND -> Setting.Bind(this, data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
+            Setting.Type.LIST -> Setting.List(this, data?.jsonArray?.map { read(Setting.ReadInfo(readInfo.elementType, null).setEnumClass(readInfo.enumClass), it) }?.toTypedArray() ?: arrayOf())
             Setting.Type.MAP -> Setting.Map(this, data?.jsonObject ?: mutableMapOf())
-            null -> throw NullPointerException()
+            else -> throw NullPointerException()
         }
     }
 
@@ -68,10 +67,9 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             Setting.Type.FLOAT -> JsonPrimitive(setting.value as Float)
             Setting.Type.LONG -> JsonPrimitive(setting.value as Long)
             Setting.Type.BIND -> JsonPrimitive(setting.value as Int)
-            Setting.Type.GROUPED -> TODO()
             Setting.Type.LIST -> JsonArray((setting.value as Array<Setting<*>>).map { write(it) })
             Setting.Type.MAP -> JsonObject((setting.value as Map<String, Setting<*>>).mapValues { write(it.value) })
-            null -> throw NullPointerException()
+            else -> throw NullPointerException()
         }
     }
 }

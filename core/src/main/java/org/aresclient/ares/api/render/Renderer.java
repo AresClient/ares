@@ -14,6 +14,7 @@ public class Renderer {
     public static class Uniforms {
         private final Uniform.F1 roundedRadius = Shader.ROUNDED.uniformF1("radius");
         private final Uniform.F2 roundedSize = Shader.ROUNDED.uniformF2("size");
+        private final Uniform.F1 roundedCutoff = Shader.ROUNDED.uniformF1("cutoff");
 
         private Uniforms() {
         }
@@ -24,6 +25,10 @@ public class Renderer {
 
         public Uniform.F2 getRoundedSize() {
             return roundedSize;
+        }
+
+        public Uniform.F1 getRoundedCutoff() {
+            return roundedCutoff;
         }
     }
 

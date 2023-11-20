@@ -11,19 +11,22 @@ public class Setting<T> {
         STRING, BOOLEAN, ENUM,
         COLOR, INTEGER, DOUBLE,
         FLOAT, LONG, BIND,
-        GROUPED, LIST, MAP
+        LIST, MAP, GROUPED
     }
 
     private Setting<?> parent = null;
     private java.lang.String name = null;
     private java.lang.String[] description = null;
     private Supplier<java.lang.Boolean> visible = () -> true;
-    private final java.util.List<Consumer<T>> listeners = new ArrayList<Consumer<T>>();
+    private final java.util.List<Consumer<T>> listeners = new ArrayList<>();
     private ReadInfo<T> readInfo = null;
+
+    private final ISerializer<?> serializer;
     private final Type type;
     private T value;
 
-    private Setting(Type type, T value) {
+    private Setting(ISerializer<?> serializer, Type type, T value) {
+        this.serializer = serializer;
         this.type = type;
         this.value = value;
     }
@@ -86,6 +89,10 @@ public class Setting<T> {
         this.readInfo = readInfo;
     }
 
+    public ISerializer<?> getSerializer() {
+        return serializer;
+    }
+
     public Type getType() {
         return type;
     }
@@ -112,23 +119,28 @@ public class Setting<T> {
         setValue(readInfo.defaultValue);
     }
 
+    @Override
+    public java.lang.String toString() {
+        return "Setting(type: " + type.name() + ", value: " + value.toString() + ")";
+    }
+
     public static class String extends Setting<java.lang.String> {
-        public String(java.lang.String value) {
-            super(Type.STRING, value);
+        public String(ISerializer<?> serializer, java.lang.String value) {
+            super(serializer, Type.STRING, value);
         }
     }
 
     public static class Boolean extends Setting<java.lang.Boolean> {
-        public Boolean(java.lang.Boolean value) {
-            super(Type.BOOLEAN, value);
+        public Boolean(ISerializer<?> serializer, java.lang.Boolean value) {
+            super(serializer, Type.BOOLEAN, value);
         }
     }
 
     public static class Enum<T extends java.lang.Enum<?>> extends Setting<T> {
         private final HashMap<T, Pair<Supplier<java.lang.Boolean>, java.lang.String>> restrictions = new HashMap<>();
 
-        public Enum(T value) {
-            super(Type.ENUM, value);
+        public Enum(ISerializer<?> serializer, T value) {
+            super(serializer, Type.ENUM, value);
         }
 
         @Override
@@ -151,13 +163,13 @@ public class Setting<T> {
     public static class Color extends Setting<org.aresclient.ares.api.util.Color> {
         private boolean rainbow;
 
-        public Color(org.aresclient.ares.api.util.Color value, boolean rainbow) {
-            super(Type.COLOR, value);
+        public Color(ISerializer<?> serializer, org.aresclient.ares.api.util.Color value, boolean rainbow) {
+            super(serializer, Type.COLOR, value);
             this.rainbow = rainbow;
         }
 
-        public Color(org.aresclient.ares.api.util.Color value) {
-            this(value, false);
+        public Color(ISerializer<?> serializer, org.aresclient.ares.api.util.Color value) {
+            this(serializer, value, false);
         }
 
         @Override
@@ -201,8 +213,8 @@ public class Setting<T> {
 
         private Consumer<java.lang.Boolean> callback = null;
 
-        public Bind(java.lang.Integer value) {
-            super(Type.BIND, value);
+        public Bind(ISerializer<?> serializer, java.lang.Integer value) {
+            super(serializer, Type.BIND, value);
             BINDS.add(this);
         }
 
@@ -227,8 +239,8 @@ public class Setting<T> {
         /** Does not affect long */
         private java.lang.Integer precision = null;
 
-        private Number(Type type, T value) {
-            super(type, value);
+        private Number(ISerializer<?> serializer, Type type, T value) {
+            super(serializer, type, value);
         }
 
         public Setting.Number<T> setDescription(java.lang.String... line) {
@@ -268,8 +280,8 @@ public class Setting<T> {
     }
 
     public static class Integer extends Setting.Number<java.lang.Integer> {
-        public Integer(java.lang.Integer value) {
-            super(Type.INTEGER, value);
+        public Integer(ISerializer<?> serializer, java.lang.Integer value) {
+            super(serializer, Type.INTEGER, value);
         }
 
         @Override
@@ -284,8 +296,8 @@ public class Setting<T> {
     }
 
     public static class Double extends Setting.Number<java.lang.Double> {
-        public Double(java.lang.Double value) {
-            super(Type.DOUBLE, value);
+        public Double(ISerializer<?> serializer, java.lang.Double value) {
+            super(serializer, Type.DOUBLE, value);
         }
 
         @Override
@@ -300,8 +312,8 @@ public class Setting<T> {
     }
 
     public static class Float extends Setting.Number<java.lang.Float> {
-        public Float(java.lang.Float value) {
-            super(Type.FLOAT, value);
+        public Float(ISerializer<?> serializer, java.lang.Float value) {
+            super(serializer, Type.FLOAT, value);
         }
 
         @Override
@@ -316,16 +328,14 @@ public class Setting<T> {
     }
 
     public static class Long extends Setting.Number<java.lang.Long> {
-        public Long(java.lang.Long value) {
-            super(Type.LONG, value);
+        public Long(ISerializer<?> serializer, java.lang.Long value) {
+            super(serializer, Type.LONG, value);
         }
     }
 
-    // TODO: GROUPED
-
     public static class List<T extends Setting<?>> extends Setting<T[]> {
-        public List(T[] value) {
-            super(Type.LIST, value);
+        public List(ISerializer<?> serializer, T[] value) {
+            super(serializer, Type.LIST, value);
             for(T setting: value) setting.setParent(this);
         }
 
@@ -333,7 +343,7 @@ public class Setting<T> {
             setting.setParent(this);
 
             T[] prev = getValue();
-            Setting[] value = new Setting[prev.length + 1];
+            Setting<?>[] value = new Setting[prev.length + 1];
 
             System.arraycopy(prev, 0, value, 0, prev.length);
             value[prev.length] = setting;
@@ -342,7 +352,7 @@ public class Setting<T> {
 
         public void remove(int index) {
             T[] prev = getValue();
-            Setting[] value = new Setting[prev.length - 1];
+            Setting<?>[] value = new Setting[prev.length - 1];
 
             int i = 0;
             for(; i < index; i++) value[i] = prev[i];
@@ -357,7 +367,7 @@ public class Setting<T> {
             if(index != -1) remove(index);
         }
 
-        public <R> int indexOf(R setting) {
+        public <S> int indexOf(S setting) {
             for(int i = 0; i < getValue().length; i++)
                 if(getValue()[i] == setting) return i;
             return -1;
@@ -370,12 +380,10 @@ public class Setting<T> {
     }
 
     public static class Map<R> extends Setting<java.util.Map<java.lang.String, Setting<?>>> {
-        private final ISerializer<R> serializer;
         private final java.util.Map<java.lang.String, R> data;
 
         Map(ISerializer<R> serializer, java.util.Map<java.lang.String, R> data, java.util.Map<java.lang.String, Setting<?>> value) {
-            super(Type.MAP, value);
-            this.serializer = serializer;
+            super(serializer, Type.MAP, value);
             this.data = data;
         }
 
@@ -392,14 +400,14 @@ public class Setting<T> {
             getValue().values().forEach(Setting::setDefault);
         }
 
-        private <T, S extends Setting<T>> S add(ReadInfo<T> readInfo, java.lang.String name, java.lang.String... description) {
+        public <T, S extends Setting<T>> S add(ReadInfo<T> readInfo, java.lang.String name, java.lang.String... description) {
             Setting<?> prev = getValue().get(name);
             if(prev != null) {
-                assert prev.getReadInfo().type != readInfo.type;
+                assert prev.getReadInfo().type == readInfo.type;
                 return (S) prev;
             }
 
-            S setting = (S) serializer.read(readInfo, data.get(name));
+            S setting = (S) ((ISerializer<R>) getSerializer()).read(readInfo, data.get(name));
             setting.setParent(this);
             setting.setName(name);
             setting.setReadInfo(readInfo);
@@ -417,7 +425,7 @@ public class Setting<T> {
         }
 
         public <T extends java.lang.Enum<?>> Setting.Enum<T> addEnum(java.lang.String name, T defaultValue, java.lang.String... description) {
-            return add(new ReadInfo<>(Type.ENUM, defaultValue), name, description);
+            return add(new ReadInfo<>(Type.ENUM, defaultValue).setEnumClass(defaultValue.getClass()), name, description);
         }
 
         public Setting.Color addColor(java.lang.String name, org.aresclient.ares.api.util.Color defaultValue, boolean rainbow, java.lang.String... description) {
@@ -448,10 +456,6 @@ public class Setting<T> {
             return add(new ReadInfo<>(Type.LONG, defaultValue), name, description);
         }
 
-        /*public <S, R extends Setting.GroupTrait> Setting.Grouped<S, R> addGrouped(java.lang.String name, HashMap<S, R> defaultValue) {
-            return add(new Setting.Grouped<>(name, this, defaultValue));
-        }*/
-
         public <T extends Setting<?>> Setting.List<T> addList(Type elementType, java.lang.String name, T[] defaultValue, java.lang.String... description) {
             return add(new ReadInfo<>(Type.LIST, elementType, defaultValue), name, description);
         }
@@ -460,12 +464,31 @@ public class Setting<T> {
             return addList(elementType, name, (T[]) new Setting[]{}, description);
         }
 
+        public <T extends Setting.Enum<?>> Setting.List<T> addEnumList(Type elementType, Class<? extends java.lang.Enum> enumClass, java.lang.String name, T[] defaultValue, java.lang.String... description) {
+            return add(new ReadInfo<>(Type.LIST, elementType, defaultValue).setEnumClass(enumClass), name, description);
+        }
+
+        public <T extends Setting.Enum<?>> Setting.List<T> addEnumList(Type elementType, Class<? extends java.lang.Enum> enumClass, java.lang.String name, java.lang.String... description) {
+            return addEnumList(elementType, enumClass, name, (T[]) new Setting.Enum[]{}, description);
+        }
+
         public Setting.Map<R> addMap(java.lang.String name, java.lang.String... description) {
             return add(new ReadInfo<>(Type.MAP, new HashMap<>()), name, description);
         }
 
-        public ISerializer<R> getSerializer() {
-            return serializer;
+        public <T extends Grouped.Trait, S extends java.lang.Enum<?>> Grouped<T, S> addGrouped(java.lang.String name, java.lang.String[] description, Class<T> traitClass, Class<S> enumClass, Grouped.Initializer<T, S>...defaultGroups) {
+            Grouped<T, S> grouped = new Grouped<>(this, name, description, traitClass, enumClass, defaultGroups);
+            getValue().put(name, new Setting<>(getSerializer(), Type.GROUPED, grouped));
+            return grouped;
+        }
+
+
+        public <T extends Grouped.Trait, S extends java.lang.Enum<?>> Grouped<T, S> addGrouped(java.lang.String name, Class<T> traitClass, Class<S> enumClass, Grouped.Initializer<T, S>...defaultGroups) {
+            return addGrouped(name, new java.lang.String[0], traitClass, enumClass, defaultGroups);
+        }
+
+        public java.util.Map<java.lang.String, R> getData() {
+            return data;
         }
     }
 
@@ -473,6 +496,8 @@ public class Setting<T> {
         private final Type type;
         private final Type elementType;
         private final T defaultValue;
+
+        private Class<? extends java.lang.Enum> enumClass; // Enum settings need to know what class the enums are from
         private boolean rainbow = false; // Setting.Color needs to know if default is rainbow
 
         ReadInfo(Type type, Type elementType, T defaultValue) {
@@ -495,6 +520,15 @@ public class Setting<T> {
 
         public T getDefaultValue() {
             return defaultValue;
+        }
+
+        public Class<? extends java.lang.Enum> getEnumClass() {
+            return enumClass;
+        }
+
+        public ReadInfo<T> setEnumClass(Class<? extends java.lang.Enum> enumClass) {
+            this.enumClass = enumClass;
+            return this;
         }
 
         public boolean isRainbow() {
