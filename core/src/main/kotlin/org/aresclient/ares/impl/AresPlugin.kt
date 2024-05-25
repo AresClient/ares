@@ -2,6 +2,7 @@ package org.aresclient.ares.impl
 
 import net.meshmc.mesh.loader.Mod
 import net.meshmc.mesh.loader.Mod.Instance
+import org.aresclient.ares.AresStatics
 import org.aresclient.ares.api.Ares
 import org.aresclient.ares.impl.command.EchoCommand
 import org.aresclient.ares.impl.command.HelpCommand

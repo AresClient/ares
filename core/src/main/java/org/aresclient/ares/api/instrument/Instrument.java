@@ -33,8 +33,10 @@ public abstract class Instrument {
 
     void addComponent(Component<?> component) {
         components.add(component);
-        if(component instanceof Component.Settings<?> settingsComponent)
+        if(component instanceof Component.Settings<?>) {
+            Component.Settings<?> settingsComponent = (Component.Settings<?>) component;
             settingsComponent.setSettings(this.settings.addMap(settingsComponent.getPathName()));
+        }
     }
 
     public void registerEvents() {

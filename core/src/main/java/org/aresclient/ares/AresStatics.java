@@ -4,6 +4,9 @@ import org.aresclient.ares.api.minecraft.Minecraft;
 import org.aresclient.ares.api.minecraft.math.*;
 
 public class AresStatics {
+    public static void assertOnRenderThreadOrInit() {
+    }
+
     public static Minecraft getMinecraft() {
         throw new RuntimeException();
     }

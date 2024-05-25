@@ -1,7 +1,7 @@
 package org.aresclient.ares.impl.minecraft.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 import org.aresclient.ares.api.minecraft.render.Screen;
 
@@ -21,9 +21,8 @@ public class ScreenAdapter extends net.minecraft.client.gui.screen.Screen {
     }
 
     @Override
-    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
-        screen.render(mouseX, mouseY, partialTicks);
-        super.render(matrixStack, mouseX, mouseY, partialTicks);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        screen.render(mouseX, mouseY, delta);
     }
 
     @Override
@@ -51,9 +50,9 @@ public class ScreenAdapter extends net.minecraft.client.gui.screen.Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double value) {
-        screen.scroll((int) mouseX, (int) mouseY, value * 15);
-        return super.mouseScrolled(mouseX, mouseY, value);
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        screen.scroll((int) mouseX, (int) mouseY, verticalAmount * 15);
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount);
     }
 
     @Override

@@ -53,6 +53,11 @@ public class SkyBox {
         GL11.glEnable(GL32.GL_TEXTURE_CUBE_MAP_SEAMLESS);
         GL11.glBindTexture(GL13.GL_TEXTURE_CUBE_MAP, texture);
 
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 4); // why does microshit modify these and not revert them????
+        GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+
         for(int i = 0; i < 6; i++) {
             BufferedImage image;
             try {

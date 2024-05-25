@@ -77,7 +77,11 @@ public class Texture {
     }
 
     private static void generate(BufferedImage image, int id, boolean linear) {
-        // generate texture
+        GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 4); // why does microshit modify these and not revert them????
+        GL11.glPixelStorei(GL11.GL_UNPACK_ROW_LENGTH, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_PIXELS, 0);
+        GL11.glPixelStorei(GL11.GL_UNPACK_SKIP_ROWS, 0);
+
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, id);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);

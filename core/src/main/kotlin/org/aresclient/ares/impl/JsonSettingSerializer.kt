@@ -2,6 +2,7 @@ package org.aresclient.ares.impl
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import org.aresclient.ares.api.setting.Grouped
 import org.aresclient.ares.api.setting.ISerializer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.util.Color
@@ -69,6 +70,7 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             Setting.Type.BIND -> JsonPrimitive(setting.value as Int)
             Setting.Type.LIST -> JsonArray((setting.value as Array<Setting<*>>).map { write(it) })
             Setting.Type.MAP -> JsonObject((setting.value as Map<String, Setting<*>>).mapValues { write(it.value) })
+            Setting.Type.GROUPED -> write((setting.value as Grouped<*, *>).groupsSetting)
             else -> throw NullPointerException()
         }
     }

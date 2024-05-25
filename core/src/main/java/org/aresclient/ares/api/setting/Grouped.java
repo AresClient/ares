@@ -87,6 +87,10 @@ public class Grouped<T extends Grouped.Trait, R extends Enum<?>> {
         }
     }
 
+    public Setting.List<Setting.Map<?>> getGroupsSetting() {
+        return groupsSetting;
+    }
+
     public static interface Initializer<T extends Trait, R> {
         Group<T, R> accept(Setting.Map<?> map);
     }

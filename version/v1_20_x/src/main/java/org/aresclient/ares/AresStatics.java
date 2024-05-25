@@ -1,5 +1,6 @@
 package org.aresclient.ares;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.DemoScreen;
@@ -15,6 +16,10 @@ import org.aresclient.ares.impl.minecraft.math.Vec3fMesh;
 import org.joml.Vector3f;
 
 public class AresStatics {
+    public static void assertOnRenderThreadOrInit() {
+        RenderSystem.assertOnRenderThreadOrInit();
+    }
+
     public static Minecraft getMinecraft() {
         return new MinecraftMesh(MinecraftClient.getInstance());
     }

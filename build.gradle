@@ -11,7 +11,11 @@ group = project.mavenGroup
 version = project.modVersion
 archivesBaseName = project.modid
 
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
 subprojects {
+    sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
     repositories {
         mavenCentral()
         maven {

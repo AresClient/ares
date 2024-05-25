@@ -3,7 +3,7 @@
   "minVersion": "0.8",
   "package": "org.aresclient.ares.mixin",
   "compatibilityLevel": "JAVA_8",
-  "refmap": "ares-v1_19_x-refmap.json",
+  "refmap": "ares-v1_20_x-refmap.json",
   "client": [
     "event.client.MixinKeyboard",
     "event.client.MixinMinecraftClient",
