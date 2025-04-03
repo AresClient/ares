@@ -1,6 +1,6 @@
 package org.aresclient.ares.impl.gui.game
 
-import org.aresclient.ares.Main
+import org.aresclient.ares.Ares
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.impl.util.RenderHelper
@@ -55,7 +55,7 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
 class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
     private val name = settings.addString("setting", "")
     private val setting = with(name) {
-        var curr: Setting<*>? = Main.SETTINGS
+        var curr: Setting<*>? = Ares.SETTINGS
         val split = value.split(":")
         for(name in split) {
             curr = (when (curr?.type) {
@@ -64,7 +64,7 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
                 else -> null
             }) ?: break
         }
-        curr ?: Main.SETTINGS
+        curr ?: Ares.SETTINGS
     }
     private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
 
@@ -72,7 +72,7 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
         // set icon if category
         for(category in Module.Category.getAll()) {
             if(category.settings == setting) {
-                setIcon(category.getIcon())
+                setIcon(category.icon)
                 break
             }
         }
@@ -164,7 +164,7 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         super.click(mouseX, mouseY, mouseButton, acted)
 
         if(mouseButton == 2 && !acted.get() && isMouseOver(mouseX, mouseY)) {
@@ -251,7 +251,7 @@ abstract class DropDownSettingElement<T: Setting<*>>(setting: T, private val sca
         else scale
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         if(isMouseOver(mouseX, mouseY) && !acted.get() && mouseY <= getRenderY() + scale && (mouseButton == 1
                     || (mouseButton == 0 && mouseX <= getRenderX() + scale))) {
             open = !open

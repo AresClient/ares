@@ -2,10 +2,9 @@ package org.aresclient.ares.api;
 
 import dev.tigr.simpleevents.EventManager;
 import net.minecraft.client.MinecraftClient;
-import org.aresclient.ares.Main;
-import org.aresclient.ares.api.events.AresEventManager;
+import org.aresclient.ares.Ares;
 
 public interface JWrapper {
 	MinecraftClient MC = MinecraftClient.getInstance();
-	EventManager EVENTS = Main.getEVENTS();
+	EventManager EVENTS = Ares.getEVENT_MANAGER();
 }

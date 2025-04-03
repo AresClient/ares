@@ -1,6 +1,6 @@
 package org.aresclient.ares.api.instruments
 
-import org.aresclient.ares.Main
+import org.aresclient.ares.Ares
 
 /**
  * Globals are used for grouping settings and functions which interact with multiple
@@ -11,7 +11,7 @@ abstract class Global(name:String, description:String
 ): Instrument(name, description, SETTINGS) {
 
 	companion object {
-		private val SETTINGS = Main.SETTINGS.addMap("Globals")
+		private val SETTINGS = Ares.SETTINGS.addMap("Globals")
 	}
 
 }

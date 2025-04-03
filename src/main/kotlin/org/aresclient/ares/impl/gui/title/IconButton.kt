@@ -85,9 +85,9 @@ class IconButton(private val texture: Texture, x: Float, y: Float, width: Float,
         IMAGE.draw(matrixStack)
     }
 
-    override fun isMouseOver(mouseX: Float, mouseY: Float): Boolean {
-        val halfW = getWidth() / 2f
-        val halfH = getHeight() / 2f
+    override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
+        val halfW = getWidth() / 2.0
+        val halfH = getHeight() / 2.0
         return (mouseX - getRenderX() - halfW).pow(2) / halfW.pow(2) + (mouseY - getRenderY() - halfH).pow(2) / halfH.pow(2) <= 1
     }
 }

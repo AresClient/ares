@@ -30,7 +30,7 @@ class Color(val red:Float, val green:Float, val blue:Float, val alpha:Float) {
 
 	override fun toString():String = floatArrayOf(red, green, blue, alpha).contentToString()
 
-	override fun equals(o:Any?):Boolean {
+	override fun equals(o: Any?):Boolean {
 		if (this === o) return true
 		if (o == null || javaClass != o.javaClass) return false
 		val color = o as Color
@@ -39,7 +39,7 @@ class Color(val red:Float, val green:Float, val blue:Float, val alpha:Float) {
 		) == 0 && compareValues(alpha, color.alpha) == 0
 	}
 
-	override fun hashCode():Int = Objects.hash(red, green, blue, alpha)
+	override fun hashCode(): Int = Objects.hash(red, green, blue, alpha)
 
 	companion object {
 		val BLACK:Color = Color(0f, 0f, 0f, 1f)

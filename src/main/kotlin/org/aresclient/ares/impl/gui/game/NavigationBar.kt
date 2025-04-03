@@ -76,7 +76,7 @@ class NavigationBar(private val windowManager:WindowManager, private val scale: 
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
             if(holding) matrixStack.model().translate(0f, 1f, 0f)
 
-            if(category != null) category.getIcon().bind()
+            if(category != null) category.icon.bind()
             else DEFAULT_ICON.bind()
 
             if(hovering /*&& navigationBar.context.getWindows().none { it.isMouseOver(mouseX, mouseY) }*/) {

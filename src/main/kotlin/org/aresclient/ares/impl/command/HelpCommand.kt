@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.arguments.StringArgumentType.string
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
-import org.aresclient.ares.Main
+import org.aresclient.ares.Ares
 import org.aresclient.ares.api.command.Command
 
 object HelpCommand: Command(register(
@@ -16,7 +16,7 @@ object HelpCommand: Command(register(
             }
             1
         }}).executes { with(it.source) {
-            Main.PLUGINS.forEach { plugin ->
+            Ares.PLUGINS.forEach { plugin ->
                 print("${plugin.name} Commands:")
                 plugin.commands.forEach { command ->
                     command.getUsages(this).forEach { usage ->

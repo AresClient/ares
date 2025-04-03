@@ -43,7 +43,7 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
         return string
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 0 && !acted.get() && isMouseOver(mouseX, mouseY)) {
             multiplier = 1.0
             mouse = true
@@ -54,7 +54,7 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
         }
     }
 
-    override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+    override fun release(mouseX: Double, mouseY: Double, mouseButton: Int) {
         mouse = false
     }
 

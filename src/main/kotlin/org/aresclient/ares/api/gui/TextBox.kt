@@ -62,7 +62,7 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         super.click(mouseX, mouseY, mouseButton, acted)
 
         if(!acted.get() && mouseButton == 0 && isMouseOver(mouseX, mouseY)) {

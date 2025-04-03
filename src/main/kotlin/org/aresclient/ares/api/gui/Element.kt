@@ -1,9 +1,12 @@
 package org.aresclient.ares.api.gui
 
+import com.mojang.blaze3d.systems.RenderSystem
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.Screen
+import net.minecraft.text.Text
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.util.Screen
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
@@ -58,8 +61,9 @@ abstract class Element: Wrapper {
         while(true) element = element?.getParent() ?: return element
     }
 
-    fun isMouseOver(mouseX: Int, mouseY: Int): Boolean = isMouseOver(mouseX.toFloat(), mouseY.toFloat())
-    open fun isMouseOver(mouseX: Float, mouseY: Float): Boolean =
+    fun isMouseOver(mouseX: Int, mouseY: Int): Boolean = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+    fun isMouseOver(mouseX: Float, mouseY: Float): Boolean = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+    open fun isMouseOver(mouseX: Double, mouseY: Double): Boolean =
         mouseX >= getRenderX()
                 && mouseX <= getRenderX() + getWidth()
                 && mouseY >= getRenderY()
@@ -85,13 +89,13 @@ abstract class Element: Wrapper {
 
     // we have to make new arraylist because children may be mutated on click or release
     // acted: mutated by child elements when click has been handled or acted upon
-    open fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    open fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         getChildren().reversed().forEach {
             if(it.isVisible()) it.click(mouseX, mouseY, mouseButton, acted)
         }
     }
 
-    open fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+    open fun release(mouseX: Double, mouseY: Double, mouseButton: Int) {
         ArrayList(getChildren()).forEach {
             if(it.isVisible()) it.release(mouseX, mouseY, mouseButton)
         }
@@ -103,7 +107,7 @@ abstract class Element: Wrapper {
         }
     }
 
-    open fun scroll(mouseX: Int, mouseY: Int, value: Double, acted: AtomicBoolean) {
+    open fun scroll(mouseX: Double, mouseY: Double, value: Double, acted: AtomicBoolean) {
         val children = getChildren()
         for(i in (children.size - 1) downTo 0) { // reverse because rendering flips order on screen
             val child = children[i]
@@ -125,10 +129,15 @@ open class ScreenElement(title: String): Element() {
     private var prevMouseY = 0
     private var mouseTime = 0f
 
-    private val screen = object: Screen(title) {
-        override fun update() {
+    private val customScreen = object: Screen(Text.literal(title)) {
+        init {
+            RenderSystem.assertOnRenderThread()
+        }
+
+        override fun init() {
             open = true
             matrixStack.projection().setOrtho(0F, width.toFloat(), height.toFloat(), 0F, 0F, 1F)
+            println("WIDTH = $width, HEIGHT = $height")
             this@ScreenElement.update()
         }
 
@@ -137,7 +146,7 @@ open class ScreenElement(title: String): Element() {
             open = false
         }
 
-        override fun render(mouseX: Int, mouseY: Int, delta: Float) {
+        override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
             if(mouseX == prevMouseX && mouseY == prevMouseY) mouseTime += delta
             else {
                 prevMouseX = mouseX
@@ -196,27 +205,34 @@ open class ScreenElement(title: String): Element() {
             }
 
             Renderer.end(state) // cleanup
-            super.render(mouseX, mouseY, delta)
+            super.render(context, mouseX, mouseY, delta)
         }
 
-        override fun click(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        override fun mouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int): Boolean {
             this@ScreenElement.click(mouseX, mouseY, mouseButton, AtomicBoolean(false))
-            super.click(mouseX, mouseY, mouseButton)
+            return super.mouseClicked(mouseX, mouseY, mouseButton)
         }
 
-        override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
-            this@ScreenElement.release(mouseX, mouseY, mouseButton)
-            super.release(mouseX, mouseY, mouseButton)
+        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            this@ScreenElement.click(mouseX, mouseY, button, AtomicBoolean(false))
+            return super.mouseReleased(mouseX, mouseY, button)
         }
 
-        override fun type(typedChar: Char?, keyCode: Int) {
-            this@ScreenElement.type(typedChar, keyCode)
-            super.type(typedChar, keyCode)
+        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+            this@ScreenElement.type(null, keyCode)
+            return super.keyPressed(keyCode, scanCode, modifiers)
         }
 
-        override fun scroll(mouseX: Int, mouseY: Int, value: Double) {
-            this@ScreenElement.scroll(mouseX, mouseY, value, AtomicBoolean(false))
-            super.scroll(mouseX, mouseY, value)
+        // TODO: FIGURE OUT type callback
+        /*override fun charTyped(chr: Char, modifiers: Int): Boolean {
+            this@ScreenElement.type(chr, modifiers)
+            return super.charTyped(chr, modifiers)
+        }*/
+
+        // horizontal amount???
+        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+            this@ScreenElement.scroll(mouseX, mouseY, verticalAmount, AtomicBoolean(false))
+            return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
         }
 
         override fun shouldPause(): Boolean = false
@@ -227,10 +243,10 @@ open class ScreenElement(title: String): Element() {
     override fun getX(): Float = 0f
     override fun getY(): Float = 0f
 
-    override fun getWidth(): Float = screen.width.toFloat()
-    override fun getHeight(): Float = screen.height.toFloat()
+    override fun getWidth(): Float = customScreen.width.toFloat()
+    override fun getHeight(): Float = customScreen.height.toFloat()
 
-    fun getScreen(): Screen = screen
+    fun getScreen(): Screen = customScreen
 
     fun setTooltip(vararg tooltip: String) {
         this.tooltip = tooltip

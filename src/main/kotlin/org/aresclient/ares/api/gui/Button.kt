@@ -72,7 +72,7 @@ abstract class Button(
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         super.click(mouseX, mouseY, mouseButton, acted)
 
         if(mouseButton == 0 && !acted.get() && isMouseOver(mouseX, mouseY)) {
@@ -84,7 +84,7 @@ abstract class Button(
         }
     }
 
-    override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+    override fun release(mouseX: Double, mouseY: Double, mouseButton: Int) {
         if(mouseButton == 0) {
             if(holding && isMouseOver(mouseX, mouseY)) click()
             holding = false

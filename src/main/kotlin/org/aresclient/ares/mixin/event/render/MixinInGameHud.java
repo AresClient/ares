@@ -12,8 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
 public class MixinInGameHud implements JWrapper {
-    @Inject(method = "render", at = @At("RETURN"))
+    @Inject(method = "render", at = @At("TAIL"))
     public void renderPost(DrawContext context, RenderTickCounter tickCounter, CallbackInfo ci) {
-        EVENTS.post(new RenderEvent.Hud(tickCounter));
+        context.draw();
+        EVENTS.post(new RenderEvent.Hud(tickCounter.getFixedDeltaTicks()));
     }
 }

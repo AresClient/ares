@@ -182,7 +182,7 @@ class ColorElement(private val content:WindowContent, setting: Setting.Color, sc
 
         override fun getWidth() = getParent()?.getWidth() ?: 0f
 
-        override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
             super.click(mouseX, mouseY, mouseButton, acted)
 
             if(!acted.get() && !holding && isMouseOver(mouseX, mouseY) && mouseButton == 0) {
@@ -191,7 +191,7 @@ class ColorElement(private val content:WindowContent, setting: Setting.Color, sc
             }
         }
 
-        override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        override fun release(mouseX: Double, mouseY: Double, mouseButton: Int) {
             super.release(mouseX, mouseY, mouseButton)
             if(mouseButton == 0) holding = false
         }

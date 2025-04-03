@@ -22,7 +22,7 @@ class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.
 
     override fun getSecondaryText() = if(listening) "..." else text
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 1 && !acted.get() && isMouseOver(mouseX, mouseY)) {
             setting.value = Keys.UNKNOWN
             listen(false)

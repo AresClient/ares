@@ -3,11 +3,7 @@ package org.aresclient.ares.api.instruments
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.setting.Setting
 
-abstract class Instrument(val name:String,
-													val description: String,
-													parentSettings:Setting.Map<*>
-): Wrapper {
-
+abstract class Instrument(val name: String, val description: String, parentSettings: Setting.Map<*>): Wrapper {
 	val components = ArrayList<Component<*>>()
 	val settings:Setting.Map<*>
 

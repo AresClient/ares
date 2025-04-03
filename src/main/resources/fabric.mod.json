@@ -17,7 +17,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"org.aresclient.ares.Main"
+			"org.aresclient.ares.Ares"
 		]
 	},
 	"mixins": [

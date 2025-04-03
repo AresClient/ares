@@ -1,6 +1,6 @@
 package org.aresclient.ares.impl.gui.game
 
-import org.aresclient.ares.Main
+import org.aresclient.ares.Ares
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.api.gui.Image
@@ -29,7 +29,7 @@ class WindowManager(private val settings: Setting.List<Setting.Map<*>>): StaticE
     }
 
     fun <T: WindowContent> open(creator: Setting.Map<*>.() -> Class<T>?) {
-        val map = Setting.Map(Main.SETTINGS.serializer)
+        val map = Setting.Map(Ares.SETTINGS.serializer)
         settings.add(map)
         pushChild(WindowElement(map, this).also {
             it.open(creator)
@@ -214,7 +214,7 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+    override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         val prev = acted.get()
         if(isMouseOver(mouseX, mouseY) && mouseY > getRenderY() + TOP_SIZE)
             window?.click(mouseX, mouseY, mouseButton, acted)
@@ -231,13 +231,13 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
         }
     }
 
-    override fun release(mouseX: Int, mouseY: Int, mouseButton: Int) {
+    override fun release(mouseX: Double, mouseY: Double, mouseButton: Int) {
         if(mouseButton == 0) holding = false
         super.release(mouseX, mouseY, mouseButton)
         window?.release(mouseX, mouseY, mouseButton)
     }
 
-    override fun scroll(mouseX: Int, mouseY: Int, value: Double, acted: AtomicBoolean) {
+    override fun scroll(mouseX: Double, mouseY: Double, value: Double, acted: AtomicBoolean) {
         super.scroll(mouseX, mouseY, value, acted)
 
         if(!acted.get() && isMouseOver(mouseX, mouseY) && mouseY >= getRenderY() + TOP_SIZE) {
@@ -279,9 +279,9 @@ class WindowElement(internal val settings: Setting.Map<*>, private val windowMan
             }
         }
 
-        override fun isMouseOver(mouseX: Float, mouseY: Float): Boolean {
-            val halfW = getWidth() / 2f
-            val halfH = getHeight() / 2f
+        override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
+            val halfW = getWidth() / 2.0
+            val halfH = getHeight() / 2.0
             return (mouseX - getRenderX() - halfW).pow(2) / halfW.pow(2) + (mouseY - getRenderY() - halfH).pow(2) / halfH.pow(2) <= 1
         }
     }

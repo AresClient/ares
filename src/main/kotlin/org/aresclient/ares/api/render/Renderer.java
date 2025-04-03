@@ -1,17 +1,16 @@
 package org.aresclient.ares.api.render;
 
-import com.mojang.blaze3d.opengl.GlConst;
-import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.util.Window;
-import org.aresclient.ares.Main;
+import org.aresclient.ares.Ares;
 import org.lwjgl.opengl.GL11;
 
+// written by Tigermouthbear years ago
 public class Renderer {
-    // TODO: BETTER CHECK FOR LEGACY OPENGL
-//    private static final boolean LEGACY = MeshLoader.getInstance().getGameVersion().startsWith("1.12");
+    // this can be used for older versions of minecraft
+    private static final boolean LEGACY = false;
 
     public static class Uniforms {
         private final Uniform.F1 roundedRadius = Shader.ROUNDED.uniformF1("radius");
@@ -129,7 +128,7 @@ public class Renderer {
     }
 
     private static State begin(MatrixStack matrixStack) {
-        GlStateManager._glBindBuffer(GlConst.GL_ARRAY_BUFFER, 0);
+        RenderSystem.assertOnRenderThread();
 
         State state = new State(
                 BUFFERS,
@@ -137,20 +136,20 @@ public class Renderer {
                 GL11.glIsEnabled(GL11.GL_DEPTH_TEST),
                 GL11.glIsEnabled(GL11.GL_BLEND),
                 GL11.glIsEnabled(GL11.GL_CULL_FACE),
-//                LEGACY &&
+                LEGACY &&
                 GL11.glIsEnabled(GL11.GL_ALPHA_TEST)
         );
 
-//        if(LEGACY) {
-//            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-//            GL11.glPushMatrix();
-//            GL11.glLoadIdentity();
-//            GL11.glMatrixMode(GL11.GL_PROJECTION);
-//            GL11.glPushMatrix();
-//            GL11.glLoadIdentity();
-//
-//            GL11.glDisable(GL11.GL_ALPHA_TEST);
-//        }
+        if(LEGACY) {
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPushMatrix();
+            GL11.glLoadIdentity();
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glPushMatrix();
+            GL11.glLoadIdentity();
+
+            GL11.glDisable(GL11.GL_ALPHA_TEST);
+        }
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_BLEND);
@@ -162,17 +161,17 @@ public class Renderer {
     }
 
     public static State begin2d() {
-        Window window = Main.getMC().getWindow();
+        Window window = Ares.getMC().getWindow();
 
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.projection()
-            .setOrtho(0F, window.getWidth(), window.getHeight(), 0F, 0F, 1F);
+            .setOrtho(0F, window.getFramebufferWidth(), window.getFramebufferHeight(), 0f, 0f, 1f);
 
         return begin(matrixStack);
     }
 
     public static State begin3d() {
-        Camera camera = Main.getMC().gameRenderer.getCamera();
+        Camera camera = Ares.getMC().gameRenderer.getCamera();
 
         // TODO: THIS DOES NOT WORK ON LEGACY
         MatrixStack matrixStack = new MatrixStack();
@@ -206,14 +205,14 @@ public class Renderer {
         glEnableDisable(GL11.GL_BLEND, state.blend);
         glEnableDisable(GL11.GL_CULL_FACE, state.cull);
 
-//        if(LEGACY) {
-//            glEnableDisable(GL11.GL_ALPHA_TEST, state.alpha);
-//
-//            GL11.glMatrixMode(GL11.GL_PROJECTION);
-//            GL11.glPopMatrix();
-//            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-//            GL11.glPopMatrix();
-//        }
+        if(LEGACY) {
+            glEnableDisable(GL11.GL_ALPHA_TEST, state.alpha);
+
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glPopMatrix();
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPopMatrix();
+        }
     }
 
     private static void glEnableDisable(int code, boolean state) {
@@ -224,8 +223,8 @@ public class Renderer {
     public static void scissorBegin(float x, float y, float width, float height) {
 //        Framebuffer framebuffer = Ares.getMinecraft().getFramebuffer();
 //        Resolution resolution = Ares.getMinecraft().getResolution();
-        Framebuffer framebuffer = Main.getMC().getFramebuffer();
-        Window window = Main.getMC().getWindow();
+        Framebuffer framebuffer = Ares.getMC().getFramebuffer();
+        Window window = Ares.getMC().getWindow();
 
         float scaleWidth = (float) framebuffer.viewportWidth / (float) window.getScaledWidth();
         float scaleHeight = (float) framebuffer.viewportHeight / (float) window.getScaledHeight();

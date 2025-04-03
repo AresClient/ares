@@ -2,7 +2,6 @@ package org.aresclient.ares.impl.instrument.module.modules.render
 
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Renderer.Buffers
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.api.util.Keys
@@ -15,7 +14,7 @@ object TestModule: Module(Category.RENDER, "Test", "A simple test module", Defau
     private val text = settings.addString("Text", "Hello World!")
     private val color = settings.addColor("Color", Color.WHITE)
 
-    override fun onRenderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
+    override fun onRenderHud(delta: Float, buffers: Buffers, matrixStack: MatrixStack) {
         GL11.glEnable(GL11.GL_STENCIL_TEST)
         GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE)
         GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT)
