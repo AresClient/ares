@@ -1,0 +1,64 @@
+package org.aresclient.ares.impl.gui.game.setting
+
+import dev.tigr.simpleevents.listener.EventListener
+import org.aresclient.ares.api.events.InputEvent
+import org.aresclient.ares.impl.gui.game.SettingElement
+import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.util.Keys
+import org.aresclient.ares.impl.gui.game.formatToPretty
+import java.util.concurrent.atomic.AtomicBoolean
+
+class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.Bind>(setting, height) {
+    private var listening = false
+    private var text = if(setting.value == Keys.UNKNOWN) "None" else Keys.getName(setting.value).formatToPretty()
+
+    init {
+        pushChild(SettingElementButton(this) { listen(true) })
+    }
+
+    override fun change() {
+        text = if(setting.value == Keys.UNKNOWN) "None" else Keys.getName(setting.value).formatToPretty()
+    }
+
+    override fun getSecondaryText() = if(listening) "..." else text
+
+    override fun click(mouseX: Int, mouseY: Int, mouseButton: Int, acted: AtomicBoolean) {
+        if(mouseButton == 1 && !acted.get() && isMouseOver(mouseX, mouseY)) {
+            setting.value = Keys.UNKNOWN
+            listen(false)
+            acted.set(true)
+        }
+
+        super.click(mouseX, mouseY, mouseButton, acted)
+    }
+
+    override fun close() {
+        listen(false)
+        super.close()
+    }
+
+    private val onInputEvent: EventListener<InputEvent> = EventListener<InputEvent> { event ->
+        if(event.type == InputEvent.Type.KEYBOARD) {
+            event as InputEvent.Keyboard
+            if(event.state == InputEvent.Keyboard.State.PRESSED) {
+                if(event.key != Keys.ESCAPE) setting.value = event.key
+                listen(false)
+            }
+        } else if (event.type == InputEvent.Type.MOUSE) {
+            event as InputEvent.Mouse
+            if(event.state == InputEvent.Mouse.State.PRESSED) {
+                event as InputEvent.Mouse.Pressed
+                if(event.key != Keys.MOUSE_LEFT && event.key != Keys.MOUSE_RIGHT) {
+                    setting.value = event.key
+                    listen(false)
+                }
+            }
+        }
+    }
+
+    private fun listen(state: Boolean) {
+        if(state) EVENTS.register(onInputEvent)
+        else EVENTS.unregister(onInputEvent)
+        listening = state
+    }
+}

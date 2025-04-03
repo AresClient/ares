@@ -1,0 +1,22 @@
+{
+	"required": true,
+	"package": "org.aresclient.ares.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"event.client.MixinKeyboard",
+		"event.client.MixinMinecraftClient",
+		"event.client.MixinMouse",
+
+		"event.entity.MixinClientPlayerEntity",
+
+		"event.render.MixinGameRenderer",
+		"event.render.MixinInGameHud",
+
+		"event.world.MixinClientWorld",
+
+		"render.MixinFramebuffer"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
