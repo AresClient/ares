@@ -1,6 +1,9 @@
-package org.aresclient.ares.api.setting
+package org.aresclient.ares.impl
 
 import kotlinx.serialization.json.*
+import org.aresclient.ares.api.setting.Grouped
+import org.aresclient.ares.api.setting.ISerializer
+import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.util.Color
 import java.io.File
 
@@ -29,19 +32,18 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
             Setting.Type.STRING -> Setting.String(this, data?.jsonPrimitive?.contentOrNull ?: readInfo.defaultValue as String)
             Setting.Type.BOOLEAN -> Setting.Boolean(this, data?.jsonPrimitive?.booleanOrNull ?: readInfo.defaultValue as Boolean)
             Setting.Type.ENUM -> Setting.Enum(this, (data?.jsonPrimitive?.intOrNull?.let { readInfo.enumClass.enumConstants[it] } ?: readInfo.defaultValue ?: readInfo.enumClass.enumConstants.firstOrNull()) as Enum<*>)
-            Setting.Type.COLOR -> data?.jsonObject?.let {  Setting.Color(this, Color(
+            Setting.Type.COLOR -> data?.jsonObject?.let { Setting.Color(this, Color(
                 it["red"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["green"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["blue"]?.jsonPrimitive?.floatOrNull ?: 1f,
                 it["alpha"]?.jsonPrimitive?.floatOrNull ?: 1f),
                 it["rainbow"]?.jsonPrimitive?.booleanOrNull ?: false
-                )} ?: Setting.Color(this, readInfo.defaultValue as Color, readInfo.isRainbow)
-            Setting.Type.BIND -> Setting.Bind(this, data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
-            Setting.Type.SHORT -> Setting.Short(this, data?.jsonPrimitive?.intOrNull?.toShort() ?: readInfo.defaultValue as Short)
+            ) } ?: Setting.Color(this, readInfo.defaultValue as Color, readInfo.isRainbow)
             Setting.Type.INTEGER -> Setting.Integer(this, data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
-            Setting.Type.LONG -> Setting.Long(this, data?.jsonPrimitive?.longOrNull ?: readInfo.defaultValue as Long)
-            Setting.Type.FLOAT -> Setting.Float(this, data?.jsonPrimitive?.floatOrNull ?: readInfo.defaultValue as Float)
             Setting.Type.DOUBLE -> Setting.Double(this, data?.jsonPrimitive?.doubleOrNull ?: readInfo.defaultValue as Double)
+            Setting.Type.FLOAT -> Setting.Float(this, data?.jsonPrimitive?.floatOrNull ?: readInfo.defaultValue as Float)
+            Setting.Type.LONG -> Setting.Long(this, data?.jsonPrimitive?.longOrNull ?: readInfo.defaultValue as Long)
+            Setting.Type.BIND -> Setting.Bind(this, data?.jsonPrimitive?.intOrNull ?: readInfo.defaultValue as Int)
             Setting.Type.LIST -> Setting.List(this, data?.jsonArray?.map { read(Setting.ReadInfo(readInfo.elementType, null).setEnumClass(readInfo.enumClass), it) }?.toTypedArray() ?: arrayOf())
             Setting.Type.MAP -> Setting.Map(this, data?.jsonObject ?: mutableMapOf())
             else -> throw NullPointerException()
@@ -59,13 +61,12 @@ class JsonSettingSerializer(jsonBuilder: JsonBuilder.() -> Unit = {}): ISerializ
                 "blue" to JsonPrimitive(blue),
                 "alpha" to JsonPrimitive(alpha),
                 "rainbow" to JsonPrimitive((setting as Setting.Color).isRainbow)
-            ))}
-            Setting.Type.BIND -> JsonPrimitive(setting.value as Int)
-            Setting.Type.SHORT -> JsonPrimitive((setting.value as Short).toInt())
+            )) }
             Setting.Type.INTEGER -> JsonPrimitive(setting.value as Int)
-            Setting.Type.LONG -> JsonPrimitive(setting.value as Long)
-            Setting.Type.FLOAT -> JsonPrimitive(setting.value as Float)
             Setting.Type.DOUBLE -> JsonPrimitive(setting.value as Double)
+            Setting.Type.FLOAT -> JsonPrimitive(setting.value as Float)
+            Setting.Type.LONG -> JsonPrimitive(setting.value as Long)
+            Setting.Type.BIND -> JsonPrimitive(setting.value as Int)
             Setting.Type.LIST -> JsonArray((setting.value as Array<Setting<*>>).map { write(it) })
             Setting.Type.MAP -> JsonObject((setting.value as Map<String, Setting<*>>).mapValues { write(it.value) })
             Setting.Type.GROUPED -> write((setting.value as Grouped<*, *>).groupsSetting)

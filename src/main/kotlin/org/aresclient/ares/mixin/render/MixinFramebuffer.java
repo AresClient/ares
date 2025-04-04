@@ -1,6 +1,7 @@
 package org.aresclient.ares.mixin.render;
 
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.GlBackend;
 import org.lwjgl.opengl.GL30;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -9,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.Slice;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
 //TODO: FIX?
-@Mixin(Framebuffer.class)
+@Mixin(GlBackend.class)
 public abstract class MixinFramebuffer {
     // enable stencil testing
 //    @ModifyArgs(method = "initFbo", at = @At(value = "INVOKE",

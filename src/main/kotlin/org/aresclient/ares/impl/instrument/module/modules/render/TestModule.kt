@@ -12,31 +12,14 @@ import org.lwjgl.opengl.GL11
 object TestModule: Module(Category.RENDER, "Test", "A simple test module", Defaults().setBind(Keys.Y).setEnabled(true)) {
     private val renderer by lazy { RenderHelper.getFontRenderer(24f) }
     private val text = settings.addString("Text", "Hello World!")
-    private val color = settings.addColor("Color", Color.WHITE)
+    private val color = settings.addColor("Color", Color.WHITE, true)
 
     override fun onRenderHud(delta: Float, buffers: Buffers, matrixStack: MatrixStack) {
-        GL11.glEnable(GL11.GL_STENCIL_TEST)
-        GL11.glStencilOp(GL11.GL_KEEP, GL11.GL_KEEP, GL11.GL_REPLACE)
-        GL11.glClear(GL11.GL_STENCIL_BUFFER_BIT)
-
-        GL11.glStencilFunc(GL11.GL_ALWAYS, 1, 0xFF)
-        GL11.glStencilMask(0xFF)
-
         matrixStack.push()
         matrixStack.model().translate(100f, 100f, 0f).scale(100f)
         buffers.uniforms.roundedCutoff.set(1f)
         draw(buffers, matrixStack, color.value)
-
-        GL11.glStencilFunc(GL11.GL_NOTEQUAL, 1, 0xFF)
-        GL11.glStencilMask(0x00)
-
-        matrixStack.model()
-            .scale(1.1f, 1.1f, 1.1f)
-        buffers.uniforms.roundedCutoff.set(0f)
-        draw(buffers, matrixStack, Color.WHITE)
         matrixStack.pop()
-
-        GL11.glDisable(GL11.GL_STENCIL_TEST)
 
         renderer.drawString(matrixStack, text.value, 100f, 0f, color.value)
     }

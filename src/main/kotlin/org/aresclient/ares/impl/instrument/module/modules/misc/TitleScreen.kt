@@ -12,6 +12,6 @@ object TitleScreen: Module(Category.MISC, "TitleScreen", "Replace the default Mi
 
     @field:EventHandler
     private val screenOpenedEventListener = EventListener<ScreenOpenedEvent> { event ->
-        //if(event.mainMenu) MC.setScreen(screen.getScreen())
+        if(event.mainMenu) MC.setScreen(screen.getScreen())
     }
 }

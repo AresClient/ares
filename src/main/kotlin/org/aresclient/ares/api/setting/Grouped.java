@@ -91,7 +91,7 @@ public class Grouped<T extends Grouped.Trait, R extends Enum<?>> {
         return groupsSetting;
     }
 
-    public static interface Initializer<T extends Trait, R> {
+    public interface Initializer<T extends Trait, R> {
         Group<T, R> accept(Setting.Map<?> map);
     }
 

@@ -122,12 +122,12 @@ abstract class Element: Wrapper {
 
 open class ScreenElement(title: String): Element() {
     private var open = false
-    private val matrixStack = MatrixStack()
-
     private var tooltip: Array<out String>? = null
     private var prevMouseX = 0
     private var prevMouseY = 0
     private var mouseTime = 0f
+
+    private val matrixStack = MatrixStack()
 
     private val customScreen = object: Screen(Text.literal(title)) {
         init {
@@ -136,17 +136,21 @@ open class ScreenElement(title: String): Element() {
 
         override fun init() {
             open = true
-            matrixStack.projection().setOrtho(0F, width.toFloat(), height.toFloat(), 0F, 0F, 1F)
-            println("WIDTH = $width, HEIGHT = $height")
+            matrixStack.projection().setOrtho(0f, width.toFloat(), height.toFloat(), 0f, 1000f, 21000f)
+            matrixStack.model().translation(0f, 0f, -11000f)
             this@ScreenElement.update()
+            super.init()
         }
 
         override fun close() {
             this@ScreenElement.close()
             open = false
+            super.close()
         }
 
         override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+            context?.draw()
+
             if(mouseX == prevMouseX && mouseY == prevMouseY) mouseTime += delta
             else {
                 prevMouseX = mouseX
@@ -208,13 +212,16 @@ open class ScreenElement(title: String): Element() {
             super.render(context, mouseX, mouseY, delta)
         }
 
+        override fun renderBackground(context: DrawContext?, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+        }
+
         override fun mouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int): Boolean {
             this@ScreenElement.click(mouseX, mouseY, mouseButton, AtomicBoolean(false))
             return super.mouseClicked(mouseX, mouseY, mouseButton)
         }
 
         override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            this@ScreenElement.click(mouseX, mouseY, button, AtomicBoolean(false))
+            this@ScreenElement.release(mouseX, mouseY, button)
             return super.mouseReleased(mouseX, mouseY, button)
         }
 

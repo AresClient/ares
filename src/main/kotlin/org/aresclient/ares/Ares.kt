@@ -14,9 +14,9 @@ import org.aresclient.ares.api.events.ShutdownEvent
 import org.aresclient.ares.api.events.TickEvent
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.JsonSettingSerializer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.impl.AresPlugin
+import org.aresclient.ares.impl.JsonSettingSerializer
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -28,7 +28,6 @@ class Ares: ModInitializer {
 		val SETTINGS_FILE = File("ares/config/settings.json")
 		val SETTINGS_SERIALIZER: JsonSettingSerializer = JsonSettingSerializer { prettyPrint = true }
 		val SETTINGS: Setting.Map<JsonElement> = SETTINGS_SERIALIZER.read(SETTINGS_FILE)
-		val PLUGIN_SETTINGS: Setting.Map<*> = SETTINGS.addMap("Plugins")
 
 		@JvmStatic val MC: MinecraftClient = MinecraftClient.getInstance()
 		@JvmStatic val EVENT_MANAGER = AresEventManager()

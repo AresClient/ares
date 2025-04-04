@@ -67,7 +67,7 @@ class NavigationBar(private val windowManager:WindowManager, private val scale: 
         init {
             setAction {
                 navigationBar.windowManager.open {
-                    if(category != null) addString("setting", "Modules:${category.name}")
+                    if(category != null) addString("setting", "Modules:${category.prettyName}")
                     SettingsContent::class.java
                 }
             }

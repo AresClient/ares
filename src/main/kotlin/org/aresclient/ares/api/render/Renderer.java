@@ -1,17 +1,19 @@
 package org.aresclient.ares.api.render;
 
+import com.mojang.blaze3d.opengl.GlConst;
+import com.mojang.blaze3d.opengl.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.GpuTexture;
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.gl.GlBackend;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.texture.GlTexture;
 import net.minecraft.client.util.Window;
 import org.aresclient.ares.Ares;
 import org.lwjgl.opengl.GL11;
 
 // written by Tigermouthbear years ago
 public class Renderer {
-    // this can be used for older versions of minecraft
-    private static final boolean LEGACY = false;
-
     public static class Uniforms {
         private final Uniform.F1 roundedRadius = Shader.ROUNDED.uniformF1("radius");
         private final Uniform.F2 roundedSize = Shader.ROUNDED.uniformF2("size");
@@ -104,18 +106,15 @@ public class Renderer {
         private final boolean depth;
         private final boolean blend;
         private final boolean cull;
-        private final boolean alpha;
         private final Buffers buffers;
         private final MatrixStack matrixStack;
 
-        private State(Buffers buffers, MatrixStack matrixStack, boolean depth, boolean blend,
-                      boolean cull, boolean alpha) {
+        private State(Buffers buffers, MatrixStack matrixStack, boolean depth, boolean blend, boolean cull) {
             this.buffers = buffers;
             this.matrixStack = matrixStack;
             this.depth = depth;
             this.blend = blend;
             this.cull = cull;
-            this.alpha = alpha;
         }
 
         public Buffers getBuffers() {
@@ -128,28 +127,20 @@ public class Renderer {
     }
 
     private static State begin(MatrixStack matrixStack) {
-        RenderSystem.assertOnRenderThread();
+        Framebuffer framebuffer = Ares.getMC().getFramebuffer();
+        GpuTexture gpuTexture = framebuffer.getColorAttachment();
+        GpuTexture gpuTexture2 = framebuffer.getDepthAttachment();
+        GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER,
+                ((GlTexture)gpuTexture).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), gpuTexture2));
+        GlStateManager._viewport(0, 0, gpuTexture.getWidth(0), gpuTexture.getHeight(0));
 
         State state = new State(
                 BUFFERS,
                 matrixStack,
                 GL11.glIsEnabled(GL11.GL_DEPTH_TEST),
                 GL11.glIsEnabled(GL11.GL_BLEND),
-                GL11.glIsEnabled(GL11.GL_CULL_FACE),
-                LEGACY &&
-                GL11.glIsEnabled(GL11.GL_ALPHA_TEST)
+                GL11.glIsEnabled(GL11.GL_CULL_FACE)
         );
-
-        if(LEGACY) {
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glPushMatrix();
-            GL11.glLoadIdentity();
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glPushMatrix();
-            GL11.glLoadIdentity();
-
-            GL11.glDisable(GL11.GL_ALPHA_TEST);
-        }
 
         GL11.glDisable(GL11.GL_DEPTH_TEST);
         GL11.glEnable(GL11.GL_BLEND);
@@ -162,10 +153,11 @@ public class Renderer {
 
     public static State begin2d() {
         Window window = Ares.getMC().getWindow();
-
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.projection()
-            .setOrtho(0F, window.getFramebufferWidth(), window.getFramebufferHeight(), 0f, 0f, 1f);
+                .setOrtho(0f, window.getFramebufferWidth(), window.getFramebufferHeight(), 0f, 1000f, 21000f);
+        matrixStack.model().translation(0f, 0f, -11000f);
+        // idk why minecraft uses these weird values
 
         return begin(matrixStack);
     }
@@ -205,14 +197,8 @@ public class Renderer {
         glEnableDisable(GL11.GL_BLEND, state.blend);
         glEnableDisable(GL11.GL_CULL_FACE, state.cull);
 
-        if(LEGACY) {
-            glEnableDisable(GL11.GL_ALPHA_TEST, state.alpha);
-
-            GL11.glMatrixMode(GL11.GL_PROJECTION);
-            GL11.glPopMatrix();
-            GL11.glMatrixMode(GL11.GL_MODELVIEW);
-            GL11.glPopMatrix();
-        }
+        GlStateManager._bindTexture(0);
+        GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, 0);
     }
 
     private static void glEnableDisable(int code, boolean state) {
