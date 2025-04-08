@@ -11,13 +11,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Keyboard.class)
 public class MixinKeyboard implements JWrapper {
-    @Inject(method = "onKey", at = @At("HEAD"))
+    @Inject(method = "onKey", at = @At("HEAD"), cancellable = true)
     public void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(action == 0) {
-                EVENTS.post(new InputEvent.Keyboard.Released(key));
+                if (EVENTS.post(new InputEvent.Keyboard.Released(key)).isCancelled()) ci.cancel();
             } else {
-                EVENTS.post(new InputEvent.Keyboard.Pressed(key));
+                if (EVENTS.post(new InputEvent.Keyboard.Pressed(key)).isCancelled()) ci.cancel();
             }
         }
     }
