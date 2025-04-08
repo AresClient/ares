@@ -3,10 +3,7 @@ package org.aresclient.ares.impl
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.impl.command.EchoCommand
 import org.aresclient.ares.impl.command.HelpCommand
-import org.aresclient.ares.impl.instrument.global.Interaction
-import org.aresclient.ares.impl.instrument.global.Priority
-import org.aresclient.ares.impl.instrument.global.Render
-import org.aresclient.ares.impl.instrument.global.Rotation
+import org.aresclient.ares.impl.instrument.global.*
 import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.instrument.module.modules.movement.Strafe
@@ -22,6 +19,7 @@ object AresPlugin: Plugin(
 	"1.21.5",
 	arrayOf("Tigermouthbear", "Makrennel"),
 	globals = listOf(
+		Camera,
 		Interaction,
 		Priority,
 		Render,
