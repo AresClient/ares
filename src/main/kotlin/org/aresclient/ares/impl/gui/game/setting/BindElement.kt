@@ -40,14 +40,14 @@ class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.
     private val onInputEvent: EventListener<InputEvent> = EventListener<InputEvent> { event ->
         if(event.type == InputEvent.Type.KEYBOARD) {
             event as InputEvent.Keyboard
-            if(event.state == InputEvent.Keyboard.State.PRESSED) {
+            if(event.state == InputEvent.Keyboard.State.RELEASED) {
                 if(event.key != Keys.ESCAPE) setting.value = event.key
                 listen(false)
             }
         } else if (event.type == InputEvent.Type.MOUSE) {
             event as InputEvent.Mouse
-            if(event.state == InputEvent.Mouse.State.PRESSED) {
-                event as InputEvent.Mouse.Pressed
+            if(event.state == InputEvent.Mouse.State.RELEASED) {
+                event as InputEvent.Mouse.Released
                 if(event.key != Keys.MOUSE_LEFT && event.key != Keys.MOUSE_RIGHT) {
                     setting.value = event.key
                     listen(false)

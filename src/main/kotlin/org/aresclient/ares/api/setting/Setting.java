@@ -288,7 +288,7 @@ public class Setting<T> {
 		public void setValue(java.lang.Integer value) {
 			if(getPrecision() != null) {
 				int scale = (int) Math.pow(10, getPrecision());
-				value = (int) (Math.round(value.doubleValue() / scale) * scale);
+				value = (int) Math.round(value.doubleValue() / scale) * scale;
 			}
 
 			super.setValue(value);
@@ -304,7 +304,7 @@ public class Setting<T> {
 		public void setValue(java.lang.Double value) {
 			if(getPrecision() != null) {
 				int scale = (int) Math.pow(10, getPrecision());
-				value = (double) (Math.round(value * scale) / scale);
+				value = (double) Math.round(value * scale) / scale;
 			}
 
 			super.setValue(value);
@@ -320,7 +320,7 @@ public class Setting<T> {
 		public void setValue(java.lang.Float value) {
 			if(getPrecision() != null) {
 				int scale = (int) Math.pow(10, getPrecision());
-				value = (float) (Math.round(value * scale) / scale);
+				value = (float) Math.round(value * scale) / scale;
 			}
 
 			super.setValue(value);
