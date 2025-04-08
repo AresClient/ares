@@ -1,7 +1,5 @@
 package org.aresclient.ares.api.events
 
-import net.minecraft.client.render.RenderTickCounter
-
 abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 	enum class Type { KEYBOARD, MOUSE }
 
@@ -20,6 +18,10 @@ abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 		class Scrolled(val vertical: Double): Mouse(State.SCROLLED)
 //		class Moved(val x: Double, val y: Double, val dX: Double, val dY: Double, key: Int): Mouse(State.MOVED, key)
 	}
+}
+
+class PlayerEvent {
+	class ChangeLookDirection(val cursorDeltaX: Double, val cursorDeltaY: Double): AresEvent("player-change-look-direction")
 }
 
 abstract class RenderEvent(val type: Type): AresEvent("render-" + type.name) {

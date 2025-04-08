@@ -9,6 +9,7 @@
     "event.client.MixinMinecraftClient",
     "event.client.MixinMouse",
     "event.entity.MixinClientPlayerEntity",
+    "event.entity.MixinEntity",
     "event.render.MixinGameRenderer",
     "event.render.MixinInGameHud",
     "event.world.MixinClientWorld",
