@@ -176,14 +176,14 @@ public class Renderer {
         return begin(matrixStack);
     }
 
-    private static float wrapDegrees(float degrees) {
+    public static float wrapDegrees(float degrees) {
         float wrapped = degrees % 360f;
         if(wrapped >= 180f) wrapped -= 360f;
         if(wrapped < -180f) wrapped += 360f;
         return wrapped;
     }
 
-    private static float toRadians(float ang) {
+    public static float toRadians(float ang) {
         return ang / 180f * 3.1415927f;
     }
 

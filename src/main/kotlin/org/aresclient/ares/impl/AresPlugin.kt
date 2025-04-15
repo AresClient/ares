@@ -12,7 +12,7 @@ import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.instrument.module.modules.movement.Strafe
 import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
 import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
-import org.aresclient.ares.impl.instrument.module.modules.render.ESP
+import org.aresclient.ares.impl.instrument.module.modules.render.esp.ESP
 import org.aresclient.ares.impl.instrument.module.modules.render.TestModule
 
 object AresPlugin: Plugin(

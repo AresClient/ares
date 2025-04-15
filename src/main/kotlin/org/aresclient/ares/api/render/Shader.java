@@ -62,12 +62,12 @@ public class Shader {
 
         GL20.glLinkProgram(program);
         if(GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == 0) {
-            throw new RuntimeException("Failed to link program");
+            throw new RuntimeException("Failed to link program: " + GL20.glGetProgramInfoLog(program));
         }
 
         GL20.glValidateProgram(program);
         if(GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == 0) {
-            throw new RuntimeException("Failed to validate program");
+            throw new RuntimeException("Failed to validate program: " + GL20.glGetProgramInfoLog(program));
         }
 
         SHADERS.add(this);
@@ -77,10 +77,13 @@ public class Shader {
         int shader = GL20.glCreateShader(type);
         GL20.glShaderSource(shader, source);
         GL20.glCompileShader(shader);
+        if(GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == 0) {
+            throw new RuntimeException("Failed to compile shader of type " + type + ": " + GL20.glGetShaderInfoLog(shader));
+        }
         GL20.glAttachShader(program, shader);
     }
 
-    int getProgram() {
+    public int getProgram() {
         return program;
     }
 
