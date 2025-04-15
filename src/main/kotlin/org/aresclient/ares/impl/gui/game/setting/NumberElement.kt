@@ -24,7 +24,7 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
     private val minusText = "- " + setting.name
 
     abstract fun increment(value: Double)
-    private fun increment(mouseX: Int) = increment((mouseX - getRenderX() - getWidth() / 2.0) / getWidth().toDouble() * 4.0 * multiplier)
+    private fun incrementFromMouse(mouseX: Double) = increment((mouseX - getRenderX() - getWidth() / 2.0) / getWidth().toDouble() * 4.0 * multiplier)
 
     abstract fun percent(value: Float)
     abstract fun formatted(): String
@@ -48,7 +48,7 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
             multiplier = 1.0
             mouse = true
             time = System.currentTimeMillis()
-            if(mode > 0) increment(mouseX)
+            if(mode > 0) incrementFromMouse(mouseX)
 
             acted.set(true)
         }
@@ -74,7 +74,7 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
             val diff = System.currentTimeMillis() - time
             if(diff > 500) {
                 multiplier += 0.05
-                increment(mouseX)
+                incrementFromMouse(mouseX.toDouble())
                 time = 0
             }
         }

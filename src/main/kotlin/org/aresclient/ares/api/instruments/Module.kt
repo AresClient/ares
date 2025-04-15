@@ -43,7 +43,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 	class Defaults {
 		internal var enabled = false
 		internal var bind = -1
-		internal var toggleOn = ToggleOn.PRESS
+		internal var toggleOn = ToggleOn.RELEASE
 		internal var alwaysListening = false
 
 		fun setEnabled(value: Boolean): Defaults { enabled = value; return this }
@@ -80,7 +80,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 
 	/* ---------------------------------------------------------------------- */
 
-	fun isEnabled() = enabled.value
+	fun isEnabled(): Boolean = enabled.value
 	fun setEnabled(value:Boolean) {
 		enabled.value = value
 	}
@@ -99,6 +99,9 @@ abstract class Module(category: Category, name: String, description: String, pri
 
 	fun toggle() = setEnabled(!isEnabled())
 	fun isListening() = isEnabled() || defaults.alwaysListening
+
+	override fun registerEvents() = if (isListening()) super.registerEvents() else Unit
+	override fun unregisterEvents() = if(!isListening()) super.unregisterEvents() else Unit
 
 	/* ---------------------------------------------------------------------- */
 
