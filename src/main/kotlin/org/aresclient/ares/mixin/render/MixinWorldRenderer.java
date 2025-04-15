@@ -1,4 +1,4 @@
-package org.aresclient.ares.mixin.event.render;
+package org.aresclient.ares.mixin.render;
 
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;

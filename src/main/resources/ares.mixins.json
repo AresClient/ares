@@ -18,7 +18,7 @@
     "event.render.MixinInGameHud",
     "event.world.MixinClientWorld",
     "render.MixinFramebuffer",
-    "event.render.MixinWorldRenderer"
+    "render.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1
