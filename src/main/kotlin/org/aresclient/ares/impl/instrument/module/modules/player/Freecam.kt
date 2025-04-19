@@ -10,22 +10,29 @@ import org.aresclient.ares.api.events.PlayerEvent
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.impl.instrument.global.Camera
 import org.aresclient.ares.impl.instrument.global.CameraAdjustor
+import org.aresclient.ares.impl.util.MathUtil._x
+import org.aresclient.ares.impl.util.MathUtil._y
+import org.aresclient.ares.impl.util.MathUtil._z
+import org.aresclient.ares.impl.util.MathUtil.duplicate
+import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
+import org.aresclient.ares.impl.util.MathUtil.set
 import kotlin.math.cos
 import kotlin.math.sin
 
 object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character"), CameraAdjustor {
-	val speed = settings.addDouble("Speed", 1.0, "The speed at which the camera moves.")
+
+	private val speed = settings.addDouble("Speed", 1.0, "The speed at which the camera moves.")
 		.setMin(0.0)
 		.setPrecision(1)
 
-	val matchCharacterRotation = settings.addBoolean("Match Char Rotation", true, "Use the same rotation as the player's character to turn the camera.")
+	// ════════════════════════════════════════════════════════════════════════ //
 
 	override fun priority(): Int = 100
-	override fun cameraPosition(): Vec3d = position
-	override fun cameraRotation(): Vec2f = rotation
+	override val cameraPosition: Vec3d = Vec3d.ZERO.duplicate()
+	override val cameraRotation: Vec2f = Vec2f.ZERO.duplicate()
+	override val shouldRenderCharacter: Boolean = true
 
-	var position: Vec3d = Vec3d(0.0, 0.0, 0.0)
-	var rotation: Vec2f = Vec2f(0F, 0F)
+	// ════════════════════════════════════════════════════════════════════════ //
 
 	var forward = false
 	var backward = false
@@ -34,10 +41,12 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 	var upward = false
 	var downward = false
 
+	// ════════════════════════════════════════════════════════════════════════ //
+
 	override fun onEnable() {
 		MC.gameRenderer.camera.let {
-			position = it.pos
-			rotation = Vec2f(it.yaw, it.pitch)
+			cameraPosition.set(it.pos)
+			cameraRotation.set(it.yaw, it.pitch)
 		}
 		Camera.begin(this)
 	}
@@ -49,8 +58,7 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 	override fun onTick() {
 		if (MC.world == null || MC.player == null) return
 
-		val position = Camera.AresCamera.pos
-		var yaw = Camera.AresCamera.yaw
+		var yaw = MC.gameRenderer.camera.yaw
 
 		var speed = speed.value
 		if (!MC.options.sprintKey.isPressed) speed *= 0.5
@@ -66,35 +74,16 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 
 		yaw = Math.toRadians(yaw.toDouble()).toFloat()
 
-		Camera.AresCamera.updateLastPosition()
-		this.position = Vec3d(
-			position.x - (if (isMovingLaterally()) sin(yaw.toDouble()) * speed else 0.0),
-			position.y + if (upward) speed else if (downward) -speed else 0.0,
-			position.z + (if (isMovingLaterally()) cos(yaw.toDouble()) * speed else 0.0),
-		)
-
-		if (matchCharacterRotation.value) {
-			Camera.AresCamera.updateLastRotation()
-			this.rotation = Vec2f(
-				MC.player!!.yaw,
-				MC.player!!.pitch
-			)
-		}
+		cameraPosition._x -= if (isMovingLaterally()) sin(yaw.toDouble()) * speed else 0.0
+		cameraPosition._y += if (upward) speed else if (downward) -speed else 0.0
+		cameraPosition._z += if (isMovingLaterally()) cos(yaw.toDouble()) * speed else 0.0
 	}
 
-	@field:EventHandler private val changeLookDirectionListener = EventListener<PlayerEvent.ChangeLookDirection> {
-		if (matchCharacterRotation.value) return@EventListener
-
-		it.isCancelled = true
-
-		Camera.AresCamera.updateLastRotation()
-		this.rotation = Vec2f(
-			Camera.AresCamera.yaw + it.cursorDeltaX.toFloat() * 0.15F,
-			Camera.AresCamera.pitch + it.cursorDeltaY.toFloat() * 0.15F
-		)
+	@field:EventHandler private val changeLookDirectionListener = EventListener<PlayerEvent.ChangeLookDirection> { event ->
+		if (!Camera.hasPriority(this)) return@EventListener
+		event.isCancelled = true
+		cameraRotation.moveCameraWithCursor(event)
 	}
-
-	fun isMovingLaterally(): Boolean = forward || backward || leftward || rightward
 
 	@field:EventHandler private val keyboardListener = EventListener<InputEvent.Keyboard> { event ->
 		val opt = MC.options
@@ -122,4 +111,7 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 		event.isCancelled = true
 	}
 
+	// ════════════════════════════════════════════════════════════════════════ //
+
+	private fun isMovingLaterally(): Boolean = forward || backward || leftward || rightward
 }
