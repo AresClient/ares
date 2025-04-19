@@ -22,7 +22,6 @@ object AresPlugin: Plugin(
 	globals = listOf(
 		Camera,
 		Interaction,
-		Priority,
 		Render,
 		Rotation
 	),

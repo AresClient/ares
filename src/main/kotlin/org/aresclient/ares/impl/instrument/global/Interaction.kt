@@ -1,6 +1,7 @@
 package org.aresclient.ares.impl.instrument.global
 
 import org.aresclient.ares.api.instruments.Global
+import org.aresclient.ares.api.instruments.Prioritizer
 import org.aresclient.ares.api.setting.Setting
 import kotlin.math.ceil
 
