@@ -1,154 +1,134 @@
 package org.aresclient.ares.impl.instrument.global
 
+import dev.tigr.simpleevents.listener.EventHandler
+import dev.tigr.simpleevents.listener.EventListener
 import net.minecraft.util.math.Vec2f
+import net.minecraft.util.math.Vec3d
+import org.aresclient.ares.api.events.PlayerEvent
 import org.aresclient.ares.api.instruments.Global
+import org.aresclient.ares.api.instruments.Prioritizer
+import org.aresclient.ares.impl.util.EntityUtil.rotation
+import org.aresclient.ares.impl.util.MathUtil._x
+import org.aresclient.ares.impl.util.MathUtil._y
+import org.aresclient.ares.impl.util.MathUtil.duplicate
+import org.aresclient.ares.impl.util.MathUtil.getAngleDifference
+import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
+import org.aresclient.ares.impl.util.MathUtil.normalizeRotation
+import org.aresclient.ares.impl.util.MathUtil.set
 import org.aresclient.ares.impl.util.Timer
+import kotlin.math.min
 
-/**
- * TODO: I broke this, needs to be fixed -Tigermouthbear
- * TODO: Test whether interaction packets have to be sent right after the final step packet,
- *      at the end of the tick the packet's sent, or during the beginning of the next tick on strict;
- *      if it has to be the next tick, how soon after the interaction can the rotation be drastically changed
- */
 interface Rotator: Prioritizer {
-    fun yawStep(): Float = Rotation.yaw_step.value
-    fun pitchStep(): Float = Rotation.pitch_step.value
+	fun yawStep(): Float = Rotation.yaw_step.value
+	fun pitchStep(): Float = Rotation.pitch_step.value
+	val rotation: Vec2f
 }
 
-object Rotation: Global("Rotation", "Handles player rotations so that the server thinks the player is facing a certain direction") {
-    val reset_delay = settings.addLong("Reset Delay", 10).setMin(0).setMax(100)
-    val yaw_step = settings.addFloat("Yaw Step", 180F)
-    val pitch_step = settings.addFloat("Pitch Step", 180F)
+object Rotation: Global.PriorityHandler<Rotator>("Rotation", "Handles rotation so that the character is facing in the expected direction for an action."), CameraAdjustor {
 
-    private var rotation: Vec2f? = null
+	private val reset_delay = settings.addLong("Reset Delay", 10)
+		.setDescription("How long to wait after completing a rotation before resetting to the same rotation as the camera.")
+		.setMin(0)
+		.setMax(100)
 
-    private var key: Rotator? = null
-    private var released = true
-    private var resetTimer: Timer = Timer()
+	private val completion_delay = settings.addLong("Completion Delay", 1)
+		.setDescription("How long to wait after completing a rotation before interactions can happen.")
+		.setMin(0)
+		.setMax(10)
 
-    fun getRotation(): Vec2f? {
-        return rotation?.duplicate()
-    }
+	private val grouping_density = settings.addFloat("Grouping Density", 0F)
+		.setDescription("The rotation distance in degrees within which to ignore the completion delay.")
+		.setMin(0F)
+		.setMax(180F)
 
-    fun setRotation(yaw: Float, pitch: Float, key: Rotator): Boolean {
-        return setRotation(yaw, pitch, key, false)
-    }
+	internal val yaw_step = settings.addFloat("Yaw Step", 180F)
+		.setDescription("How many degrees to turn horizontally per tick.")
+		.setMin(1F)
+		.setMax(180F)
 
-    fun setRotation(yaw: Float, pitch: Float, key: Rotator, instant: Boolean): Boolean {
-        return setRotation(Vec2f(yaw, pitch), key, instant)
-    }
+	internal val pitch_step = settings.addFloat("Pitch Step", 180F)
+		.setDescription("How many degrees to turn vertically per tick.")
+		.setMin(1F)
+		.setMax(180F)
 
-    fun setRotation(rotation: Vec2f, key: Rotator): Boolean {
-        return setRotation(rotation, key, false)
-    }
+	// ════════════════════════════════════════════════════════════════════════ //
 
-    fun setRotation(rotation: Vec2f, key: Rotator, instant: Boolean): Boolean {
-        if(Rotation.rotation == null || released || Priority.keyMatches(key) || Priority.hasPriority(key)) {
-            // Rotate instantly if specified, but only if the rotation does not match (no need to spam)
-            //if(instant && this.rotation != rotation) PlayerMoveC2SPacket.Rotation.create(rotation, MC.getPlayer().isOnGround) //TODO: send packet (once possible in mesh)
+	override fun begin() {
+		cameraRotation!!.set(MC.gameRenderer.camera.yaw, MC.gameRenderer.camera.pitch)
+		lastRotation.set(MC.player?.yaw ?: 0F, MC.player?.pitch ?: 0F)
+	}
 
-            Rotation.rotation = rotation
-            Rotation.key = key
-            released = false
-            resetTimer.reset()
-            steppingComplete = false
+	override fun end() {
+		MC.player!!.rotation = cameraRotation
+		Camera.end(this)
+	}
 
-            return true
-        }
+	override val cameraPosition: Vec3d? = null
+	override val cameraRotation: Vec2f = Vec2f.ZERO.duplicate()
+	override val shouldRenderCharacter: Boolean = false
+	override fun priority(): Int = 1
 
-        return false
-    }
+	// ════════════════════════════════════════════════════════════════════════ //
 
-    private fun Vec2f.duplicate(): Vec2f {
-        return Vec2f(x, y)
-    }
+	val currentRotation = Vec2f.ZERO.duplicate()
+	val lastRotation = Vec2f.ZERO.duplicate()
+	val resetTimer = Timer()
+	var steppingComplete = true
 
-    fun normalizeAngle(angle: Float): Float {
-        var a = angle % 360
-        if(a >= 180) a -= 360
-        if(a < -180) a += 360
-        return a
-    }
+	// ════════════════════════════════════════════════════════════════════════ //
 
-    private fun normalizeRotation(rotation: Vec2f): Vec2f {
-        return Vec2f(normalizeAngle(rotation.x), normalizeAngle(rotation.y))
-    }
+	override fun tick() {
+		if (keys.isEmpty() && Camera.isActive(this) && resetTimer.hasTicksPassed(reset_delay.value)) {
+			Camera.end(this)
+			resetTimer.reset()
+			return
+		}
 
-    private fun getChange(angle1: Float, angle2: Float): Float {
-        var a = angle1 - angle2
-        if(a > 180) a -= 360
-        else if(a < -180) a += 360
-        return -a
-    }
+		if (MC.world == null || MC.player == null || keys.isEmpty()) {
+			resetTimer.reset()
+			return
+		}
 
-    private val lastRotation = Vec2f(0F, 0F)
-    private val tempRotation = Vec2f(0F, 0F)
-    private var steppingComplete = true
+		val current = getCurrent() ?: return
+		currentRotation.set(current.rotation).normalizeRotation()
+		Camera.begin(this)
 
-    fun isCompletedStepping(): Boolean {
-        return steppingComplete
-    }
+		val yawStep = min(current.yawStep(), yaw_step.value)
+		val pitchStep = min(current.pitchStep(), pitch_step.value)
 
-    //TODO: switch to replacing EntityClientPlayerEvent.sendMovementPackets so that alternative packets can be sent without being modified?
-    /*@field:EventHandler
-    private val onMovementPacketSent = EventListener<PacketEvent.Sent> { event ->
-        if(event.packet is PlayerMoveC2SPacket.Rotation) {
-            val packet: PlayerMoveC2SPacket.Rotation = event.packet
-            when(event.era) {
-                PacketEvent.Era.BEFORE -> {
-                    if(rotation == null) {
-                        resetTimer.reset()
-                        return@EventListener
-                    }
+		if (!lastRotation.equals(currentRotation) && yawStep != 180F || pitchStep != 180F) {
+			val xChange = lastRotation.x.getAngleDifference(currentRotation.x)
+			val yChange = lastRotation.y.getAngleDifference(currentRotation.y)
+			currentRotation._x = steppedAngle(xChange, yawStep, lastRotation.x, currentRotation.x)
+			currentRotation._y = steppedAngle(yChange, pitchStep, lastRotation.y, currentRotation.y)
+		} else steppingComplete = true
 
-                    //TODO: Global settings (separate panel?)
-                    if(resetTimer.hasTicksPassed(reset_delay.value) && steppingComplete) {
-                        rotation = null
-                        key = null
-                        released = true
-                        resetTimer.reset()
-                        return@EventListener
-                    }
+		MC.player!!.rotation = currentRotation
 
-                    val lastRotNorm: Vec2f = normalizeRotation(lastRotation)
-                    val rotNorm: Vec2f = normalizeRotation(rotation!!)
+		lastRotation.set(currentRotation)
+	}
 
-                    val yawStep = min(key!!.getYawStep(), yaw_step.value)
-                    val pitchStep = min(key!!.getPitchStep(), pitch_step.value)
 
-                    if(lastRotNorm.x != rotNorm.x && (yawStep != 180F || pitchStep != 180F)) {
-                        val xChange = getChange(lastRotNorm.x, rotNorm.x)
-                        val yChange = getChange(lastRotNorm.y, rotNorm.y)
-                        tempRotation.x =
-                            if(xChange > yawStep) lastRotation.x +yawStep
-                            else if(xChange < -yawStep) lastRotation.x -yawStep
-                            else rotation!!.x
-                        tempRotation.y =
-                            if(yChange > pitchStep) lastRotation.y +pitchStep
-                            else if(yChange < -pitchStep) lastRotation.y -pitchStep
-                            else rotation!!.y
+	@field:EventHandler private val changeLookDirection = EventListener<PlayerEvent.ChangeLookDirection> { event ->
+		if (!Camera.isActive(this)) return@EventListener
+		if (Camera.hasPriority(this)) event.isCancelled = true
+		cameraRotation.moveCameraWithCursor(event)
+	}
 
-                        packet.rotation = tempRotation
-                        if(tempRotation.x == rotation!!.x && tempRotation.y == rotation!!.y) steppingComplete = true
+	// ════════════════════════════════════════════════════════════════════════ //
 
-                        MC.getPlayer().setRenderHeadYaw(tempRotation.x)
-                        MC.getPlayer().setRenderBodyYaw(tempRotation.x)
-                    } else {
-                        packet.rotation = rotation
-                        steppingComplete = true
-
-                        MC.getPlayer().setRenderHeadYaw(rotation!!.x)
-                        MC.getPlayer().setRenderBodyYaw(rotation!!.x)
-                    }
-                }
-                PacketEvent.Era.AFTER -> {
-                    lastRotation.set(packet.rotation)
-                    rotation?.let {
-                        if(lastRotation.x == it.x && lastRotation.y == it.y) steppingComplete = true
-                    }
-                }
-                else -> Unit
-            }
-        }
-    }*/
+	private fun steppedAngle(change: Float, step: Float, last: Float, current: Float): Float =
+		if (change > step) {
+			steppingComplete = false
+			last +step
+		}
+		else if(change < -step) {
+			steppingComplete = false
+			last -step
+		}
+		else {
+			steppingComplete = true
+			current
+		}
 }
+
