@@ -1,164 +1,78 @@
 package org.aresclient.ares.impl.instrument.global
 
-import net.minecraft.client.render.Camera
-import net.minecraft.entity.Entity
-import net.minecraft.entity.LivingEntity
-import net.minecraft.entity.vehicle.ExperimentalMinecartController
-import net.minecraft.entity.vehicle.MinecartEntity
+import dev.tigr.simpleevents.listener.EventHandler
+import dev.tigr.simpleevents.listener.EventListener
+import dev.tigr.simpleevents.listener.Priority
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
-import net.minecraft.world.BlockView
+import org.aresclient.ares.api.events.CameraEvent
+import org.aresclient.ares.api.events.Era
+import org.aresclient.ares.api.events.TickEvent
 import org.aresclient.ares.api.instruments.Global
-import org.aresclient.ares.impl.instrument.global.Camera.AresCamera.lastPosition
-import org.aresclient.ares.impl.instrument.global.Camera.AresCamera.lastRotation
-import org.aresclient.ares.mixin.accessors.AccessCamera
-import org.aresclient.ares.mixin.accessors.AccessGameRenderer
+import org.aresclient.ares.api.instruments.Prioritizer
+import org.aresclient.ares.impl.util.MathUtil.duplicate
+import org.aresclient.ares.impl.util.MathUtil.set
 
 interface CameraAdjustor: Prioritizer {
-	fun cameraPosition(): Vec3d
-	fun cameraRotation(): Vec2f
+	val cameraPosition: Vec3d?
+	val cameraRotation: Vec2f?
+	val shouldRenderCharacter: Boolean
 }
 
-object Camera: Global("Camera", "Manages camera interactions") {
-	private var adjustors:HashSet<CameraAdjustor> = HashSet()
-	private var originalCamera: Camera? = null
+object Camera: Global.PriorityHandler<CameraAdjustor>("Camera", "Manages camera interactions") {
 
-	fun begin(key: CameraAdjustor): Boolean {
-		if (adjustors.isNotEmpty()) {
-			if (!adjustors.contains(key)) adjustors.add(key)
-			return hasPriority(key)
-		}
-
-		adjustors.add(key)
-
-		lastPosition = MC.gameRenderer.camera.pos
-		(AresCamera as AccessCamera).setPos(lastPosition!!.x, lastPosition!!.y, lastPosition!!.z)
-
-		lastRotation = Vec2f(MC.gameRenderer.camera.yaw, MC.gameRenderer.camera.pitch)
-		(AresCamera as AccessCamera).setRotation(lastRotation!!.x, lastRotation!!.y)
-
-		originalCamera = MC.gameRenderer.camera
-		(MC.gameRenderer as AccessGameRenderer).setCamera(AresCamera)
-
-		return true
+	override fun begin() {
+		lastPosition.set(MC.gameRenderer.camera.pos)
+		lastRotation.set(MC.gameRenderer.camera.yaw, MC.gameRenderer.camera.pitch)
 	}
 
-	fun end(key: CameraAdjustor) {
-		if (adjustors.contains(key)) adjustors.remove(key)
-		if (adjustors.isEmpty()) end()
+	override fun end() {
+		lastPosition.set(Vec3d.ZERO)
+		lastRotation.set(Vec2f.ZERO)
 	}
 
-	fun hasPriority(key: CameraAdjustor): Boolean {
-		return key == getNext()
+	// ════════════════════════════════════════════════════════════════════════ //
+
+	private val lastPosition = Vec3d.ZERO.duplicate()
+	private val lastRotation = Vec2f.ZERO.duplicate()
+
+	// ════════════════════════════════════════════════════════════════════════ //
+
+	// Run on tick event with higher priority than default tick so that this runs before default tick events
+	@field:EventHandler private val tickEvent = EventListener<TickEvent.Client>(Priority.HIGH) { event ->
+		if (event.era != Era.BEFORE) return@EventListener
+		val current = getCurrent() ?: return@EventListener
+		lastPosition.set(current.cameraPosition ?: MC.gameRenderer.camera.pos)
 	}
 
-	internal fun end() {
-		lastPosition = null
-		lastPosition = null
+	@field:EventHandler private val onCameraUpdate = EventListener<CameraEvent> { event ->
+		val current = getCurrent() ?: return@EventListener
 
-		(MC.gameRenderer as AccessGameRenderer).setCamera(originalCamera)
-		originalCamera = null
-	}
-
-	internal fun getNext(): CameraAdjustor? {
-		var key: CameraAdjustor? = null
-		adjustors.forEach {
-			if (key == null) {
-				key = it
-				return@forEach
+		when (event) {
+			is CameraEvent.Position -> {
+				val currentPosition: Vec3d = current.cameraPosition ?: return@EventListener
+				event.x = MathHelper.lerp(event.delta.toDouble(), lastPosition.x, currentPosition.x)
+				event.y = MathHelper.lerp(event.delta.toDouble(), lastPosition.y, currentPosition.y)
+				event.z = MathHelper.lerp(event.delta.toDouble(), lastPosition.z, currentPosition.z)
 			}
-
-			if (key!!.priority() < it.priority()) key = it
-		}
-		return key
-	}
-
-	object AresCamera: Camera() {
-		internal var lastPosition: Vec3d? = null
-		internal var lastRotation: Vec2f? = null
-
-		override fun update(area: BlockView?, focusedEntity: Entity?, thirdPerson: Boolean, inverseView: Boolean, tickProgress: Float) {
-			this as AccessCamera
-			this.setReady(true)
-			this.setArea(area)
-			this.setFocusedEntity(focusedEntity)
-			this.setThirdPerson(true)
-			this.setLastTickProgress(tickProgress)
-
-			val next = getNext()
-
-			if (next == null) { // Should never be null, but just in case
-				end()
-				MC.gameRenderer.camera.update(area, focusedEntity, thirdPerson, inverseView, tickProgress)
-				return
-			}
-
-			applyCameraTransformations(tickProgress, next.cameraPosition(), next.cameraRotation())
-		}
-
-		private fun applyCameraTransformations(tickProgress:Float, position:Vec3d, rotation:Vec2f) {
-			val lastPosition = lastPosition!!; val lastRotation = lastRotation!!
-
-			setPos(
-				MathHelper.lerp(tickProgress.toDouble(), lastPosition.x, position.x),
-				MathHelper.lerp(tickProgress.toDouble(), lastPosition.y, position.y),
-				MathHelper.lerp(tickProgress.toDouble(), lastPosition.z, position.z)
-			)
-			setRotation(
-				if (tickProgress == 1F) rotation.x else MathHelper.lerpAngleDegrees(tickProgress, lastRotation.x, rotation.x),
-				if (tickProgress == 1F) rotation.y else MathHelper.lerp(tickProgress, lastRotation.y, rotation.y)
-			)
-		}
-
-		fun updateLastPosition() {
-			lastPosition = pos
-		}
-
-		fun updateLastRotation() {
-			lastRotation = Vec2f(yaw, pitch)
-		}
-
-		internal fun unmodified(inverseView: Boolean) {
-			this as AccessCamera
-			val tp = lastTickProgress
-			val fe = focusedEntity
-
-			(fe.vehicle as? MinecartEntity)?.let { me ->
-				(me.controller as? ExperimentalMinecartController)?.let { emc ->
-					if (emc.hasCurrentLerpSteps()) return@let null
-
-					val vec3d = me
-						.getPassengerRidingPos(focusedEntity)
-						.subtract(me.getPos())
-						.subtract(fe.getVehicleAttachmentPos(me))
-						.add(
-							Vec3d(0.0, MathHelper
-								.lerp(tp, this.lastCameraY, this.cameraY).toDouble(), 0.0)
-						)
-
-					setRotation(fe.getYaw(tp), fe.getPitch(tp))
-					setPos(emc.getLerpedPosition(tp).add(vec3d))
-				}
-			} ?: {
-				setRotation(fe.getYaw(tp), fe.getPitch(tp))
-				setPos(
-					MathHelper.lerp(tp.toDouble(), fe.lastX, fe.x),
-					MathHelper.lerp(tp.toDouble(), fe.lastY, fe.y) + MathHelper.lerp(tp, lastCameraY, cameraY),
-					MathHelper.lerp(tp.toDouble(), fe.lastZ, fe.z)
-				)
-			}
-
-			if (thirdPerson) {
-				if (inverseView) setRotation(yaw + 180f, -pitch)
-				val f = (fe as? LivingEntity)?.let { it.scale } ?: 1F
-				moveBy(-doClipToSpace(4f * f), 0f, 0f)
-			} else if (fe is LivingEntity && fe.isSleeping) {
-				val dir = fe.sleepingDirection
-				setRotation(if (dir != null) dir.positiveHorizontalDegrees - 180f else 0f, 0f)
-				moveBy(0f, 0.3f, 0f)
+			is CameraEvent.Rotation -> {
+				val currentRotation: Vec2f = current.cameraRotation ?: return@EventListener
+				event.yaw = currentRotation.x
+				event.pitch = currentRotation.y
 			}
 		}
+
+		event.isCancelled = true
 	}
 
+	// ════════════════════════════════════════════════════════════════════════ //
+
+	fun shouldRenderCharacter(): Boolean? {
+		val current = getCurrent() ?: return null
+		val cameraPosition = current.cameraPosition ?: return null
+		val player = MC.player ?: return false
+		return (if (current.shouldRenderCharacter) true else MC.gameRenderer.camera.isThirdPerson)
+				&& !player.boundingBox.intersects(cameraPosition, cameraPosition)
+	}
 }

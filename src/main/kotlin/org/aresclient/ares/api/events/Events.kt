@@ -1,5 +1,10 @@
 package org.aresclient.ares.api.events
 
+abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$type") {
+	class Position(delta: Float, var x: Double, var y: Double, var z: Double): CameraEvent(delta, "position")
+	class Rotation(delta: Float, var yaw: Float, var pitch: Float): CameraEvent(delta, "rotation")
+}
+
 abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 	enum class Type { KEYBOARD, MOUSE }
 
