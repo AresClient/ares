@@ -1,4 +1,4 @@
-package org.aresclient.ares.mixin.event.client;
+package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;

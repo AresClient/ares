@@ -1,4 +1,4 @@
-package org.aresclient.ares.mixin.event.entity;
+package org.aresclient.ares.mixin.mixins;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;

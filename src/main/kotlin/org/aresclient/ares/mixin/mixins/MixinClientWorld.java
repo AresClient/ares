@@ -1,4 +1,4 @@
-package org.aresclient.ares.mixin.event.world;
+package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.world.ClientWorld;
 import org.aresclient.ares.api.JWrapper;

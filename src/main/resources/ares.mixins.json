@@ -5,17 +5,17 @@
   "mixins": [
     "accessors.AccessMath$Vec2f",
     "accessors.AccessMath$Vec3d",
-    "event.client.MixinKeyboard",
-    "event.client.MixinMinecraftClient",
-    "event.client.MixinMouse",
-    "event.entity.MixinClientPlayerEntity",
-    "event.entity.MixinEntity",
-    "event.render.MixinGameRenderer",
-    "event.render.MixinInGameHud",
-    "event.world.MixinClientWorld",
-    "render.MixinCamera",
-    "render.MixinFramebuffer",
-    "render.MixinWorldRenderer"
+    "mixins.MixinCamera",
+    "mixins.MixinClientPlayerEntity",
+    "mixins.MixinClientWorld",
+    "mixins.MixinEntity",
+    "mixins.MixinFramebuffer",
+    "mixins.MixinGameRenderer",
+    "mixins.MixinInGameHud",
+    "mixins.MixinKeyboard",
+    "mixins.MixinMinecraftClient",
+    "mixins.MixinMouse",
+    "mixins.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1

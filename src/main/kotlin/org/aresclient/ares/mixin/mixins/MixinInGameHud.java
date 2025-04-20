@@ -1,4 +1,4 @@
-package org.aresclient.ares.mixin.event.render;
+package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;

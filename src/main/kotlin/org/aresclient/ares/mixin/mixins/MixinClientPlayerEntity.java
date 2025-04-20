@@ -1,4 +1,4 @@
-package org.aresclient.ares.mixin.event.entity;
+package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.aresclient.ares.api.JWrapper;
