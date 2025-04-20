@@ -1,6 +1,7 @@
 package org.aresclient.ares.impl.instrument.module.modules.movement
 
 import org.aresclient.ares.api.instruments.Module
+import org.aresclient.ares.impl.instrument.global.Rotation
 import kotlin.math.cos
 import kotlin.math.sin
 import kotlin.math.sqrt
@@ -35,7 +36,7 @@ object Strafe: Module(Category.MOVEMENT, "Strafe", "") {
 			if (!speedBool.value) sqrt(player.velocity.x * player.velocity.x + player.velocity.z * player.velocity.z)
 			else speedVal.value
 
-		var yaw:Float = player.yaw
+		var yaw: Float = if (Rotation.isRotating) MC.gameRenderer.camera.yaw else player.yaw
 		var forward = 1f
 		if (player.forwardSpeed < 0) {
 			yaw += 180f

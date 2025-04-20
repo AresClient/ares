@@ -72,7 +72,7 @@ object Camera: Global.PriorityHandler<CameraAdjustor>("Camera", "Manages camera 
 		val current = getCurrent() ?: return null
 		val cameraPosition = current.cameraPosition ?: return null
 		val player = MC.player ?: return false
-		return (if (current.shouldRenderCharacter) true else MC.gameRenderer.camera.isThirdPerson)
+		return (current.shouldRenderCharacter || MC.gameRenderer.camera.isThirdPerson)
 				&& !player.boundingBox.intersects(cameraPosition, cameraPosition)
 	}
 }

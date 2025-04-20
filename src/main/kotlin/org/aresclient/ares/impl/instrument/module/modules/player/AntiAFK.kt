@@ -17,7 +17,7 @@ object AntiAFK: Module(Category.PLAYER, "AntiAFK", "Prevents player from being k
     // ════════════════════════════════════════════════════════════════════════ //
 
     override fun priority(): Int = 0
-    override fun yawStep(): Float = yaw_step.value
+    override val yawStep: Float get() = yaw_step.value
     override val rotation: Vec2f = Vec2f.ZERO.duplicate()
 
     // ════════════════════════════════════════════════════════════════════════ //

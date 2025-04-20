@@ -19,8 +19,8 @@ import org.aresclient.ares.impl.util.Timer
 import kotlin.math.min
 
 interface Rotator: Prioritizer {
-	fun yawStep(): Float = Rotation.yaw_step.value
-	fun pitchStep(): Float = Rotation.pitch_step.value
+	val yawStep: Float get() = Rotation.yaw_step.value
+	val pitchStep: Float get() = Rotation.pitch_step.value
 	val rotation: Vec2f
 }
 
@@ -93,8 +93,8 @@ object Rotation: Global.PriorityHandler<Rotator>("Rotation", "Handles rotation s
 		currentRotation.set(current.rotation).normalizeRotation()
 		Camera.begin(this)
 
-		val yawStep = min(current.yawStep(), yaw_step.value)
-		val pitchStep = min(current.pitchStep(), pitch_step.value)
+		val yawStep = min(current.yawStep, yaw_step.value)
+		val pitchStep = min(current.pitchStep, pitch_step.value)
 
 		if (!lastRotation.equals(currentRotation) && yawStep != 180F || pitchStep != 180F) {
 			val xChange = lastRotation.x.getAngleDifference(currentRotation.x)
@@ -108,11 +108,17 @@ object Rotation: Global.PriorityHandler<Rotator>("Rotation", "Handles rotation s
 		lastRotation.set(currentRotation)
 	}
 
-
 	@field:EventHandler private val changeLookDirection = EventListener<PlayerEvent.ChangeLookDirection> { event ->
-		if (!Camera.isActive(this)) return@EventListener
+		if (!isRotating) return@EventListener
 		if (Camera.hasPriority(this)) event.isCancelled = true
 		cameraRotation.moveCameraWithCursor(event)
+	}
+
+	@field:EventHandler private val updateVelocityYaw = EventListener<PlayerEvent.UpdateVelocityYaw> { event ->
+		if (!Camera.hasPriority(this)) return@EventListener
+
+		event.isCancelled = true
+		event.yaw = cameraRotation.x
 	}
 
 	// ════════════════════════════════════════════════════════════════════════ //
@@ -130,5 +136,7 @@ object Rotation: Global.PriorityHandler<Rotator>("Rotation", "Handles rotation s
 			steppingComplete = true
 			current
 		}
+
+	val isRotating: Boolean get() = Camera.isActive(this)
 }
 

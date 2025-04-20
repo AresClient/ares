@@ -25,8 +25,9 @@ abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 	}
 }
 
-class PlayerEvent {
-	class ChangeLookDirection(val cursorDeltaX: Double, val cursorDeltaY: Double): AresEvent("player-change-look-direction")
+abstract class PlayerEvent(name: String): AresEvent("player-$name") {
+	class ChangeLookDirection(val cursorDeltaX: Double, val cursorDeltaY: Double): PlayerEvent("change-look-direction")
+	class UpdateVelocityYaw(var yaw: Float): PlayerEvent("update-velocity-yaw")
 }
 
 abstract class RenderEvent(val type: Type): AresEvent("render-" + type.name) {
