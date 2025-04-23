@@ -5,6 +5,9 @@ import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.events.PlayerEvent
 import org.aresclient.ares.mixin.accessors.AccessMath
+import org.joml.Vector2d
+import kotlin.math.cos
+import kotlin.math.sin
 
 object MathUtil {
 	fun Float.getAngleDifference(otherAngle: Float): Float {
@@ -90,4 +93,38 @@ object MathUtil {
 		set(value) = (this as AccessMath.Vec3d).setZ(value)
 
 	// ──────────────────────────────────────────────────────────────────────── //
+
+	private const val PI_2 = Math.PI / 2
+	private const val PI_4 = Math.PI / 4
+
+	/**
+	 * @receiver yaw in degrees
+	 */
+	fun Float.toTransverseMovement(speed: Double, forwards: Float, sideways: Float): Vector2d {
+		return Math.toRadians(this.toDouble()).toTransverseMovement(speed, forwards, sideways)
+	}
+
+	/**
+	 * @receiver yaw in radians
+	 */
+	fun Double.toTransverseMovement(speed: Double, forwards: Float, sideways: Float): Vector2d {
+		var yaw = this; var forwards = forwards; var sideways = sideways
+
+		if (forwards != 0F) {
+			if (sideways > 0) yaw += if (forwards > 0) -PI_4 else PI_4
+			else if (sideways < 0) yaw += if (forwards > 0) PI_4 else -PI_4
+
+			sideways = 0F
+
+			if (forwards > 0) forwards = 1F
+			else if (forwards < 0) forwards = -1F
+		}
+
+		yaw += PI_2
+
+		return Vector2d(
+			forwards * speed * cos(yaw) + sideways * speed * sin(yaw),
+			forwards * speed * sin(yaw) - sideways * speed * cos(yaw)
+		)
+	}
 }

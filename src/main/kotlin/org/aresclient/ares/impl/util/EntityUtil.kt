@@ -1,5 +1,6 @@
 package org.aresclient.ares.impl.util
 
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.mob.HostileEntity
@@ -8,7 +9,10 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec2f
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.impl.instrument.global.Rotation
 import org.aresclient.ares.impl.util.EntityUtil.isTarget
+import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
+import org.joml.Vector2d
 
 object EntityUtil: Wrapper {
 	var Entity.rotation: Vec2f
@@ -79,5 +83,18 @@ object EntityUtil: Wrapper {
 			}
 			else -> false
 		}
+	}
+
+	fun ClientPlayerEntity.getTransverseMovement(speed: Double, cameraRotation: Boolean = true): Vector2d {
+		val yaw = if (cameraRotation && Rotation.isRotating) {
+			if (MC.options.perspective.isFrontView) MC.gameRenderer.camera.yaw - 180F
+			else MC.gameRenderer.camera.yaw
+		} else this.yaw
+		return yaw.toTransverseMovement(speed, forwardSpeed, sidewaysSpeed)
+	}
+
+	fun ClientPlayerEntity.withTransverseMovement(speed: Double, cameraRotation: Boolean = true, y: Double = this.velocity.y) {
+		val movement = getTransverseMovement(speed, cameraRotation)
+		this.setVelocity(movement.x, y, movement.y)
 	}
 }

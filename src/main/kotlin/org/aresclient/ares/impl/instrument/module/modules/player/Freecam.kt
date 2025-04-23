@@ -14,10 +14,9 @@ import org.aresclient.ares.impl.util.MathUtil._x
 import org.aresclient.ares.impl.util.MathUtil._y
 import org.aresclient.ares.impl.util.MathUtil._z
 import org.aresclient.ares.impl.util.MathUtil.duplicate
+import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
 import org.aresclient.ares.impl.util.MathUtil.set
-import kotlin.math.cos
-import kotlin.math.sin
 
 object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character"), CameraAdjustor {
 
@@ -34,12 +33,12 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 
 	// ════════════════════════════════════════════════════════════════════════ //
 
-	var forward = false
-	var backward = false
-	var leftward = false
-	var rightward = false
-	var upward = false
-	var downward = false
+	private var forward = false
+	private var backward = false
+	private var leftward = false
+	private var rightward = false
+	private var upward = false
+	private var downward = false
 
 	// ════════════════════════════════════════════════════════════════════════ //
 
@@ -58,25 +57,18 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 	override fun onTick() {
 		if (MC.world == null || MC.player == null) return
 
-		var yaw = MC.gameRenderer.camera.yaw
-
 		var speed = speed.value
 		if (!MC.options.sprintKey.isPressed) speed *= 0.5
 
-		var forwardValue = 1F
-		if (backward) {
-			yaw += 180
-			forwardValue = -0.5F
-		} else if (forward) forwardValue = 0.5F
+		val transverseMovement = MC.gameRenderer.camera.yaw.toTransverseMovement(
+			speed,
+			if (forward && !backward) 1F else if (backward && !forward) -1F else 0F,
+			if (leftward && !rightward) 1F else if (rightward && !leftward) -1F else 0F
+		)
 
-		if (leftward) yaw -= 90 * forwardValue
-		if (rightward) yaw += 90 * forwardValue
-
-		yaw = Math.toRadians(yaw.toDouble()).toFloat()
-
-		cameraPosition._x -= if (isMovingLaterally()) sin(yaw.toDouble()) * speed else 0.0
+		cameraPosition._x += transverseMovement.x
 		cameraPosition._y += if (upward) speed else if (downward) -speed else 0.0
-		cameraPosition._z += if (isMovingLaterally()) cos(yaw.toDouble()) * speed else 0.0
+		cameraPosition._z += transverseMovement.y
 	}
 
 	@field:EventHandler private val changeLookDirectionListener = EventListener<PlayerEvent.ChangeLookDirection> { event ->
@@ -113,5 +105,4 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 
 	// ════════════════════════════════════════════════════════════════════════ //
 
-	private fun isMovingLaterally(): Boolean = forward || backward || leftward || rightward
 }
