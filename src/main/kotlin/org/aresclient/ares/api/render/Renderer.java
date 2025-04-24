@@ -10,6 +10,7 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.GlTexture;
 import net.minecraft.client.util.Window;
 import org.aresclient.ares.Ares;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 // written by Tigermouthbear years ago
@@ -54,6 +55,15 @@ public class Renderer {
                     .uniform(uniforms.getRoundedSize());
             lines = Buffer.createDynamic(Shader.LINES, VertexFormat.LINES).lines();
             this.uniforms = uniforms;
+        }
+
+        public void draw() {
+            triangle.draw();
+            triangleTex.draw();
+            triangleTexColor.draw();
+            ellipse.draw();
+            rounded.draw();
+            lines.draw();
         }
 
         public Buffer getTriangle() {
@@ -117,6 +127,15 @@ public class Renderer {
             this.cull = cull;
         }
 
+        public void draw() {
+            for(Buffer buffer: buffers.getAll()) {
+                if(buffer.shouldRender()) {
+                    buffer.draw(matrixStack);
+                    buffer.reset();
+                }
+            }
+        }
+
         public Buffers getBuffers() {
             return buffers;
         }
@@ -162,16 +181,15 @@ public class Renderer {
         return begin(matrixStack);
     }
 
-    public static State begin3d() {
+    public static State begin3d(Matrix4f bobhurt) {
         Camera camera = Ares.getMC().gameRenderer.getCamera();
 
-        // TODO: THIS DOES NOT WORK ON LEGACY
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.projection()
             .set(RenderSystem.getProjectionMatrix())
+            .mul(bobhurt.invert())
             .rotate(toRadians(wrapDegrees(camera.getPitch())), 1f, 0f, 0f)
-            .rotate(toRadians(wrapDegrees(camera.getYaw() + 180f)), 0f, 1f, 0f)
-            .translate((float) -camera.getPos().x, (float) -camera.getPos().y, (float) -camera.getPos().z);
+            .rotate(toRadians(wrapDegrees(camera.getYaw() + 180f)), 0f, 1f, 0f);
 
         return begin(matrixStack);
     }
@@ -188,10 +206,7 @@ public class Renderer {
     }
 
     public static void end(State state) {
-        for(Buffer buffer: state.buffers.getAll()) {
-            if(buffer.shouldRender()) buffer.draw(state.matrixStack);
-            buffer.reset();
-        }
+        state.draw();
 
         glEnableDisable(GL11.GL_DEPTH_TEST, state.depth);
         glEnableDisable(GL11.GL_BLEND, state.blend);
@@ -207,8 +222,6 @@ public class Renderer {
     }
 
     public static void scissorBegin(float x, float y, float width, float height) {
-//        Framebuffer framebuffer = Ares.getMinecraft().getFramebuffer();
-//        Resolution resolution = Ares.getMinecraft().getResolution();
         Framebuffer framebuffer = Ares.getMC().getFramebuffer();
         Window window = Ares.getMC().getWindow();
 

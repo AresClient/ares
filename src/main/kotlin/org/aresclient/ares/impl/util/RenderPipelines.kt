@@ -13,19 +13,20 @@ import net.minecraft.util.Identifier
 import kotlin.jvm.optionals.getOrNull
 
 
-object Pipelines {
+object RenderPipelines {
     val outline: RenderPipeline = RenderPipeline.builder()
         .withLocation(Identifier.of("ares", "pipeline/outline_blit"))
         .withVertexShader(Identifier.of("ares", "shaders/vert/outline.vert"))
         .withFragmentShader(Identifier.of("ares", "shaders/frag/outline.frag"))
         .withSampler("theTexture")
-        .withBlend(BlendFunction.ENTITY_OUTLINE_BLIT)
+        .withBlend(BlendFunction.TRANSLUCENT)
         .withDepthWrite(false)
         .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
         .withColorWrite(true, false)
         .withVertexFormat(VertexFormats.POSITION, VertexFormat.DrawMode.QUADS)
         .withUniform("viewportSize", UniformType.VEC2)
         .withUniform("lineWeight", UniformType.FLOAT)
+        .withCull(false)
         .build()
 
     private val pipelines = listOf(outline)
@@ -34,7 +35,7 @@ object Pipelines {
         override fun reload(manager: ResourceManager) {
             for(pipeline in pipelines) {
                 RenderSystem.getDevice().precompilePipeline(pipeline) { id, _ ->
-                    (if(id.namespace == "ares") Pipelines::class.java.getResourceAsStream("/assets/ares/${id.path}")
+                    (if(id.namespace == "ares") RenderPipelines::class.java.getResourceAsStream("/assets/ares/${id.path}")
                     else manager.getResource(id).getOrNull()?.inputStream)?.reader()?.readLines()?.joinToString("\n")
                 }
             }

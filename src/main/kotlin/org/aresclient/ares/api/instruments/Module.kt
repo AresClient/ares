@@ -56,7 +56,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 
 	private val enabled = settings
 		.addBoolean("Enabled", defaults.enabled)
-		.addListener { value:Boolean ->
+		.addListener { value: Boolean ->
 			if(value) {
 				if(!defaults.alwaysListening) registerEvents()
 				onEnable()
@@ -81,7 +81,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 	/* ---------------------------------------------------------------------- */
 
 	fun isEnabled(): Boolean = enabled.value
-	fun setEnabled(value:Boolean) {
+	fun setEnabled(value: Boolean) {
 		enabled.value = value
 	}
 
@@ -113,12 +113,12 @@ abstract class Module(category: Category, name: String, description: String, pri
 		if(isListening()) onMotion()
 	}
 
-	fun renderHud(delta:Float, buffers:Renderer.Buffers, matrixStack:MatrixStack) {
+	fun renderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
 		if (isListening()) onRenderHud(delta, buffers, matrixStack)
 	}
 
-	fun renderWorld(delta:Float, buffers:Renderer.Buffers, matrixStack:MatrixStack) {
-		if (isListening()) onRenderWorld(delta, buffers, matrixStack)
+	fun renderWorld(delta: Float, state: Renderer.State) {
+		if (isListening()) onRenderWorld(delta, state)
 	}
 
 	/* ---------------------------------------------------------------------- */
@@ -126,7 +126,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 	protected open fun onTick() {}
 	protected open fun onMotion() {}
 	protected open fun onRenderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {}
-	protected open fun onRenderWorld(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {}
+	protected open fun onRenderWorld(delta: Float, renderer: Renderer.State) {}
 
 	protected open fun onEnable() {}
 	protected open fun onDisable() {}

@@ -1,17 +1,14 @@
-package org.aresclient.ares.impl.instrument.global
+package org.aresclient.ares.impl.util
 
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
-import org.aresclient.ares.api.instruments.Global
-import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 
-object Render: Global("Render", "Handles render related tasks which are held in common between multiple modules") {
-    data class Event(val delta: Float, val buffers: Renderer.Buffers, val matrixStack: MatrixStack)
-
+// TODO: maybe move away from Renderer.getBuffers()?
+object RenderUtil {
     /** Util object to hold functions for drawing filled quads, and boxes */
     object Fill {
         fun quad(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, color1: Color, color2: Color, color3: Color, color4: Color) {

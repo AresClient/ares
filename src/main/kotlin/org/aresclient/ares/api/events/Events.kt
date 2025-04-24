@@ -1,5 +1,8 @@
 package org.aresclient.ares.api.events
 
+import net.minecraft.client.util.math.MatrixStack
+import org.joml.Matrix4f
+
 abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$type") {
 	class Position(delta: Float, var x: Double, var y: Double, var z: Double): CameraEvent(delta, "position")
 	class Rotation(delta: Float, var yaw: Float, var pitch: Float): CameraEvent(delta, "rotation")
@@ -35,7 +38,7 @@ abstract class RenderEvent(val type: Type): AresEvent("render-" + type.name) {
 	enum class Type { HUD, WORLD }
 
 	class Hud(val tickDelta: Float): RenderEvent(Type.HUD)
-	class World(val tickDelta: Float): RenderEvent(Type.WORLD)
+	class World(val tickDelta: Float, val matrix4f: Matrix4f): RenderEvent(Type.WORLD)
 }
 
 class ScreenOpenedEvent(val mainMenu: Boolean): AresEvent("screen-open")

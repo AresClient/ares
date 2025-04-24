@@ -15,7 +15,8 @@
     "mixins.MixinKeyboard",
     "mixins.MixinMinecraftClient",
     "mixins.MixinMouse",
-    "mixins.MixinWorldRenderer"
+    "mixins.MixinWorldRenderer",
+    "mixins.MixinLightmapTextureManager"
   ],
   "injectors": {
     "defaultRequire": 1

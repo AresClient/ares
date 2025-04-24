@@ -26,7 +26,7 @@ open class Plugin(val name: String, val description: String, val version: String
 		modules.forEach { module -> module.renderHud(delta, buffers, matrixStack) }
 	}
 
-	open fun renderWorld(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
-		modules.forEach { module -> module.renderWorld(delta, buffers, matrixStack) }
+	open fun renderWorld(delta: Float, renderer: Renderer.State) {
+		modules.forEach { module -> module.renderWorld(delta, renderer) }
 	}
 }

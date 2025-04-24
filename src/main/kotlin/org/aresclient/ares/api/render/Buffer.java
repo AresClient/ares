@@ -6,8 +6,6 @@ import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.opengl.GL30;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
@@ -82,15 +80,11 @@ public class Buffer {
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
 
-        //Ares.getMinecraft().getRenderer().getVertexBuffers().reset();
-
         BUFFERS.add(this);
     }
 
     public Buffer reset() {
-        resetVertices();
-        resetIndices();
-        return this;
+        return resetVertices().resetIndices();
     }
 
     public Buffer resetVertices() {
@@ -129,7 +123,7 @@ public class Buffer {
             while(size < vertexPos) size *= 2;
 
             ByteBuffer buffer = BufferUtils.createByteBuffer(size);
-            buffer.put((ByteBuffer) vertBuffer.flip());
+            buffer.put(vertBuffer.flip());
 
             vertBuffer = buffer;
             vertexSize = size;
@@ -158,7 +152,7 @@ public class Buffer {
             while(size < indexPos) size *= 2;
 
             IntBuffer buffer = BufferUtils.createIntBuffer(size);
-            buffer.put((IntBuffer) indexBuffer.flip());
+            buffer.put(indexBuffer.flip());
 
             indexBuffer = buffer;
             indexSize = size;
@@ -176,7 +170,7 @@ public class Buffer {
             vertexSizeDirty = false;
             vertexDirty = false;
         } else if(vertexDirty) {
-            GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, (ByteBuffer) vertBuffer.flip());
+            GL15.glBufferSubData(GL15.GL_ARRAY_BUFFER, 0, vertBuffer.flip());
             vertexDirty = false;
         }
 
@@ -186,14 +180,12 @@ public class Buffer {
             indexSizeDirty = false;
             indexDirty = false;
         } else if(indexDirty) {
-            GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, (IntBuffer) indexBuffer.flip());
+            GL15.glBufferSubData(GL15.GL_ELEMENT_ARRAY_BUFFER, 0, indexBuffer.flip());
             indexDirty = false;
         }
 
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
-
-        //Ares.getMinecraft().getRenderer().getVertexBuffers().reset();
     }
 
     public void draw() {
@@ -209,7 +201,8 @@ public class Buffer {
         if(shader != null && !shader.isAttached()) shader.attach();
 
         if(lines) {
-            int[] viewport = getViewport();
+            int[] viewport = new int[4];
+            GL11.glGetIntegerv(GL30.GL_VIEWPORT, viewport);
             linesViewport.set(viewport[2], viewport[3]);
         }
 
@@ -221,8 +214,6 @@ public class Buffer {
         GL11.glDrawElements(lines ? GL11.GL_LINES : GL11.GL_TRIANGLES, indexPos, GL11.GL_UNSIGNED_INT, 0);
         GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
         GL30.glBindVertexArray(0);
-
-        //Ares.getMinecraft().getRenderer().getVertexBuffers().reset();
 
         if(shader != null) shader.detach();
     }
@@ -250,53 +241,5 @@ public class Buffer {
             GL15.glDeleteBuffers(buffer.ibo);
         }
         BUFFERS.clear();
-    }
-
-    // hacky code from now on...
-    // why does 1.12.2 use lwjgl nightly????
-    private static Method GL_GET_INTEGER_V = null;
-    private static Method GL_GET_INTEGER = null;
-
-    private static final IntBuffer GET_INT_BUFFER = BufferUtils.createIntBuffer(16);
-    private static boolean GOT_METHOD = false;
-    static int[] getViewport() {
-        int[] out = new int[4];
-
-        if(!GOT_METHOD) {
-            try {
-                GL_GET_INTEGER = GL30.class.getDeclaredMethod("glGetInteger", int.class, int.class, IntBuffer.class);
-            } catch(NoSuchMethodException ignored) {
-            }
-
-            try {
-                GL_GET_INTEGER_V = GL11.class.getDeclaredMethod("glGetIntegerv", int.class, int[].class);
-            } catch(NoSuchMethodException ignored) {
-            }
-
-            GOT_METHOD = GL_GET_INTEGER != null || GL_GET_INTEGER_V != null;
-            if(!GOT_METHOD) throw new RuntimeException("Failed to find glGetInteger method!");
-        }
-
-        if(GL_GET_INTEGER_V != null) {
-            try {
-                GL_GET_INTEGER_V.invoke(null, GL11.GL_VIEWPORT, out);
-            } catch(IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        if(GL_GET_INTEGER != null) {
-            try {
-                GL_GET_INTEGER.invoke(null, GL11.GL_VIEWPORT, 0, GET_INT_BUFFER);
-            } catch(InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-            out[0] = GET_INT_BUFFER.get(0);
-            out[1] = GET_INT_BUFFER.get(1);
-            out[2] = GET_INT_BUFFER.get(2);
-            out[3] = GET_INT_BUFFER.get(3);
-        }
-
-        return out;
     }
 }

@@ -10,8 +10,10 @@ import org.aresclient.ares.impl.instrument.module.modules.movement.Strafe
 import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
 import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
 import org.aresclient.ares.impl.instrument.module.modules.player.Freecam
-import org.aresclient.ares.impl.instrument.module.modules.render.esp.ESP
+import org.aresclient.ares.impl.instrument.module.modules.render.ESP
+import org.aresclient.ares.impl.instrument.module.modules.render.Fullbright
 import org.aresclient.ares.impl.instrument.module.modules.render.TestModule
+import org.aresclient.ares.impl.instrument.module.modules.render.Tracers
 
 object AresPlugin: Plugin(
 	"Ares",
@@ -22,7 +24,6 @@ object AresPlugin: Plugin(
 	globals = listOf(
 		Camera,
 		Interaction,
-		Render,
 		Rotation
 	),
 	modules = listOf(
@@ -37,7 +38,9 @@ object AresPlugin: Plugin(
 		Freecam,
 
 		ESP,
-		TestModule
+		TestModule,
+		Tracers,
+		Fullbright
 	),
 	commands = listOf(
 		EchoCommand,

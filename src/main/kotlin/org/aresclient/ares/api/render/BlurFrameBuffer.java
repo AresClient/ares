@@ -71,9 +71,11 @@ public class BlurFrameBuffer {
     public void render(float rx, float ry) {
         RESOLUTION.set(width, height);
 
+        // TODO: resizing still kinda broken
         // IMPORTANT!! setup viewport to be same size as framebuffer, and keep track of prev size
-        int[] viewport = Buffer.getViewport();
-        GL11.glViewport(0, 0, width, height); // this took me so long to figure out :(
+        int[] viewport = new int[4];
+        GL11.glGetIntegerv(GL30.GL_VIEWPORT, viewport);
+        GL11.glViewport(0, 0, width, height);
 
         int drawFBO = GL30.glGetInteger(GL30.GL_DRAW_FRAMEBUFFER_BINDING);
         int readFBO = GL30.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);

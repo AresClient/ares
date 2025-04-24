@@ -6,7 +6,7 @@ import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.*;
-import org.aresclient.ares.impl.util.Pipelines;
+import org.aresclient.ares.impl.util.RenderPipelines;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -45,7 +45,7 @@ public class MixinMinecraftClient implements JWrapper {
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;reload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/resource/ResourceReload;", shift = At.Shift.BEFORE))
     public void reloadResources(CallbackInfo ci) {
-        resourceManager.registerReloader(new Pipelines.PipelineReloader());
+        resourceManager.registerReloader(new RenderPipelines.PipelineReloader());
     }
 
     @Inject(method = "stop", at = @At("HEAD"))

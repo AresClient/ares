@@ -70,9 +70,9 @@ class Ares: ModInitializer {
 			Renderer.end(state)
 		}
 		else if(event is RenderEvent.World) {
-			val state = Renderer.begin3d()
+			val state = Renderer.begin3d(event.matrix4f)
 			PLUGINS.forEach { plugin ->
-				plugin.renderWorld(event.tickDelta, state.buffers, state.matrixStack)
+				plugin.renderWorld(event.tickDelta, state)
 			}
 			Renderer.end(state)
 		}

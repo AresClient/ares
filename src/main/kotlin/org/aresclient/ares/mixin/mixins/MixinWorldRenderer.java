@@ -1,52 +1,78 @@
 package org.aresclient.ares.mixin.mixins;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Handle;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import org.aresclient.ares.impl.instrument.module.modules.render.esp.ESP;
+import org.aresclient.ares.impl.instrument.module.modules.render.ESP;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.ModifyArg;
+import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
+
+import java.util.List;
 
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {
     // begin outline ESP outline implementation
 
+    @Shadow @Final private MinecraftClient client;
     @Shadow private Framebuffer entityOutlineFramebuffer;
     @Final @Shadow private DefaultFramebufferSet framebufferSet;
 
     @Unique Framebuffer prevFramebuffer;
     @Unique Handle<Framebuffer> prevFramebufferHandle;
 
-    @Inject(method = "renderEntity", at = @At("HEAD"))
-    public void renderEntityPre(Entity entity, double cameraX, double cameraY, double cameraZ, float tickProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci) {
+    @Inject(method = "getEntitiesToRender", at = @At("HEAD"), cancellable = true)
+    public void getEntitiesToRender(Camera camera, Frustum frustum, List<Entity> output, CallbackInfoReturnable<Boolean> cir) {
+        if(ESP.INSTANCE.shouldRenderOutline()) {
+            for(Entity entity: client.world.getEntities()) {
+                if(entity != client.player) output.add(entity);
+            }
+            cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = "renderEntities", at = @At("HEAD"))
+    public void renderEntitiesPre(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci) {
         if(ESP.INSTANCE.shouldRenderOutline()) {
             prevFramebuffer = entityOutlineFramebuffer;
             prevFramebufferHandle = framebufferSet.entityOutlineFramebuffer;
             entityOutlineFramebuffer = ESP.Outliner.INSTANCE.getFramebuffer();
             framebufferSet.entityOutlineFramebuffer = ESP.Outliner.INSTANCE::getFramebuffer;
-
-            ESP.Outliner.INSTANCE.setColor(ESP.INSTANCE.getEntityColor(entity));
         }
     }
 
-    @ModifyArg(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"), index = 6)
-    public VertexConsumerProvider dispatchRenderEntity(VertexConsumerProvider vertexConsumerProvider) {
-        if(ESP.INSTANCE.shouldRenderOutline()) return ESP.Outliner.INSTANCE.getVertexConsumerProvider();
-        else return vertexConsumerProvider;
+    @ModifyArgs(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"))
+    public void dispatchRenderEntity(Args args) {
+        Entity entity = args.get(0);
+        if(ESP.INSTANCE.shouldRenderOutline(entity)) {
+            ESP.Outliner.INSTANCE.setColor(ESP.INSTANCE.getEntityColor(entity));
+            args.set(6, ESP.Outliner.INSTANCE.getVertexConsumerProvider());
+        }
     }
 
-    @Inject(method = "renderEntity", at = @At("TAIL"))
+    @Inject(method = "method_62214", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/OutlineVertexConsumerProvider;draw()V"))
+    public void drawOutlineVertices(CallbackInfo ci) {
+        if(ESP.INSTANCE.shouldRenderOutline()) ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
+    }
+
+    /*@Inject(method = "renderEntity", at = @At("TAIL"))
     public void renderEntityPost(Entity entity, double cameraX, double cameraY, double cameraZ, float tickProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci) {
+        if(ESP.INSTANCE.shouldRenderOutline(entity)) ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
+    }*/
+
+    @Inject(method = "renderEntities", at = @At("TAIL"))
+    public void renderEntitiesPost(CallbackInfo ci) {
         if(ESP.INSTANCE.shouldRenderOutline()) {
-            ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
             entityOutlineFramebuffer = prevFramebuffer;
             framebufferSet.entityOutlineFramebuffer = prevFramebufferHandle;
         }
