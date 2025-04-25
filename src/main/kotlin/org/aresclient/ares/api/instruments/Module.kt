@@ -45,7 +45,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 	class Defaults {
 		internal var enabled = false
 		internal var bind = -1
-		internal var toggleOn = ToggleOn.RELEASE
+		internal var toggleOn = ToggleOn.PRESS
 		internal var alwaysListening = false
 
 		fun setEnabled(value: Boolean): Defaults { enabled = value; return this }

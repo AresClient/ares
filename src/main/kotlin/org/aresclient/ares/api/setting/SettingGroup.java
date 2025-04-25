@@ -8,10 +8,10 @@ import org.aresclient.ares.api.setting.settings.number.FloatSetting;
 import org.aresclient.ares.api.setting.settings.number.IntegerSetting;
 import org.aresclient.ares.api.setting.settings.number.LongSetting;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class SettingGroup extends Setting<HashMap<String, Setting<?>>> {
+public class SettingGroup extends Setting<Map<String, Setting<?>>> {
     private JsonObject jsonObject;
 
     public SettingGroup() {
@@ -19,7 +19,7 @@ public class SettingGroup extends Setting<HashMap<String, Setting<?>>> {
     }
 
     public SettingGroup(JsonObject jsonObject) {
-        super(Type.MAP, new HashMap<>());
+        super(Type.MAP, new LinkedHashMap<>());
         this.jsonObject = jsonObject;
     }
 
