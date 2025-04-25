@@ -1,8 +1,8 @@
 package org.aresclient.ares.mixin.mixins;
 
+import it.unimi.dsi.fastutil.ints.IntArraySet;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.Mouse;
-import net.minecraft.util.math.MathHelper;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.InputEvent;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,17 +20,18 @@ public class MixinMouse implements JWrapper {
     @Shadow private double cursorDeltaX;
     @Shadow private double cursorDeltaY;
 
-    @Unique private static boolean wasPressed = false;
+    @Unique private static IntArraySet pressed = new IntArraySet();
 
     @Inject(method = "onMouseButton", at = @At("HEAD"))
     public void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(action == 0) {
                 EVENTS.post(new InputEvent.Mouse.Released(button));
-                wasPressed = false;
+                pressed.remove(button);
             } else {
-                EVENTS.post(new InputEvent.Mouse.Pressed(button, wasPressed));
-                wasPressed = true;
+                var isRepeat = pressed.contains(button);
+                EVENTS.post(new InputEvent.Mouse.Pressed(button, isRepeat));
+                if (!isRepeat) pressed.add(button);
             }
         }
     }
