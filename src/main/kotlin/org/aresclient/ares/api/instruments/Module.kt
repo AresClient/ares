@@ -71,11 +71,11 @@ abstract class Module(category: Category, name: String, description: String, pri
 
 	private val bind: BindSetting = settings
 		.addBind("Bind", defaults.bind)
-		.setCallback { state:Boolean ->
+		.setCallback { state: Boolean, repeat: Boolean ->
 			val toggle = toggleOn.value
-			if (toggle == ToggleOn.PRESS && state) toggle();
+			if (toggle == ToggleOn.PRESS && state && !repeat) toggle();
 			else if (toggle == ToggleOn.RELEASE && !state) toggle();
-			else if (toggle == ToggleOn.HOLD) setEnabled(state);
+			else if (toggle == ToggleOn.HOLD && !repeat) setEnabled(state);
 		}
 
 	private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)

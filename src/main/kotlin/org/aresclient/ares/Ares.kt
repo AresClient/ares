@@ -88,18 +88,17 @@ class Ares: ModInitializer {
 		if(MC.currentScreen !is TitleScreen && MC.currentScreen !is AresScreen && MC.currentScreen != null)
 			return@EventListener
 
-		val p: Pair<Int, Boolean> = when(event) {
-			is InputEvent.Keyboard.Pressed  -> Pair(event.key, true)
-			is InputEvent.Keyboard.Released -> Pair(event.key, false)
-			is InputEvent.Mouse.Pressed     -> Pair(event.key, true)
-			is InputEvent.Mouse.Released    -> Pair(event.key, false)
-			else                            -> return@EventListener
+		when(event) {
+			is InputEvent.Keyboard.Pressed  -> BindSetting.getAll().forEach { it.triggerCallback(event.key, true, event.repeat) }
+			is InputEvent.Keyboard.Released -> BindSetting.getAll().forEach { it.triggerCallback(event.key, false, false) }
+			is InputEvent.Mouse.Pressed     -> BindSetting.getAll().forEach { it.triggerCallback(event.key, true, event.repeat) }
+			is InputEvent.Mouse.Released    -> BindSetting.getAll().forEach { it.triggerCallback(event.key, false, false) }
 		}
+	}
 
-		BindSetting.getAll().forEach { bind ->
-			if(bind.value != p.first) return@forEach
-			bind.callback.accept(p.second)
-		}
+	private fun BindSetting.triggerCallback(key: Int, state: Boolean, repeat: Boolean) {
+		if(this.value != key) return
+		this.callback.accept(state, repeat)
 	}
 
 	@field:EventHandler

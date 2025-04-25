@@ -20,13 +20,17 @@ public class MixinMouse implements JWrapper {
     @Shadow private double cursorDeltaX;
     @Shadow private double cursorDeltaY;
 
+    @Unique private static boolean wasPressed = false;
+
     @Inject(method = "onMouseButton", at = @At("HEAD"))
     public void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(action == 0) {
                 EVENTS.post(new InputEvent.Mouse.Released(button));
+                wasPressed = false;
             } else {
-                EVENTS.post(new InputEvent.Mouse.Pressed(button));
+                EVENTS.post(new InputEvent.Mouse.Pressed(button, wasPressed));
+                wasPressed = true;
             }
         }
     }

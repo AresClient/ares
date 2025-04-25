@@ -15,14 +15,14 @@ abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 	abstract class Keyboard(val state: State, val key: Int): InputEvent(Type.KEYBOARD) {
 		enum class State { PRESSED, RELEASED }
 
-		class Pressed(key: Int): Keyboard(State.PRESSED, key)
+		class Pressed(key: Int, val repeat: Boolean): Keyboard(State.PRESSED, key)
 		class Released(key: Int): Keyboard(State.RELEASED, key)
 	}
 
 	abstract class Mouse(val state: State): InputEvent(Type.MOUSE) {
 		enum class State { PRESSED, RELEASED, SCROLLED, MOVED }
 
-		class Pressed(val key: Int): Mouse(State.PRESSED)
+		class Pressed(val key: Int, val repeat: Boolean): Mouse(State.PRESSED)
 		class Released(val key: Int): Mouse(State.RELEASED)
 		class Scrolled(val vertical: Double): Mouse(State.SCROLLED)
 //		class Moved(val x: Double, val y: Double, val dX: Double, val dY: Double, key: Int): Mouse(State.MOVED, key)
