@@ -6,7 +6,7 @@ import org.aresclient.ares.impl.command.HelpCommand
 import org.aresclient.ares.impl.instrument.global.*
 import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
-import org.aresclient.ares.impl.instrument.module.modules.movement.Strafe
+import org.aresclient.ares.impl.instrument.module.modules.movement.Speed
 import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
 import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
 import org.aresclient.ares.impl.instrument.module.modules.player.Freecam
@@ -30,7 +30,7 @@ object AresPlugin: Plugin(
 		ClickGUI,
 		TitleScreen,
 
-		Strafe,
+		Speed,
 
 		CrystalAura,
 

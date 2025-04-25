@@ -1,6 +1,7 @@
 package org.aresclient.ares.api.events
 
-import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.entity.MovementType
+import net.minecraft.util.math.Vec3d
 import org.joml.Matrix4f
 
 abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$type") {
@@ -30,6 +31,7 @@ abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 
 abstract class PlayerEvent(name: String): AresEvent("player-$name") {
 	class ChangeLookDirection(val cursorDeltaX: Double, val cursorDeltaY: Double): PlayerEvent("change-look-direction")
+	class Move(val movementType: MovementType, val movement: Vec3d): PlayerEvent("move")
 	class UpdateVelocityYaw(var yaw: Float): PlayerEvent("update-velocity-yaw")
 }
 

@@ -5,6 +5,8 @@
   "mixins": [
     "accessors.AccessMath$Vec2f",
     "accessors.AccessMath$Vec3d",
+    "accessors.AccessMinecraftClient",
+    "accessors.AccessRenderTickCounter",
     "mixins.MixinCamera",
     "mixins.MixinClientPlayerEntity",
     "mixins.MixinClientWorld",
