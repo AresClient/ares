@@ -47,7 +47,6 @@ object StrafeHop: Component.Settings<Speed>(Speed, "Strafe Hop"), Wrapper {
 			reset()
 		}
 
-		LOGGER.info("INVOKING STRAFE")
 		phase.action.invoke()
 		event.changeMovement()
 	}
