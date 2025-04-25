@@ -4,6 +4,7 @@ import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.TitleScreen
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.api.events.AresEventManager
 import org.aresclient.ares.api.events.Era
@@ -11,6 +12,7 @@ import org.aresclient.ares.api.events.InputEvent
 import org.aresclient.ares.api.events.RenderEvent
 import org.aresclient.ares.api.events.ShutdownEvent
 import org.aresclient.ares.api.events.TickEvent
+import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.SettingGroup
@@ -83,6 +85,9 @@ class Ares: ModInitializer {
 
 	@field:EventHandler
 	val inputEventListener = EventListener<InputEvent> { event ->
+		if(MC.currentScreen !is TitleScreen && MC.currentScreen !is AresScreen && MC.currentScreen != null)
+			return@EventListener
+
 		val p: Pair<Int, Boolean> = when(event) {
 			is InputEvent.Keyboard.Pressed  -> Pair(event.key, true)
 			is InputEvent.Keyboard.Released -> Pair(event.key, false)

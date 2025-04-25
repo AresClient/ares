@@ -40,12 +40,17 @@ public class SettingGroup extends Setting<Map<String, Setting<?>>> {
 
     public <S extends Setting<?>> S add(S setting, String name, String... description) {
         if(getValue().containsKey(name)) return (S) getValue().get(name);
-
         getValue().put(name, setting);
+
         setting.setName(name);
         setting.setDescription(description);
         setting.setParent(this);
-        if(jsonObject != null) setting.read(jsonObject.get(name));
+
+        if(jsonObject != null) {
+            JsonElement jsonElement = jsonObject.get(name);
+            if(jsonElement != null) setting.read(jsonElement);
+        }
+
         return setting;
     }
 

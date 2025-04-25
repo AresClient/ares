@@ -120,6 +120,7 @@ abstract class Element: Wrapper {
     }
 }
 
+abstract class AresScreen(title: Text?): Screen(title)
 open class ScreenElement(title: String): Element() {
     private var open = false
     private var tooltip: Array<out String>? = null
@@ -129,7 +130,7 @@ open class ScreenElement(title: String): Element() {
 
     private val matrixStack = MatrixStack()
 
-    private val customScreen = object: Screen(Text.literal(title)) {
+    private val customScreen = object: AresScreen(Text.literal(title)) {
         init {
             RenderSystem.assertOnRenderThread()
         }
