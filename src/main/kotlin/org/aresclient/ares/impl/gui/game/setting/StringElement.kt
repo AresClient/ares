@@ -1,10 +1,10 @@
 package org.aresclient.ares.impl.gui.game.setting
 
-import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.gui.TextBox
+import org.aresclient.ares.api.setting.settings.StringSetting
 import org.aresclient.ares.impl.gui.game.SettingElement
 
-class StringElement(setting: Setting.String, scale: Float): SettingElement<Setting.String>(setting, scale) {
+class StringElement(setting: StringSetting, scale: Float): SettingElement<StringSetting>(setting, scale) {
     private val textBox = SettingTextBox(this)
 
     init {

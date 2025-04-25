@@ -2,16 +2,16 @@ package org.aresclient.ares.impl.gui.game.setting
 
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
+import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.impl.gui.game.DropDownSettingElement
 import org.aresclient.ares.impl.gui.game.formatToPretty
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
-class EnumElement<T: Enum<*>>(setting: Setting.Enum<T>, scale: Float): DropDownSettingElement<Setting.Enum<T>>(setting, scale) {
+class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSettingElement<EnumSetting<T>>(setting, scale) {
     private var text = setting.value.name.formatToPretty()
 
     init {

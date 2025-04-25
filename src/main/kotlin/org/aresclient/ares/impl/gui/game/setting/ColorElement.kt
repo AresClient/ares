@@ -2,10 +2,10 @@ package org.aresclient.ares.impl.gui.game.setting
 
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.api.gui.StaticElement
+import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.impl.gui.game.DropDownSettingElement
 import org.aresclient.ares.impl.gui.game.SettingsContent
 import org.aresclient.ares.impl.gui.game.WindowContent
@@ -14,8 +14,8 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ColorElement(private val content:WindowContent, setting: Setting.Color, scale: Float):
-    DropDownSettingElement<Setting.Color>(setting, scale) {
+class ColorElement(private val content:WindowContent, setting: ColorSetting, scale: Float):
+    DropDownSettingElement<ColorSetting>(setting, scale) {
     private val button = ColorSelectButton(this, scale)
 
     init {
@@ -29,7 +29,7 @@ class ColorElement(private val content:WindowContent, setting: Setting.Color, sc
         element = DropDown(setting, scale * 0.87f * 0.87f)
     }
 
-    class DropDown(val setting: Setting.Color, scale: Float): DynamicElement() {
+    class DropDown(val setting: ColorSetting, scale: Float): DynamicElement() {
         private val selector = ColorSelector(this, scale)
         private val rgb = RGBColorSelectElement(this, scale).setVisible { !setting.isRainbow }
         private val rnbw = RNBWColorSelectElement(this, scale).setVisible { setting.isRainbow }

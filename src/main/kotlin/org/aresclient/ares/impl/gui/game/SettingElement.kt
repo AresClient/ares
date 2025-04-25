@@ -12,6 +12,12 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.gui.DynamicElementGroup
 import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.instruments.Module
+import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.settings.*
+import org.aresclient.ares.api.setting.settings.number.DoubleSetting
+import org.aresclient.ares.api.setting.settings.number.FloatSetting
+import org.aresclient.ares.api.setting.settings.number.IntegerSetting
+import org.aresclient.ares.api.setting.settings.number.LongSetting
 import org.aresclient.ares.impl.gui.game.setting.BindElement
 import org.aresclient.ares.impl.gui.game.setting.BooleanElement
 import org.aresclient.ares.impl.gui.game.setting.ColorElement
@@ -39,12 +45,12 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
     fun refresh() {
         getChildren().clear()
         when(setting.type) {
-            Setting.Type.MAP -> (setting as Setting.Map<*>).value.forEach { (name, setting) ->
+            Setting.Type.MAP -> (setting as SettingGroup).value.forEach { (name, setting) ->
                 if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled"))
                     pushChild(content.createSettingElement(setting, settingHeight))
             }
-            Setting.Type.COLOR -> pushChild(ColorElement.DropDown(setting as Setting.Color, settingHeight))
-            Setting.Type.LIST -> (setting as Setting.List<*>).value.forEach {
+            Setting.Type.COLOR -> pushChild(ColorElement.DropDown(setting as ColorSetting, settingHeight))
+            Setting.Type.LIST -> (setting as ListSetting).value.forEach {
                 pushChild(content.createSettingElement(it, settingHeight))
             }
             else -> throw RuntimeException("Can't open setting of type ${setting.type.name} in window")
@@ -52,15 +58,15 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
     }
 }
 
-class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
+class SettingsContent(settings: SettingGroup): WindowContent(settings) {
     private val name = settings.addString("setting", "")
     private val setting = with(name) {
         var curr: Setting<*>? = Ares.SETTINGS
         val split = value.split(":")
         for(name in split) {
             curr = (when (curr?.type) {
-                Setting.Type.MAP -> (curr as Setting.Map<*>).value[name]
-                Setting.Type.LIST -> name.toIntOrNull()?.let { (curr as Setting.List<*>).value[it] }
+                Setting.Type.MAP -> (curr as SettingGroup).value[name]
+                Setting.Type.LIST -> name.toIntOrNull()?.let { (curr as ListSetting).value[it] }
                 else -> null
             }) ?: break
         }
@@ -86,17 +92,17 @@ class SettingsContent(settings: Setting.Map<*>): WindowContent(settings) {
     override fun getHeight() = group.getHeight()
 
     fun createSettingElement(setting: Setting<*>, settingHeight: Float = 18f):SettingElement<*> = when(setting.type) {
-        Setting.Type.BOOLEAN -> BooleanElement(setting as Setting.Boolean, settingHeight)
-        Setting.Type.ENUM -> EnumElement(setting as Setting.Enum<*>, settingHeight)
-        Setting.Type.BIND -> BindElement(setting as Setting.Bind, settingHeight)
-        Setting.Type.STRING -> StringElement(setting as Setting.String, settingHeight)
-        Setting.Type.INTEGER -> IntElement(setting as Setting.Integer, settingHeight)
-        Setting.Type.LONG -> LongElement(setting as Setting.Long, settingHeight)
-        Setting.Type.FLOAT -> FloatElement(setting as Setting.Float, settingHeight)
-        Setting.Type.DOUBLE -> DoubleElement(setting as Setting.Double, settingHeight)
-        Setting.Type.COLOR -> ColorElement(this, setting as Setting.Color, settingHeight)
-        Setting.Type.LIST -> ListElement(this, setting as Setting.List<*>, settingHeight)
-        Setting.Type.MAP -> MapElement(this, setting as Setting.Map<*>, settingHeight)
+        Setting.Type.BOOLEAN -> BooleanElement(setting as BooleanSetting, settingHeight)
+        Setting.Type.ENUM -> EnumElement(setting as EnumSetting<*>, settingHeight)
+        Setting.Type.BIND -> BindElement(setting as BindSetting, settingHeight)
+        Setting.Type.STRING -> StringElement(setting as StringSetting, settingHeight)
+        Setting.Type.INTEGER -> IntElement(setting as IntegerSetting, settingHeight)
+        Setting.Type.LONG -> LongElement(setting as LongSetting, settingHeight)
+        Setting.Type.FLOAT -> FloatElement(setting as FloatSetting, settingHeight)
+        Setting.Type.DOUBLE -> DoubleElement(setting as DoubleSetting, settingHeight)
+        Setting.Type.COLOR -> ColorElement(this, setting as ColorSetting, settingHeight)
+        Setting.Type.LIST -> ListElement(this, setting as ListSetting, settingHeight)
+        Setting.Type.MAP -> MapElement(this, setting as SettingGroup, settingHeight)
         else -> SettingElement(setting, settingHeight)
     }
 }
@@ -110,7 +116,7 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     }
 
     open fun getText(): String = setting.name ?: "<null>"
-    open fun getTextColor(theme: Theme): Setting.Color = theme.lightground
+    open fun getTextColor(theme: Theme): ColorSetting = theme.lightground
     open fun getSecondaryText(): String? = null
 
     // TODO: maybe change to Setting::addListener, would have to also removeListener on close

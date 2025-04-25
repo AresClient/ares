@@ -3,12 +3,12 @@ package org.aresclient.ares.impl.gui.game.setting
 import dev.tigr.simpleevents.listener.EventListener
 import org.aresclient.ares.api.events.InputEvent
 import org.aresclient.ares.impl.gui.game.SettingElement
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.util.Keys
 import org.aresclient.ares.impl.gui.game.formatToPretty
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(setting: Setting.Bind, height: Float): SettingElement<Setting.Bind>(setting, height) {
+class BindElement(setting: BindSetting, height: Float): SettingElement<BindSetting>(setting, height) {
     private var listening = false
     private var text = if(setting.value == Keys.UNKNOWN) "None" else Keys.getName(setting.value).formatToPretty()
 

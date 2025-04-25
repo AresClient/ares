@@ -4,13 +4,15 @@ import org.aresclient.ares.Ares
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.settings.EnumSetting
+import org.aresclient.ares.api.setting.settings.BindSetting
+import org.aresclient.ares.api.setting.settings.BooleanSetting
 import java.util.*
 
 abstract class Module(category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
 	Instrument(name, description, category.settings) {
 	companion object {
-		internal val SETTINGS = Ares.SETTINGS.addMap("Modules")
+		internal val SETTINGS = Ares.SETTINGS.addGroup("Modules")
 	}
 
 	/* ---------------------------------------------------------------------- */
@@ -29,7 +31,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 		}
 
 		val prettyName = name.lowercase().replaceFirstChar { it.titlecase(Locale.getDefault()) }
-		val settings = SETTINGS.addMap(prettyName)
+		val settings = SETTINGS.addGroup(prettyName)
 		val modules = ArrayList<Module>()
 
 		val icon by lazy {
@@ -65,9 +67,9 @@ abstract class Module(category: Category, name: String, description: String, pri
 				if(!defaults.alwaysListening) unregisterEvents()
 				onDisable()
 			}
-		} as Setting.Boolean
+		} as BooleanSetting
 
-	private val bind: Setting.Bind = settings
+	private val bind: BindSetting = settings
 		.addBind("Bind", defaults.bind)
 		.setCallback { state:Boolean ->
 			val toggle = toggleOn.value
@@ -76,7 +78,7 @@ abstract class Module(category: Category, name: String, description: String, pri
 			else if (toggle == ToggleOn.HOLD) setEnabled(state);
 		}
 
-	private val toggleOn: Setting.Enum<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
+	private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
 
 	/* ---------------------------------------------------------------------- */
 

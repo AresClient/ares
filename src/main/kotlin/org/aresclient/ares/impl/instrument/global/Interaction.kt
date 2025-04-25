@@ -3,6 +3,8 @@ package org.aresclient.ares.impl.instrument.global
 import org.aresclient.ares.api.instruments.Global
 import org.aresclient.ares.api.instruments.Prioritizer
 import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.settings.number.NumberSetting
 import kotlin.math.ceil
 
 interface Placer: Prioritizer {
@@ -46,14 +48,14 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
         )
 
     // Use as a percentage with one decimal point so that it makes sense as both a tick and millisecond setting
-    fun standardDelay(settings: Setting.Map<*>, name: String, default: Double): Setting.Number<Double> = settings
+    fun standardDelay(settings: SettingGroup, name: String, default: Double): Setting<Double> = settings
         .addDouble(name, default)
         .setMin(0.0)
         .setMax(100.0)
         .setPrecision(1)
         .setDescription(*percentageMeasureArray)
 
-    fun tickOnlyDelay(settings: Setting.Map<*>, name: String, default: Int): Setting.Number<Int> = settings
+    fun tickOnlyDelay(settings: SettingGroup, name: String, default: Int): Setting<Int> = settings
         .addInteger(name, default)
         .setMin(0)
         .setMax(20)
@@ -72,6 +74,6 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
     val crystal_place_delay = standardDelay(settings, "Crystal Place Delay", 5.0)
     val attack_delay = standardDelay(settings, "Attack Delay", 62.5)
 
-    fun delaySettingAsMillis(setting: Setting.Number<Double>) = (setting.value * 10).toInt()
+    fun delaySettingAsMillis(setting: Setting<Double>) = (setting.value * 10).toInt()
     fun millisToTick(value: Int) = ceil(value.toDouble() / 50).toInt() // ceil because higher is safer with delays
 }

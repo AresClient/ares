@@ -2,7 +2,6 @@ package org.aresclient.ares
 
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
-import kotlinx.serialization.json.JsonElement
 import net.fabricmc.api.ModInitializer
 import net.minecraft.client.MinecraftClient
 import org.aresclient.ares.api.Plugin
@@ -14,9 +13,9 @@ import org.aresclient.ares.api.events.ShutdownEvent
 import org.aresclient.ares.api.events.TickEvent
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.impl.AresPlugin
-import org.aresclient.ares.impl.JsonSettingSerializer
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -26,8 +25,12 @@ class Ares: ModInitializer {
 		val PLUGINS = ArrayList<Plugin>()
 
 		val SETTINGS_FILE = File("ares/config/settings.json")
-		val SETTINGS_SERIALIZER: JsonSettingSerializer = JsonSettingSerializer { prettyPrint = true }
-		val SETTINGS: Setting.Map<JsonElement> = SETTINGS_SERIALIZER.read(SETTINGS_FILE)
+		val SETTINGS = SettingGroup().also {
+			try {
+				it.read(SETTINGS_FILE)
+			} catch (_: Exception) {
+			}
+		}
 
 		@JvmStatic val MC: MinecraftClient = MinecraftClient.getInstance()
 		@JvmStatic val EVENT_MANAGER = AresEventManager()
@@ -88,7 +91,7 @@ class Ares: ModInitializer {
 			else                            -> return@EventListener
 		}
 
-		Setting.Bind.getAll().forEach { bind ->
+		BindSetting.getAll().forEach { bind ->
 			if(bind.value != p.first) return@forEach
 			bind.callback.accept(p.second)
 		}
@@ -96,8 +99,8 @@ class Ares: ModInitializer {
 
 	@field:EventHandler
 	val shutdownListener = EventListener<ShutdownEvent> {
-		SETTINGS_FILE.mkdirs()
-		SETTINGS_SERIALIZER.write(SETTINGS, SETTINGS_FILE)
+		SETTINGS_FILE.parentFile.mkdirs()
+		SETTINGS.write(SETTINGS_FILE)
 		Renderer.cleanup()
 	}
 

@@ -5,14 +5,14 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.settings.number.*
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
 // TODO: DONT CONVERT TO DOUBLE
-abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float): SettingElement<Setting.Number<T>>(setting, scale) {
+abstract class NumberElement<T: Number>(setting: NumberSetting<T>, scale: Float): SettingElement<NumberSetting<T>>(setting, scale) {
     // 0 = max && min != null    1 = max && min == null
     // 2 = min == null           3 = max == null
     protected val mode = if(setting.max == null || setting.min == null) (if(setting.min == null) (if(setting.max == null) 1 else 2) else 3 ) else 0
@@ -87,7 +87,7 @@ abstract class NumberElement<T: Number>(setting: Setting.Number<T>, scale: Float
     }
 }
 
-class DoubleElement(setting: Setting.Double, defaultHeight: Float): NumberElement<Double>(setting, defaultHeight) {
+class DoubleElement(setting: DoubleSetting, defaultHeight: Float): NumberElement<Double>(setting, defaultHeight) {
     override fun increment(value: Double) {
         val num = setting.value + value
         when(mode) {
@@ -104,7 +104,7 @@ class DoubleElement(setting: Setting.Double, defaultHeight: Float): NumberElemen
     override fun formatted(): String = round(setting.value.toString())
 }
 
-class FloatElement(setting: Setting.Float, defaultHeight: Float): NumberElement<Float>(setting, defaultHeight) {
+class FloatElement(setting: FloatSetting, defaultHeight: Float): NumberElement<Float>(setting, defaultHeight) {
     override fun increment(value: Double) {
         val num = setting.value + value.toFloat()
         when(mode) {
@@ -121,7 +121,7 @@ class FloatElement(setting: Setting.Float, defaultHeight: Float): NumberElement<
     override fun formatted(): String = round(setting.value.toString())
 }
 
-class IntElement(setting: Setting.Integer, defaultHeight: Float): NumberElement<Int>(setting, defaultHeight) {
+class IntElement(setting: IntegerSetting, defaultHeight: Float): NumberElement<Int>(setting, defaultHeight) {
     private fun addClamp(a: Int, b: Int): Int {
         val sum = a + b
         return if(((a xor sum) and (b xor sum)) < 0) {
@@ -147,7 +147,7 @@ class IntElement(setting: Setting.Integer, defaultHeight: Float): NumberElement<
     override fun formatted(): String = setting.value.toString()
 }
 
-class LongElement(setting: Setting.Long, defaultHeight: Float): NumberElement<Long>(setting, defaultHeight) {
+class LongElement(setting: LongSetting, defaultHeight: Float): NumberElement<Long>(setting, defaultHeight) {
     private fun addClamp(a: Long, b: Long): Long {
         val sum = a + b
         return if(((a xor sum) and (b xor sum)) < 0L) {

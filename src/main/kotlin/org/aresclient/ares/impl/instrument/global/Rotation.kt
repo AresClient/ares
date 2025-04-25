@@ -27,29 +27,29 @@ interface Rotator: Prioritizer {
 object Rotation: Global.PriorityHandler<Rotator>("Rotation", "Handles rotation so that the character is facing in the expected direction for an action."), CameraAdjustor {
 
 	private val reset_delay = settings.addLong("Reset Delay", 10)
-		.setDescription("How long to wait after completing a rotation before resetting to the same rotation as the camera.")
 		.setMin(0)
 		.setMax(100)
+		.setDescription("How long to wait after completing a rotation before resetting to the same rotation as the camera.")
 
 	private val completion_delay = settings.addLong("Completion Delay", 1)
-		.setDescription("How long to wait after completing a rotation before interactions can happen.")
 		.setMin(0)
 		.setMax(10)
+		.setDescription("How long to wait after completing a rotation before interactions can happen.")
 
 	private val grouping_density = settings.addFloat("Grouping Density", 0F)
-		.setDescription("The rotation distance in degrees within which to ignore the completion delay.")
 		.setMin(0F)
 		.setMax(180F)
+		.setDescription("The rotation distance in degrees within which to ignore the completion delay.")
 
 	internal val yaw_step = settings.addFloat("Yaw Step", 180F)
-		.setDescription("How many degrees to turn horizontally per tick.")
 		.setMin(1F)
 		.setMax(180F)
+		.setDescription("How many degrees to turn horizontally per tick.")
 
 	internal val pitch_step = settings.addFloat("Pitch Step", 180F)
-		.setDescription("How many degrees to turn vertically per tick.")
 		.setMin(1F)
 		.setMax(180F)
+		.setDescription("How many degrees to turn vertically per tick.")
 
 	// ════════════════════════════════════════════════════════════════════════ //
 

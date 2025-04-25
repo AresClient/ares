@@ -1,12 +1,12 @@
 package org.aresclient.ares.impl.util
 
 import org.aresclient.ares.Ares
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.util.Color
 
-data class Theme(val primary: Setting.Color, val secondary: Setting.Color, val background: Setting.Color, val lightground: Setting.Color) {
+data class Theme(val primary: ColorSetting, val secondary: ColorSetting, val background: ColorSetting, val lightground: ColorSetting) {
     companion object {
-        private val SETTING = Ares.SETTINGS.addMap("Theme")
+        private val SETTING = Ares.SETTINGS.addGroup("Theme")
         private val THEME = Theme(
             SETTING.addColor("Primary",
                 Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)

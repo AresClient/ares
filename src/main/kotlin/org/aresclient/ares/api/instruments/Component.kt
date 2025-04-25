@@ -3,7 +3,7 @@ package org.aresclient.ares.api.instruments
 import dev.tigr.simpleevents.event.Event
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.SettingGroup
 
 /**
  * Using components can help to break up a larger modules into smaller
@@ -41,7 +41,6 @@ open class Component<I: Instrument>(val master: I) {
 	open class Listener<I: Instrument, E: Event>(master: I, @EventHandler private val eventListener: EventListener<E>): Component<I>(master)
 
 	open class Settings<I: Instrument>(master: I, val pathName: String): Component<I>(master) {
-		internal lateinit var settings: Setting.Map<*>
+		val settings: SettingGroup = master.settings.addGroup(pathName)
 	}
-
 }

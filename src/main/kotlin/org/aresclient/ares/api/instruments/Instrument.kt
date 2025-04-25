@@ -1,25 +1,17 @@
 package org.aresclient.ares.api.instruments
 
 import org.aresclient.ares.api.Wrapper
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.SettingGroup
 
-abstract class Instrument(val name: String, val description: String, parentSettings: Setting.Map<*>): Wrapper {
-	val components = ArrayList<Component<*>>()
-	val settings:Setting.Map<*>
-
-	init {
-		settings = parentSettings.addMap(name)
-		settings.setDescription(description)
-	}
+abstract class Instrument(name: String, description: String, parentSettings: SettingGroup): Wrapper {
+	private val components = ArrayList<Component<*>>()
+	val settings = parentSettings.addGroup(name, description)
 
 	open fun tick() {
 	}
 
-	internal fun addComponent(component:Component<*>) {
+	internal fun addComponent(component: Component<*>) {
 		components.add(component)
-		if (component is Component.Settings<*>) {
-			component.settings = settings.addMap(component.pathName)
-		}
 	}
 
 	open fun registerEvents() {
@@ -27,7 +19,7 @@ abstract class Instrument(val name: String, val description: String, parentSetti
 		EVENTS.register(javaClass)
 
 		components.forEach {
-			if (it is Component.Listener<*,*>) {
+			if(it is Component.Listener<*,*>) {
 				EVENTS.register(it)
 				EVENTS.register(it.javaClass)
 			}
@@ -39,11 +31,10 @@ abstract class Instrument(val name: String, val description: String, parentSetti
 		EVENTS.unregister(javaClass)
 
 		components.forEach {
-			if (it is Component.Listener<*,*>) {
+			if(it is Component.Listener<*,*>) {
 				EVENTS.unregister(it)
 				EVENTS.unregister(it.javaClass)
 			}
 		}
 	}
-
 }

@@ -2,10 +2,11 @@ package org.aresclient.ares.impl.instrument.module.components.offence.crystalaur
 
 import org.aresclient.ares.api.instruments.Component
 import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.settings.number.NumberSetting
 import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
 
 object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity") {
-    fun damageSetting(name: String, default: Float): Setting.Number<Float> = settings
+    fun damageSetting(name: String, default: Float): NumberSetting<Float> = settings
         .addFloat(name, default)
         .setMin(0F)
         .setMax(15F)
@@ -33,7 +34,7 @@ object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity"
             "friendly fire damage is higher than his remaining health."
         )
 
-    fun ratio(name: String, default: Int): Setting.Number<Int> = settings
+    fun ratio(name: String, default: Int): Setting<Int> = settings
         .addInteger(name, default)
         .setMin(1)
         .setMax(15)
