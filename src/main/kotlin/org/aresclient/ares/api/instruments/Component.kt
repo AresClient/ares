@@ -38,7 +38,7 @@ open class Component<I: Instrument>(val master: I) {
 	/**
 	 * @param <E> The event the listener should listen to
 	 */
-	open class Listener<I: Instrument, E: Event>(master: I, @EventHandler private val eventListener: EventListener<E>): Component<I>(master)
+	open class Listener<I: Instrument, E: Event>(master: I, @field:EventHandler private val eventListener: EventListener<E>): Component<I>(master)
 
 	open class Settings<I: Instrument>(master: I, val pathName: String): Component<I>(master) {
 		val settings: SettingGroup = master.settings.addGroup(pathName)

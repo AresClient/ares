@@ -19,10 +19,8 @@ abstract class Instrument(name: String, description: String, parentSettings: Set
 		EVENTS.register(javaClass)
 
 		components.forEach {
-			if(it is Component.Listener<*,*>) {
-				EVENTS.register(it)
-				EVENTS.register(it.javaClass)
-			}
+			EVENTS.register(it)
+			EVENTS.register(it.javaClass)
 		}
 	}
 
@@ -31,10 +29,8 @@ abstract class Instrument(name: String, description: String, parentSettings: Set
 		EVENTS.unregister(javaClass)
 
 		components.forEach {
-			if(it is Component.Listener<*,*>) {
-				EVENTS.unregister(it)
-				EVENTS.unregister(it.javaClass)
-			}
+			EVENTS.unregister(it)
+			EVENTS.unregister(it.javaClass)
 		}
 	}
 }
