@@ -26,10 +26,10 @@ object SaveCommand: Command(register(
         try {
             Ares.SETTINGS.write(file)
         } catch(e: Exception) {
-            context.error("Failed to save config file!")
+            context.error("Failed to save config file")
             return
         }
 
-        context.print("Successfully saved config file!")
+        context.print("Successfully saved config file")
     }
 }

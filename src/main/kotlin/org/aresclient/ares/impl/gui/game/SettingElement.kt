@@ -60,18 +60,7 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
 
 class SettingsContent(settings: SettingGroup): WindowContent(settings) {
     private val name = settings.addString("setting", "")
-    private val setting = with(name) {
-        var curr: Setting<*>? = Ares.SETTINGS
-        val split = value.split(":")
-        for(name in split) {
-            curr = (when (curr?.type) {
-                Setting.Type.MAP -> (curr as SettingGroup).value[name]
-                Setting.Type.LIST -> name.toIntOrNull()?.let { (curr as ListSetting).value[it] }
-                else -> null
-            }) ?: break
-        }
-        curr ?: Ares.SETTINGS
-    }
+    private val setting = Ares.SETTINGS.find(name.value)
     private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
 
     init {

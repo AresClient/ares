@@ -7,20 +7,20 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.instruments.Command
 
-object SetCommand: Command(register(
-    literal<IContext?>("set")
-        .then(argument<IContext?, String?>("setting", string())
-        .then(argument<IContext?, String?>("value", string()).executes {
+object ResetCommand: Command(register(
+    literal<IContext?>("reset")
+        .then(
+        argument<IContext?, String?>("setting", string())
+        .executes {
             val path = getString(it, "setting")
-            val value = getString(it, "value")
             Ares.SETTINGS.find(path)?.let { setting ->
-                try {
-                    setting.read(value)
-                    it.source.print("Successfully set $setting to $value")
-                } catch(_: Exception) {
-                    it.source.error("Failed to set $setting to $value")
-                }
+                setting.setDefault()
+                it.source.print("Successfully reset setting $path")
             } ?: it.source.error("Failed to find setting with name $path")
             1
-        })
-)))
+        }).executes {
+            Ares.SETTINGS.setDefault()
+            it.source.print("Successfully reset all settings")
+            1
+        }
+))

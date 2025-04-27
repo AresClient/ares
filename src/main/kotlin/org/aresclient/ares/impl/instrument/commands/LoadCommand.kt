@@ -19,17 +19,17 @@ object LoadCommand: Command(register(
     private fun load(context: IContext, name: String) {
         val file = File("ares/config/$name.json")
         if(!file.exists()) {
-            context.error("Config $name does not exist!")
+            context.error("Config $name does not exist")
             return
         }
 
         try {
             Ares.SETTINGS.read(file)
         } catch(e: Exception) {
-            context.error("Failed to read config file!")
+            context.error("Failed to read config file")
             return
         }
 
-        context.print("Successfully loaded config file!")
+        context.print("Successfully loaded config file")
     }
 }

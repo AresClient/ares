@@ -1,10 +1,7 @@
 package org.aresclient.ares.impl
 
 import org.aresclient.ares.api.Plugin
-import org.aresclient.ares.impl.instrument.commands.EchoCommand
-import org.aresclient.ares.impl.instrument.commands.HelpCommand
-import org.aresclient.ares.impl.instrument.commands.LoadCommand
-import org.aresclient.ares.impl.instrument.commands.SaveCommand
+import org.aresclient.ares.impl.instrument.commands.*
 import org.aresclient.ares.impl.instrument.global.*
 import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
@@ -48,6 +45,8 @@ object AresPlugin: Plugin(
 		EchoCommand,
 		HelpCommand,
 		SaveCommand,
-		LoadCommand
+		LoadCommand,
+		SetCommand,
+		ResetCommand
 	)
 )

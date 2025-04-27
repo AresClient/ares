@@ -3,6 +3,7 @@ package org.aresclient.ares.api.setting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 import org.aresclient.ares.api.setting.settings.ListSetting;
 
 import java.io.*;
@@ -37,6 +38,10 @@ public abstract class Setting<T> {
 	}
 
 	public abstract void read(JsonElement jsonElement);
+
+	public void read(String json) throws JsonSyntaxException {
+		read(GSON.fromJson(json, JsonElement.class));
+	}
 
 	public void read(File file) throws IOException {
 		FileReader fileReader = new FileReader(file);

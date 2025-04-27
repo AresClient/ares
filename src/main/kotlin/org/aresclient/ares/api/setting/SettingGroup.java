@@ -38,7 +38,32 @@ public class SettingGroup extends Setting<Map<String, Setting<?>>> {
         return jsonObject;
     }
 
-    public <S extends Setting<?>> S add(S setting, String name, String... description) {
+    @Override
+    public void setDefault() {
+        getValue().values().forEach(Setting::setDefault);
+    }
+
+    public Setting<?> find(String path) {
+        if(path == null || path.isEmpty()) return this;
+
+        Setting<?> curr = this;
+        String[] split = path.split(":");
+        for(String name: split) {
+            if(curr instanceof SettingGroup) {
+                curr = ((SettingGroup) curr).getValue().get(name);
+            } else if(curr instanceof ListSetting) {
+                try {
+                    curr = ((ListSetting) curr).getValue().get(Integer.parseInt(name));
+                } catch(NumberFormatException e) {
+                    return null;
+                }
+            } else return null;
+        }
+
+        return curr;
+    }
+
+    private <S extends Setting<?>> S add(S setting, String name, String... description) {
         if(getValue().containsKey(name)) return (S) getValue().get(name);
         getValue().put(name, setting);
 

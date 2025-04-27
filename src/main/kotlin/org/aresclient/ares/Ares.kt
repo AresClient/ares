@@ -115,6 +115,7 @@ class Ares: ModInitializer, Wrapper {
 	val chatListener = EventListener<ChatEvent> { event ->
 		if(event.message.startsWith(COMMAND_PREFIX.value)) {
 			Command.execute(chatCommandContext, event.message.substring(COMMAND_PREFIX.value.length))
+			MC.inGameHud.chatHud.addToMessageHistory(event.message)
 			event.isCancelled = true
 		}
 	}
