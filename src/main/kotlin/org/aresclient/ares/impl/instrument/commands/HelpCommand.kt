@@ -8,7 +8,7 @@ import org.aresclient.ares.Ares
 import org.aresclient.ares.api.instruments.Command
 
 object HelpCommand: Command(register(
-    literal<IContext?>("help")
+    literal<IContext?>("h").redirect(register(literal<IContext?>("help")
         .then(argument<IContext?, String?>("command", string())
         .executes { with(it.source) {
             val command = getCommand(getString(it, "command"))
@@ -27,4 +27,4 @@ object HelpCommand: Command(register(
             }
             1
         }}
-))
+))))

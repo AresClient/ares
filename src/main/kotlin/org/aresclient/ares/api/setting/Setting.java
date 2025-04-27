@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.aresclient.ares.api.setting.settings.ListSetting;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.*;
@@ -19,7 +20,7 @@ public abstract class Setting<T> {
 		LIST, MAP
 	}
 
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	private static final Gson GSON = new Gson();
 
 	private Setting<?> parent = null;
 	private java.lang.String name = null;
@@ -55,6 +56,10 @@ public abstract class Setting<T> {
 		FileWriter fileWriter = new FileWriter(file);
 		GSON.toJson(write(), fileWriter);
 		fileWriter.close();
+	}
+
+	public String writeToString() {
+		return GSON.toJson(write());
 	}
 
 	public Setting<?> getParent() {

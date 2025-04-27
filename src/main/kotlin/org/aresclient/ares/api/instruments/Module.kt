@@ -9,7 +9,7 @@ import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import java.util.*
 
-abstract class Module(category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
+abstract class Module(val category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
 	Instrument(name, description, category.settings) {
 	companion object {
 		internal val SETTINGS = Ares.SETTINGS.addGroup("Modules")
@@ -79,6 +79,10 @@ abstract class Module(category: Category, name: String, description: String, pri
 		}
 
 	private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
+
+	init {
+	    category.modules.add(this)
+	}
 
 	/* ---------------------------------------------------------------------- */
 

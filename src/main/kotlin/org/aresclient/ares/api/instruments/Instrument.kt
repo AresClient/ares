@@ -3,7 +3,7 @@ package org.aresclient.ares.api.instruments
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.setting.SettingGroup
 
-abstract class Instrument(name: String, description: String, parentSettings: SettingGroup): Wrapper {
+abstract class Instrument(val name: String, val description: String, parentSettings: SettingGroup): Wrapper {
 	private val components = ArrayList<Component<*>>()
 	val settings = parentSettings.addGroup(name, description)
 

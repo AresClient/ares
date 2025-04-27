@@ -47,6 +47,9 @@ object AresPlugin: Plugin(
 		SaveCommand,
 		LoadCommand,
 		SetCommand,
-		ResetCommand
+		ResetCommand,
+		GetCommand,
+		ToggleCommand,
+		PrefixCommand
 	)
 )
