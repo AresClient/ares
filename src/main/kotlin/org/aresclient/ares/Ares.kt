@@ -5,7 +5,6 @@ import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.TitleScreen
-import net.minecraft.text.Text
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.events.*
@@ -13,10 +12,10 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.render.TextColor
 import org.aresclient.ares.api.setting.SettingGroup
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.impl.AresPlugin
+import org.aresclient.ares.impl.util.ChatUtil
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -101,20 +100,10 @@ class Ares: ModInitializer, Wrapper {
 		this.callback.accept(state, repeat)
 	}
 
-	private val chatCommandContext = object: Command.IContext {
-		override fun print(message: String) {
-			MC.inGameHud.chatHud.addMessage(Text.of("${TextColor.DARK_GRAY}[${TextColor.DARK_RED}Ares${TextColor.DARK_GRAY}] ${TextColor.WHITE}$message"))
-		}
-
-		override fun error(message: String) {
-			MC.inGameHud.chatHud.addMessage(Text.of("${TextColor.DARK_GRAY}[${TextColor.DARK_RED}Ares${TextColor.DARK_GRAY}] ${TextColor.RED}$message"))
-		}
-	}
-
 	@field:EventHandler
 	val chatListener = EventListener<ChatEvent> { event ->
 		if(event.message.startsWith(COMMAND_PREFIX.value)) {
-			Command.execute(chatCommandContext, event.message.substring(COMMAND_PREFIX.value.length))
+			Command.execute(ChatUtil, event.message.substring(COMMAND_PREFIX.value.length))
 			MC.inGameHud.chatHud.addToMessageHistory(event.message)
 			event.isCancelled = true
 		}

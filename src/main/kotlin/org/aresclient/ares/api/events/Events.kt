@@ -2,6 +2,7 @@ package org.aresclient.ares.api.events
 
 import net.minecraft.entity.MovementType
 import net.minecraft.util.math.Vec3d
+import org.aresclient.ares.api.instruments.Module
 import org.joml.Matrix4f
 
 abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$type") {
@@ -58,3 +59,5 @@ abstract class TickEvent(val type: Type, era: Era): AresEvent("tick-" + type.nam
 }
 
 class ChatEvent(val message: String): AresEvent("chat")
+
+class ToggleEvent(val module: Module, val enabled: Boolean)

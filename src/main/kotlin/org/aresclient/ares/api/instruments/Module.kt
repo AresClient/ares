@@ -1,6 +1,7 @@
 package org.aresclient.ares.api.instruments
 
 import org.aresclient.ares.Ares
+import org.aresclient.ares.api.events.ToggleEvent
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
@@ -62,10 +63,12 @@ abstract class Module(val category: Category, name: String, description: String,
 			if(value) {
 				if(!defaults.alwaysListening) registerEvents()
 				onEnable()
+				EVENTS.post(ToggleEvent(this, true))
 			}
 			else {
 				if(!defaults.alwaysListening) unregisterEvents()
 				onDisable()
+				EVENTS.post(ToggleEvent(this, false))
 			}
 		} as BooleanSetting
 
