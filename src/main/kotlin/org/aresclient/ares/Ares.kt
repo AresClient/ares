@@ -3,27 +3,28 @@ package org.aresclient.ares
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
-import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.TitleScreen
+import net.minecraft.text.Text
 import org.aresclient.ares.api.Plugin
-import org.aresclient.ares.api.events.AresEventManager
-import org.aresclient.ares.api.events.Era
-import org.aresclient.ares.api.events.InputEvent
-import org.aresclient.ares.api.events.RenderEvent
-import org.aresclient.ares.api.events.ShutdownEvent
-import org.aresclient.ares.api.events.TickEvent
+import org.aresclient.ares.api.Wrapper
+import org.aresclient.ares.api.events.*
 import org.aresclient.ares.api.gui.AresScreen
+import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.render.TextColor
 import org.aresclient.ares.api.setting.SettingGroup
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.impl.AresPlugin
 import org.slf4j.LoggerFactory
 import java.io.File
 
-class Ares: ModInitializer {
+class Ares: ModInitializer, Wrapper {
 	companion object {
 		val LOGGER = LoggerFactory.getLogger("Ares")
+		@JvmStatic val EVENT_MANAGER = AresEventManager()
+
 		val PLUGINS = ArrayList<Plugin>()
 
 		val SETTINGS_FILE = File("ares/config/settings.json")
@@ -34,8 +35,7 @@ class Ares: ModInitializer {
 			}
 		}
 
-		@JvmStatic val MC: MinecraftClient = MinecraftClient.getInstance()
-		@JvmStatic val EVENT_MANAGER = AresEventManager()
+		val COMMAND_PREFIX = SETTINGS.addString("CmdPrefix", "-")
 
 		fun load(plugin: Plugin) {
 			val start = System.currentTimeMillis()
@@ -99,6 +99,30 @@ class Ares: ModInitializer {
 	private fun BindSetting.triggerCallback(key: Int, state: Boolean, repeat: Boolean) {
 		if(this.value != key) return
 		this.callback.accept(state, repeat)
+	}
+
+	private val chatCommandContext = object: Command.IContext {
+		override fun print(message: String) {
+			MC.inGameHud.chatHud.addMessage(Text.of("${TextColor.DARK_GRAY}[${TextColor.DARK_RED}Ares${TextColor.DARK_GRAY}] ${TextColor.WHITE}$message"))
+		}
+
+		override fun error(message: String) {
+			MC.inGameHud.chatHud.addMessage(Text.of("${TextColor.DARK_GRAY}[${TextColor.DARK_RED}Ares${TextColor.DARK_GRAY}] ${TextColor.RED}$message"))
+		}
+	}
+
+	@field:EventHandler
+	val chatListener = EventListener<ChatEvent> { event ->
+		if(event.message.startsWith(COMMAND_PREFIX.value)) {
+			Command.execute(chatCommandContext, event.message.substring(COMMAND_PREFIX.value.length))
+			event.isCancelled = true
+		}
+	}
+
+	@field:EventHandler
+	val charTypedListener = EventListener<CharTypedEvent> { event ->
+		if(MC.currentScreen == null && !MC.NULL && COMMAND_PREFIX.value.length == 1 && event.codePoint.toChar() == COMMAND_PREFIX.value[0])
+			MC.setScreen(ChatScreen(""))
 	}
 
 	@field:EventHandler

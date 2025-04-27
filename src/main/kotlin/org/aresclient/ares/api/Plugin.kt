@@ -1,6 +1,6 @@
 package org.aresclient.ares.api
 
-import org.aresclient.ares.api.command.Command
+import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Global
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module

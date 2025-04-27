@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.ints.IntArraySet;
 import net.minecraft.client.Keyboard;
 import net.minecraft.client.MinecraftClient;
 import org.aresclient.ares.api.JWrapper;
+import org.aresclient.ares.api.events.CharTypedEvent;
 import org.aresclient.ares.api.events.InputEvent;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Keyboard.class)
 public class MixinKeyboard implements JWrapper {
-
     @Unique private static IntArraySet pressed = new IntArraySet();
 
     @Inject(method = "onKey", at = @At("HEAD"), cancellable = true)
@@ -28,5 +28,10 @@ public class MixinKeyboard implements JWrapper {
                 if (!isRepeat) pressed.add(key);
             }
         }
+    }
+
+    @Inject(method = "onChar", at = @At(value = "HEAD"))
+    public void onChar(long window, int codePoint, int modifiers, CallbackInfo ci) {
+        EVENTS.post(new CharTypedEvent(codePoint, modifiers));
     }
 }

@@ -4,6 +4,7 @@ import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.mob.HostileEntity
+import net.minecraft.entity.mob.Monster
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec2f
@@ -41,7 +42,7 @@ object EntityUtil: Wrapper {
 		return when(this) {
 			is ItemEntity -> TargetType.ITEM
 			is PassiveEntity -> TargetType.PASSIVE
-			is HostileEntity -> TargetType.HOSTILE
+			is Monster -> TargetType.HOSTILE
 			is PlayerEntity -> {
 				return if(isFriend()) TargetType.FRIEND
 				else if(isBot()) TargetType.BOT
@@ -72,7 +73,7 @@ object EntityUtil: Wrapper {
 		return when(this) {
 			is ItemEntity -> items
 			is PassiveEntity -> passive
-			is HostileEntity -> hostile
+			is Monster -> hostile
 			is PlayerEntity -> {
 				return if(players) {
 					if(isFriend()) friends

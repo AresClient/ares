@@ -5,9 +5,10 @@ import dev.tigr.simpleevents.event.Event
 import org.aresclient.ares.api.Wrapper
 
 enum class Era { BEFORE, AFTER }
-abstract class AresEvent(val name: String, val era: Era? = null): Event(), Wrapper
-class AresEventManager: EventManager(), Wrapper {
 
+abstract class AresEvent(val name: String, val era: Era? = null): Event(), Wrapper
+
+class AresEventManager: EventManager(), Wrapper {
 	override fun <T: Any?> post(event: T): T = when (event) {
 		is AresEvent -> {
 			profiler.push("ares_" + event.name.lowercase() + event.era?.let { "_" + it.name.lowercase() })
@@ -19,6 +20,4 @@ class AresEventManager: EventManager(), Wrapper {
 			super.post(event)
 		}
 	}
-
 }
-

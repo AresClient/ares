@@ -29,6 +29,8 @@ abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 	}
 }
 
+class CharTypedEvent(val codePoint: Int, val modifers: Int): AresEvent("char-typed")
+
 abstract class PlayerEvent(name: String): AresEvent("player-$name") {
 	class ChangeLookDirection(val cursorDeltaX: Double, val cursorDeltaY: Double): PlayerEvent("change-look-direction")
 	class Move(val movementType: MovementType, val movement: Vec3d): PlayerEvent("move")
@@ -54,3 +56,5 @@ abstract class TickEvent(val type: Type, era: Era): AresEvent("tick-" + type.nam
 	class World(era: Era): TickEvent(Type.WORLD, era)
 	class Motion(era: Era): TickEvent(Type.MOTION, era)
 }
+
+class ChatEvent(val message: String): AresEvent("chat")

@@ -15,10 +15,11 @@
     "mixins.MixinGameRenderer",
     "mixins.MixinInGameHud",
     "mixins.MixinKeyboard",
+    "mixins.MixinLightmapTextureManager",
     "mixins.MixinMinecraftClient",
     "mixins.MixinMouse",
     "mixins.MixinWorldRenderer",
-    "mixins.MixinLightmapTextureManager"
+    "mixins.MixinChatScreen"
   ],
   "injectors": {
     "defaultRequire": 1

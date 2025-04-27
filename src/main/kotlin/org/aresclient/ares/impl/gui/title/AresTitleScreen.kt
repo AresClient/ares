@@ -1,6 +1,6 @@
 package org.aresclient.ares.impl.gui.title
 
-import org.aresclient.ares.Ares
+import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.gui.StaticElement
 import org.aresclient.ares.api.render.Buffer
@@ -15,7 +15,7 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
 class AresTitleScreen: ScreenElement("Ares Title Screen") {
-    companion object {
+    companion object: Wrapper {
         private val LOGO_BG =
             Texture(this::class.java.getResourceAsStream("/assets/ares/textures/icons/ares_bg.png"))
         private val LOGO_FG =
@@ -53,7 +53,7 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
             Texture(this::class.java.getResourceAsStream("/assets/ares/textures/icons/exit.png")),
             0f, 5f, 30f, 30f
         ) {
-            Ares.MC.scheduleStop()
+            MC.scheduleStop()
         }
     }
 

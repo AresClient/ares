@@ -10,11 +10,12 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.GlTexture;
 import net.minecraft.client.util.Window;
 import org.aresclient.ares.Ares;
+import org.aresclient.ares.api.JWrapper;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 // written by Tigermouthbear years ago
-public class Renderer {
+public class Renderer implements JWrapper {
     public static class Uniforms {
         private final Uniform.F1 roundedRadius = Shader.ROUNDED.uniformF1("radius");
         private final Uniform.F2 roundedSize = Shader.ROUNDED.uniformF2("size");
@@ -146,7 +147,7 @@ public class Renderer {
     }
 
     private static State begin(MatrixStack matrixStack) {
-        Framebuffer framebuffer = Ares.getMC().getFramebuffer();
+        Framebuffer framebuffer = MC.getFramebuffer();
         GpuTexture gpuTexture = framebuffer.getColorAttachment();
         GpuTexture gpuTexture2 = framebuffer.getDepthAttachment();
         GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER,
@@ -171,7 +172,7 @@ public class Renderer {
     }
 
     public static State begin2d() {
-        Window window = Ares.getMC().getWindow();
+        Window window = MC.getWindow();
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.projection()
                 .setOrtho(0f, window.getFramebufferWidth(), window.getFramebufferHeight(), 0f, 1000f, 21000f);
@@ -182,7 +183,7 @@ public class Renderer {
     }
 
     public static State begin3d(Matrix4f bobhurt) {
-        Camera camera = Ares.getMC().gameRenderer.getCamera();
+        Camera camera = MC.gameRenderer.getCamera();
 
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.projection()
@@ -222,8 +223,8 @@ public class Renderer {
     }
 
     public static void scissorBegin(float x, float y, float width, float height) {
-        Framebuffer framebuffer = Ares.getMC().getFramebuffer();
-        Window window = Ares.getMC().getWindow();
+        Framebuffer framebuffer = MC.getFramebuffer();
+        Window window = MC.getWindow();
 
         float scaleWidth = (float) framebuffer.viewportWidth / (float) window.getScaledWidth();
         float scaleHeight = (float) framebuffer.viewportHeight / (float) window.getScaledHeight();
