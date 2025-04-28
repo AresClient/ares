@@ -11,7 +11,6 @@
     "mixins.MixinClientPlayerEntity",
     "mixins.MixinClientWorld",
     "mixins.MixinEntity",
-    "mixins.MixinFramebuffer",
     "mixins.MixinGameRenderer",
     "mixins.MixinInGameHud",
     "mixins.MixinKeyboard",

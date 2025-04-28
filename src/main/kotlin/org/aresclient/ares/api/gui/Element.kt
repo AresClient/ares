@@ -150,8 +150,6 @@ open class ScreenElement(title: String): Element() {
         }
 
         override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-            context?.draw()
-
             if(mouseX == prevMouseX && mouseY == prevMouseY) mouseTime += delta
             else {
                 prevMouseX = mouseX
@@ -160,56 +158,59 @@ open class ScreenElement(title: String): Element() {
             }
 
             // render children
-            val state = Renderer.begin2d()
             val theme = Theme.current()
-            this@ScreenElement.draw(theme, state.buffers, matrixStack, mouseX, mouseY, delta) // we don't need to push matrices for screen drawing
+            val state = Renderer.begin2d()
+            Renderer.getStencilFramebuffer().resize(MC.framebuffer.textureWidth, MC.framebuffer.textureHeight)
+            Renderer.getStencilFramebuffer().use {
+                this@ScreenElement.draw(theme, state.buffers, matrixStack, mouseX, mouseY, delta) // we don't need to push matrices for screen drawing
 
-            // draw tooltip
-            if(tooltip?.isNotEmpty() == true && mouseTime > 10f) {
-                matrixStack.push()
-                matrixStack.model().translate(mouseX.toFloat(), mouseY.toFloat(), 0f)
+                // draw tooltip
+                if(tooltip?.isNotEmpty() == true && mouseTime > 10f) {
+                    matrixStack.push()
+                    matrixStack.model().translate(mouseX.toFloat(), mouseY.toFloat(), 0f)
 
-                val padding = 2f
-                val fontRenderer = RenderHelper.getFontRenderer(10f)
-                val width = tooltip!!.maxOf { fontRenderer.getStringWidth(it) } + padding * 2
-                val height = tooltip!!.size * fontRenderer.charHeight + padding * 2
+                    val padding = 2f
+                    val fontRenderer = RenderHelper.getFontRenderer(10f)
+                    val width = tooltip!!.maxOf { fontRenderer.getStringWidth(it) } + padding * 2
+                    val height = tooltip!!.size * fontRenderer.charHeight + padding * 2
 
-                state.buffers.triangle.draw(matrixStack) {
-                    vertices(
-                        0f, -height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                        width, 0f, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                        width, -height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
-                        0f, 0f, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
-                    )
-                    indices(
-                        0, 1, 2,
-                        0, 1, 3
-                    )
-                }
-
-                state.buffers.lines.draw(matrixStack) {
-                    vertices(
-                        0f, -height, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                        width, -height, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                        width, 0f, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                        0f, 0f, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
-                    )
-                    indices(0, 1, 1, 2, 2, 3, 3, 0)
-                }
-
-                fontRenderer.bindTexture()
-                state.buffers.triangleTexColor.draw(matrixStack) {
-                    for((i, line) in tooltip!!.withIndex()) {
-                        fontRenderer.drawString(this, line,
-                            padding, padding - height + i * fontRenderer.charHeight, theme.lightground.value)
+                    state.buffers.triangle.draw(matrixStack) {
+                        vertices(
+                            0f, -height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                            width, 0f, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                            width, -height, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha,
+                            0f, 0f, 0f, theme.background.value.red, theme.background.value.green, theme.background.value.blue, theme.background.value.alpha
+                        )
+                        indices(
+                            0, 1, 2,
+                            0, 1, 3
+                        )
                     }
+
+                    state.buffers.lines.draw(matrixStack) {
+                        vertices(
+                            0f, -height, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                            width, -height, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                            width, 0f, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                            0f, 0f, 0f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                        )
+                        indices(0, 1, 1, 2, 2, 3, 3, 0)
+                    }
+
+                    fontRenderer.bindTexture()
+                    state.buffers.triangleTexColor.draw(matrixStack) {
+                        for((i, line) in tooltip!!.withIndex()) {
+                            fontRenderer.drawString(this, line,
+                                padding, padding - height + i * fontRenderer.charHeight, theme.lightground.value)
+                        }
+                    }
+
+                    matrixStack.pop()
+                    tooltip = null
                 }
-
-                matrixStack.pop()
-                tooltip = null
             }
-
             Renderer.end(state) // cleanup
+
             super.render(context, mouseX, mouseY, delta)
         }
 

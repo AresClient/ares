@@ -40,6 +40,7 @@ class IconButton(private val texture: Texture, x: Float, y: Float, width: Float,
 
     // TODO: merge hover and circle into same draw call with dynamic buffers
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
+        matrixStack.push()
         if(holding) matrixStack.model().translate(0f, 1f, 0f)
         matrixStack.model().scale(getWidth(), getHeight(), 1f)
 
@@ -83,6 +84,7 @@ class IconButton(private val texture: Texture, x: Float, y: Float, width: Float,
 
         texture.bind()
         IMAGE.draw(matrixStack)
+        matrixStack.pop()
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {

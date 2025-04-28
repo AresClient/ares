@@ -242,7 +242,7 @@ class WindowElement(internal val settings: SettingGroup, private val windowManag
 
         if(!acted.get() && isMouseOver(mouseX, mouseY) && mouseY >= getRenderY() + TOP_SIZE) {
             window?.let {
-                it.setY(min(TOP_SIZE, max((it.getY() + value).toFloat(), getHeight() - it.getHeight())))
+                it.setY(min(TOP_SIZE, max((it.getY() + value * 10.0).toFloat(), getHeight() - it.getHeight())))
             }
             acted.set(true)
         }

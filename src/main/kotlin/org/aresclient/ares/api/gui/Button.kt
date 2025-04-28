@@ -8,7 +8,7 @@ import kotlin.math.min
 
 abstract class Button(
     x: Float, y: Float, width: Float, height: Float, private var action: (Button) -> Unit = {},
-    private val clipping:Clipping = Clipping.STENCIL, private val ref: Int = 1): StaticElement(x, y, width, height) {
+    private val clipping: Clipping = Clipping.STENCIL, private val ref: Int = 1): StaticElement(x, y, width, height) {
     enum class Clipping {
         STENCIL,
         SCISSOR,
@@ -33,9 +33,9 @@ abstract class Button(
     protected var hoverSince = 0L
 
     protected var holding = false
-    protected var holdX = 0f
-    protected var holdY = 0f
-    protected var holdSince = 0L
+    private var holdX = 0f
+    private var holdY = 0f
+    private var holdSince = 0L
 
     protected abstract fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int)
 
@@ -54,7 +54,7 @@ abstract class Button(
             if(clipping == Clipping.STENCIL) {
                 RenderHelper.clip({ draw(theme, buffers, matrixStack, mouseX, mouseY) }, ref) {
                     matrixStack.push()
-                    matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
+                    matrixStack.model().translate(holdX - getRenderX(), holdY - getRenderY(), 0f).scale(min(time / 10f, 4f) + 2f)
                     CIRCLE.draw(matrixStack)
                     matrixStack.pop()
                 }
@@ -62,7 +62,7 @@ abstract class Button(
                 draw(theme, buffers, matrixStack, mouseX, mouseY)
                 RenderHelper.scissor(getRenderX(), getRenderY(), getWidth(), getHeight()) {
                     matrixStack.push()
-                    matrixStack.model().translation(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
+                    matrixStack.model().translate(holdX, holdY, 0f).scale(min(time / 10f, 4f) + 2f)
                     CIRCLE.draw(matrixStack)
                     matrixStack.pop()
                 }

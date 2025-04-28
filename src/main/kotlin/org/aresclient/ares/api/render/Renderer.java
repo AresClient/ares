@@ -9,7 +9,6 @@ import net.minecraft.client.gl.GlBackend;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.GlTexture;
 import net.minecraft.client.util.Window;
-import org.aresclient.ares.Ares;
 import org.aresclient.ares.api.JWrapper;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
@@ -108,9 +107,14 @@ public class Renderer implements JWrapper {
     }
 
     private static final Buffers BUFFERS = new Buffers(new Uniforms());
+    private static final StencilFramebuffer STENCIL_FRAMEBUFFER = new StencilFramebuffer(MC.getFramebuffer().textureWidth, MC.getFramebuffer().textureHeight);
 
     public static Buffers getBuffers() {
         return BUFFERS;
+    }
+
+    public static StencilFramebuffer getStencilFramebuffer() {
+        return STENCIL_FRAMEBUFFER;
     }
 
     public static class State {
@@ -275,8 +279,8 @@ public class Renderer implements JWrapper {
     }
 
     public static void cleanup() {
-        BlurFrameBuffer.clear();
-        MSAAFrameBuffer.clear();
+        MSAAFramebuffer.clear();
+        CustomFramebuffer.clear();
         Buffer.clear();
         Shader.clear();
         Texture.clear();

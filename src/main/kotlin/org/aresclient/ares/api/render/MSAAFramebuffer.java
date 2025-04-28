@@ -10,8 +10,8 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MSAAFrameBuffer {
-    private static final List<MSAAFrameBuffer> MSAAS = new ArrayList<>();
+public class MSAAFramebuffer {
+    private static final List<MSAAFramebuffer> MSAAS = new ArrayList<>();
     private static final Buffer BUFFER = Buffer
             .createStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
@@ -33,11 +33,11 @@ public class MSAAFrameBuffer {
     private final int samples;
     private int width, height;
 
-    public MSAAFrameBuffer(int samples, Window resolution) {
+    public MSAAFramebuffer(int samples, Window resolution) {
         this(samples, resolution.getWidth(), resolution.getHeight());
     }
 
-    public MSAAFrameBuffer(int samples, int width, int height) {
+    public MSAAFramebuffer(int samples, int width, int height) {
         this.samples = Math.min(samples, GL11.glGetInteger(GL30.GL_MAX_SAMPLES));
         this.width = width;
         this.height = height;
@@ -131,7 +131,7 @@ public class MSAAFrameBuffer {
     }
 
     public static void clear() {
-        for(MSAAFrameBuffer msaa: MSAAS) {
+        for(MSAAFramebuffer msaa: MSAAS) {
             GL11.glDeleteTextures(msaa.texture);
             GL30.glDeleteFramebuffers(msaa.framebuffer);
             GL30.glDeleteFramebuffers(msaa.intermediate);
