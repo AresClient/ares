@@ -2,23 +2,23 @@ package org.aresclient.ares.impl.instrument.commands
 
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.arguments.StringArgumentType.string
-import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.instruments.Command
 import java.io.File
 
-object SaveCommand: Command(register(
-    literal<IContext?>("save")
-        .then(argument<IContext?, String?>("config", string())
-        .executes {
-            SaveCommand.save(it.source, getString(it, "config"))
+object SaveCommand: Command("save") {
+    override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
+        return then(argument<IContext, String?>("config", string()).executes {
+            save(it.source, getString(it, "config"))
             1
         }).executes {
-            SaveCommand.save(it.source, "settings")
+            save(it.source, "settings")
             1
         }
-)) {
+    }
+
     private fun save(context: IContext, name: String) {
         val file = File("ares/config/$name.json")
         file.parentFile.mkdirs()

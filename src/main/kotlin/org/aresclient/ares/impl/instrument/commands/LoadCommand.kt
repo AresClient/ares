@@ -2,20 +2,20 @@ package org.aresclient.ares.impl.instrument.commands
 
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.arguments.StringArgumentType.string
-import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.instruments.Command
 import java.io.File
 
-object LoadCommand: Command(register(
-    literal<IContext?>("load")
-        .then(argument<IContext?, String?>("config", string())
-        .executes {
-            LoadCommand.load(it.source, getString(it, "config"))
+object LoadCommand: Command("load") {
+    override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
+        return then(argument<IContext, String?>("config", string()).executes {
+            load(it.source, getString(it, "config"))
             1
         })
-)) {
+    }
+
     private fun load(context: IContext, name: String) {
         val file = File("ares/config/$name.json")
         if(!file.exists()) {

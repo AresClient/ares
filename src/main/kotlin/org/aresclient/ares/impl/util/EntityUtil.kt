@@ -3,7 +3,6 @@ package org.aresclient.ares.impl.util
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.ItemEntity
-import net.minecraft.entity.mob.HostileEntity
 import net.minecraft.entity.mob.Monster
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -11,7 +10,6 @@ import net.minecraft.util.math.Vec2f
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.instrument.global.Rotation
-import org.aresclient.ares.impl.util.EntityUtil.isTarget
 import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 import org.joml.Vector2d
 
@@ -28,8 +26,7 @@ object EntityUtil: Wrapper {
 		this.pitch = pitch
 	}
 
-	// TODO: IMPLEMENT FRIENDS SYSTEM
-	fun Entity.isFriend(): Boolean = false
+	fun Entity.isFriend(): Boolean = this is PlayerEntity && FriendUtil.isFriend(this.gameProfile)
 
 	fun Entity.isBot(): Boolean = this is PlayerEntity && isInvisibleTo(MC.player) && !isOnGround && !collidesWith(MC.player)
 

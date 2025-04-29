@@ -2,29 +2,39 @@ package org.aresclient.ares.impl.instrument.commands
 
 import com.mojang.brigadier.arguments.StringArgumentType.getString
 import com.mojang.brigadier.arguments.StringArgumentType.string
-import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.instruments.Command
 
-object HelpCommand: Command(register(
-    literal<IContext?>("h").redirect(register(literal<IContext?>("help")
-        .then(argument<IContext?, String?>("command", string())
-        .executes { with(it.source) {
-            val command = getCommand(getString(it, "command"))
-            getUsages(this, command).forEach { usage ->
-                print("${command.name} $usage")
+object HelpCommand: Command("help", "h", "?") {
+    override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
+        return then(argument<IContext, String>("command", string()).executes {
+            val name = getString(it, "command")
+            val command = Ares.PLUGINS
+                .flatMap { plugin -> plugin.commands }
+                .find { command -> command.name == name || command.aliases.contains(name) }
+            if(command == null) {
+                it.source.error("Unknown command $name")
+                return@executes 1
+            }
+
+            getUsages(it.source, command.getNode()).forEach { usage ->
+                it.source.print("${command.name} $usage")
             }
             1
-        }}).executes { with(it.source) {
+        }).executes {
             Ares.PLUGINS.forEach { plugin ->
-                print("${plugin.name} Commands:")
+                it.source.print("${plugin.name} Commands:")
                 plugin.commands.forEach { command ->
-                    command.getUsages(this).forEach { usage ->
-                        print("${command.getNode().name} $usage")
+                    val usages = command.getUsages(it.source)
+                    if(usages.isEmpty()) it.source.print(command.name)
+                    else usages.forEach { usage ->
+                        it.source.print("${command.getNode().name} $usage")
                     }
                 }
             }
             1
-        }}
-))))
+        }
+    }
+}

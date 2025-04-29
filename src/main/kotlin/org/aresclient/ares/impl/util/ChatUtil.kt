@@ -13,4 +13,8 @@ object ChatUtil: Command.IContext, Wrapper {
     override fun error(message: String) {
         MC.inGameHud.chatHud.addMessage(Text.of("${TextColor.DARK_GRAY}[${TextColor.DARK_RED}Ares${TextColor.DARK_GRAY}] ${TextColor.RED}$message"))
     }
+
+    override fun clear() {
+        MC.inGameHud.chatHud.clear(false)
+    }
 }

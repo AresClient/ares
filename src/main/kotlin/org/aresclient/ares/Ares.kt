@@ -16,6 +16,7 @@ import org.aresclient.ares.api.setting.SettingGroup
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.impl.AresPlugin
 import org.aresclient.ares.impl.util.ChatUtil
+import org.aresclient.ares.impl.util.FriendUtil
 import org.slf4j.LoggerFactory
 import java.io.File
 
@@ -117,6 +118,7 @@ class Ares: ModInitializer, Wrapper {
 
 	@field:EventHandler
 	val shutdownListener = EventListener<ShutdownEvent> {
+		FriendUtil.save()
 		SETTINGS_FILE.parentFile.mkdirs()
 		SETTINGS.write(SETTINGS_FILE)
 		Renderer.cleanup()
@@ -127,6 +129,7 @@ class Ares: ModInitializer, Wrapper {
 
 		EVENT_MANAGER.register(this)
 
+		FriendUtil
 		load(AresPlugin)
 		// TODO: Dynamic Plugin Loading?
 

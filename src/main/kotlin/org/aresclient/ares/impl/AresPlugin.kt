@@ -52,6 +52,8 @@ object AresPlugin: Plugin(
 		ResetCommand,
 		GetCommand,
 		ToggleCommand,
-		PrefixCommand
+		PrefixCommand,
+		FriendCommand,
+		ClearCommand
 	)
 )
