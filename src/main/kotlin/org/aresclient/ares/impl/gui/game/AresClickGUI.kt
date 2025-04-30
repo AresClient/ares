@@ -1,12 +1,12 @@
 package org.aresclient.ares.impl.gui.game
 
-import org.aresclient.ares.api.render.BlurFramebuffer
 import org.aresclient.ares.api.gui.ScreenElement
-import org.aresclient.ares.impl.util.Theme
+import org.aresclient.ares.api.render.BlurFramebuffer
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.SettingGroup
 import org.aresclient.ares.impl.gui.AresSkybox
+import org.aresclient.ares.impl.util.Theme
 
 class AresClickGUI(settings: SettingGroup): ScreenElement("Ares ClickGUI") {
     private val windowManager = WindowManager(settings.addList("Windows"))

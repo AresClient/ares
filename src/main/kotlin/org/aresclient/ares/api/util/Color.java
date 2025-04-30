@@ -4,154 +4,154 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Color {
-	public static final Color BLACK = new Color(0, 0, 0, 1);
-	public static final Color GRAY = new Color(0.5f, 0.5f, 0.5f, 1);
-	public static final Color WHITE = new Color(1, 1, 1, 1);
-	public static final Color RED = new Color(1, 0, 0, 1);
-	public static final Color GREEN = new Color(0, 1, 0, 1);
-	public static final Color BLUE = new Color(0, 0, 1, 1);
-	public static final Color COLORLESS = new Color(0,0,0,0);
+    public static final Color BLACK = new Color(0, 0, 0, 1);
+    public static final Color GRAY = new Color(0.5f, 0.5f, 0.5f, 1);
+    public static final Color WHITE = new Color(1, 1, 1, 1);
+    public static final Color RED = new Color(1, 0, 0, 1);
+    public static final Color GREEN = new Color(0, 1, 0, 1);
+    public static final Color BLUE = new Color(0, 0, 1, 1);
+    public static final Color COLORLESS = new Color(0, 0, 0, 0);
 
-	private final float r;
-	private final float g;
-	private final float b;
-	private final float a;
+    private final float r;
+    private final float g;
+    private final float b;
+    private final float a;
 
-	public Color(int rgb) {
-		this((float) (rgb >> 16) / 255.0F, (float) (rgb >> 8 & 255) / 255.0F, (float) (rgb & 255) / 255.0F, 1);
-	}
+    public Color(int rgb) {
+        this((float) (rgb >> 16) / 255.0F, (float) (rgb >> 8 & 255) / 255.0F, (float) (rgb & 255) / 255.0F, 1);
+    }
 
-	public Color(float r, float g, float b, float a) {
-		this.r = r;
-		this.g = g;
-		this.b = b;
-		this.a = a;
-	}
+    public Color(float r, float g, float b, float a) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
 
-	public static Color fromDistance(float distance) {
-		float fraction = distance > 50 ? 1 : distance / 50;
-		return fraction > 0.5d ? new Color(1 - (fraction - 0.5f) * 2, 1, 0, 1) : new Color(1, fraction * 2, 0, 1);
-	}
+    public static Color fromDistance(float distance) {
+        float fraction = distance > 50 ? 1 : distance / 50;
+        return fraction > 0.5d ? new Color(1 - (fraction - 0.5f) * 2, 1, 0, 1) : new Color(1, fraction * 2, 0, 1);
+    }
 
-	public static int HSBtoRGB(float hue, float saturation, float brightness) {
-		if(saturation == 0)
-			return convert(brightness, brightness, brightness, 0);
-		if(saturation < 0 || saturation > 1 || brightness < 0 || brightness > 1)
-			throw new IllegalArgumentException();
-		hue = hue - (float) Math.floor(hue);
-		int i = (int) (6 * hue);
-		float f = 6 * hue - i;
-		float p = brightness * (1 - saturation);
-		float q = brightness * (1 - saturation * f);
-		float t = brightness * (1 - saturation * (1 - f));
-		switch(i) {
-			case 0:
-				return convert(brightness, t, p, 0);
-			case 1:
-				return convert(q, brightness, p, 0);
-			case 2:
-				return convert(p, brightness, t, 0);
-			case 3:
-				return convert(p, q, brightness, 0);
-			case 4:
-				return convert(t, p, brightness, 0);
-			case 5:
-				return convert(brightness, p, q, 0);
-			default:
-				throw new InternalError("impossible");
-		}
-	}
+    public static int HSBtoRGB(float hue, float saturation, float brightness) {
+        if(saturation == 0)
+            return convert(brightness, brightness, brightness, 0);
+        if(saturation < 0 || saturation > 1 || brightness < 0 || brightness > 1)
+            throw new IllegalArgumentException();
+        hue = hue - (float) Math.floor(hue);
+        int i = (int) (6 * hue);
+        float f = 6 * hue - i;
+        float p = brightness * (1 - saturation);
+        float q = brightness * (1 - saturation * f);
+        float t = brightness * (1 - saturation * (1 - f));
+        switch(i) {
+            case 0:
+                return convert(brightness, t, p, 0);
+            case 1:
+                return convert(q, brightness, p, 0);
+            case 2:
+                return convert(p, brightness, t, 0);
+            case 3:
+                return convert(p, q, brightness, 0);
+            case 4:
+                return convert(t, p, brightness, 0);
+            case 5:
+                return convert(brightness, p, q, 0);
+            default:
+                throw new InternalError("impossible");
+        }
+    }
 
-	private static int convert(float red, float green, float blue, float alpha) {
-		if(red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1
-				|| alpha < 0 || alpha > 1)
-			throw new IllegalArgumentException("Bad RGB values");
-		int redval = Math.round(255 * red);
-		int greenval = Math.round(255 * green);
-		int blueval = Math.round(255 * blue);
-		int alphaval = Math.round(255 * alpha);
-		return (alphaval << 24) | (redval << 16) | (greenval << 8) | blueval;
-	}
+    private static int convert(float red, float green, float blue, float alpha) {
+        if(red < 0 || red > 1 || green < 0 || green > 1 || blue < 0 || blue > 1
+                || alpha < 0 || alpha > 1)
+            throw new IllegalArgumentException("Bad RGB values");
+        int redval = Math.round(255 * red);
+        int greenval = Math.round(255 * green);
+        int blueval = Math.round(255 * blue);
+        int alphaval = Math.round(255 * alpha);
+        return (alphaval << 24) | (redval << 16) | (greenval << 8) | blueval;
+    }
 
-	public float getRed() {
-		return r;
-	}
+    public float getRed() {
+        return r;
+    }
 
-	public float getGreen() {
-		return g;
-	}
+    public float getGreen() {
+        return g;
+    }
 
-	public float getBlue() {
-		return b;
-	}
+    public float getBlue() {
+        return b;
+    }
 
-	public float getAlpha() {
-		return a;
-	}
+    public float getAlpha() {
+        return a;
+    }
 
-	public Color deriveRed(float value) {
-		return new Color(value, g, b, a);
-	}
+    public Color deriveRed(float value) {
+        return new Color(value, g, b, a);
+    }
 
-	public Color deriveGreen(float value) {
-		return new Color(r, value, b, a);
-	}
+    public Color deriveGreen(float value) {
+        return new Color(r, value, b, a);
+    }
 
-	public Color deriveBlue(float value) {
-		return new Color(r, g, value, a);
-	}
+    public Color deriveBlue(float value) {
+        return new Color(r, g, value, a);
+    }
 
-	public Color deriveAlpha(float value) {
-		return new Color(r, g, b, value);
-	}
+    public Color deriveAlpha(float value) {
+        return new Color(r, g, b, value);
+    }
 
-	public int getRGB() {
-		return (((int) (getAlpha() * 255 + 0.5) & 0xFF) << 24) |
-				(((int) (getRed() * 255 + 0.5) & 0xFF) << 16) |
-				(((int) (getGreen() * 255 + 0.5) & 0xFF) << 8) |
-				(((int) (getBlue() * 255 + 0.5) & 0xFF));
-	}
+    public int getRGB() {
+        return (((int) (getAlpha() * 255 + 0.5) & 0xFF) << 24) |
+                (((int) (getRed() * 255 + 0.5) & 0xFF) << 16) |
+                (((int) (getGreen() * 255 + 0.5) & 0xFF) << 8) |
+                (((int) (getBlue() * 255 + 0.5) & 0xFF));
+    }
 
-	public static Color rainbow() {
-		float hue = (System.currentTimeMillis() % (320 * 32)) / (320f * 32);
-		return new Color(Color.HSBtoRGB(hue, 1, 1));
-	}
+    public static Color rainbow() {
+        float hue = (System.currentTimeMillis() % (320 * 32)) / (320f * 32);
+        return new Color(Color.HSBtoRGB(hue, 1, 1));
+    }
 
-	public static Color rainbow(int speed, float offset, float saturation, float brightness) {
-		float hue = ((System.currentTimeMillis() % ((speed *10) *speed)) / ((speed *10f) *speed)) -offset;
-		float hue2 = hue;
-		if(hue<0) hue2 = 1f + hue;
-		return new Color(Color.HSBtoRGB(hue2, saturation, brightness));
-	}
+    public static Color rainbow(int speed, float offset, float saturation, float brightness) {
+        float hue = ((System.currentTimeMillis() % ((speed * 10) * speed)) / ((speed * 10f) * speed)) - offset;
+        float hue2 = hue;
+        if(hue < 0) hue2 = 1f + hue;
+        return new Color(Color.HSBtoRGB(hue2, saturation, brightness));
+    }
 
-	public Color getColorBetween(Color color) {
-		return getColorBetween(new Color(r, g, b, a), color);
-	}
+    public Color getColorBetween(Color color) {
+        return getColorBetween(new Color(r, g, b, a), color);
+    }
 
-	public static Color getColorBetween(Color color1, Color color2) {
-		float
-				r = (color1.getRed() + color2.getRed()) /2,
-				g = (color1.getGreen() + color2.getGreen()) /2,
-				b = (color1.getBlue() + color2.getBlue()) /2,
-				a = (color1.getAlpha() + color2.getAlpha()) /2;
-		return new Color(r,g,b,a);
-	}
+    public static Color getColorBetween(Color color1, Color color2) {
+        float
+                r = (color1.getRed() + color2.getRed()) / 2,
+                g = (color1.getGreen() + color2.getGreen()) / 2,
+                b = (color1.getBlue() + color2.getBlue()) / 2,
+                a = (color1.getAlpha() + color2.getAlpha()) / 2;
+        return new Color(r, g, b, a);
+    }
 
-	@Override
-	public String toString() {
-		return Arrays.toString(new float[] { getRed(), getGreen(), getBlue(), getAlpha() });
-	}
+    @Override
+    public String toString() {
+        return Arrays.toString(new float[] {getRed(), getGreen(), getBlue(), getAlpha()});
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if(this == o) return true;
-		if(o == null || getClass() != o.getClass()) return false;
-		Color color = (Color) o;
-		return Float.compare(r, color.r) == 0 && Float.compare(g, color.g) == 0 && Float.compare(b, color.b) == 0 && Float.compare(a, color.a) == 0;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if(this == o) return true;
+        if(o == null || getClass() != o.getClass()) return false;
+        Color color = (Color) o;
+        return Float.compare(r, color.r) == 0 && Float.compare(g, color.g) == 0 && Float.compare(b, color.b) == 0 && Float.compare(a, color.a) == 0;
+    }
 
-	@Override
-	public int hashCode() {
-		return Objects.hash(r, g, b, a);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(r, g, b, a);
+    }
 }

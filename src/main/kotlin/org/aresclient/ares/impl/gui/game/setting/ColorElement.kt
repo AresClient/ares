@@ -1,10 +1,10 @@
 package org.aresclient.ares.impl.gui.game.setting
 
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.api.gui.StaticElement
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.impl.gui.game.DropDownSettingElement
 import org.aresclient.ares.impl.gui.game.SettingsContent
@@ -14,7 +14,7 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ColorElement(private val content:WindowContent, setting: ColorSetting, scale: Float):
+class ColorElement(private val content: WindowContent, setting: ColorSetting, scale: Float):
     DropDownSettingElement<ColorSetting>(setting, scale) {
     private val button = ColorSelectButton(this, scale)
 
@@ -46,7 +46,7 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
         }
     }
 
-    private class RGBColorSelectElement(val element:DropDown, private val scale: Float): DynamicElement(height = { scale * 4 }) {
+    private class RGBColorSelectElement(val element: DropDown, private val scale: Float): DynamicElement(height = { scale * 4 }) {
         init {
             arrayOf(
                 Slider(element, "Red", 0f, 1f, { element.setting.value.red }) { element.setting.setRed(it) },
@@ -76,7 +76,7 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
         }
     }
 
-    private class RNBWColorSelectElement(val element:DropDown, scale: Float): DynamicElement(height = { scale }) {
+    private class RNBWColorSelectElement(val element: DropDown, scale: Float): DynamicElement(height = { scale }) {
         init {
             Slider(element, "Alpha", 0f, 1f, { element.setting.value.alpha }) { element.setting.setAlpha(it) }.also {
                 it.setHeight(scale)
@@ -85,8 +85,8 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
         }
     }
 
-    private class ColorSelectButton(private val colorElement:ColorElement, scale: Float): SettingSubButton(scale, {
-         colorElement.open = !colorElement.open
+    private class ColorSelectButton(private val colorElement: ColorElement, scale: Float): SettingSubButton(scale, {
+        colorElement.open = !colorElement.open
     }, 0.5f) {
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
             val size = getHeight()
@@ -122,7 +122,7 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
         }
     }
 
-    private class ColorSelector(private val element:DropDown, scale: Float): StaticElement(height = scale) {
+    private class ColorSelector(private val element: DropDown, scale: Float): StaticElement(height = scale) {
         init {
             pushChild(ColorSelectionTypeButton(this, "RGBA", false))
             pushChild(ColorSelectionTypeButton(this, "RNBW", true))
@@ -130,10 +130,10 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
 
         override fun getWidth() = getParent()?.getWidth() ?: 0f
 
-        private class ColorSelectionTypeButton(private val selector:ColorSelector, private val name: String, private val rainbow: Boolean):
-					Button(0f, 0f, 0f, 0f, {
-            selector.element.setting.isRainbow = rainbow
-        }, clipping = Clipping.SCISSOR) {
+        private class ColorSelectionTypeButton(private val selector: ColorSelector, private val name: String, private val rainbow: Boolean):
+            Button(0f, 0f, 0f, 0f, {
+                selector.element.setting.isRainbow = rainbow
+            }, clipping = Clipping.SCISSOR) {
             override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
                 val width = getWidth()
                 val height = getHeight()
@@ -167,7 +167,13 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
                 }
 
                 val textWidth = selector.element.fontRenderer.getStringWidth(name)
-                selector.element.fontRenderer.drawString(matrixStack, name, width / 2f - textWidth / 2f, height / 2f - selector.element.fontRenderer.charHeight / 2f, theme.lightground.value)
+                selector.element.fontRenderer.drawString(
+                    matrixStack,
+                    name,
+                    width / 2f - textWidth / 2f,
+                    height / 2f - selector.element.fontRenderer.charHeight / 2f,
+                    theme.lightground.value
+                )
             }
 
             override fun getX() = (if(rainbow) 1f else 0f) * getWidth()
@@ -176,8 +182,10 @@ class ColorElement(private val content:WindowContent, setting: ColorSetting, sca
         }
     }
 
-    private class Slider(private val element:DropDown, private val name: String, private val min: Float, private val max: Float,
-                         private val get: () -> Float, private val set: (Float) -> Unit): StaticElement() {
+    private class Slider(
+        private val element: DropDown, private val name: String, private val min: Float, private val max: Float,
+        private val get: () -> Float, private val set: (Float) -> Unit
+    ): StaticElement() {
         private var holding = false
 
         override fun getWidth() = getParent()?.getWidth() ?: 0f

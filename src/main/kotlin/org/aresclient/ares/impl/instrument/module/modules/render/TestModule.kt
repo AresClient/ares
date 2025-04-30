@@ -7,7 +7,6 @@ import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.api.util.Keys
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.lwjgl.opengl.GL11
 
 object TestModule: Module(Category.RENDER, "Test", "A simple test module", Defaults().setBind(Keys.Y).setEnabled(true)) {
     private val renderer by lazy { RenderHelper.getFontRenderer(24f) }

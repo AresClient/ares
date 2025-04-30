@@ -10,7 +10,7 @@ public class DoubleSetting extends NumberSetting<Double> {
 
     @Override
     public void setValue(Double value) {
-        if (getPrecision() != null) {
+        if(getPrecision() != null) {
             int scale = (int) Math.pow(10, getPrecision());
             value = (double) Math.round(value * scale) / scale;
         }

@@ -12,20 +12,20 @@ import org.slf4j.Logger
 
 interface Wrapper {
 
-	val profiler: Profiler get() = Profilers.get()
+    val profiler: Profiler get() = Profilers.get()
 
-	val EVENTS: AresEventManager get() = Ares.EVENT_MANAGER
+    val EVENTS: AresEventManager get() = Ares.EVENT_MANAGER
 
-	val MC: MinecraftClient get() = MinecraftClient.getInstance()
+    val MC: MinecraftClient get() = MinecraftClient.getInstance()
 
-	val MinecraftClient.NULL: Boolean get() = world == null || player == null
+    val MinecraftClient.NULL: Boolean get() = world == null || player == null
 
-	val SELF: ClientPlayerEntity get() = MC.player!!
+    val SELF: ClientPlayerEntity get() = MC.player!!
 
-	val WORLD: ClientWorld get() = MC.world!!
+    val WORLD: ClientWorld get() = MC.world!!
 
-	val CAMERA: Camera get() = MC.gameRenderer.camera
+    val CAMERA: Camera get() = MC.gameRenderer.camera
 
-	val LOGGER: Logger get() = Ares.LOGGER
+    val LOGGER: Logger get() = Ares.LOGGER
 
 }

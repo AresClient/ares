@@ -5,138 +5,150 @@ import org.aresclient.ares.api.events.ToggleEvent
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
-import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.setting.settings.BooleanSetting
+import org.aresclient.ares.api.setting.settings.EnumSetting
 import java.util.*
 
 abstract class Module(val category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
-	Instrument(name, description, category.settings) {
-	companion object {
-		internal val SETTINGS = Ares.SETTINGS.addGroup("Modules")
-	}
+    Instrument(name, description, category.settings) {
+    companion object {
+        internal val SETTINGS = Ares.SETTINGS.addGroup("Modules")
+    }
 
-	/* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
 
-	enum class Category {
-		PLAYER,
-		OFFENSE,
-		DEFENSE,
-		MOVEMENT,
-		RENDER,
-		HUD,
-		MISC;
+    enum class Category {
+        PLAYER,
+        OFFENSE,
+        DEFENSE,
+        MOVEMENT,
+        RENDER,
+        HUD,
+        MISC;
 
-		companion object {
-			fun getAll(): List<Category> = entries
-		}
+        companion object {
+            fun getAll(): List<Category> = entries
+        }
 
-		val prettyName = name.lowercase().replaceFirstChar { it.titlecase(Locale.getDefault()) }
-		val settings = SETTINGS.addGroup(prettyName)
-		val modules = ArrayList<Module>()
+        val prettyName = name.lowercase().replaceFirstChar { it.titlecase(Locale.getDefault()) }
+        val settings = SETTINGS.addGroup(prettyName)
+        val modules = ArrayList<Module>()
 
-		val icon by lazy {
-			Texture(this::class.java.getResourceAsStream(
-				"/assets/ares/textures/icons/categories/" + name.lowercase() + ".png"
-			)!!, false)
-		}
-	}
+        val icon by lazy {
+            Texture(
+                this::class.java.getResourceAsStream(
+                    "/assets/ares/textures/icons/categories/" + name.lowercase() + ".png"
+                )!!, false
+            )
+        }
+    }
 
-	enum class ToggleOn { PRESS, RELEASE, HOLD }
-	class Defaults {
-		internal var enabled = false
-		internal var bind = -1
-		internal var toggleOn = ToggleOn.PRESS
-		internal var alwaysListening = false
+    enum class ToggleOn { PRESS, RELEASE, HOLD }
+    class Defaults {
+        internal var enabled = false
+        internal var bind = -1
+        internal var toggleOn = ToggleOn.PRESS
+        internal var alwaysListening = false
 
-		fun setEnabled(value: Boolean): Defaults { enabled = value; return this }
-		fun setBind(value: Int): Defaults { bind = value; return this }
-		fun setToggleOn(value: ToggleOn): Defaults { toggleOn = value; return this }
-		fun setAlwaysListening(value: Boolean): Defaults { alwaysListening = value; return this }
-	}
+        fun setEnabled(value: Boolean): Defaults {
+            enabled = value; return this
+        }
 
-	/* ---------------------------------------------------------------------- */
+        fun setBind(value: Int): Defaults {
+            bind = value; return this
+        }
 
-	private val enabled = settings
-		.addBoolean("Enabled", defaults.enabled)
-		.addListener { value: Boolean ->
-			if(value) {
-				if(!defaults.alwaysListening) registerEvents()
-				onEnable()
-				EVENTS.post(ToggleEvent(this, true))
-			}
-			else {
-				if(!defaults.alwaysListening) unregisterEvents()
-				onDisable()
-				EVENTS.post(ToggleEvent(this, false))
-			}
-		} as BooleanSetting
+        fun setToggleOn(value: ToggleOn): Defaults {
+            toggleOn = value; return this
+        }
 
-	private val bind: BindSetting = settings
-		.addBind("Bind", defaults.bind)
-		.setCallback { state: Boolean, repeat: Boolean ->
-			val toggle = toggleOn.value
-			if (toggle == ToggleOn.PRESS && state && !repeat) toggle();
-			else if (toggle == ToggleOn.RELEASE && !state) toggle();
-			else if (toggle == ToggleOn.HOLD && !repeat) setEnabled(state);
-		}
+        fun setAlwaysListening(value: Boolean): Defaults {
+            alwaysListening = value; return this
+        }
+    }
 
-	private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
+    /* ---------------------------------------------------------------------- */
 
-	init {
-	    category.modules.add(this)
-	}
+    private val enabled = settings
+        .addBoolean("Enabled", defaults.enabled)
+        .addListener { value: Boolean ->
+            if(value) {
+                if(!defaults.alwaysListening) registerEvents()
+                onEnable()
+                EVENTS.post(ToggleEvent(this, true))
+            } else {
+                if(!defaults.alwaysListening) unregisterEvents()
+                onDisable()
+                EVENTS.post(ToggleEvent(this, false))
+            }
+        } as BooleanSetting
 
-	/* ---------------------------------------------------------------------- */
+    private val bind: BindSetting = settings
+        .addBind("Bind", defaults.bind)
+        .setCallback { state: Boolean, repeat: Boolean ->
+            val toggle = toggleOn.value
+            if(toggle == ToggleOn.PRESS && state && !repeat) toggle()
+            else if(toggle == ToggleOn.RELEASE && !state) toggle()
+            else if(toggle == ToggleOn.HOLD && !repeat) setEnabled(state)
+        }
 
-	fun isEnabled(): Boolean = enabled.value
-	fun setEnabled(value: Boolean) {
-		enabled.value = value
-	}
+    private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
 
-	fun getBind() = bind.value
-	fun setBind(value: Int) {
-		bind.value = value
-	}
+    init {
+        category.modules.add(this)
+    }
 
-	fun getToggleOn() = toggleOn.value
-	fun setToggleOn(value: ToggleOn) {
-		toggleOn.value = value
-	}
+    /* ---------------------------------------------------------------------- */
 
-	/* ---------------------------------------------------------------------- */
+    fun isEnabled(): Boolean = enabled.value
+    fun setEnabled(value: Boolean) {
+        enabled.value = value
+    }
 
-	fun toggle() = setEnabled(!isEnabled())
-	fun isListening() = isEnabled() || defaults.alwaysListening
+    fun getBind() = bind.value
+    fun setBind(value: Int) {
+        bind.value = value
+    }
 
-	override fun registerEvents() = if (isListening()) super.registerEvents() else Unit
-	override fun unregisterEvents() = if(!isListening()) super.unregisterEvents() else Unit
+    fun getToggleOn() = toggleOn.value
+    fun setToggleOn(value: ToggleOn) {
+        toggleOn.value = value
+    }
 
-	/* ---------------------------------------------------------------------- */
+    /* ---------------------------------------------------------------------- */
 
-	override fun tick() {
-		if(isListening()) onTick()
-	}
+    fun toggle() = setEnabled(!isEnabled())
+    fun isListening() = isEnabled() || defaults.alwaysListening
 
-	fun motion() {
-		if(isListening()) onMotion()
-	}
+    override fun registerEvents() = if(isListening()) super.registerEvents() else Unit
+    override fun unregisterEvents() = if(!isListening()) super.unregisterEvents() else Unit
 
-	fun renderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
-		if (isListening()) onRenderHud(delta, buffers, matrixStack)
-	}
+    /* ---------------------------------------------------------------------- */
 
-	fun renderWorld(delta: Float, state: Renderer.State) {
-		if (isListening()) onRenderWorld(delta, state)
-	}
+    override fun tick() {
+        if(isListening()) onTick()
+    }
 
-	/* ---------------------------------------------------------------------- */
+    fun motion() {
+        if(isListening()) onMotion()
+    }
 
-	protected open fun onTick() {}
-	protected open fun onMotion() {}
-	protected open fun onRenderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {}
-	protected open fun onRenderWorld(delta: Float, renderer: Renderer.State) {}
+    fun renderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
+        if(isListening()) onRenderHud(delta, buffers, matrixStack)
+    }
 
-	protected open fun onEnable() {}
-	protected open fun onDisable() {}
+    fun renderWorld(delta: Float, state: Renderer.State) {
+        if(isListening()) onRenderWorld(delta, state)
+    }
+
+    /* ---------------------------------------------------------------------- */
+
+    protected open fun onTick() {}
+    protected open fun onMotion() {}
+    protected open fun onRenderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {}
+    protected open fun onRenderWorld(delta: Float, renderer: Renderer.State) {}
+
+    protected open fun onEnable() {}
+    protected open fun onDisable() {}
 }

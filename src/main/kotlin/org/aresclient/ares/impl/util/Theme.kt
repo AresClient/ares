@@ -8,12 +8,8 @@ data class Theme(val primary: ColorSetting, val secondary: ColorSetting, val bac
     companion object {
         private val SETTING = Ares.SETTINGS.addGroup("Theme")
         private val THEME = Theme(
-            SETTING.addColor("Primary",
-                Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)
-            ),
-            SETTING.addColor("Secondary",
-                Color(0.09803922f, 0.09803922f, 0.09803922f, 1f)
-            ),
+            SETTING.addColor("Primary", Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)),
+            SETTING.addColor("Secondary", Color(0.09803922f, 0.09803922f, 0.09803922f, 1f)),
             SETTING.addColor("Background", Color(0f, 0f, 0f, 0.9f)),
             SETTING.addColor("Lightground", Color.WHITE)
         )

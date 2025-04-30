@@ -13,7 +13,7 @@ public class BlurFramebuffer extends CustomFramebuffer {
     private static final Buffer BUFFER = Buffer
             .createStatic(SHADER, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
-                    1, 1, 0,    1, 1,
+                    1, 1, 0,          1, 1,
                     1, -1, 0,         1, 0,
                     -1, 1, 0,         0, 1,
                     -1, -1, 0,        0, 0

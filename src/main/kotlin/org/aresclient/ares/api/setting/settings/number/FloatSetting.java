@@ -10,7 +10,7 @@ public class FloatSetting extends NumberSetting<Float> {
 
     @Override
     public void setValue(Float value) {
-        if (getPrecision() != null) {
+        if(getPrecision() != null) {
             int scale = (int) Math.pow(10, getPrecision());
             value = (float) Math.round(value * scale) / scale;
         }

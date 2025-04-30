@@ -3,17 +3,17 @@ package org.aresclient.ares.impl.gui.game
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.StaticElement
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.impl.util.RenderHelper
-import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
+import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
 
 val DEFAULT_ICON =
     Texture(NavigationBar::class.java.getResourceAsStream("/assets/ares/textures/icons/gears.png"))
 
-class NavigationBar(private val windowManager:WindowManager, private val scale: Float): StaticElement() {
+class NavigationBar(private val windowManager: WindowManager, private val scale: Float): StaticElement() {
     val padding = scale / 6f
 
     init {
@@ -58,9 +58,11 @@ class NavigationBar(private val windowManager:WindowManager, private val scale: 
         super.draw(theme, buffers, matrixStack, mouseX, mouseY, delta)
     }
 
-    private class NavButton(private val navigationBar:NavigationBar, index: Int, private val category: Module.Category?):
-			Button((navigationBar.scale - 12 + navigationBar.padding) * index + navigationBar.padding, (navigationBar.scale / 2) - (navigationBar.scale - 12) / 2,
-        navigationBar.scale - 12, navigationBar.scale - 12, clipping = Clipping.NONE) {
+    private class NavButton(private val navigationBar: NavigationBar, index: Int, private val category: Module.Category?):
+        Button(
+            (navigationBar.scale - 12 + navigationBar.padding) * index + navigationBar.padding, (navigationBar.scale / 2) - (navigationBar.scale - 12) / 2,
+            navigationBar.scale - 12, navigationBar.scale - 12, clipping = Clipping.NONE
+        ) {
 
         private var open = false
 

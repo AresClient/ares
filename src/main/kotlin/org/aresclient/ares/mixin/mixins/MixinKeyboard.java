@@ -14,18 +14,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Keyboard.class)
 public class MixinKeyboard implements JWrapper {
-    @Unique private static IntArraySet pressed = new IntArraySet();
+    @Unique private static final IntArraySet pressed = new IntArraySet();
 
     @Inject(method = "onKey", at = @At("HEAD"), cancellable = true)
     public void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(action == 0) {
-                if (EVENTS.post(new InputEvent.Keyboard.Released(key)).isCancelled()) ci.cancel();
+                if(EVENTS.post(new InputEvent.Keyboard.Released(key)).isCancelled()) ci.cancel();
                 pressed.remove(key);
             } else {
                 var isRepeat = pressed.contains(key);
-                if (EVENTS.post(new InputEvent.Keyboard.Pressed(key, isRepeat)).isCancelled()) ci.cancel();
-                if (!isRepeat) pressed.add(key);
+                if(EVENTS.post(new InputEvent.Keyboard.Pressed(key, isRepeat)).isCancelled()) ci.cancel();
+                if(!isRepeat) pressed.add(key);
             }
         }
     }

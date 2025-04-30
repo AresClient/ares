@@ -1,7 +1,7 @@
 package org.aresclient.ares.impl.gui.title
 
-import org.aresclient.ares.api.render.*
 import org.aresclient.ares.api.gui.Button
+import org.aresclient.ares.api.render.*
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import kotlin.math.min

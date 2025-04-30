@@ -62,8 +62,8 @@ public class Texture {
 
         // allocate buffer to create color data
         ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * 4);
-        for(int y = 0; y < image.getHeight(); y++){
-            for(int x = 0; x < image.getWidth(); x++){
+        for(int y = 0; y < image.getHeight(); y++) {
+            for(int x = 0; x < image.getWidth(); x++) {
                 int pixel = pixels[y * image.getWidth() + x];
                 buffer.put((byte) ((pixel >> 16) & 0xFF));
                 buffer.put((byte) ((pixel >> 8) & 0xFF));

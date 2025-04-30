@@ -20,7 +20,7 @@ object TargetSettings: Component.Settings<CrystalAura>(CrystalAura, "Target") {
     val boss = settings.addBoolean("Boss", true)
 
     val target_priority = settings
-    .addEnum("Target Priority", TargetPriority.MOST_DAMAGE)
+        .addEnum("Target Priority", TargetPriority.MOST_DAMAGE)
 
     enum class TargetPriority {
         CLOSEST,

@@ -11,12 +11,12 @@ object AresSkybox {
 
     fun update(width: Float, height: Float) {
         SKYBOX_STACK
-					.projection().setPerspective(1.5f, width / height, 0.1f, 2f)
+            .projection().setPerspective(1.5f, width / height, 0.1f, 2f)
     }
 
     fun draw(delta: Float) {
         SKYBOX.render(SKYBOX_STACK)
         SKYBOX_STACK
-					.model().rotate((0.0002 * delta).toFloat(), 0f, 1f, 0f)
+            .model().rotate((0.0002 * delta).toFloat(), 0f, 1f, 0f)
     }
 }

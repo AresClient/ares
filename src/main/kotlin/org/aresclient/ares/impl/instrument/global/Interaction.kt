@@ -4,7 +4,6 @@ import org.aresclient.ares.api.instruments.Global
 import org.aresclient.ares.api.instruments.Prioritizer
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.setting.SettingGroup
-import org.aresclient.ares.api.setting.settings.number.NumberSetting
 import kotlin.math.ceil
 
 interface Placer: Prioritizer {

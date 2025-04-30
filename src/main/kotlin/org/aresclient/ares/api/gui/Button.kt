@@ -8,7 +8,8 @@ import kotlin.math.min
 
 abstract class Button(
     x: Float, y: Float, width: Float, height: Float, private var action: (Button) -> Unit = {},
-    private val clipping: Clipping = Clipping.STENCIL, private val ref: Int = 1): StaticElement(x, y, width, height) {
+    private val clipping: Clipping = Clipping.STENCIL, private val ref: Int = 1
+): StaticElement(x, y, width, height) {
     enum class Clipping {
         STENCIL,
         SCISSOR,
@@ -28,7 +29,7 @@ abstract class Button(
                 1, 2, 3
             )
     }
-    
+
     protected var hovering = false
     protected var hoverSince = 0L
 

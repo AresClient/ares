@@ -39,7 +39,8 @@ object FriendUtil: Wrapper {
         }
     }
 
-    data class ProfileLookupResponse(val id: String, val name: String)
+    private data class ProfileLookupResponse(val id: String, val name: String)
+
     fun getProfileByName(name: String): GameProfile? {
         val profile = MC.networkHandler?.playerList?.find { it.profile.name == name }?.profile
         if(profile != null) return profile

@@ -1,11 +1,11 @@
 package org.aresclient.ares.impl.gui.game.setting
 
-import org.aresclient.ares.impl.gui.game.SettingElement
-import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.number.*
+import org.aresclient.ares.impl.gui.game.SettingElement
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.abs
 import kotlin.math.max
@@ -15,7 +15,7 @@ import kotlin.math.min
 abstract class NumberElement<T: Number>(setting: NumberSetting<T>, scale: Float): SettingElement<NumberSetting<T>>(setting, scale) {
     // 0 = max && min != null    1 = max && min == null
     // 2 = min == null           3 = max == null
-    protected val mode = if(setting.max == null || setting.min == null) (if(setting.min == null) (if(setting.max == null) 1 else 2) else 3 ) else 0
+    protected val mode = if(setting.max == null || setting.min == null) (if(setting.min == null) (if(setting.max == null) 1 else 2) else 3) else 0
 
     private var mouse = false
     private var time = 0L
@@ -66,7 +66,7 @@ abstract class NumberElement<T: Number>(setting: NumberSetting<T>, scale: Float)
                 vertices(
                     0f, getHeight() - 2, 0f, 3f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
                     (setting.value.toFloat() - setting.min!!.toFloat()) / (setting.max!!.toFloat() - setting.min.toFloat()) * getWidth(), getHeight() - 2, 0f, 3f,
-                        theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                    theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
                 )
                 indices(0, 1)
             }

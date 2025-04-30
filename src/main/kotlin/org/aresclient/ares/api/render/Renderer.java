@@ -155,7 +155,7 @@ public class Renderer implements JWrapper {
         GpuTexture gpuTexture = framebuffer.getColorAttachment();
         GpuTexture gpuTexture2 = framebuffer.getDepthAttachment();
         GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER,
-                ((GlTexture)gpuTexture).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), gpuTexture2));
+                ((GlTexture) gpuTexture).getOrCreateFramebuffer(((GlBackend) RenderSystem.getDevice()).getFramebufferManager(), gpuTexture2));
         GlStateManager._viewport(0, 0, gpuTexture.getWidth(0), gpuTexture.getHeight(0));
 
         State state = new State(
