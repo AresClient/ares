@@ -1,7 +1,7 @@
 package org.aresclient.ares.impl.gui.title
 
-import org.aresclient.ares.api.render.*
 import org.aresclient.ares.api.gui.Button
+import org.aresclient.ares.api.render.*
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
@@ -19,7 +19,7 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
             .vertices(
                 WIDTH + 1, HEIGHT + 1, 0f, 1f, 1f, 0f, 0f, 0f, 0.4f,
                 WIDTH + 1, 1f, 0f, 1f, -1f, 0f, 0f, 0f, 0.4f,
-                -1f,  HEIGHT + 1, 0f, -1f, 1f, 0f, 0f, 0f, 0.4f,
+                -1f, HEIGHT + 1, 0f, -1f, 1f, 0f, 0f, 0f, 0.4f,
                 -1f, 1f, 0f, -1f, -1f, 0f, 0f, 0f, 0.4f
             )
             .indices(
@@ -42,13 +42,13 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
                 // outline
                 WIDTH, HEIGHT, 0f, 1f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
                 WIDTH, 0f, 0f, 1f, -1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                0f,  HEIGHT, 0f, -1f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
+                0f, HEIGHT, 0f, -1f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
                 0f, 0f, 0f, -1f, -1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
 
                 // inner
                 WIDTH - 1, HEIGHT - 1, 0f, 1f, 1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
                 WIDTH - 1, 1f, 0f, 1f, -1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
-                1f,  HEIGHT - 1, 0f, -1f, 1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
+                1f, HEIGHT - 1, 0f, -1f, 1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
                 1f, 1f, 0f, -1f, -1f, theme.secondary.value.red, theme.secondary.value.green, theme.secondary.value.blue, theme.secondary.value.alpha,
             )
             indices(
@@ -67,7 +67,7 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
                 vertices(
                     (WIDTH - 1) * factor, HEIGHT - 1, 0f, 1f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, 0.6f,
                     (WIDTH - 1) * factor, 1f, 0f, 1f, -1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, 0.6f,
-                    1f,  HEIGHT - 1, 0f, -1f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, 0.6f,
+                    1f, HEIGHT - 1, 0f, -1f, 1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, 0.6f,
                     1f, 1f, 0f, -1f, -1f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, 0.6f
                 )
                 indices(

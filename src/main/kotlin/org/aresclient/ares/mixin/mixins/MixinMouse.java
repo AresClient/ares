@@ -14,13 +14,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Mouse.class)
 public class MixinMouse implements JWrapper {
-    @Unique private double realX = -1;
+    /*@Unique private double realX = -1;
     @Unique private double realY = -1;
 
     @Shadow private double cursorDeltaX;
-    @Shadow private double cursorDeltaY;
+    @Shadow private double cursorDeltaY;*/
 
-    @Unique private static IntArraySet pressed = new IntArraySet();
+    @Unique private static final IntArraySet pressed = new IntArraySet();
 
     @Inject(method = "onMouseButton", at = @At("HEAD"))
     public void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
@@ -31,7 +31,7 @@ public class MixinMouse implements JWrapper {
             } else {
                 var isRepeat = pressed.contains(button);
                 EVENTS.post(new InputEvent.Mouse.Pressed(button, isRepeat));
-                if (!isRepeat) pressed.add(button);
+                if(!isRepeat) pressed.add(button);
             }
         }
     }

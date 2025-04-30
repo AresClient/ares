@@ -10,7 +10,7 @@ public class IntegerSetting extends NumberSetting<Integer> {
 
     @Override
     public void setValue(Integer value) {
-        if (getPrecision() != null) {
+        if(getPrecision() != null) {
             int scale = (int) Math.pow(10, getPrecision());
             value = (int) Math.round(value.doubleValue() / scale) * scale;
         }

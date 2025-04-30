@@ -17,8 +17,8 @@ public class EnumSetting<T extends Enum<?>> extends Setting<T> {
 
     @Override
     public void setValue(T value) {
-        for (java.util.Map.Entry<T, Pair<Supplier<Boolean>, String>> restriction : restrictions.entrySet()) {
-            if (value == restriction.getKey() && restriction.getValue().getFirst().get()) {
+        for(java.util.Map.Entry<T, Pair<Supplier<Boolean>, String>> restriction: restrictions.entrySet()) {
+            if(value == restriction.getKey() && restriction.getValue().getFirst().get()) {
                 // TODO: Error Message - "Error setting Enum value: " + restriction.getValue().getSecond()
                 return;
             }

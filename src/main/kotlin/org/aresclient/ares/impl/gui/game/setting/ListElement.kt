@@ -5,8 +5,8 @@ import org.aresclient.ares.impl.gui.game.DropDownSettingElement
 import org.aresclient.ares.impl.gui.game.SettingsContent
 import org.aresclient.ares.impl.gui.game.SettingsGroup
 
-class ListElement(private val content:SettingsContent, setting: ListSetting, private val scale: Float):
-	DropDownSettingElement<ListSetting>(setting, scale) {
+class ListElement(private val content: SettingsContent, setting: ListSetting, private val scale: Float):
+    DropDownSettingElement<ListSetting>(setting, scale) {
     init {
         pushChild(SettingElementButton(this) {
             content.getWindow()?.open {
@@ -14,7 +14,7 @@ class ListElement(private val content:SettingsContent, setting: ListSetting, pri
                 SettingsContent::class.java
             }
         })
-        element = SettingsGroup(setting, 1, content,  settingHeight = scale * 0.87f)
+        element = SettingsGroup(setting, 1, content, settingHeight = scale * 0.87f)
     }
 
     override fun change() {

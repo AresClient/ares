@@ -2,9 +2,9 @@ package org.aresclient.ares.impl.gui.game.setting
 
 import dev.tigr.simpleevents.listener.EventListener
 import org.aresclient.ares.api.events.InputEvent
-import org.aresclient.ares.impl.gui.game.SettingElement
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.util.Keys
+import org.aresclient.ares.impl.gui.game.SettingElement
 import org.aresclient.ares.impl.gui.game.formatToPretty
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -44,7 +44,7 @@ class BindElement(setting: BindSetting, height: Float): SettingElement<BindSetti
                 if(event.key != Keys.ESCAPE) setting.value = event.key
                 listen(false)
             }
-        } else if (event.type == InputEvent.Type.MOUSE) {
+        } else if(event.type == InputEvent.Type.MOUSE) {
             event as InputEvent.Mouse
             if(event.state == InputEvent.Mouse.State.RELEASED) {
                 event as InputEvent.Mouse.Released

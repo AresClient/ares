@@ -10,7 +10,7 @@ import org.aresclient.ares.impl.gui.game.SettingsGroup
 import org.aresclient.ares.impl.util.Theme
 
 class MapElement(private val content: SettingsContent, setting: SettingGroup, scale: Float):
-	DropDownSettingElement<SettingGroup>(setting, scale) {
+    DropDownSettingElement<SettingGroup>(setting, scale) {
     private val enabled: Setting<Boolean>? = setting.value["Enabled"] as? BooleanSetting
 
     init {
@@ -21,7 +21,7 @@ class MapElement(private val content: SettingsContent, setting: SettingGroup, sc
                 SettingsContent::class.java
             }
         })
-        element = SettingsGroup(setting, 1, content,  enabled != null, scale * 0.87f)
+        element = SettingsGroup(setting, 1, content, enabled != null, scale * 0.87f)
     }
 
     override fun getTextColor(theme: Theme): ColorSetting = if(enabled?.value == true) theme.primary else theme.lightground

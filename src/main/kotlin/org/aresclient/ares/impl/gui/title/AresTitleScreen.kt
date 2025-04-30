@@ -73,6 +73,7 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
 
         EXIT_BUTTON.setX(getWidth() - 35f)
     }
+
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         AresSkybox.draw(delta)
 

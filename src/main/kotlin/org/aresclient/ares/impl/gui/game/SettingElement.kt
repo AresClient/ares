@@ -3,40 +3,32 @@ package org.aresclient.ares.impl.gui.game
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
-import org.aresclient.ares.impl.util.RenderHelper
-import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.aresclient.ares.impl.util.Theme
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.gui.DynamicElementGroup
 import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.instruments.Module
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.setting.SettingGroup
 import org.aresclient.ares.api.setting.settings.*
 import org.aresclient.ares.api.setting.settings.number.DoubleSetting
 import org.aresclient.ares.api.setting.settings.number.FloatSetting
 import org.aresclient.ares.api.setting.settings.number.IntegerSetting
 import org.aresclient.ares.api.setting.settings.number.LongSetting
-import org.aresclient.ares.impl.gui.game.setting.BindElement
-import org.aresclient.ares.impl.gui.game.setting.BooleanElement
-import org.aresclient.ares.impl.gui.game.setting.ColorElement
-import org.aresclient.ares.impl.gui.game.setting.DoubleElement
-import org.aresclient.ares.impl.gui.game.setting.EnumElement
-import org.aresclient.ares.impl.gui.game.setting.FloatElement
-import org.aresclient.ares.impl.gui.game.setting.IntElement
-import org.aresclient.ares.impl.gui.game.setting.ListElement
-import org.aresclient.ares.impl.gui.game.setting.LongElement
-import org.aresclient.ares.impl.gui.game.setting.MapElement
-import org.aresclient.ares.impl.gui.game.setting.StringElement
+import org.aresclient.ares.impl.gui.game.setting.*
+import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
 fun String.formatToPretty(): String =
     this.split('_').joinToString(separator = " ") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 
-class SettingsGroup(private val setting: Setting<*>, columns: Int, private val content:SettingsContent, private val skipEnabled: Boolean = false,
-                    private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
-                    width: () -> Float = { 0f }, height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
+class SettingsGroup(
+    private val setting: Setting<*>, columns: Int, private val content: SettingsContent, private val skipEnabled: Boolean = false,
+    private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
+    width: () -> Float = { 0f }, height: () -> Float = { 0f }
+): DynamicElementGroup(columns, visible, x, y, width, height) {
 
     init {
         refresh()
@@ -49,10 +41,12 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
                 if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled"))
                     pushChild(content.createSettingElement(setting, settingHeight))
             }
+
             Setting.Type.COLOR -> pushChild(ColorElement.DropDown(setting as ColorSetting, settingHeight))
             Setting.Type.LIST -> (setting as ListSetting).value.forEach {
                 pushChild(content.createSettingElement(it, settingHeight))
             }
+
             else -> throw RuntimeException("Can't open setting of type ${setting.type.name} in window")
         }
     }
@@ -61,7 +55,7 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
 class SettingsContent(settings: SettingGroup): WindowContent(settings) {
     private val name = settings.addString("setting", "")
     private val setting = Ares.SETTINGS.find(name.value)
-    private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
+    private val group = SettingsGroup(setting, 1, this, width = this::getWidth)
 
     init {
         // set icon if category
@@ -80,7 +74,7 @@ class SettingsContent(settings: SettingGroup): WindowContent(settings) {
 
     override fun getHeight() = group.getHeight()
 
-    fun createSettingElement(setting: Setting<*>, settingHeight: Float = 18f):SettingElement<*> = when(setting.type) {
+    fun createSettingElement(setting: Setting<*>, settingHeight: Float = 18f): SettingElement<*> = when(setting.type) {
         Setting.Type.BOOLEAN -> BooleanElement(setting as BooleanSetting, settingHeight)
         Setting.Type.ENUM -> EnumElement(setting as EnumSetting<*>, settingHeight)
         Setting.Type.BIND -> BindElement(setting as BindSetting, settingHeight)
@@ -97,7 +91,7 @@ class SettingsContent(settings: SettingGroup): WindowContent(settings) {
 }
 
 open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
-    protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
+    protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f / 18f)
     private var prev = setting.value
 
     init {
@@ -168,8 +162,10 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
         }
     }
 
-    protected class SettingElementButton(private val element:SettingElement<*>, action: (Button) -> Unit): Button(0f, 0f, 0f, 0f,
-        action, Clipping.SCISSOR) {
+    protected class SettingElementButton(private val element: SettingElement<*>, action: (Button) -> Unit): Button(
+        0f, 0f, 0f, 0f,
+        action, Clipping.SCISSOR
+    ) {
         override fun getWidth(): Float = element.getWidth()
         override fun getHeight(): Float = element.getHeight()
 
@@ -178,10 +174,10 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     }
 
     protected abstract class SettingSubButton(scale: Float, action: (Button) -> Unit, size: Float = 0.7f, clipping: Clipping = Clipping.STENCIL):
-			Button(0f, scale * (1 - size) / 2f, scale * size, scale * size, action, clipping, 2) {
+        Button(0f, scale * (1 - size) / 2f, scale * size, scale * size, action, clipping, 2) {
         private val offset = (1f - size) / 2f
 
-        override fun getX(): Float = getParent()?.getWidth()?.let { it - getY() - getWidth()  } ?: 0f
+        override fun getX(): Float = getParent()?.getWidth()?.let { it - getY() - getWidth() } ?: 0f
     }
 
     protected abstract class SettingSubToggleButton(scale: Float): SettingSubButton(scale, {
@@ -228,6 +224,7 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
 }
 
 private const val DROPDOWN_PADDING = 1f
+
 abstract class DropDownSettingElement<T: Setting<*>>(setting: T, private val scale: Float): SettingElement<T>(setting, scale, scale) {
     protected var element: DynamicElement? = null
         set(value) {

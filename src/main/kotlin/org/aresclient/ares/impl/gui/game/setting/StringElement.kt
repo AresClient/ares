@@ -22,8 +22,8 @@ class StringElement(setting: StringSetting, scale: Float): SettingElement<String
         textBox.setText(setting.value)
     }
 
-    private class SettingTextBox(private val element:StringElement, size: Float = 0.7f):
-			TextBox(0f, 0f, 75f, element.fontRenderer.fontSize * size, 1, horizPadFactor = 0.2f) {
+    private class SettingTextBox(private val element: StringElement, size: Float = 0.7f):
+        TextBox(0f, 0f, 75f, element.fontRenderer.fontSize * size, 1, horizPadFactor = 0.2f) {
         private val offset = (1f - size) / 2f
         private val left = element.fontRenderer.getStringWidth(element.setting.name) + 6f
 

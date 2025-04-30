@@ -12,8 +12,8 @@ import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.util.EntityUtil.getTargetColor
 import org.aresclient.ares.impl.util.EntityUtil.isTarget
-import org.aresclient.ares.impl.util.RenderUtil
 import org.aresclient.ares.impl.util.RenderPipelines
+import org.aresclient.ares.impl.util.RenderUtil
 import java.util.*
 
 // TODO: FIX DEPTH ON OUTLINE ESP
@@ -36,22 +36,24 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
     fun shouldRenderOutline() = isEnabled() && mode.value == Mode.OUTLINE
     fun shouldRenderOutline(entity: Entity) =
         shouldRenderOutline() && entity.isTarget(
-            players.value,friends.value, teammates.value, passive.value,
+            players.value, friends.value, teammates.value, passive.value,
             hostile.value, items.value, nametagged.value, bots.value
         )
 
     override fun onRenderWorld(delta: Float, renderer: Renderer.State) {
         if(mode.value != Mode.BOX) return
-        MC.world?.entities?.filter { it.isTarget(
-                players.value,friends.value, teammates.value, passive.value,
+        MC.world?.entities?.filter {
+            it.isTarget(
+                players.value, friends.value, teammates.value, passive.value,
                 hostile.value, items.value, nametagged.value, bots.value
-        ) }?.forEach { entity ->
-           if(entity != MC.player) {
-               val box = entity.getInterpolatedBoundingBox(delta)
-               val color = getEntityColor(entity)
-               RenderUtil.Lines.box(box, color, 1f)
-               RenderUtil.Fill.box(box, color.deriveAlpha(0.2f))
-           }
+            )
+        }?.forEach { entity ->
+            if(entity != MC.player) {
+                val box = entity.getInterpolatedBoundingBox(delta)
+                val color = getEntityColor(entity)
+                RenderUtil.Lines.box(box, color, 1f)
+                RenderUtil.Fill.box(box, color.deriveAlpha(0.2f))
+            }
         }
     }
 
@@ -81,15 +83,15 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
             val gpuBuffer = shapeIndexBuffer.getIndexBuffer(6)
             val gpuBuffer2 = RenderSystem.getQuadVertexBuffer()
             RenderSystem.getDevice().createCommandEncoder().createRenderPass(MC.framebuffer.colorAttachment, OptionalInt.empty())
-            .use { renderPass ->
-                renderPass.setPipeline(RenderPipelines.outline)
-                renderPass.setVertexBuffer(0, gpuBuffer2)
-                renderPass.setIndexBuffer(gpuBuffer, shapeIndexBuffer.indexType)
-                renderPass.bindSampler("theTexture", framebuffer.colorAttachment)
-                renderPass.setUniform("viewportSize", MC.framebuffer.textureWidth.toFloat(), MC.framebuffer.textureHeight.toFloat())
-                renderPass.setUniform("lineWeight", 1f)
-                renderPass.drawIndexed(0, 6)
-            }
+                .use { renderPass ->
+                    renderPass.setPipeline(RenderPipelines.outline)
+                    renderPass.setVertexBuffer(0, gpuBuffer2)
+                    renderPass.setIndexBuffer(gpuBuffer, shapeIndexBuffer.indexType)
+                    renderPass.bindSampler("theTexture", framebuffer.colorAttachment)
+                    renderPass.setUniform("viewportSize", MC.framebuffer.textureWidth.toFloat(), MC.framebuffer.textureHeight.toFloat())
+                    renderPass.setUniform("lineWeight", 1f)
+                    renderPass.drawIndexed(0, 6)
+                }
             RenderSystem.getDevice().createCommandEncoder().clearColorAndDepthTextures(framebuffer.colorAttachment, 0, framebuffer.depthAttachment, 0.0)
         }
     }

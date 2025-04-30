@@ -38,7 +38,7 @@ public abstract class NumberSetting<T extends Number> extends Setting<T> {
     }
 
     public org.aresclient.ares.api.setting.settings.number.NumberSetting<T> setPrecision(java.lang.Integer precision) {
-        if (this.getValue() instanceof java.lang.Double
+        if(this.getValue() instanceof java.lang.Double
                 || this.getValue() instanceof java.lang.Float
                 || this.getValue() instanceof java.lang.Integer)
             this.precision = precision;

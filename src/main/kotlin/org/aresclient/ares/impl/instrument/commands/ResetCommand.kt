@@ -7,7 +7,7 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.instruments.Command
 
-object ResetCommand: Command("reset", ) {
+object ResetCommand: Command("reset") {
     override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
         return then(argument<IContext, String?>("setting", string()).executes {
             val path = getString(it, "setting")

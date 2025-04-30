@@ -1,9 +1,9 @@
 package org.aresclient.ares.impl.gui.game.setting
 
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.impl.gui.game.DropDownSettingElement
 import org.aresclient.ares.impl.gui.game.formatToPretty
@@ -27,7 +27,7 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSe
 
     override fun getSecondaryText() = text
 
-    class DropDown<T: Enum<*>>(val element:EnumElement<T>, scale: Float): DynamicElement() {
+    class DropDown<T: Enum<*>>(val element: EnumElement<T>, scale: Float): DynamicElement() {
         val fontRenderer = RenderHelper.getFontRenderer(scale * 0.87f)
 
         init {
@@ -42,7 +42,7 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSe
         }
     }
 
-    class EnumSelector<T: Enum<*>>(private val dropDown:DropDown<T>, private val value: T): Button(0f, 0f, 0f, 0f, {
+    class EnumSelector<T: Enum<*>>(private val dropDown: DropDown<T>, private val value: T): Button(0f, 0f, 0f, 0f, {
         dropDown.element.setting.value = value
     }, Clipping.SCISSOR) {
         private val text = value.name.formatToPretty()

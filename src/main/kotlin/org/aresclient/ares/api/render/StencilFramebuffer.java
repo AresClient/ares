@@ -9,7 +9,7 @@ public class StencilFramebuffer extends CustomFramebuffer {
     private static final Buffer BUFFER = Buffer
             .createStatic(Shader.POSITION_TEXTURE, VertexFormat.POSITION_UV, 4, 6)
             .vertices(
-                    1, 1, 0,    1, 1,
+                    1, 1, 0,          1, 1,
                     1, -1, 0,         1, 0,
                     -1, 1, 0,         0, 1,
                     -1, -1, 0,        0, 0

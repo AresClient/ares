@@ -11,6 +11,7 @@ import java.nio.FloatBuffer;
 
 public abstract class Uniform {
     private static boolean LEGACY;
+
     static {
         try {
             GL20.class.getDeclaredMethod("glUniformMatrix4fv", int.class, boolean.class, float[].class);
@@ -266,6 +267,7 @@ public abstract class Uniform {
 
     public static class Mat2f extends Uniform {
         private static Method LEGACY_METHOD;
+
         static {
             try {
                 LEGACY_METHOD = GL20.class.getMethod("glUniformMatrix2", int.class, boolean.class, FloatBuffer.class);
@@ -306,6 +308,7 @@ public abstract class Uniform {
 
     public static class Mat3f extends Uniform {
         private static Method LEGACY_METHOD;
+
         static {
             try {
                 LEGACY_METHOD = GL20.class.getMethod("glUniformMatrix3", int.class, boolean.class, FloatBuffer.class);
@@ -346,6 +349,7 @@ public abstract class Uniform {
 
     public static class Mat3x2f extends Uniform {
         private static Method LEGACY_METHOD;
+
         static {
             try {
                 LEGACY_METHOD = GL21.class.getMethod("glUniformMatrix3x2", int.class, boolean.class, FloatBuffer.class);
@@ -386,6 +390,7 @@ public abstract class Uniform {
 
     public static class Mat4f extends Uniform {
         private static Method LEGACY_METHOD;
+
         static {
             try {
                 LEGACY_METHOD = GL20.class.getMethod("glUniformMatrix4", int.class, boolean.class, FloatBuffer.class);
@@ -430,6 +435,7 @@ public abstract class Uniform {
 
     public static class Mat4x3f extends Uniform {
         private static Method LEGACY_METHOD;
+
         static {
             try {
                 LEGACY_METHOD = GL21.class.getMethod("glUniformMatrix4x3", int.class, boolean.class, FloatBuffer.class);
@@ -469,7 +475,7 @@ public abstract class Uniform {
     }
 
     private final String name;
-    private  final Shader shader;
+    private final Shader shader;
     protected final int id;
     protected boolean dirty = false;
 

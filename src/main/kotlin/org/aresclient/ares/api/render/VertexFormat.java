@@ -71,7 +71,7 @@ public class VertexFormat {
         int i = 0;
         long p = 0;
         for(Vertex vertex: vertices) {
-            GL20.glVertexAttribPointer(i, vertex.len, vertex.type.gl,  false, stride, p);
+            GL20.glVertexAttribPointer(i, vertex.len, vertex.type.gl, false, stride, p);
             GL20.glEnableVertexAttribArray(i++);
             p += (long) vertex.len * vertex.type.size;
         }
@@ -158,7 +158,7 @@ public class VertexFormat {
                     }
                 }
             }
-            return (ByteBuffer) buffer.flip();
+            return buffer.flip();
         }
     }
 }

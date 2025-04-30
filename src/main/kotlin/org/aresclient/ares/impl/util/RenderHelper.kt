@@ -20,6 +20,7 @@ object RenderHelper: Wrapper {
 
     fun getFontRenderer(size: Float, style: Int) = fontRenderers.getOrPut(style) { hashMapOf() }
         .getOrPut(size) { FontRenderer(font, size, style) }
+
     fun getFontRenderer(size: Float) = getFontRenderer(size, Font.PLAIN)
 
     inline fun Buffer.draw(matrixStack: MatrixStack? = null, callback: Buffer.() -> Unit) {

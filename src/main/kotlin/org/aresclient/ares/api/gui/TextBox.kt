@@ -1,12 +1,12 @@
 package org.aresclient.ares.api.gui
 
-import org.aresclient.ares.impl.util.RenderHelper
-import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.FontRenderer
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Keys
+import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.util.concurrent.atomic.AtomicBoolean
@@ -163,8 +163,10 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
 
     // TODO: \n support for return/enter/line feed/line break/idkwhytherearesomanynamesforit
     // returns number of lines used
-    private fun FontRenderer.runSplitString(text: String, x: Float, y: Float, wrapWidth: Float, padding: Float, rgba: FloatArray,
-                                                                                                callback: (Char, Float, Float) -> Boolean): Int {
+    private fun FontRenderer.runSplitString(
+        text: String, x: Float, y: Float, wrapWidth: Float, padding: Float, rgba: FloatArray,
+        callback: (Char, Float, Float) -> Boolean
+    ): Int {
         var lines = 1
         var currX = x
         var currY = y

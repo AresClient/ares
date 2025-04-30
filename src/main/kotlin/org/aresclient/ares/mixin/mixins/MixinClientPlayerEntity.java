@@ -35,7 +35,7 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
     @Inject(method = "move", at = @At("HEAD"), cancellable = true)
     private void onMovePlayer(MovementType type, Vec3d movement, CallbackInfo ci) {
         var event = EVENTS.post(new PlayerEvent.Move(type, MathUtil.INSTANCE.duplicate(movement)));
-        if (!event.isCancelled()) return;
+        if(!event.isCancelled()) return;
         ci.cancel();
         super.move(type, event.getMovement());
     }
