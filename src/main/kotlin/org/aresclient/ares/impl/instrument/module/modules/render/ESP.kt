@@ -2,19 +2,28 @@ package org.aresclient.ares.impl.instrument.module.modules.render
 
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
+import it.unimi.dsi.fastutil.booleans.BooleanArrayList
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.render.OutlineVertexConsumerProvider
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityType
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.setting.MapSetting
+import org.aresclient.ares.api.setting.settings.GroupedSetting
 import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.impl.util.EntityUtil.getTargetColor
-import org.aresclient.ares.impl.util.EntityUtil.isTarget
-import org.aresclient.ares.impl.util.RenderUtil
+import org.aresclient.ares.impl.util.EntityUtil
+import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
+import org.aresclient.ares.impl.util.EntityUtil.TargetType
+import org.aresclient.ares.impl.util.EntityUtil.playerThreat
 import org.aresclient.ares.impl.util.RenderPipelines
+import org.aresclient.ares.impl.util.RenderUtil
 import java.util.*
+import java.util.function.Supplier
+import kotlin.collections.Set
 
 // TODO: FIX DEPTH ON OUTLINE ESP
 // TODO: MAKE THIS MORE CUSTOMIZABLE + FRIENDS
@@ -23,35 +32,82 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
     private val mode = settings.addEnum("Mode", Mode.OUTLINE)
 
-    private val players = settings.addBoolean("Players", true)
-    private val friends = settings.addBoolean("Friends", true).setVisibility(players::getValue)
-    private val teammates = settings.addBoolean("Teammates", true).setVisibility(players::getValue)
-    private val passive = settings.addBoolean("Passive", true)
-    private val hostile = settings.addBoolean("Hostile", true)
-    private val items = settings.addBoolean("Items", true)
-    private val nametagged = settings.addBoolean("Nametagged", true)
-    private val bots = settings.addBoolean("Bots", false)
+    private class EntityGroup(color: Color, enabled: Boolean = false): MapSetting() {
+        val enabled = addBoolean("Enabled", enabled).addListener { needsRegeneration = true }
+        val line_color = addColor("Line Color", color).addListener { needsRegeneration = true }
+        val fill_color = addColor("Fill Color", color.deriveAlpha(0.2F)).addListener { needsRegeneration = true }.setVisibility { mode.value == Mode.BOX }
+    }
 
-    fun getEntityColor(entity: Entity) = entity.getTargetColor()
-    fun shouldRenderOutline() = isEnabled() && mode.value == Mode.OUTLINE
-    fun shouldRenderOutline(entity: Entity) =
-        shouldRenderOutline() && entity.isTarget(
-            players.value,friends.value, teammates.value, passive.value,
-            hostile.value, items.value, nametagged.value, bots.value
+    private val entities = settings.addMap("Entities")
+
+    private val playerThreatColors get() = PlayerThreat.entries.associateWith { Supplier { EntityGroup(it.defaultColor, it != PlayerThreat.BOT) } }
+    private val players = entities.addGroup("Players", EntityUtil.Types.player, { EntityGroup(Color.RED, true) }, playerThreatColors)
+
+    private val monsters = entities.addGroup("Monsters", EntityUtil.Types.monster, { EntityGroup(TargetType.HOSTILE.defaultColor) })
+    private val animals = entities.addGroup("Animals", EntityUtil.Types.animal, { EntityGroup(TargetType.PASSIVE.defaultColor) })
+    private val miscellaneous = entities.addGroup("Miscellaneous", EntityUtil.Types.miscellaneous, { EntityGroup(TargetType.OTHER.defaultColor) },
+        mapOf(
+            Pair(EntityType.ITEM, Supplier { EntityGroup(TargetType.ITEM.defaultColor) }),
+            Pair(EntityType.END_CRYSTAL, Supplier { EntityGroup(TargetType.END_CRYSTAL.defaultColor, true) })
         )
+    )
+
+    private var needsRegeneration = true
+    private val typeIndex = LinkedHashSet<Any>()
+    private val shouldRender = BooleanArrayList()
+    private val lines = ArrayList<Color>()
+    private val fills = ArrayList<Color>()
+
+    // Felt like I was losing a few fps directly checking the settings every frame
+    // So I'm indexing it and only regenerating when the value changes for good measure
+    private fun buildTypeIndex() {
+        if (!needsRegeneration) return
+
+        typeIndex.clear()
+        shouldRender.clear()
+        lines.clear()
+        fills.clear()
+
+        EntityUtil.Types.player.populateIndex(players)
+        EntityUtil.Types.monster.populateIndex(monsters)
+        EntityUtil.Types.animal.populateIndex(animals)
+        EntityUtil.Types.miscellaneous.populateIndex(miscellaneous)
+
+        needsRegeneration = false
+    }
+
+    private fun <T: Any> Set<T>.populateIndex(group: GroupedSetting<T, EntityGroup>) {
+        for (type in this) {
+            val map = group.getValue(type)
+            typeIndex.add(type)
+            shouldRender.add(map.enabled.value)
+            lines.add(map.line_color.value)
+            fills.add(map.fill_color.value)
+        }
+    }
+
+    private val Entity.index get() =
+        if (type == EntityType.PLAYER) typeIndex.indexOf((this as PlayerEntity).playerThreat)
+        else typeIndex.indexOf(type)
+
+    fun getEntityColor(entity: Entity): Color = lines[entity.index]
+
+    fun shouldRenderOutline() = isEnabled() && mode.value == Mode.OUTLINE
+
+    @JvmStatic fun shouldRenderOutline(entity: Entity) =
+        shouldRenderOutline() && entity.index != -1 && shouldRender.getBoolean(entity.index)
 
     override fun onRenderWorld(delta: Float, renderer: Renderer.State) {
+        buildTypeIndex()
         if(mode.value != Mode.BOX) return
-        MC.world?.entities?.filter { it.isTarget(
-                players.value,friends.value, teammates.value, passive.value,
-                hostile.value, items.value, nametagged.value, bots.value
-        ) }?.forEach { entity ->
-           if(entity != MC.player) {
-               val box = entity.getInterpolatedBoundingBox(delta)
-               val color = getEntityColor(entity)
-               RenderUtil.Lines.box(box, color, 1f)
-               RenderUtil.Fill.box(box, color.deriveAlpha(0.2f))
-           }
+        WORLD.entities?.forEach { entity ->
+            if (entity == SELF) return@forEach
+
+            val i = entity.index
+            if (!shouldRender.getBoolean(i)) return@forEach
+            val box = entity.getInterpolatedBoundingBox(delta)
+            RenderUtil.Lines.box(box, lines[i], 2F)
+            RenderUtil.Fill.box(box, fills[i])
         }
     }
 

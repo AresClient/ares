@@ -2,10 +2,13 @@ package org.aresclient.ares.impl.util
 
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityType
 import net.minecraft.entity.ItemEntity
+import net.minecraft.entity.SpawnGroup.*
 import net.minecraft.entity.mob.Monster
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.Registries
 import net.minecraft.util.math.Vec2f
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.util.Color
@@ -26,46 +29,80 @@ object EntityUtil: Wrapper {
 		this.pitch = pitch
 	}
 
+	interface Target {
+		val defaultColor: Color
+	}
+
+	enum class PlayerThreat(private val color: Color): Target {
+		FRIEND(Color.CYAN),
+		TEAM(Color.GREEN),
+		HOSTILE(Color.RED),
+		BOT(Color.BLACK);
+
+		override val defaultColor: Color get() = color
+	}
+
+	object Types {
+		val player: Set<PlayerThreat>
+		val monster: Set<EntityType<*>>
+		val animal: Set<EntityType<*>>
+		val miscellaneous: Set<EntityType<*>>
+
+		init {
+			val monsterTemp = HashSet<EntityType<*>>()
+			val animalTemp = HashSet<EntityType<*>>()
+			val miscellaneousTemp = HashSet<EntityType<*>>()
+
+			Registries.ENTITY_TYPE.forEach {
+				when (it.spawnGroup) {
+					MONSTER -> monsterTemp.add(it)
+					CREATURE, WATER_CREATURE, UNDERGROUND_WATER_CREATURE, AXOLOTLS, AMBIENT, WATER_AMBIENT -> animalTemp.add(it)
+					MISC -> if (it != EntityType.PLAYER) miscellaneousTemp.add(it)
+				}
+			}
+
+			player = PlayerThreat.entries.toSet()
+			monster = monsterTemp.toSet()
+			animal = animalTemp.toSet()
+			miscellaneous = miscellaneousTemp.toSet()
+		}
+	}
+
 	fun Entity.isFriend(): Boolean = this is PlayerEntity && FriendUtil.isFriend(this.gameProfile)
 
 	fun Entity.isBot(): Boolean = this is PlayerEntity && isInvisibleTo(MC.player) && !isOnGround && !collidesWith(MC.player)
 
-	enum class TargetType {
-		SELF, PLAYER, FRIEND, TEAMMATE, PASSIVE, HOSTILE, ITEM, BOT, OTHER;
+	enum class TargetType(private val color: Color): Target {
+		SELF(Color.WHITE),
+		PASSIVE(Color.YELLOW),
+		HOSTILE(Color.BLUE),
+		ITEM(Color.WHITE),
+		END_CRYSTAL(Color.MAGENTA),
+		OTHER(Color.GRAY);
+
+		override val defaultColor: Color get() = color
 	}
 
-	fun Entity.getTargetType(): TargetType {
-		if(this == MC.player) return TargetType.SELF
+	val Entity.targetType: Target get() {
+		if(this == SELF) return TargetType.SELF
 		return when(this) {
 			is ItemEntity -> TargetType.ITEM
 			is PassiveEntity -> TargetType.PASSIVE
 			is Monster -> TargetType.HOSTILE
-			is PlayerEntity -> {
-				return if(isFriend()) TargetType.FRIEND
-				else if(isBot()) TargetType.BOT
-				else if(scoreboardTeam != null && scoreboardTeam == MC.player?.scoreboardTeam) TargetType.TEAMMATE
-				else TargetType.PLAYER
-			}
+			is PlayerEntity -> playerThreat
 			else -> TargetType.OTHER
 		}
 	}
 
-	fun Entity.getTargetColor(): Color {
-		return when(getTargetType()) {
-			TargetType.SELF -> Color.WHITE
-			TargetType.PLAYER -> Color.BLUE
-			TargetType.FRIEND -> Color.rainbow()
-			TargetType.TEAMMATE -> Color.rainbow()
-			TargetType.PASSIVE -> Color.GREEN
-			TargetType.HOSTILE -> Color.RED
-			TargetType.ITEM -> Color.WHITE
-			TargetType.BOT -> Color.BLACK
-			TargetType.OTHER -> Color.WHITE
-		}
+	val PlayerEntity.playerThreat: PlayerThreat get() {
+		return if (scoreboardTeam != null && scoreboardTeam == SELF.scoreboardTeam) PlayerThreat.TEAM
+		else if (isFriend()) PlayerThreat.FRIEND
+		else if (isBot()) PlayerThreat.BOT
+		else PlayerThreat.HOSTILE
 	}
 
 	fun Entity.isTarget(players: Boolean, friends: Boolean, teammates: Boolean, passive: Boolean, hostile: Boolean, items: Boolean, nametagged: Boolean, bots: Boolean): Boolean {
-		if(this == MC.player) return false
+		if(this == SELF) return false
 		if(hasCustomName() && nametagged) return true
 		return when(this) {
 			is ItemEntity -> items
