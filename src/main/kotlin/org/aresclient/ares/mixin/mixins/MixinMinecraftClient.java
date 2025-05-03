@@ -3,9 +3,11 @@ package org.aresclient.ares.mixin.mixins;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.entity.Entity;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.*;
+import org.aresclient.ares.impl.instrument.module.modules.render.ESP;
 import org.aresclient.ares.impl.util.RenderPipelines;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,6 +15,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(MinecraftClient.class)
 public class MixinMinecraftClient implements JWrapper {
@@ -51,5 +54,11 @@ public class MixinMinecraftClient implements JWrapper {
     @Inject(method = "stop", at = @At("HEAD"))
     public void preStop(CallbackInfo ci) {
         EVENTS.post(new ShutdownEvent());
+    }
+
+    // ESP outline mode rendering
+    @Inject(method = "hasOutline", at = @At("HEAD"), cancellable = true)
+    public void hasOutline(Entity entity, CallbackInfoReturnable<Boolean> cir) {
+        if(ESP.INSTANCE.shouldRenderOutline(entity)) cir.setReturnValue(true);
     }
 }

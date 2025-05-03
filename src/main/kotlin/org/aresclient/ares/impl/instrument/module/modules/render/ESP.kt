@@ -94,7 +94,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
     fun shouldRenderOutline() = isEnabled() && mode.value == Mode.OUTLINE
 
-    @JvmStatic fun shouldRenderOutline(entity: Entity) =
+    fun shouldRenderOutline(entity: Entity) =
         shouldRenderOutline() && entity.index != -1 && shouldRender.getBoolean(entity.index)
 
     override fun onRenderWorld(delta: Float, renderer: Renderer.State) {

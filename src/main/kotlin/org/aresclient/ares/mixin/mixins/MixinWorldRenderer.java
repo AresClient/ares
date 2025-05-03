@@ -1,6 +1,5 @@
 package org.aresclient.ares.mixin.mixins;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Handle;
@@ -25,12 +24,16 @@ public abstract class MixinWorldRenderer {
     // begin outline ESP outline implementation
     // see also MixinEntity
 
-    @Shadow @Final private MinecraftClient client;
     @Shadow private Framebuffer entityOutlineFramebuffer;
     @Final @Shadow private DefaultFramebufferSet framebufferSet;
 
     @Unique Framebuffer prevFramebuffer;
     @Unique Handle<Framebuffer> prevFramebufferHandle;
+
+    @Inject(method = "getEntitiesToRender", at = @At("TAIL"), cancellable = true)
+    private void getEntitiesToRender(CallbackInfoReturnable<Boolean> cir) {
+        if(ESP.INSTANCE.shouldRenderOutline()) cir.setReturnValue(true);
+    }
 
     @Inject(method = "renderEntities", at = @At("HEAD"))
     public void renderEntitiesPre(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci) {
@@ -45,7 +48,7 @@ public abstract class MixinWorldRenderer {
     @ModifyArgs(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"))
     public void dispatchRenderEntity(Args args) {
         Entity entity = args.get(0);
-        if(ESP.shouldRenderOutline(entity)) {
+        if(ESP.INSTANCE.shouldRenderOutline(entity)) {
             ESP.Outliner.INSTANCE.setColor(ESP.INSTANCE.getEntityColor(entity));
             args.set(6, ESP.Outliner.INSTANCE.getVertexConsumerProvider());
         }
@@ -56,11 +59,6 @@ public abstract class MixinWorldRenderer {
         if(ESP.INSTANCE.shouldRenderOutline()) ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
     }
 
-    /*@Inject(method = "renderEntity", at = @At("TAIL"))
-    public void renderEntityPost(Entity entity, double cameraX, double cameraY, double cameraZ, float tickProgress, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo ci) {
-        if(ESP.INSTANCE.shouldRenderOutline(entity)) ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
-    }*/
-
     @Inject(method = "renderEntities", at = @At("TAIL"))
     public void renderEntitiesPost(CallbackInfo ci) {
         if(ESP.INSTANCE.shouldRenderOutline()) {
@@ -69,9 +67,12 @@ public abstract class MixinWorldRenderer {
         }
     }
 
-    @Inject(method = "drawEntityOutlinesFramebuffer", at = @At("TAIL"))
+    @Inject(method = "drawEntityOutlinesFramebuffer", at = @At("HEAD"), cancellable = true)
     public void drawEntityOutlineFramebuffer(CallbackInfo ci) {
-        if(ESP.INSTANCE.shouldRenderOutline()) ESP.Outliner.INSTANCE.blit();
+        if(ESP.INSTANCE.shouldRenderOutline()) {
+            ESP.Outliner.INSTANCE.blit();
+            ci.cancel();
+        }
     }
 
     @Inject(method = "onResized", at = @At("TAIL"))
