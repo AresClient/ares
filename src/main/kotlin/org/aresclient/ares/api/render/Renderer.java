@@ -186,13 +186,12 @@ public class Renderer implements JWrapper {
         return begin(matrixStack);
     }
 
-    public static State begin3d(Matrix4f bobhurt) {
+    public static State begin3d() {
         Camera camera = MC.gameRenderer.getCamera();
 
         MatrixStack matrixStack = new MatrixStack();
         matrixStack.projection()
             .set(RenderSystem.getProjectionMatrix())
-            .mul(bobhurt.invert())
             .rotate(toRadians(wrapDegrees(camera.getPitch())), 1f, 0f, 0f)
             .rotate(toRadians(wrapDegrees(camera.getYaw() + 180f)), 0f, 1f, 0f);
 

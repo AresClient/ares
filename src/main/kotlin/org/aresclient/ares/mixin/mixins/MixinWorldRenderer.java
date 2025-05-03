@@ -23,6 +23,7 @@ import java.util.List;
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {
     // begin outline ESP outline implementation
+    // see also MixinEntity
 
     @Shadow @Final private MinecraftClient client;
     @Shadow private Framebuffer entityOutlineFramebuffer;
@@ -30,16 +31,6 @@ public abstract class MixinWorldRenderer {
 
     @Unique Framebuffer prevFramebuffer;
     @Unique Handle<Framebuffer> prevFramebufferHandle;
-
-    @Inject(method = "getEntitiesToRender", at = @At("HEAD"), cancellable = true)
-    public void getEntitiesToRender(Camera camera, Frustum frustum, List<Entity> output, CallbackInfoReturnable<Boolean> cir) {
-        if(ESP.INSTANCE.shouldRenderOutline()) {
-            for(Entity entity: client.world.getEntities()) {
-                if(entity != client.player) output.add(entity);
-            }
-            cir.setReturnValue(true);
-        }
-    }
 
     @Inject(method = "renderEntities", at = @At("HEAD"))
     public void renderEntitiesPre(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci) {

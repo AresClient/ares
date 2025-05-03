@@ -4,8 +4,7 @@ import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Global
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.render.Renderer.State
 
 open class Plugin(val name: String, val description: String, val version: String, val mcVersion: String,
 				  val authors: Array<String>, val globals: List<Global> = emptyList(), val modules: List<Module> = emptyList(),
@@ -22,11 +21,11 @@ open class Plugin(val name: String, val description: String, val version: String
 		modules.forEach(Module::motion)
 	}
 
-	open fun renderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
-		modules.forEach { module -> module.renderHud(delta, buffers, matrixStack) }
+	open fun renderHud(delta: Float, renderer: State) {
+		modules.forEach { module -> module.renderHud(delta, renderer) }
 	}
 
-	open fun renderWorld(delta: Float, renderer: Renderer.State) {
+	open fun renderWorld(delta: Float, renderer: State) {
 		modules.forEach { module -> module.renderWorld(delta, renderer) }
 	}
 }

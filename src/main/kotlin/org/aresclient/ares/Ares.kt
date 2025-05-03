@@ -70,12 +70,12 @@ class Ares: ModInitializer, Wrapper {
 		if(event is RenderEvent.Hud) {
 			val state = Renderer.begin2d()
 			PLUGINS.forEach { plugin ->
-				plugin.renderHud(event.tickDelta, state.buffers, state.matrixStack)
+				plugin.renderHud(event.tickDelta, state)
 			}
 			Renderer.end(state)
 		}
 		else if(event is RenderEvent.World) {
-			val state = Renderer.begin3d(event.matrix4f)
+			val state = Renderer.begin3d()
 			PLUGINS.forEach { plugin ->
 				plugin.renderWorld(event.tickDelta, state)
 			}

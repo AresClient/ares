@@ -2,7 +2,6 @@ package org.aresclient.ares.api.instruments
 
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.events.ToggleEvent
-import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
 import org.aresclient.ares.api.setting.settings.EnumSetting
@@ -122,8 +121,8 @@ abstract class Module(val category: Category, name: String, description: String,
 		if(isListening()) onMotion()
 	}
 
-	fun renderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {
-		if (isListening()) onRenderHud(delta, buffers, matrixStack)
+	fun renderHud(delta: Float, renderer: Renderer.State) {
+		if (isListening()) onRenderHud(delta, renderer)
 	}
 
 	fun renderWorld(delta: Float, state: Renderer.State) {
@@ -134,7 +133,7 @@ abstract class Module(val category: Category, name: String, description: String,
 
 	protected open fun onTick() {}
 	protected open fun onMotion() {}
-	protected open fun onRenderHud(delta: Float, buffers: Renderer.Buffers, matrixStack: MatrixStack) {}
+	protected open fun onRenderHud(delta: Float, renderer: Renderer.State) {}
 	protected open fun onRenderWorld(delta: Float, renderer: Renderer.State) {}
 
 	protected open fun onEnable() {}

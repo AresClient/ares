@@ -3,7 +3,6 @@ package org.aresclient.ares.api.events
 import net.minecraft.entity.MovementType
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
-import org.joml.Matrix4f
 
 abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$type") {
 	class Position(delta: Float, var x: Double, var y: Double, var z: Double): CameraEvent(delta, "position")
@@ -43,7 +42,7 @@ abstract class RenderEvent(val type: Type): AresEvent("render-" + type.name) {
 	enum class Type { HUD, WORLD }
 
 	class Hud(val tickDelta: Float): RenderEvent(Type.HUD)
-	class World(val tickDelta: Float, val matrix4f: Matrix4f): RenderEvent(Type.WORLD)
+	class World(val tickDelta: Float): RenderEvent(Type.WORLD)
 }
 
 class ScreenOpenedEvent(val mainMenu: Boolean): AresEvent("screen-open")
