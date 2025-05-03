@@ -5,10 +5,10 @@ import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.impl.gui.AresSkybox
 
-class AresClickGUI(settings: SettingGroup): ScreenElement("Ares ClickGUI") {
+class AresClickGUI(settings: MapSetting): ScreenElement("Ares ClickGUI") {
     private val windowManager = WindowManager(settings.addList("Windows"))
     private val navigationBar = NavigationBar(windowManager, 30f)
     private var blur: BlurFramebuffer? = null

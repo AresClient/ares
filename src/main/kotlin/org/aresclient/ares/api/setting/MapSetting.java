@@ -2,6 +2,7 @@ package org.aresclient.ares.api.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import kotlin.Function;
 import org.aresclient.ares.api.setting.settings.*;
 import org.aresclient.ares.api.setting.settings.number.DoubleSetting;
 import org.aresclient.ares.api.setting.settings.number.FloatSetting;
@@ -10,15 +11,17 @@ import org.aresclient.ares.api.setting.settings.number.LongSetting;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
-public class SettingGroup extends Setting<Map<String, Setting<?>>> {
+public class MapSetting extends Setting<Map<String, Setting<?>>> {
     private JsonObject jsonObject;
 
-    public SettingGroup() {
+    public MapSetting() {
         this(null);
     }
 
-    public SettingGroup(JsonObject jsonObject) {
+    public MapSetting(JsonObject jsonObject) {
         super(Type.MAP, new LinkedHashMap<>());
         this.jsonObject = jsonObject;
     }
@@ -49,8 +52,8 @@ public class SettingGroup extends Setting<Map<String, Setting<?>>> {
         Setting<?> curr = this;
         String[] split = path.split(":");
         for(String name: split) {
-            if(curr instanceof SettingGroup) {
-                curr = ((SettingGroup) curr).getValue().get(name);
+            if(curr instanceof MapSetting) {
+                curr = ((MapSetting) curr).getValue().get(name);
             } else if(curr instanceof ListSetting) {
                 try {
                     curr = ((ListSetting) curr).getValue().get(Integer.parseInt(name));
@@ -63,7 +66,7 @@ public class SettingGroup extends Setting<Map<String, Setting<?>>> {
         return curr;
     }
 
-    private <S extends Setting<?>> S add(S setting, String name, String... description) {
+    protected <S extends Setting<?>> S add(S setting, String name, String... description) {
         if(getValue().containsKey(name)) return (S) getValue().get(name);
         getValue().put(name, setting);
 
@@ -79,8 +82,8 @@ public class SettingGroup extends Setting<Map<String, Setting<?>>> {
         return setting;
     }
 
-    public SettingGroup addGroup(String name, String... description) {
-        return add(new SettingGroup(), name, description);
+    public MapSetting addMap(String name, String... description) {
+        return add(new MapSetting(), name, description);
     }
 
     public StringSetting addString(String name, String defaultValue, String... description) {
@@ -125,6 +128,14 @@ public class SettingGroup extends Setting<Map<String, Setting<?>>> {
 
     public ListSetting addList(String name, String... description) {
         return add(new ListSetting(), name, description);
+    }
+
+    public <T, V extends Setting<?>> GroupedSetting<T,V> addGroup(String name, Set<T> possibleKeys, Supplier<V> generalDefault, String... description) {
+        return addGroup(name, possibleKeys, generalDefault, Map.of(), description);
+    }
+
+    public <T, V extends Setting<?>> GroupedSetting<T,V> addGroup(String name, Set<T> possibleKeys, Supplier<V> generalDefault, Map<T, Supplier<V>> defaultValues, String... description) {
+        return add(new GroupedSetting<>(possibleKeys, generalDefault, defaultValues), name, description);
     }
 
     /*public <T extends EnumSetting<?>> ListSetting<T> addEnumList(Setting.Type elementType, Class<? extends Enum> enumClass, String name, T[] defaultValue, String... description) {

@@ -10,7 +10,7 @@ import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
-import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.ListSetting
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
@@ -28,8 +28,8 @@ class WindowManager(private val settings: ListSetting): StaticElement() {
         }
     }
 
-    fun <T: WindowContent> open(creator: SettingGroup.() -> Class<T>?) {
-        val map = SettingGroup()
+    fun <T: WindowContent> open(creator: MapSetting.() -> Class<T>?) {
+        val map = MapSetting()
         settings.add(map)
         pushChild(WindowElement(map, this).also {
             it.open(creator)
@@ -47,11 +47,11 @@ class WindowManager(private val settings: ListSetting): StaticElement() {
     }
 }
 
-class ErrorWindowContent(settings: SettingGroup): WindowContent(settings) {
+class ErrorWindowContent(settings: MapSetting): WindowContent(settings) {
     override fun getTitle() = "ERROR"
 }
 
-abstract class WindowContent(internal val settings: SettingGroup): StaticElement() {
+abstract class WindowContent(internal val settings: MapSetting): StaticElement() {
     private var icon = DEFAULT_ICON
 
     abstract fun getTitle(): String
@@ -66,7 +66,7 @@ abstract class WindowContent(internal val settings: SettingGroup): StaticElement
     override fun getWidth() = getParent()?.getWidth() ?: 0f
 }
 
-class WindowElement(internal val settings: SettingGroup, private val windowManager:WindowManager): DynamicElement() {
+class WindowElement(internal val settings: MapSetting, private val windowManager:WindowManager): DynamicElement() {
     private val content = settings.addList("Content")
     private val x = settings.addFloat("x", 0f)
     private val y = settings.addFloat("y", 0f)
@@ -97,8 +97,8 @@ class WindowElement(internal val settings: SettingGroup, private val windowManag
         content.value.lastOrNull()?.let { open<WindowContent>(map = it) }
     }
 
-    private fun <T: WindowContent> open(map: SettingGroup, defaults: SettingGroup.() -> Class<T>? = {null}) {
-        val data = map.addGroup("data")
+    private fun <T: WindowContent> open(map: MapSetting, defaults: MapSetting.() -> Class<T>? = {null}) {
+        val data = map.addMap("data")
         val default = defaults(data)
         val type = map.addString("class", default?.name ?: ErrorWindowContent::class.java.name)
         if(type.value == null) return
@@ -106,8 +106,8 @@ class WindowElement(internal val settings: SettingGroup, private val windowManag
         setWindow(Class.forName(type.value).constructors.firstOrNull()?.newInstance(data) as? WindowContent)
     }
 
-    fun <T: WindowContent> open(defaults: SettingGroup.() -> Class<T>? = {null}) {
-        val map = SettingGroup()
+    fun <T: WindowContent> open(defaults: MapSetting.() -> Class<T>? = {null}) {
+        val map = MapSetting()
         content.add(map)
         open(map, defaults)
     }
@@ -118,7 +118,7 @@ class WindowElement(internal val settings: SettingGroup, private val windowManag
         setWindow(content.value.lastOrNull()?.let {
             val clazz = it.addString("class", "")
             if(clazz.value.isNullOrEmpty()) null
-            else Class.forName(clazz.value)?.constructors?.get(0)?.newInstance(it.addGroup("data")) as? WindowContent
+            else Class.forName(clazz.value)?.constructors?.get(0)?.newInstance(it.addMap("data")) as? WindowContent
         })
     }
 

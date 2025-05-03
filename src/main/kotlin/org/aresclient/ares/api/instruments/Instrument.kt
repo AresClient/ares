@@ -1,11 +1,11 @@
 package org.aresclient.ares.api.instruments
 
 import org.aresclient.ares.api.Wrapper
-import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.MapSetting
 
-abstract class Instrument(val name: String, val description: String, parentSettings: SettingGroup): Wrapper {
+abstract class Instrument(val name: String, val description: String, parentSettings: MapSetting): Wrapper {
 	private val components = ArrayList<Component<*>>()
-	val settings = parentSettings.addGroup(name, description)
+	val settings = parentSettings.addMap(name, description)
 
 	open fun tick() {
 	}

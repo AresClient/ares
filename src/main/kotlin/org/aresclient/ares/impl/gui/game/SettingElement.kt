@@ -12,7 +12,7 @@ import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.gui.DynamicElementGroup
 import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.*
 import org.aresclient.ares.api.setting.settings.number.DoubleSetting
 import org.aresclient.ares.api.setting.settings.number.FloatSetting
@@ -34,9 +34,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 fun String.formatToPretty(): String =
     this.split('_').joinToString(separator = " ") { it.lowercase().replaceFirstChar { c -> c.uppercase() } }
 
-class SettingsGroup(private val setting: Setting<*>, columns: Int, private val content:SettingsContent, private val skipEnabled: Boolean = false,
-                    private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
-                    width: () -> Float = { 0f }, height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
+class SettingsMap(private val setting: Setting<*>, columns: Int, private val content:SettingsContent, private val skipEnabled: Boolean = false,
+                  private val settingHeight: Float = 18f, visible: () -> Boolean = { true }, x: () -> Float = { 0f }, y: () -> Float = { 0f },
+                  width: () -> Float = { 0f }, height: () -> Float = { 0f }): DynamicElementGroup(columns, visible, x, y, width, height) {
 
     init {
         refresh()
@@ -45,7 +45,7 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
     fun refresh() {
         getChildren().clear()
         when(setting.type) {
-            Setting.Type.MAP -> (setting as SettingGroup).value.forEach { (name, setting) ->
+            Setting.Type.MAP -> (setting as MapSetting).value.forEach { (name, setting) ->
                 if(/*name.first() != '.' && */(!skipEnabled || name != "Enabled"))
                     pushChild(content.createSettingElement(setting, settingHeight))
             }
@@ -58,10 +58,10 @@ class SettingsGroup(private val setting: Setting<*>, columns: Int, private val c
     }
 }
 
-class SettingsContent(settings: SettingGroup): WindowContent(settings) {
+class SettingsContent(settings: MapSetting): WindowContent(settings) {
     private val name = settings.addString("setting", "")
     private val setting = Ares.SETTINGS.find(name.value)
-    private val group = SettingsGroup(setting,  1, this, width = this::getWidth)
+    private val group = SettingsMap(setting,  1, this, width = this::getWidth)
 
     init {
         // set icon if category
@@ -91,7 +91,7 @@ class SettingsContent(settings: SettingGroup): WindowContent(settings) {
         Setting.Type.DOUBLE -> DoubleElement(setting as DoubleSetting, settingHeight)
         Setting.Type.COLOR -> ColorElement(this, setting as ColorSetting, settingHeight)
         Setting.Type.LIST -> ListElement(this, setting as ListSetting, settingHeight)
-        Setting.Type.MAP -> MapElement(this, setting as SettingGroup, settingHeight)
+        Setting.Type.MAP -> MapElement(this, setting as MapSetting, settingHeight)
         else -> SettingElement(setting, settingHeight)
     }
 }
