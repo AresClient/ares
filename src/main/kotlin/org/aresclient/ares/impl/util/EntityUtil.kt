@@ -31,15 +31,17 @@ object EntityUtil: Wrapper {
 
 	interface Target {
 		val defaultColor: Color
+		val defaultRainbow: Boolean
 	}
 
-	enum class PlayerThreat(private val color: Color): Target {
-		FRIEND(Color.CYAN),
+	enum class PlayerThreat(color: Color?): Target {
+		FRIEND(null),
 		TEAM(Color.GREEN),
 		HOSTILE(Color.RED),
 		BOT(Color.BLACK);
 
-		override val defaultColor: Color get() = color
+		override val defaultColor: Color = color ?: Color.CYAN
+		override val defaultRainbow: Boolean = color == null
 	}
 
 	object Types {
@@ -72,7 +74,7 @@ object EntityUtil: Wrapper {
 
 	fun Entity.isBot(): Boolean = this is PlayerEntity && isInvisibleTo(MC.player) && !isOnGround && !collidesWith(MC.player)
 
-	enum class TargetType(private val color: Color): Target {
+	enum class TargetType(color: Color): Target {
 		SELF(Color.WHITE),
 		PASSIVE(Color.YELLOW),
 		HOSTILE(Color.BLUE),
@@ -80,7 +82,8 @@ object EntityUtil: Wrapper {
 		END_CRYSTAL(Color.MAGENTA),
 		OTHER(Color.GRAY);
 
-		override val defaultColor: Color get() = color
+		override val defaultColor: Color = color
+		override val defaultRainbow: Boolean = false
 	}
 
 	val Entity.targetType: Target get() {
