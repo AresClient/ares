@@ -3,16 +3,16 @@ package org.aresclient.ares.api.setting.settings;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.aresclient.ares.api.setting.Setting;
-import org.aresclient.ares.api.setting.SettingGroup;
+import org.aresclient.ares.api.setting.MapSetting;
 
 import java.util.ArrayList;
 
-public class ListSetting extends Setting<ArrayList<SettingGroup>> {
+public class ListSetting extends Setting<ArrayList<MapSetting>> {
     public ListSetting() {
         super(Type.LIST, new ArrayList<>());
     }
 
-    public void add(SettingGroup group) {
+    public void add(MapSetting group) {
         group.setParent(this);
         getValue().add(group);
     }
@@ -21,12 +21,12 @@ public class ListSetting extends Setting<ArrayList<SettingGroup>> {
         remove(getValue().get(index));
     }
 
-    public void remove(SettingGroup group) {
+    public void remove(MapSetting group) {
         group.setParent(null);
         getValue().remove(group);
     }
 
-    public int indexOf(SettingGroup group) {
+    public int indexOf(MapSetting group) {
         return getValue().indexOf(group);
     }
 
@@ -42,7 +42,7 @@ public class ListSetting extends Setting<ArrayList<SettingGroup>> {
 
         JsonArray jsonArray = jsonElement.getAsJsonArray();
         for(JsonElement childElement: jsonArray) {
-            SettingGroup group = new SettingGroup();
+            MapSetting group = new MapSetting();
             group.read(childElement);
             add(group);
         }
@@ -51,7 +51,7 @@ public class ListSetting extends Setting<ArrayList<SettingGroup>> {
     @Override
     public JsonElement write() {
         JsonArray jsonArray = new JsonArray();
-        for(SettingGroup groups: getValue()) jsonArray.add(groups.write());
+        for(MapSetting groups: getValue()) jsonArray.add(groups.write());
         return jsonArray;
     }
 }

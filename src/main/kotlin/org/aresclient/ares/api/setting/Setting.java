@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.aresclient.ares.api.setting.settings.ListSetting;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.*;
@@ -20,7 +19,7 @@ public abstract class Setting<T> {
 		LIST, MAP
 	}
 
-	private static final Gson GSON = new Gson();
+	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
 	private Setting<?> parent = null;
 	private java.lang.String name = null;
@@ -72,7 +71,7 @@ public abstract class Setting<T> {
 
 	public String getName() {
 		if(getParent() instanceof ListSetting)
-			return java.lang.String.valueOf(((ListSetting) getParent()).indexOf((SettingGroup) this));
+			return java.lang.String.valueOf(((ListSetting) getParent()).indexOf((MapSetting) this));
 		return name;
 	}
 

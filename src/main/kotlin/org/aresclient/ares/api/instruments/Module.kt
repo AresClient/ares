@@ -12,7 +12,7 @@ import java.util.*
 abstract class Module(val category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
 	Instrument(name, description, category.settings) {
 	companion object {
-		internal val SETTINGS = Ares.SETTINGS.addGroup("Modules")
+		internal val SETTINGS = Ares.SETTINGS.addMap("Modules")
 	}
 
 	/* ---------------------------------------------------------------------- */
@@ -31,7 +31,7 @@ abstract class Module(val category: Category, name: String, description: String,
 		}
 
 		val prettyName = name.lowercase().replaceFirstChar { it.titlecase(Locale.getDefault()) }
-		val settings = SETTINGS.addGroup(prettyName)
+		val settings = SETTINGS.addMap(prettyName)
 		val modules = ArrayList<Module>()
 
 		val icon by lazy {

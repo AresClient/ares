@@ -12,7 +12,7 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.SettingGroup
+import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.impl.AresPlugin
 import org.aresclient.ares.impl.util.ChatUtil
@@ -28,7 +28,7 @@ class Ares: ModInitializer, Wrapper {
 		val PLUGINS = ArrayList<Plugin>()
 
 		val SETTINGS_FILE = File("ares/config/settings.json")
-		val SETTINGS = SettingGroup().also {
+		val SETTINGS = MapSetting().also {
 			try {
 				it.read(SETTINGS_FILE)
 			} catch (_: Exception) {

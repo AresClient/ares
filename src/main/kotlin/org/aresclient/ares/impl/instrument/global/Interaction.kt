@@ -3,8 +3,7 @@ package org.aresclient.ares.impl.instrument.global
 import org.aresclient.ares.api.instruments.Global
 import org.aresclient.ares.api.instruments.Prioritizer
 import org.aresclient.ares.api.setting.Setting
-import org.aresclient.ares.api.setting.SettingGroup
-import org.aresclient.ares.api.setting.settings.number.NumberSetting
+import org.aresclient.ares.api.setting.MapSetting
 import kotlin.math.ceil
 
 interface Placer: Prioritizer {
@@ -48,14 +47,14 @@ object Interaction: Global("Interaction", "Handles player interactions with bloc
         )
 
     // Use as a percentage with one decimal point so that it makes sense as both a tick and millisecond setting
-    fun standardDelay(settings: SettingGroup, name: String, default: Double): Setting<Double> = settings
+    fun standardDelay(settings: MapSetting, name: String, default: Double): Setting<Double> = settings
         .addDouble(name, default)
         .setMin(0.0)
         .setMax(100.0)
         .setPrecision(1)
         .setDescription(*percentageMeasureArray)
 
-    fun tickOnlyDelay(settings: SettingGroup, name: String, default: Int): Setting<Int> = settings
+    fun tickOnlyDelay(settings: MapSetting, name: String, default: Int): Setting<Int> = settings
         .addInteger(name, default)
         .setMin(0)
         .setMax(20)

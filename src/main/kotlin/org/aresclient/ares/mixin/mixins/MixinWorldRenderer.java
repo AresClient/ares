@@ -45,7 +45,7 @@ public abstract class MixinWorldRenderer {
     @ModifyArgs(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"))
     public void dispatchRenderEntity(Args args) {
         Entity entity = args.get(0);
-        if(ESP.INSTANCE.shouldRenderOutline(entity)) {
+        if(ESP.shouldRenderOutline(entity)) {
             ESP.Outliner.INSTANCE.setColor(ESP.INSTANCE.getEntityColor(entity));
             args.set(6, ESP.Outliner.INSTANCE.getVertexConsumerProvider());
         }
