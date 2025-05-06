@@ -14,6 +14,7 @@ import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.*
+import org.aresclient.ares.api.setting.settings.list.MapListSetting
 import org.aresclient.ares.api.setting.settings.number.DoubleSetting
 import org.aresclient.ares.api.setting.settings.number.FloatSetting
 import org.aresclient.ares.api.setting.settings.number.IntegerSetting
@@ -25,7 +26,7 @@ import org.aresclient.ares.impl.gui.game.setting.DoubleElement
 import org.aresclient.ares.impl.gui.game.setting.EnumElement
 import org.aresclient.ares.impl.gui.game.setting.FloatElement
 import org.aresclient.ares.impl.gui.game.setting.IntElement
-import org.aresclient.ares.impl.gui.game.setting.ListElement
+import org.aresclient.ares.impl.gui.game.setting.MapListElement
 import org.aresclient.ares.impl.gui.game.setting.LongElement
 import org.aresclient.ares.impl.gui.game.setting.MapElement
 import org.aresclient.ares.impl.gui.game.setting.StringElement
@@ -50,7 +51,7 @@ class SettingsMap(private val setting: Setting<*>, columns: Int, private val con
                     pushChild(content.createSettingElement(setting, settingHeight))
             }
             Setting.Type.COLOR -> pushChild(ColorElement.DropDown(setting as ColorSetting, settingHeight))
-            Setting.Type.LIST -> (setting as ListSetting).value.forEach {
+            Setting.Type.MAP_LIST -> (setting as MapListSetting).value.forEach {
                 pushChild(content.createSettingElement(it, settingHeight))
             }
             else -> throw RuntimeException("Can't open setting of type ${setting.type.name} in window")
@@ -90,7 +91,7 @@ class SettingsContent(settings: MapSetting): WindowContent(settings) {
         Setting.Type.FLOAT -> FloatElement(setting as FloatSetting, settingHeight)
         Setting.Type.DOUBLE -> DoubleElement(setting as DoubleSetting, settingHeight)
         Setting.Type.COLOR -> ColorElement(this, setting as ColorSetting, settingHeight)
-        Setting.Type.LIST -> ListElement(this, setting as ListSetting, settingHeight)
+        Setting.Type.MAP_LIST -> MapListElement(this, setting as MapListSetting, settingHeight)
         Setting.Type.MAP -> MapElement(this, setting as MapSetting, settingHeight)
         else -> SettingElement(setting, settingHeight)
     }
@@ -98,10 +99,10 @@ class SettingsContent(settings: MapSetting): WindowContent(settings) {
 
 open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
     protected val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
-    private var prev = setting.value
 
     init {
         setVisible { setting.isVisible }
+        setting.addListener { change() }
     }
 
     open fun getText(): String = setting.name ?: "<null>"
@@ -119,12 +120,6 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         if(setting.description != null && isMouseOver(mouseX, mouseY))
             (getRootParent() as? ScreenElement)?.setTooltip(*setting.description)
-
-        // detect changes to value, then propagate to subclasses
-        if(setting.value != prev) {
-            change()
-            prev = setting.value
-        }
 
         // outline
         val width = getWidth()
@@ -168,7 +163,7 @@ open class SettingElement<T: Setting<*>>(protected val setting: T, scale: Float,
         }
     }
 
-    protected class SettingElementButton(private val element:SettingElement<*>, action: (Button) -> Unit): Button(0f, 0f, 0f, 0f,
+    protected class SettingElementButton(private val element: SettingElement<*>, action: (Button) -> Unit): Button(0f, 0f, 0f, 0f,
         action, Clipping.SCISSOR) {
         override fun getWidth(): Float = element.getWidth()
         override fun getHeight(): Float = element.getHeight()

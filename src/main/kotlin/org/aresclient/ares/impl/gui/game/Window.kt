@@ -11,7 +11,7 @@ import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
 import org.aresclient.ares.api.setting.MapSetting
-import org.aresclient.ares.api.setting.settings.ListSetting
+import org.aresclient.ares.api.setting.settings.list.MapListSetting
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min
@@ -21,9 +21,9 @@ import kotlin.math.sqrt
 private val FONT_RENDERER = RenderHelper.getFontRenderer(14f)
 private const val TOP_SIZE = 18f
 
-class WindowManager(private val settings: ListSetting): StaticElement() {
+class WindowManager(private val settings: MapListSetting): StaticElement() {
     init {
-        settings.value.forEach { map ->
+        settings.forEach { map ->
             pushChild(WindowElement(map, this))
         }
     }
@@ -80,7 +80,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
     private var window: WindowContent? = null
     private val icon = Image(DEFAULT_ICON, 2f, 1f, TOP_SIZE - 2, TOP_SIZE - 2)
     private val closeButton = CloseButton({ getWidth() }) { windowManager.close(this) }
-    private val backButton = BackButton({ closeButton.getX() }, { content.value.size > 1 }, { back() })
+    private val backButton = BackButton({ closeButton.getX() }, { content.size > 1 }, { back() })
 
     init {
         setX { x.value }
@@ -94,7 +94,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
             icon
         )
 
-        content.value.lastOrNull()?.let { open<WindowContent>(map = it) }
+        content.lastOrNull()?.let { open<WindowContent>(map = it) }
     }
 
     private fun <T: WindowContent> open(map: MapSetting, defaults: MapSetting.() -> Class<T>? = {null}) {
@@ -113,9 +113,9 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
     }
 
     private fun back() {
-        if(window == null || content.value.size == 1) return
-        if(content.value.isNotEmpty()) content.remove(content.value.size - 1)
-        setWindow(content.value.lastOrNull()?.let {
+        if(window == null || content.size == 1) return
+        if(content.isNotEmpty()) content.removeAt(content.size - 1)
+        setWindow(content.lastOrNull()?.let {
             val clazz = it.addString("class", "")
             if(clazz.value.isNullOrEmpty()) null
             else Class.forName(clazz.value)?.constructors?.get(0)?.newInstance(it.addMap("data")) as? WindowContent

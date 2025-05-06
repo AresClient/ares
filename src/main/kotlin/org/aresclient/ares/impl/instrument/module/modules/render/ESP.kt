@@ -11,84 +11,91 @@ import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.setting.MapSetting
-import org.aresclient.ares.api.setting.settings.GroupedSetting
+import org.aresclient.ares.api.setting.settings.ColorSetting
+import org.aresclient.ares.api.setting.settings.EnumSetting
+import org.aresclient.ares.api.setting.settings.grouped.Group
+import org.aresclient.ares.api.setting.settings.grouped.GroupMember
+import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
 import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.api.util.StringUtils.formatToPretty
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
-import org.aresclient.ares.impl.util.EntityUtil.TargetType
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
 import org.aresclient.ares.impl.util.RenderPipelines
 import org.aresclient.ares.impl.util.RenderUtil
 import java.util.*
-import java.util.function.Supplier
-import kotlin.collections.Set
+import kotlin.jvm.optionals.getOrNull
 
 // TODO: FIX DEPTH ON OUTLINE ESP
 // TODO: MAKE THIS MORE CUSTOMIZABLE + FRIENDS
 object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through walls") {
     enum class Mode { OUTLINE, BOX }
 
-    private val mode = settings.addEnum("Mode", Mode.OUTLINE)
-
-    private class EntityGroup(color: Color, rainbow: Boolean, enabled: Boolean = false): MapSetting() {
-        val enabled = addBoolean("Enabled", enabled)
-        val line_color = addColor("Line Color", color, rainbow)
-        val fill_color = addColor("Fill Color", color.deriveAlpha(0.2F), rainbow).setVisibility { mode.value == Mode.BOX }
+    private class EntityGroup(members: Set<Any> = emptySet()): Group<Any>(members) {
+        val mode: EnumSetting<Mode> = addEnum("Mode", Mode.OUTLINE)
+        val lineColor: ColorSetting = addColor("Line Color", Color.WHITE)
+        val fillColor: ColorSetting = addColor("Fill Color", Color.WHITE)
     }
 
-    private val entities = settings.addMap("Entities")
-
-    private val playerThreatColors get() = PlayerThreat.entries.associateWith { Supplier { EntityGroup(it.defaultColor, it.defaultRainbow, it != PlayerThreat.BOT) } }
-    private val players = entities.addGroup("Players", EntityUtil.Types.player, { EntityGroup(Color.RED, false, true) }, playerThreatColors)
-
-    private val monsters = entities.addGroup("Monsters", EntityUtil.Types.monster, { EntityGroup(TargetType.HOSTILE.defaultColor, TargetType.HOSTILE.defaultRainbow) })
-    private val animals = entities.addGroup("Animals", EntityUtil.Types.animal, { EntityGroup(TargetType.PASSIVE.defaultColor, TargetType.PASSIVE.defaultRainbow) })
-    private val miscellaneous = entities.addGroup("Miscellaneous", EntityUtil.Types.miscellaneous, { EntityGroup(TargetType.OTHER.defaultColor, TargetType.OTHER.defaultRainbow) },
-        mapOf(
-            Pair(EntityType.ITEM, Supplier { EntityGroup(TargetType.ITEM.defaultColor, TargetType.ITEM.defaultRainbow) }),
-            Pair(EntityType.END_CRYSTAL, Supplier { EntityGroup(TargetType.END_CRYSTAL.defaultColor, TargetType.END_CRYSTAL.defaultRainbow, true) })
-        )
-    )
-
-    private val entityMap = hashMapOf<EntityType<*>, EntityGroup>()
-
-    init {
-        EntityUtil.Types.monster.populateMap(monsters, entityMap)
-        EntityUtil.Types.animal.populateMap(animals, entityMap)
-        EntityUtil.Types.miscellaneous.populateMap(miscellaneous, entityMap)
-    }
-
-    private fun <T: Any> Set<T>.populateMap(group: GroupedSetting<T, EntityGroup>, map: HashMap<T, EntityGroup>) {
-        for(type in this) {
-            map[type] = group.getValue(type)
+    private fun createEntityGroup(members: Collection<Any>, mode: Mode, color: Color, rainbow: Boolean = false, enabled: Boolean = true): EntityGroup {
+        return EntityGroup(HashSet(members)).also {
+            it.mode.value = mode
+            it.lineColor.value = color
+            it.fillColor.value = color.deriveAlpha(0.2f)
+            it.fillColor.isRainbow = rainbow
+            it.enabled.value = enabled
         }
     }
 
-    private fun getEntityGroup(entity: Entity): EntityGroup? {
-        return if(entity.type == EntityType.PLAYER) players.getValue((entity as PlayerEntity).playerThreat)
-        else entityMap[entity.type]
+    private val entities = settings.addGrouped("Entities", arrayListOf(
+        createEntityGroup(listOf(PlayerThreat.FRIEND), Mode.OUTLINE, Color.CYAN, rainbow = true),
+        createEntityGroup(EntityUtil.Types.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, Mode.OUTLINE, Color.BLUE),
+        createEntityGroup(EntityUtil.Types.monster, Mode.OUTLINE, EntityUtil.TargetType.HOSTILE.defaultColor),
+        createEntityGroup(EntityUtil.Types.animal, Mode.OUTLINE, EntityUtil.TargetType.PASSIVE.defaultColor),
+        createEntityGroup(EntityUtil.Types.miscellaneous.filter { it != EntityType.END_CRYSTAL && it != EntityType.ITEM }, Mode.OUTLINE, EntityUtil.TargetType.OTHER.defaultColor, enabled = false),
+        createEntityGroup(listOf(EntityType.END_CRYSTAL), Mode.OUTLINE, EntityUtil.TargetType.END_CRYSTAL.defaultColor),
+        createEntityGroup(listOf(EntityType.ITEM), Mode.BOX, EntityUtil.TargetType.ITEM.defaultColor)
+    ), setOf(
+        GroupMembers("Players", EntityUtil.Types.player.map { GroupMember("ares:player_${it.name.lowercase()}", it.name.formatToPretty(), it) }),
+        GroupMembers("Monsters", EntityUtil.Types.monster.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+        GroupMembers("Animals", EntityUtil.Types.animal.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+        GroupMembers("Miscellaneous", EntityUtil.Types.miscellaneous.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+    ), { EntityGroup() })
+    private val entitiesCache = hashMapOf<Any, EntityGroup?>()
+    private var shouldRenderOutlineCache: Boolean? = null
+
+    override fun onTick() {
+        entitiesCache.clear()
+        shouldRenderOutlineCache = null
     }
 
-    fun getEntityColor(entity: Entity): Color = getEntityGroup(entity)?.line_color?.value ?: Color.COLORLESS
-
-    fun shouldRenderOutline() = isEnabled() && mode.value == Mode.OUTLINE
-
-    fun shouldRenderOutline(entity: Entity) =
-        shouldRenderOutline() && getEntityGroup(entity)?.enabled?.value ?: false
-
     override fun onRenderWorld(delta: Float, renderer: Renderer.State) {
-        if(mode.value != Mode.BOX) return
         WORLD.entities?.forEach { entity ->
             if(entity == SELF) return@forEach
 
             val group = getEntityGroup(entity) ?: return@forEach
-            if(!group.enabled.value) return@forEach
+            if(!group.enabled.value || group.mode.value != Mode.BOX) return@forEach
 
             val box = entity.getInterpolatedBoundingBox(delta)
-            RenderUtil.Lines.box(box, group.line_color.value, 2F)
-            RenderUtil.Fill.box(box, group.fill_color.value)
+            RenderUtil.Lines.box(box, group.lineColor.value, 2f)
+            RenderUtil.Fill.box(box, group.fillColor.value)
         }
+    }
+
+    fun getEntityColor(entity: Entity): Color = getEntityGroup(entity)?.lineColor?.value ?: Color.COLORLESS
+
+    fun shouldRenderOutline(): Boolean {
+        if(!isEnabled()) return false
+        if(shouldRenderOutlineCache != null) return shouldRenderOutlineCache!!
+        shouldRenderOutlineCache = WORLD.entities.any { entity -> getEntityGroup(entity)?.let { it.enabled.value && it.mode.value == Mode.OUTLINE } == true }
+        return shouldRenderOutlineCache!!
+    }
+
+    fun shouldRenderOutline(entity: Entity) = shouldRenderOutline() && getEntityGroup(entity)?.let { it.enabled.value && it.mode.value == Mode.OUTLINE } == true
+
+    private fun getEntityGroup(entity: Entity): EntityGroup? {
+        val type = if(entity is PlayerEntity) entity.playerThreat else entity.type as Any
+        return entitiesCache.getOrPut(type) { entities.find(type).getOrNull() }
     }
 
     private fun Entity.getInterpolatedBoundingBox(delta: Float): Box {

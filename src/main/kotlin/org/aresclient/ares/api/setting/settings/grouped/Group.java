@@ -1,0 +1,49 @@
+package org.aresclient.ares.api.setting.settings.grouped;
+
+import com.google.gson.JsonElement;
+import org.aresclient.ares.api.setting.MapSetting;
+import org.aresclient.ares.api.setting.settings.BooleanSetting;
+import org.aresclient.ares.api.setting.settings.list.StringListSetting;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public abstract class Group<T> extends MapSetting {
+    private final BooleanSetting enabled = addBoolean("Enabled", true);
+    private final StringListSetting members = addStringList("Members");
+    private final Set<T> membersCache;
+
+    public Group() {
+        this(new HashSet<>());
+    }
+
+    public Group(Set<T> defaultMembers) {
+        this.membersCache = new HashSet<>(defaultMembers);
+    }
+
+    @Override
+    public void read(JsonElement jsonElement) {
+        super.read(jsonElement);
+        membersCache.clear();
+        members.stream()
+                .map(it -> ((GroupedSetting<T, ?>) getParent()).getPossibleMemberById(it))
+                .forEach(it -> membersCache.add(it.getValue()));
+    }
+
+    @Override
+    public JsonElement write() {
+        members.clear();
+        membersCache.stream()
+                .map(it -> ((GroupedSetting<T, ?>) getParent()).getPossibleMemberByValue(it))
+                .forEach(it -> members.add(it.getId()));
+        return super.write();
+    }
+
+    public BooleanSetting getEnabled() {
+        return enabled;
+    }
+
+    public Set<T> getMembers() {
+        return membersCache;
+    }
+}

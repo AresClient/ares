@@ -2,28 +2,26 @@ package org.aresclient.ares.api.setting;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import kotlin.Function;
 import org.aresclient.ares.api.setting.settings.*;
+import org.aresclient.ares.api.setting.settings.grouped.Group;
+import org.aresclient.ares.api.setting.settings.grouped.GroupedSetting;
+import org.aresclient.ares.api.setting.settings.grouped.IGroupMember;
+import org.aresclient.ares.api.setting.settings.list.EnumListSetting;
+import org.aresclient.ares.api.setting.settings.list.MapListSetting;
+import org.aresclient.ares.api.setting.settings.list.StringListSetting;
 import org.aresclient.ares.api.setting.settings.number.DoubleSetting;
 import org.aresclient.ares.api.setting.settings.number.FloatSetting;
 import org.aresclient.ares.api.setting.settings.number.IntegerSetting;
 import org.aresclient.ares.api.setting.settings.number.LongSetting;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class MapSetting extends Setting<Map<String, Setting<?>>> {
-    private JsonObject jsonObject;
+    private JsonObject jsonObject = null;
 
     public MapSetting() {
-        this(null);
-    }
-
-    public MapSetting(JsonObject jsonObject) {
         super(Type.MAP, new LinkedHashMap<>());
-        this.jsonObject = jsonObject;
     }
 
     @Override
@@ -54,9 +52,9 @@ public class MapSetting extends Setting<Map<String, Setting<?>>> {
         for(String name: split) {
             if(curr instanceof MapSetting) {
                 curr = ((MapSetting) curr).getValue().get(name);
-            } else if(curr instanceof ListSetting) {
+            } else if(curr instanceof MapListSetting) {
                 try {
-                    curr = ((ListSetting) curr).getValue().get(Integer.parseInt(name));
+                    curr = ((MapListSetting) curr).getValue().get(Integer.parseInt(name));
                 } catch(NumberFormatException e) {
                     return null;
                 }
@@ -126,23 +124,27 @@ public class MapSetting extends Setting<Map<String, Setting<?>>> {
         return add(new LongSetting(defaultValue), name, description);
     }
 
-    public ListSetting addList(String name, String... description) {
-        return add(new ListSetting(), name, description);
+    public MapListSetting addList(String name, String... description) {
+        return add(new MapListSetting(), name, description);
     }
 
-    public <T, V extends Setting<?>> GroupedSetting<T,V> addGroup(String name, Set<T> possibleKeys, Supplier<V> generalDefault, String... description) {
-        return addGroup(name, possibleKeys, generalDefault, Map.of(), description);
+    public StringListSetting addStringList(String name, String... description) {
+        return addStringList(name, new ArrayList<>(), description);
     }
 
-    public <T, V extends Setting<?>> GroupedSetting<T,V> addGroup(String name, Set<T> possibleKeys, Supplier<V> generalDefault, Map<T, Supplier<V>> defaultValues, String... description) {
-        return add(new GroupedSetting<>(possibleKeys, generalDefault, defaultValues), name, description);
+    public StringListSetting addStringList(String name, ArrayList<String> defaultValue, String... description) {
+        return add(new StringListSetting(defaultValue), name, description);
     }
 
-    /*public <T extends EnumSetting<?>> ListSetting<T> addEnumList(Setting.Type elementType, Class<? extends Enum> enumClass, String name, T[] defaultValue, String... description) {
-        return add(new ReadInfo<>(Setting.Type.LIST, elementType, defaultValue).setEnumClass(enumClass), name, description);
+    public <T extends Enum<?>> EnumListSetting<T> addEnumList(String name, Class<T> enumClass, List<T> defaultValue, String... description) {
+        return add(new EnumListSetting<>(enumClass, defaultValue), name, description);
     }
 
-    public <T extends EnumSetting<?>> ListSetting<T> addEnumList(Setting.Type elementType, Class<? extends Enum> enumClass, String name, String... description) {
-        return addEnumList(elementType, enumClass, name, (T[]) new EnumSetting[]{}, description);
-    }*/
+    public <T extends Enum<?>> EnumListSetting<T> addEnumList(Class<T> enumClass, String name, String... description) {
+        return addEnumList(name, enumClass, new ArrayList<>(), description);
+    }
+
+    public <T, V extends Group<T>> GroupedSetting<T, V> addGrouped(String name, ArrayList<V> defaultValue, Set<IGroupMember<T>> possibleMembers, Supplier<V> groupSupplier, String... description) {
+        return add(new GroupedSetting<>(defaultValue, possibleMembers, groupSupplier), name, description);
+    }
 }

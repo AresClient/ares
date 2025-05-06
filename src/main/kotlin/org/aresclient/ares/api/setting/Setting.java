@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
-import org.aresclient.ares.api.setting.settings.ListSetting;
+import org.aresclient.ares.api.setting.settings.list.MapListSetting;
 
 import java.io.*;
 import java.util.*;
@@ -16,7 +16,8 @@ public abstract class Setting<T> {
 		STRING, BOOLEAN, ENUM,
 		COLOR, INTEGER, DOUBLE,
 		FLOAT, LONG, BIND,
-		LIST, MAP
+		MAP, MAP_LIST, STRING_LIST,
+		ENUM_LIST, GROUPED
 	}
 
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -61,6 +62,10 @@ public abstract class Setting<T> {
 		return GSON.toJson(write());
 	}
 
+	protected void onChange() {
+		for(Consumer<T> listener: listeners) listener.accept(value);
+	}
+
 	public Setting<?> getParent() {
 		return parent;
 	}
@@ -70,8 +75,8 @@ public abstract class Setting<T> {
 	}
 
 	public String getName() {
-		if(getParent() instanceof ListSetting)
-			return java.lang.String.valueOf(((ListSetting) getParent()).indexOf((MapSetting) this));
+		if(getParent() instanceof MapListSetting)
+			return java.lang.String.valueOf(((MapListSetting) getParent()).indexOf((MapSetting) this));
 		return name;
 	}
 
@@ -129,9 +134,7 @@ public abstract class Setting<T> {
 	public void setValue(T value) {
 		T prev = this.value;
 		this.value = value;
-		if(prev != value)
-			for(Consumer<T> consumer: listeners)
-				consumer.accept(value);
+		if(prev != value) onChange();
 	}
 
 	public void setDefault() {
