@@ -26,7 +26,6 @@ import org.aresclient.ares.impl.util.RenderUtil
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
-// TODO: OUTLINE MODE SOMETIMES DOESN'T RENDER A FEW ENTITIES (happens on /summon)
 // TODO: FIX DEPTH ON OUTLINE ESP
 object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through walls") {
     enum class Mode { OUTLINE, BOX }
@@ -73,7 +72,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
         shouldRenderOutlineCache = null
     }
 
-    override fun onRenderWorld(delta: Float, renderer: Renderer.State) {
+    override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {
         WORLD.entities?.forEach { entity ->
             if(entity == SELF) return@forEach
 
