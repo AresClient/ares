@@ -30,11 +30,6 @@ public abstract class MixinWorldRenderer {
     @Unique Framebuffer prevFramebuffer;
     @Unique Handle<Framebuffer> prevFramebufferHandle;
 
-    @Inject(method = "getEntitiesToRender", at = @At("TAIL"), cancellable = true)
-    private void getEntitiesToRender(CallbackInfoReturnable<Boolean> cir) {
-        if(ESP.INSTANCE.shouldRenderOutline()) cir.setReturnValue(true);
-    }
-
     @Inject(method = "renderEntities", at = @At("HEAD"))
     public void renderEntitiesPre(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci) {
         if(ESP.INSTANCE.shouldRenderOutline()) {
@@ -54,14 +49,10 @@ public abstract class MixinWorldRenderer {
         }
     }
 
-    @Inject(method = "method_62214", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/OutlineVertexConsumerProvider;draw()V"))
-    public void drawOutlineVertices(CallbackInfo ci) {
-        if(ESP.INSTANCE.shouldRenderOutline()) ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
-    }
-
     @Inject(method = "renderEntities", at = @At("TAIL"))
     public void renderEntitiesPost(CallbackInfo ci) {
         if(ESP.INSTANCE.shouldRenderOutline()) {
+            ESP.Outliner.INSTANCE.getVertexConsumerProvider().draw();
             entityOutlineFramebuffer = prevFramebuffer;
             framebufferSet.entityOutlineFramebuffer = prevFramebufferHandle;
         }

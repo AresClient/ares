@@ -19,7 +19,7 @@ public abstract class AbstractListSetting<T> extends Setting<List<T>> implements
 
     @Override
     public List<T> getValue() {
-        throw new RuntimeException("Method not allowed");
+        return this;
     }
 
     @Override

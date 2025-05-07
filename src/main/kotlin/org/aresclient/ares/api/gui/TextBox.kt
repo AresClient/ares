@@ -1,5 +1,9 @@
 package org.aresclient.ares.api.gui
 
+import dev.tigr.simpleevents.listener.EventListener
+import dev.tigr.simpleevents.listener.Priority
+import org.aresclient.ares.Ares
+import org.aresclient.ares.api.events.InputEvent
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
@@ -22,6 +26,15 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
     private var lines = minLines
     private var cursor = 0
     private var focused = false
+
+    // prevent binds from being invoked when textbox is focused
+    private val inputEventListener = EventListener<InputEvent>(Priority.HIGH) {
+        if(focused) it.textboxFocused = true
+    }
+
+    init {
+        Ares.EVENT_MANAGER.register(inputEventListener)
+    }
 
     override fun getHeight(): Float = (fontRenderer.charHeight + vertPadding) * lines + vertPadding
 
@@ -65,7 +78,12 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
     override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         super.click(mouseX, mouseY, mouseButton, acted)
 
-        if(!acted.get() && mouseButton == 0 && isMouseOver(mouseX, mouseY)) {
+        if(!isMouseOver(mouseX, mouseY)) {
+            focused = false
+            return
+        }
+
+        if(!acted.get() && mouseButton == 0) {
             var i = 0
             val unused = FloatArray(4)
             val rx = getRenderX()
@@ -84,7 +102,7 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
 
             focused = true
             acted.set(true)
-        } else focused = false
+        }
     }
 
     override fun type(typedChar: Char?, keyCode: Int) {
@@ -112,26 +130,35 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
         var i = 0
         val rgba = floatArrayOf(r, g, b, a)
 
-        val lines = runText(rgba) { c, cx, cy ->
-            val cw = fontRenderer.drawChar(buffers.triangleTexColor, c, cx, cy, rgba[0], rgba[1], rgba[2], rgba[3])
+        if(text.isNotEmpty()) {
+            val lines = runText(rgba) { c, cx, cy ->
+                val cw = fontRenderer.drawChar(buffers.triangleTexColor, c, cx, cy, rgba[0], rgba[1], rgba[2], rgba[3])
 
-            // TODO: CURSOR NOT DRAWN ON INVISIBLE CHARS
-            if(focused) {
-                if(i++ == cursor) drawCursor(buffers, cx, cy)
-                if(i == text.length && i == cursor) drawCursor(buffers, cx + cw, cy)
+                // TODO: CURSOR NOT DRAWN ON INVISIBLE CHARS
+                if(focused) {
+                    if(i++ == cursor) drawCursor(buffers, cx, cy)
+                    if(i == text.length && i == cursor) drawCursor(buffers, cx + cw, cy)
+                }
+
+                false
             }
 
-            false
+            fontRenderer.bindTexture()
+            buffers.triangleTexColor.draw(matrixStack)
+            buffers.triangleTexColor.reset()
+
+            buffers.lines.draw(matrixStack)
+            buffers.lines.reset()
+
+            return lines
+        } else {
+            drawCursor(buffers, horzPadding, vertPadding)
+
+            buffers.lines.draw(matrixStack)
+            buffers.lines.reset()
+
+            return 1
         }
-
-        fontRenderer.bindTexture()
-        buffers.triangleTexColor.draw(matrixStack)
-        buffers.triangleTexColor.reset()
-
-        buffers.lines.draw(matrixStack)
-        buffers.lines.reset()
-
-        return lines
     }
 
     private fun drawCursor(buffers: Renderer.Buffers, cx: Float, cy: Float) {

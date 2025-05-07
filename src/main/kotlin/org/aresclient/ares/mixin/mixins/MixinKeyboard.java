@@ -20,12 +20,12 @@ public class MixinKeyboard implements JWrapper {
     public void onKey(long window, int key, int scancode, int action, int modifiers, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(action == 0) {
-                if (EVENTS.post(new InputEvent.Keyboard.Released(key)).isCancelled()) ci.cancel();
+                if(EVENTS.post(new InputEvent.Keyboard.Released(key)).isCancelled()) ci.cancel();
                 pressed.remove(key);
             } else {
                 var isRepeat = pressed.contains(key);
-                if (EVENTS.post(new InputEvent.Keyboard.Pressed(key, isRepeat)).isCancelled()) ci.cancel();
-                if (!isRepeat) pressed.add(key);
+                if(EVENTS.post(new InputEvent.Keyboard.Pressed(key, isRepeat)).isCancelled()) ci.cancel();
+                if(!isRepeat) pressed.add(key);
             }
         }
     }

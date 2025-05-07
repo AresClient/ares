@@ -55,10 +55,4 @@ public class MixinMinecraftClient implements JWrapper {
     public void preStop(CallbackInfo ci) {
         EVENTS.post(new ShutdownEvent());
     }
-
-    // ESP outline mode rendering
-    @Inject(method = "hasOutline", at = @At("HEAD"), cancellable = true)
-    public void hasOutline(Entity entity, CallbackInfoReturnable<Boolean> cir) {
-        if(ESP.INSTANCE.shouldRenderOutline(entity)) cir.setReturnValue(true);
-    }
 }

@@ -1,17 +1,14 @@
-package org.aresclient.ares.impl.gui.game
+package org.aresclient.ares.impl.gui.game.window
 
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.api.gui.Image
-import org.aresclient.ares.api.gui.StaticElement
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.render.Texture
-import org.aresclient.ares.api.setting.MapSetting
-import org.aresclient.ares.api.setting.settings.list.MapListSetting
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.max
 import kotlin.math.min
@@ -21,52 +18,7 @@ import kotlin.math.sqrt
 private val FONT_RENDERER = RenderHelper.getFontRenderer(14f)
 private const val TOP_SIZE = 18f
 
-class WindowManager(private val settings: MapListSetting): StaticElement() {
-    init {
-        settings.forEach { map ->
-            pushChild(WindowElement(map, this))
-        }
-    }
-
-    fun <T: WindowContent> open(creator: MapSetting.() -> Class<T>?) {
-        val map = MapSetting()
-        settings.add(map)
-        pushChild(WindowElement(map, this).also {
-            it.open(creator)
-        })
-    }
-
-    fun close(window:WindowElement) {
-        settings.remove(window.settings)
-        getChildren().remove(window)
-    }
-
-    fun float(window:WindowElement) {
-        removeChild(window)
-        pushChild(window)
-    }
-}
-
-class ErrorWindowContent(settings: MapSetting): WindowContent(settings) {
-    override fun getTitle() = "ERROR"
-}
-
-abstract class WindowContent(internal val settings: MapSetting): StaticElement() {
-    private var icon = DEFAULT_ICON
-
-    abstract fun getTitle(): String
-
-    fun getIcon() = icon
-    fun setIcon(icon: Texture) {
-        this.icon = icon
-    }
-
-    fun getWindow() = getParent() as? WindowElement
-
-    override fun getWidth() = getParent()?.getWidth() ?: 0f
-}
-
-class WindowElement(internal val settings: MapSetting, private val windowManager:WindowManager): DynamicElement() {
+class WindowElement(internal val settings: MapSetting, private val windowManager: WindowManager): DynamicElement() {
     private val content = settings.addList("Content")
     private val x = settings.addFloat("x", 0f)
     private val y = settings.addFloat("y", 0f)
@@ -78,7 +30,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
     private var holdY = 0f
 
     private var window: WindowContent? = null
-    private val icon = Image(DEFAULT_ICON, 2f, 1f, TOP_SIZE - 2, TOP_SIZE - 2)
+    private val icon = Image(WindowContent.DEFAULT_ICON, 2f, 1f, TOP_SIZE - 2, TOP_SIZE - 2)
     private val closeButton = CloseButton({ getWidth() }) { windowManager.close(this) }
     private val backButton = BackButton({ closeButton.getX() }, { content.size > 1 }, { back() })
 
@@ -100,7 +52,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
     private fun <T: WindowContent> open(map: MapSetting, defaults: MapSetting.() -> Class<T>? = {null}) {
         val data = map.addMap("data")
         val default = defaults(data)
-        val type = map.addString("class", default?.name ?: ErrorWindowContent::class.java.name)
+        val type = map.addString("class", default?.name ?: InvalidWindowContent::class.java.name)
         if(type.value == null) return
 
         setWindow(Class.forName(type.value).constructors.firstOrNull()?.newInstance(data) as? WindowContent)
@@ -114,7 +66,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
 
     private fun back() {
         if(window == null || content.size == 1) return
-        if(content.isNotEmpty()) content.removeAt(content.size - 1)
+        if(content.isNotEmpty()) content.removeLast()
         setWindow(content.lastOrNull()?.let {
             val clazz = it.addString("class", "")
             if(clazz.value.isNullOrEmpty()) null
@@ -176,7 +128,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
                     1, 2, 3
                 )
             }
-        }){
+        }) {
             window?.render(theme, buffers, matrixStack, mouseX, mouseY, delta)
         }
 
@@ -216,8 +168,7 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
 
     override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         val prev = acted.get()
-        if(isMouseOver(mouseX, mouseY) && mouseY > getRenderY() + TOP_SIZE)
-            window?.click(mouseX, mouseY, mouseButton, acted)
+        window?.click(mouseX, mouseY, mouseButton, acted)
         super.click(mouseX, mouseY, mouseButton, acted)
 
         if(!acted.get() && isMouseOver(mouseX, mouseY)) {

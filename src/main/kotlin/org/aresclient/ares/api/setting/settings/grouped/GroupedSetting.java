@@ -68,6 +68,10 @@ public class GroupedSetting<T, V extends Group<T>> extends AbstractListSetting<V
         return possibleMembers;
     }
 
+    public Supplier<V> getGroupSupplier() {
+        return groupSupplier;
+    }
+
     public GroupMember<T> getPossibleMemberById(String id) {
         return possibleMembersById.get(id);
     }

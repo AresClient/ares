@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
+import org.aresclient.ares.api.setting.settings.grouped.GroupedSetting;
+import org.aresclient.ares.api.setting.settings.list.AbstractListSetting;
 import org.aresclient.ares.api.setting.settings.list.MapListSetting;
 
 import java.io.*;
@@ -75,8 +77,8 @@ public abstract class Setting<T> {
 	}
 
 	public String getName() {
-		if(getParent() instanceof MapListSetting)
-			return java.lang.String.valueOf(((MapListSetting) getParent()).indexOf((MapSetting) this));
+		if(getParent() instanceof MapListSetting || getParent() instanceof GroupedSetting<?,?>)
+			return java.lang.String.valueOf(((AbstractListSetting<?>) getParent()).indexOf(this));
 		return name;
 	}
 

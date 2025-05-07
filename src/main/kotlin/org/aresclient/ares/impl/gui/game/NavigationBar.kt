@@ -8,12 +8,11 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.render.Texture
+import org.aresclient.ares.impl.gui.game.setting.SettingsWindowContent
+import org.aresclient.ares.impl.gui.game.window.WindowContent
+import org.aresclient.ares.impl.gui.game.window.WindowManager
 
-val DEFAULT_ICON =
-    Texture(NavigationBar::class.java.getResourceAsStream("/assets/ares/textures/icons/gears.png"))
-
-class NavigationBar(private val windowManager:WindowManager, private val scale: Float): StaticElement() {
+class NavigationBar(private val windowManager: WindowManager, private val scale: Float): StaticElement() {
     val padding = scale / 6f
 
     init {
@@ -68,7 +67,7 @@ class NavigationBar(private val windowManager:WindowManager, private val scale: 
             setAction {
                 navigationBar.windowManager.open {
                     if(category != null) addString("setting", "Modules:${category.prettyName}")
-                    SettingsContent::class.java
+                    SettingsWindowContent::class.java
                 }
             }
         }
@@ -77,7 +76,7 @@ class NavigationBar(private val windowManager:WindowManager, private val scale: 
             if(holding) matrixStack.model().translate(0f, 1f, 0f)
 
             if(category != null) category.icon.bind()
-            else DEFAULT_ICON.bind()
+            else WindowContent.DEFAULT_ICON.bind()
 
             if(hovering /*&& navigationBar.context.getWindows().none { it.isMouseOver(mouseX, mouseY) }*/) {
                 RenderHelper.clip({ draw(buffers, matrixStack) }) {

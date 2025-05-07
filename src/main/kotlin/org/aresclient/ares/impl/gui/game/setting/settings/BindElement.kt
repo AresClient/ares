@@ -1,19 +1,21 @@
-package org.aresclient.ares.impl.gui.game.setting
+package org.aresclient.ares.impl.gui.game.setting.settings
 
 import dev.tigr.simpleevents.listener.EventListener
 import org.aresclient.ares.api.events.InputEvent
-import org.aresclient.ares.impl.gui.game.SettingElement
+import org.aresclient.ares.impl.gui.game.setting.RowSettingElement
 import org.aresclient.ares.api.setting.settings.BindSetting
+import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.api.util.Keys
-import org.aresclient.ares.impl.gui.game.formatToPretty
+import org.aresclient.ares.api.util.StringUtils.formatToPretty
+import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
-class BindElement(setting: BindSetting, height: Float): SettingElement<BindSetting>(setting, height) {
+class BindElement(setting: BindSetting, height: Float): RowSettingElement<BindSetting, Int>(setting, height) {
     private var listening = false
     private var text = if(setting.value == Keys.UNKNOWN) "None" else Keys.getName(setting.value).formatToPretty()
 
     init {
-        pushChild(SettingElementButton(this) { listen(true) })
+        pushChild(RowButton(this) { listen(true) })
     }
 
     override fun change() {
@@ -21,6 +23,8 @@ class BindElement(setting: BindSetting, height: Float): SettingElement<BindSetti
     }
 
     override fun getSecondaryText() = if(listening) "..." else text
+
+    override fun getSecondaryTextColor(theme: Theme): Color? = theme.lightground.value
 
     override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 1 && !acted.get() && isMouseOver(mouseX, mouseY)) {

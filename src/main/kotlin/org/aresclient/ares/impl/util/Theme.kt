@@ -14,7 +14,7 @@ data class Theme(val primary: ColorSetting, val secondary: ColorSetting, val bac
             SETTING.addColor("Secondary",
                 Color(0.09803922f, 0.09803922f, 0.09803922f, 1f)
             ),
-            SETTING.addColor("Background", Color(0f, 0f, 0f, 0.9f)),
+            SETTING.addColor("Background", Color(0f, 0f, 0f, 0.95f)),
             SETTING.addColor("Lightground", Color.WHITE)
         )
 

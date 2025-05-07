@@ -1,24 +1,24 @@
-package org.aresclient.ares.impl.gui.game.setting
+package org.aresclient.ares.impl.gui.game.setting.settings
 
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.api.setting.settings.EnumSetting
-import org.aresclient.ares.impl.gui.game.DropDownSettingElement
-import org.aresclient.ares.impl.gui.game.formatToPretty
+import org.aresclient.ares.api.util.StringUtils.formatToPretty
+import org.aresclient.ares.impl.gui.game.setting.DropdownSettingContainer
 import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
-class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSettingElement<EnumSetting<T>>(setting, scale) {
+class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropdownSettingContainer<EnumSetting<T>, T>(setting, scale) {
     private var text = setting.value.name.formatToPretty()
 
     init {
-        pushChild(SettingElementButton(this) {
+        pushChild(RowButton(this) {
             setting.value = setting.value.javaClass.enumConstants[(setting.value.ordinal + 1) % setting.value.javaClass.enumConstants.size]
         })
-        element = DropDown(this, scale * 0.87f * 0.87f)
+        setDropdown(DropDown(setting, scale * 0.87f * 0.87f))
     }
 
     override fun change() {
@@ -27,11 +27,11 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSe
 
     override fun getSecondaryText() = text
 
-    class DropDown<T: Enum<*>>(val element:EnumElement<T>, scale: Float): DynamicElement() {
+    class DropDown<T: Enum<*>>(val setting: EnumSetting<T>, scale: Float): DynamicElement() {
         val fontRenderer = RenderHelper.getFontRenderer(scale * 0.87f)
 
         init {
-            val enums = element.setting.value.javaClass.enumConstants
+            val enums = setting.value.javaClass.enumConstants
             setHeight { enums.size * scale }
             for((i, value) in enums.withIndex()) {
                 pushChild(EnumSelector(this, value).also {
@@ -42,8 +42,8 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSe
         }
     }
 
-    class EnumSelector<T: Enum<*>>(private val dropDown:DropDown<T>, private val value: T): Button(0f, 0f, 0f, 0f, {
-        dropDown.element.setting.value = value
+    class EnumSelector<T: Enum<*>>(private val dropDown: DropDown<T>, private val value: T): Button(0f, 0f, 0f, 0f, {
+        dropDown.setting.value = value
     }, Clipping.SCISSOR) {
         private val text = value.name.formatToPretty()
         private val offset = dropDown.fontRenderer.getStringWidth(text) + 2
@@ -54,7 +54,7 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropDownSe
             val width = getWidth()
             val height = getHeight()
 
-            if(dropDown.element.setting.value == value) {
+            if(dropDown.setting.value == value) {
                 buffers.triangle.draw(matrixStack) {
                     vertices(
                         0f, 0f, 0f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,

@@ -12,6 +12,8 @@ abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$t
 abstract class InputEvent(val type: Type): AresEvent("input-" + type.name) {
 	enum class Type { KEYBOARD, MOUSE }
 
+	var textboxFocused = false
+
 	abstract class Keyboard(val state: State, val key: Int): InputEvent(Type.KEYBOARD) {
 		enum class State { PRESSED, RELEASED }
 

@@ -85,7 +85,7 @@ class Ares: ModInitializer, Wrapper {
 
 	@field:EventHandler
 	val inputEventListener = EventListener<InputEvent> { event ->
-		if(MC.currentScreen !is TitleScreen && MC.currentScreen !is AresScreen && MC.currentScreen != null)
+		if(event.textboxFocused || MC.currentScreen !is TitleScreen && MC.currentScreen !is AresScreen && MC.currentScreen != null)
 			return@EventListener
 
 		when(event) {

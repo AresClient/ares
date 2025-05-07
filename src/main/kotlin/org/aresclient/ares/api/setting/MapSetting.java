@@ -6,6 +6,7 @@ import org.aresclient.ares.api.setting.settings.*;
 import org.aresclient.ares.api.setting.settings.grouped.Group;
 import org.aresclient.ares.api.setting.settings.grouped.GroupedSetting;
 import org.aresclient.ares.api.setting.settings.grouped.IGroupMember;
+import org.aresclient.ares.api.setting.settings.list.AbstractListSetting;
 import org.aresclient.ares.api.setting.settings.list.EnumListSetting;
 import org.aresclient.ares.api.setting.settings.list.MapListSetting;
 import org.aresclient.ares.api.setting.settings.list.StringListSetting;
@@ -52,9 +53,9 @@ public class MapSetting extends Setting<Map<String, Setting<?>>> {
         for(String name: split) {
             if(curr instanceof MapSetting) {
                 curr = ((MapSetting) curr).getValue().get(name);
-            } else if(curr instanceof MapListSetting) {
+            } else if(curr instanceof AbstractListSetting<?>) {
                 try {
-                    curr = ((MapListSetting) curr).getValue().get(Integer.parseInt(name));
+                    curr = (Setting<?>) ((AbstractListSetting<?>) curr).getValue().get(Integer.parseInt(name));
                 } catch(NumberFormatException e) {
                     return null;
                 }

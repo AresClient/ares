@@ -46,6 +46,8 @@ public class StencilFramebuffer extends CustomFramebuffer {
         GL30.glBindFramebuffer(GL30.GL_DRAW_FRAMEBUFFER, getFramebuffer());
 
         GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+        GL11.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        GL30.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL30.glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, getFirstTexture(), 0);
         GL30.glBlitFramebuffer(0, 0, getWidth(), getHeight(), 0, 0, getWidth(), getHeight(), GL11.GL_COLOR_BUFFER_BIT, GL11.GL_NEAREST);
 
@@ -57,5 +59,6 @@ public class StencilFramebuffer extends CustomFramebuffer {
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, getFirstTexture());
         BUFFER.draw();
         GL11.glBindTexture(GL11.GL_TEXTURE_2D, 0);
+        GL30.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
     }
 }

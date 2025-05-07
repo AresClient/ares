@@ -1,16 +1,16 @@
-package org.aresclient.ares.impl.gui.game.setting
+package org.aresclient.ares.impl.gui.game.setting.settings
 
 import org.aresclient.ares.api.gui.TextBox
 import org.aresclient.ares.api.setting.settings.StringSetting
-import org.aresclient.ares.impl.gui.game.SettingElement
+import org.aresclient.ares.impl.gui.game.setting.RowSettingElement
 
-class StringElement(setting: StringSetting, scale: Float): SettingElement<StringSetting>(setting, scale) {
+class StringElement(setting: StringSetting, scale: Float): RowSettingElement<StringSetting, String>(setting, scale) {
     private val textBox = SettingTextBox(this)
 
     init {
         textBox.setText(setting.value)
         textBox.setCursor(setting.value.length)
-        pushChild(SettingElementButton(this) {
+        pushChild(RowButton(this) {
             textBox.setFocused(true)
         })
         pushChild(textBox)
@@ -22,7 +22,7 @@ class StringElement(setting: StringSetting, scale: Float): SettingElement<String
         textBox.setText(setting.value)
     }
 
-    private class SettingTextBox(private val element:StringElement, size: Float = 0.7f):
+    private class SettingTextBox(private val element: StringElement, size: Float = 0.7f):
 			TextBox(0f, 0f, 75f, element.fontRenderer.fontSize * size, 1, horizPadFactor = 0.2f) {
         private val offset = (1f - size) / 2f
         private val left = element.fontRenderer.getStringWidth(element.setting.name) + 6f
