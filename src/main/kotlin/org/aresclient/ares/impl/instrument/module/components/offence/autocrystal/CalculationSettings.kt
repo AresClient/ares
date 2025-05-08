@@ -1,11 +1,11 @@
-package org.aresclient.ares.impl.instrument.module.components.offence.crystalaura
+package org.aresclient.ares.impl.instrument.module.components.offence.autocrystal
 
 import org.aresclient.ares.api.instruments.Component
-import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
+import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 
-object CalculationSettings: Component.Settings<CrystalAura>(CrystalAura, "Calculation") {
+object CalculationSettings: Component.Settings<AutoCrystal>(AutoCrystal, "Calculation") {
     init {
-        settings.setDescription("Settings which are related to calculation and deciding where the CrystalAura should place")
+        settings.setDescription("Settings which are related to calculation and deciding where the AutoCrystal should place")
     }
 
     val damage_calculation = settings
@@ -47,7 +47,7 @@ object CalculationSettings: Component.Settings<CrystalAura>(CrystalAura, "Calcul
         .addBoolean("Occlude While Mining", true)
         .setVisibility { pre_occlude_surround.value }
         .setDescription(
-            "Allow CrystalAura to attempt to place crystals while packet",
+            "Allow AutoCrystal to attempt to place crystals while packet",
             "mining blocks to pre-occlude the surround."
         )
 

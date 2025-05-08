@@ -8,7 +8,7 @@ import org.aresclient.ares.impl.instrument.module.modules.misc.MsgOnToggle
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.instrument.module.modules.movement.SafeWalk
 import org.aresclient.ares.impl.instrument.module.modules.movement.Speed
-import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
+import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
 import org.aresclient.ares.impl.instrument.module.modules.player.Freecam
 import org.aresclient.ares.impl.instrument.module.modules.render.*
@@ -32,7 +32,7 @@ object AresPlugin: Plugin(
 		SafeWalk,
 		Speed,
 
-		CrystalAura,
+		AutoCrystal,
 
 		AntiAFK,
 		Freecam,

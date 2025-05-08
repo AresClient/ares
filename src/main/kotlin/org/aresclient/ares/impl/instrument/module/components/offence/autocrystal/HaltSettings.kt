@@ -1,9 +1,9 @@
-package org.aresclient.ares.impl.instrument.module.components.offence.crystalaura
+package org.aresclient.ares.impl.instrument.module.components.offence.autocrystal
 
 import org.aresclient.ares.api.instruments.Component
-import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
+import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 
-object HaltSettings: Component.Settings<CrystalAura>(CrystalAura, "Halt") {
+object HaltSettings: Component.Settings<AutoCrystal>(AutoCrystal, "Halt") {
     init {
         settings.setDescription("Settings which pause or disable the module with certain conditions")
     }

@@ -1,11 +1,11 @@
-package org.aresclient.ares.impl.instrument.module.components.offence.crystalaura
+package org.aresclient.ares.impl.instrument.module.components.offence.autocrystal
 
 import org.aresclient.ares.api.instruments.Component
 import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.setting.settings.number.NumberSetting
-import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
+import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 
-object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity") {
+object ValiditySettings: Component.Settings<AutoCrystal>(AutoCrystal, "Validity") {
     fun damageSetting(name: String, default: Float): NumberSetting<Float> = settings
         .addFloat(name, default)
         .setMin(0F)
@@ -19,29 +19,20 @@ object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity"
 
     val prevent_suicide = settings
         .addBoolean("Prevent Suicide", true)
-        .setDescription(
-            "Prevents you from killing yourself if the allowed self",
-            "inflicted damage is higher than your remaining health."
-        )
+        .setDescription("Prevents you from killing yourself if the allowed self inflicted damage is higher than your remaining health.")
 
     val place_maximum_friendly_fire = damageSetting("Place Maximum Friendly Fire", 1F)
     val break_maximum_friendly_fire = damageSetting("Break Maximum Friendly Fire", 1F)
 
     val prevent_fratricide = settings
         .addBoolean("Prevent Fratricide", true)
-        .setDescription(
-            "Prevents you from killing your friend if the allowed",
-            "friendly fire damage is higher than his remaining health."
-        )
+        .setDescription("Prevents you from killing your friend if the allowed friendly fire damage is higher than his remaining health.")
 
     fun ratio(name: String, default: Int): Setting<Int> = settings
         .addInteger(name, default)
         .setMin(1)
         .setMax(15)
-        .setDescription(
-            "The minimum ratio of self inflicted or friendly fire to damage",
-            "dealt in a ratio of 1 to the value of this setting."
-        )
+        .setDescription("The minimum ratio of self inflicted or friendly fire to damage dealt in a ratio of 1 to the value of this setting.")
 
     val minimum_place_ratio = ratio("Minimum Place Ratio", 10)
     val minimum_break_ratio = ratio("Minimum Break Ratio", 10)
@@ -52,17 +43,8 @@ object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity"
     val strict_sides = settings
         .addBoolean("Strict Sides", true)
         .setDescription(
-            "Only place against block sides which are facing towards you",
-            "and are not against another block.",
-            "If CrystalAura/Validity/Place_Crystal_At is set to Strict_Side",
-            "it will target the center of the strict blockface."
-        )
-
-    val one_point_twelve_placements = settings
-        .addBoolean("1.12 Placements", false)
-        .setDescription(
-            "Only attempt to place a crystal if there are two blocks of",
-            "air above the block, instead of one."
+            "Only place against block sides which are facing towards you and are not against another block.",
+            "If 'Auto-Crystal/Validity/Place-Crystal-At' is set to 'Strict_Sides' it will target the center of the strict blockface."
         )
 
     val place_crystal_at = settings
@@ -71,7 +53,7 @@ object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity"
         .setDescription(
             "The point of the block at which to interact with when placing a crystal",
             "Closest Point - Interact with the block at the closest point relative to the player's eyelevel",
-            "Strict Sides - Only to be used with CrystalAura/Validity/Strict_Sides enabled - see Strict Sides for info",
+            "Strict Sides - Only to be used with 'Auto-Crystal:Validity:Strict_Sides' enabled - see Strict Sides for info",
             "Center - Interact with the block at the center of the block"
         )
 
@@ -96,4 +78,9 @@ object ValiditySettings: Component.Settings<CrystalAura>(CrystalAura, "Validity"
     val use_game_range = settings
         .addBoolean("Use Game Range", true)
         .setDescription("Use the default range provided in the game's interaction manager")
+
+    val one_point_twelve_placements = settings
+        .addBoolean("1.12 Placements", false)
+        .setDescription("Only attempt to place a crystal if there are two blocks of air above the block, instead of one.")
+
 }

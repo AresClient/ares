@@ -1,9 +1,9 @@
-package org.aresclient.ares.impl.instrument.module.components.offence.crystalaura
+package org.aresclient.ares.impl.instrument.module.components.offence.autocrystal
 
 import org.aresclient.ares.api.instruments.Component
-import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
+import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 
-object MiscellaneousSettings: Component.Settings<CrystalAura>(CrystalAura, "Miscellaneous") {
+object MiscellaneousSettings: Component.Settings<AutoCrystal>(AutoCrystal, "Miscellaneous") {
     val order = settings
         .addEnum("Order", Order.BREAK_PLACE)
         .setDescription(

@@ -1,12 +1,12 @@
-package org.aresclient.ares.impl.instrument.module.components.offence.crystalaura
+package org.aresclient.ares.impl.instrument.module.components.offence.autocrystal
 
 import org.aresclient.ares.api.instruments.Component
 import org.aresclient.ares.impl.instrument.global.Interaction
-import org.aresclient.ares.impl.instrument.module.modules.offence.CrystalAura
+import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 
-object DelaySettings: Component.Settings<CrystalAura>(CrystalAura, "Delays") {
+object DelaySettings: Component.Settings<AutoCrystal>(AutoCrystal, "Delays") {
     init {
-        settings.setDescription("Settings which are either some form of delay, or modifies how fast the CA operates.")
+        settings.setDescription("Settings which are either some form of delay, or modifies how fast the AutoCrystal operates.")
     }
 
     val place = Interaction.standardDelay(settings, "Place", 5.0)

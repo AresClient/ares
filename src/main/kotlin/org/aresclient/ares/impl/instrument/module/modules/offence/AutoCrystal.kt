@@ -1,9 +1,9 @@
 package org.aresclient.ares.impl.instrument.module.modules.offence
 
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.impl.instrument.module.components.offence.crystalaura.*
+import org.aresclient.ares.impl.instrument.module.components.offence.autocrystal.*
 
-object CrystalAura: Module(Category.OFFENSE, "CrystalAura", "Automatically places and breaks end crystals") {
+object AutoCrystal: Module(Category.OFFENSE, "Auto Crystal", "Automatically places and breaks end crystals") {
 	init {
 		// Settings
 		DelaySettings
@@ -13,4 +13,6 @@ object CrystalAura: Module(Category.OFFENSE, "CrystalAura", "Automatically place
 		TargetSettings
 		MiscellaneousSettings
 	}
+
+	// TODO: Not Yet Implemented
 }
