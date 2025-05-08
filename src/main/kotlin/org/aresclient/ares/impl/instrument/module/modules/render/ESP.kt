@@ -51,18 +51,13 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
     private val entities = settings.addGrouped("Entities", arrayListOf(
         EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), Mode.OUTLINE, Color.CYAN, rainbow = true),
-        EntityGroup.create("Players", EntityUtil.Types.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, Mode.OUTLINE, Color.BLUE),
-        EntityGroup.create("Monsters", EntityUtil.Types.monster, Mode.OUTLINE, EntityUtil.TargetType.HOSTILE.defaultColor),
-        EntityGroup.create("Animals", EntityUtil.Types.animal, Mode.OUTLINE, EntityUtil.TargetType.PASSIVE.defaultColor),
-        EntityGroup.create("Misc", EntityUtil.Types.miscellaneous.filter { it != EntityType.END_CRYSTAL && it != EntityType.ITEM }, Mode.OUTLINE, EntityUtil.TargetType.OTHER.defaultColor, enabled = false),
+        EntityGroup.create("Players", EntityUtil.EntityTypes.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, Mode.OUTLINE, Color.BLUE),
+        EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, Mode.OUTLINE, EntityUtil.TargetType.HOSTILE.defaultColor),
+        EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, Mode.OUTLINE, EntityUtil.TargetType.PASSIVE.defaultColor),
+        EntityGroup.create("Misc", EntityUtil.EntityTypes.miscellaneous.filter { it != EntityType.END_CRYSTAL && it != EntityType.ITEM }, Mode.OUTLINE, EntityUtil.TargetType.OTHER.defaultColor, enabled = false),
         EntityGroup.create("Crystals", listOf(EntityType.END_CRYSTAL), Mode.OUTLINE, EntityUtil.TargetType.END_CRYSTAL.defaultColor),
-        EntityGroup.create("Items", listOf(EntityType.ITEM), Mode.BOX, EntityUtil.TargetType.ITEM.defaultColor)
-    ), setOf(
-        GroupMembers("Players", EntityUtil.Types.player.map { GroupMember("ares:player_${it.name.lowercase()}", it.name.formatToPretty(), it) }),
-        GroupMembers("Monsters", EntityUtil.Types.monster.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
-        GroupMembers("Animals", EntityUtil.Types.animal.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
-        GroupMembers("Miscellaneous", EntityUtil.Types.miscellaneous.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
-    ), { EntityGroup() })
+        EntityGroup.create("Items", listOf(EntityType.ITEM), Mode.OUTLINE, EntityUtil.TargetType.ITEM.defaultColor, enabled = false)
+    ), EntityUtil.EntityTypes.possibles, { EntityGroup() })
 
     private val entitiesCache = hashMapOf<Any, EntityGroup?>()
     private var shouldRenderOutlineCache: Boolean? = null

@@ -1,38 +1,73 @@
 package org.aresclient.ares.impl.instrument.module.modules.render
 
 import net.minecraft.entity.Entity
+import net.minecraft.entity.EntityType
+import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.setting.settings.BooleanSetting
+import org.aresclient.ares.api.setting.settings.ColorSetting
+import org.aresclient.ares.api.setting.settings.grouped.Group
 import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.impl.util.EntityUtil.isFriend
-import org.aresclient.ares.impl.util.EntityUtil.isTarget
+import org.aresclient.ares.impl.util.EntityUtil
+import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
+import org.aresclient.ares.impl.util.EntityUtil.playerThreat
 import org.joml.Matrix4f
 import org.joml.Vector2f
 import org.joml.Vector4f
+import kotlin.jvm.optionals.getOrNull
 
 object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entities in render distance") {
-    private val distance = settings.addBoolean("Distance", true)
+    private class EntityGroup(members: Set<Any> = emptySet()): Group<Any>(members) {
+        companion object {
+            fun create(title: String, members: Collection<Any>, distance: Boolean = false, color: Color = Color.WHITE, rainbow: Boolean = false, enabled: Boolean = true): EntityGroup {
+                return EntityGroup(HashSet(members)).also {
+                    it.title.value = title
+                    it.distance.value = distance
+                    it.color.value = color
+                    it.color.isRainbow = rainbow
+                    it.enabled.value = enabled
+                }
+            }
+        }
 
-    // TODO: switch to grouped element
-    private val players = settings.addBoolean("Players", true)
-    private val friends = settings.addBoolean("Friends", true).setVisibility(players::getValue)
-    private val teammates = settings.addBoolean("Teammates", true).setVisibility(players::getValue)
-    private val passive = settings.addBoolean("Passive", true)
-    private val hostile = settings.addBoolean("Hostile", true)
-    private val items = settings.addBoolean("Items", true)
-    private val nametagged = settings.addBoolean("Nametagged", true)
-    private val bots = settings.addBoolean("Bots", false)
+        val distance: BooleanSetting = addBoolean("Distance", false)
+        val color: ColorSetting = addColor("Color", Color.WHITE).setVisibility { !distance.value } as ColorSetting
+    }
+
+    private val entities = settings.addGrouped("Entities", arrayListOf(
+        EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), rainbow = true),
+        EntityGroup.create("Players", EntityUtil.EntityTypes.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, color = Color.BLUE),
+        EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, color = EntityUtil.TargetType.HOSTILE.defaultColor, enabled = false),
+        EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, color = EntityUtil.TargetType.PASSIVE.defaultColor, enabled = false),
+        EntityGroup.create("Misc", EntityUtil.EntityTypes.miscellaneous.filter { it != EntityType.ITEM }, color = EntityUtil.TargetType.OTHER.defaultColor, enabled = false),
+        EntityGroup.create("Items", listOf(EntityType.ITEM), color = EntityUtil.TargetType.ITEM.defaultColor, enabled = false)
+    ), EntityUtil.EntityTypes.possibles, { EntityGroup() })
+
+    private val entitiesCache = hashMapOf<Any, EntityGroup?>()
+
+    override fun onTick() {
+        entitiesCache.clear()
+    }
+
+    private fun getEntityGroup(entity: Entity): EntityGroup? {
+        val type = if(entity is PlayerEntity) entity.playerThreat else entity.type as Any
+        return entitiesCache.getOrPut(type) { entities.find(type).getOrNull() }
+    }
 
     override fun onRenderWorld2d(delta: Float, renderer: Renderer.State, projection: Matrix4f) {
         val center = Vector2f(MC.window.framebufferWidth.toFloat(), MC.window.framebufferHeight.toFloat()).div(2f)
 
-        MC.world?.entities?.filter { it.isTarget(
-                players.value, friends.value, teammates.value, passive.value,
-                hostile.value, items.value, nametagged.value, bots.value
-        ) }?.forEach { entity ->
+        MC.world?.entities?.forEach { entity ->
+            if(entity == SELF) return@forEach
+
+            val group = getEntityGroup(entity) ?: return@forEach
+            if(!group.enabled.value) return@forEach
+
             val pos = entity.getLerpedRenderPos(delta)
-            val color = if(entity.isFriend()) Color.rainbow() else (if(distance.value) Color.fromDistance(MC.player!!.distanceTo(entity)) else Color.WHITE)
+            val color = if(group.distance.value) Color.fromDistance(MC.player!!.distanceTo(entity)) else group.color.value
+
             renderer.tryDrawTracer(projection, center, pos, pos.add(0.0, entity.height.toDouble(), 0.0), 1f, color)
         }
     }

@@ -11,7 +11,11 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registries
 import net.minecraft.util.math.Vec2f
 import org.aresclient.ares.api.Wrapper
+import org.aresclient.ares.api.setting.settings.grouped.GroupMember
+import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
+import org.aresclient.ares.api.setting.settings.grouped.IGroupMember
 import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.api.util.StringUtils.formatToPretty
 import org.aresclient.ares.impl.instrument.global.Rotation
 import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 import org.joml.Vector2d
@@ -44,11 +48,13 @@ object EntityUtil: Wrapper {
 		override val defaultRainbow: Boolean = color == null
 	}
 
-	object Types {
+	object EntityTypes {
 		val player: Set<PlayerThreat>
 		val monster: Set<EntityType<*>>
 		val animal: Set<EntityType<*>>
 		val miscellaneous: Set<EntityType<*>>
+
+		val possibles: Set<IGroupMember<Any>>
 
 		init {
 			val monsterTemp = HashSet<EntityType<*>>()
@@ -67,6 +73,13 @@ object EntityUtil: Wrapper {
 			monster = monsterTemp.toSet()
 			animal = animalTemp.toSet()
 			miscellaneous = miscellaneousTemp.toSet()
+
+			possibles = setOf(
+				GroupMembers("Players", player.map { GroupMember("ares:player_${it.name.lowercase()}", it.name.formatToPretty(), it) }),
+				GroupMembers("Monsters", monster.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+				GroupMembers("Animals", animal.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+				GroupMembers("Miscellaneous", miscellaneous.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+			)
 		}
 	}
 
@@ -98,9 +111,9 @@ object EntityUtil: Wrapper {
 	}
 
 	val PlayerEntity.playerThreat: PlayerThreat get() {
-		return if (scoreboardTeam != null && scoreboardTeam == SELF.scoreboardTeam) PlayerThreat.TEAM
-		else if (isFriend()) PlayerThreat.FRIEND
-		else if (isBot()) PlayerThreat.BOT
+		return if(scoreboardTeam != null && scoreboardTeam == SELF.scoreboardTeam) PlayerThreat.TEAM
+		else if(isFriend()) PlayerThreat.FRIEND
+		else if(isBot()) PlayerThreat.BOT
 		else PlayerThreat.HOSTILE
 	}
 
