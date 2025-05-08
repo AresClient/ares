@@ -24,28 +24,28 @@ abstract class Element: Wrapper {
 
     fun getChildren(): Stack<Element> = children
 
-    open fun pushChild(child:Element):Element {
+    open fun pushChild(child: Element): Element {
         getChildren().push(child).setParent(this)
         child.update()
         return this
     }
 
-    fun pushChildren(vararg children:Element):Element {
+    fun pushChildren(vararg children: Element): Element {
         children.forEach { pushChild(it) }
         return this
     }
-    fun pushChildren(children: Iterable<Element>):Element {
+    fun pushChildren(children: Iterable<Element>): Element {
         children.forEach { pushChild(it) }
         return this
     }
-    fun removeChild(element:Element):Element {
+    fun removeChild(element: Element): Element {
         getChildren().remove(element)
         return this
     }
-    open fun popChild():Element = getChildren().pop().setParent(null)
+    open fun popChild(): Element = getChildren().pop().setParent(null)
 
     fun getParent(): Element? = parent
-    fun setParent(parent: Element?):Element {
+    fun setParent(parent: Element?): Element {
         this.parent = parent
         return this
     }

@@ -1,8 +1,6 @@
 package org.aresclient.ares.impl.gui.game.setting
 
 import org.aresclient.ares.api.setting.Setting
-import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 
@@ -21,8 +19,6 @@ open class RowSettingElement<T: Setting<V>, V>(val setting: T, scale: Float, sta
     }
 
     override fun getText(): String = setting.name ?: "<null>"
-
-    override fun getTextColor(theme: Theme): Color = theme.lightground.value
 
     open fun change() {
     }

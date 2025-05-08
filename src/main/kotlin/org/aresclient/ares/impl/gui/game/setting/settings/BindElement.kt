@@ -24,8 +24,6 @@ class BindElement(setting: BindSetting, height: Float): RowSettingElement<BindSe
 
     override fun getSecondaryText() = if(listening) "..." else text
 
-    override fun getSecondaryTextColor(theme: Theme): Color? = theme.lightground.value
-
     override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 1 && !acted.get() && isMouseOver(mouseX, mouseY)) {
             setting.value = Keys.UNKNOWN

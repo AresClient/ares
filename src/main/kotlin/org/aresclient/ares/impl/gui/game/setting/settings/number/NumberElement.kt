@@ -42,8 +42,6 @@ abstract class NumberElement<T: Number>(setting: NumberSetting<T>, scale: Float)
         return string
     }
 
-    override fun getSecondaryTextColor(theme: Theme): Color? = theme.lightground.value
-
     override fun click(mouseX: Double, mouseY: Double, mouseButton: Int, acted: AtomicBoolean) {
         if(mouseButton == 0 && !acted.get() && isMouseOver(mouseX, mouseY)) {
             multiplier = 1.0

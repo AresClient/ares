@@ -28,7 +28,7 @@ public abstract class Group<T> extends MapSetting {
         super.read(jsonElement);
         membersCache.clear();
         members.stream()
-                .map(it -> ((GroupedSetting<T, ?>) getParent()).getPossibleMemberById(it))
+                .map(it -> getGroupedParent().getPossibleMemberById(it))
                 .forEach(it -> membersCache.add(it.getValue()));
     }
 
@@ -36,7 +36,7 @@ public abstract class Group<T> extends MapSetting {
     public JsonElement write() {
         members.clear();
         membersCache.stream()
-                .map(it -> ((GroupedSetting<T, ?>) getParent()).getPossibleMemberByValue(it))
+                .map(it -> getGroupedParent().getPossibleMemberByValue(it))
                 .forEach(it -> members.add(it.getId()));
         return super.write();
     }
@@ -51,5 +51,9 @@ public abstract class Group<T> extends MapSetting {
 
     public Set<T> getMembers() {
         return membersCache;
+    }
+
+    public GroupedSetting<T, ? extends Group<T>> getGroupedParent() {
+        return (GroupedSetting<T, ? extends Group<T>>) getParent();
     }
 }

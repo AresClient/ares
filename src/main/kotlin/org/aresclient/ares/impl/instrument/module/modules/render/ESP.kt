@@ -46,7 +46,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
         val mode: EnumSetting<Mode> = addEnum("Mode", Mode.OUTLINE)
         val lineColor: ColorSetting = addColor("Line Color", Color.WHITE)
-        val fillColor: ColorSetting = addColor("Fill Color", Color.WHITE)
+        val fillColor: ColorSetting = addColor("Fill Color", Color.WHITE).setVisibility { mode.value != Mode.OUTLINE } as ColorSetting
     }
 
     private val entities = settings.addGrouped("Entities", arrayListOf(

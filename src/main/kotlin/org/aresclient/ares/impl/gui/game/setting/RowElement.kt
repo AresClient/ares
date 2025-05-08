@@ -16,11 +16,11 @@ abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicE
 
     abstract fun getText(): String
 
-    abstract fun getTextColor(theme: Theme): Color
+    open fun getTextColor(theme: Theme): Color = theme.lightground.value
 
     open fun getSecondaryText(): String? = null
 
-    open fun getSecondaryTextColor(theme: Theme): Color? = null
+    open fun getSecondaryTextColor(theme: Theme): Color = theme.lightground.value
 
     open fun getTooltip(): String? = null
 
@@ -57,8 +57,8 @@ abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicE
         )
 
         val secondaryText = getSecondaryText()
-        val secondaryTextColor = getSecondaryTextColor(theme)
-        if(secondaryText != null && secondaryTextColor != null) {
+        if(secondaryText != null) {
+            val secondaryTextColor = getSecondaryTextColor(theme)
             fontRenderer.drawString(
                 matrixStack, secondaryText, getWidth() - fontRenderer.getStringWidth(secondaryText) - 2, 1f,
                 secondaryTextColor.red, secondaryTextColor.green, secondaryTextColor.blue, secondaryTextColor.alpha
@@ -84,7 +84,7 @@ abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicE
         override fun getX(): Float = getParent()?.getWidth()?.let { it - getY() - getWidth()  } ?: 0f
     }
 
-    class SubDeleteButton(scale: Float, action: (Button) -> Unit): SubButton(scale, action, 0.5f, Clipping.NONE) {
+    class SubDeleteButton(scale: Float, action: (Button) -> Unit): SubButton(scale, action, 0.4f, Clipping.NONE) {
         override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
             val size = getHeight()
             buffers.lines.draw(matrixStack) {
