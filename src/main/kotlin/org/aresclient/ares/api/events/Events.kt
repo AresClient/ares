@@ -1,6 +1,7 @@
 package org.aresclient.ares.api.events
 
 import net.minecraft.entity.MovementType
+import net.minecraft.network.packet.Packet
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
 
@@ -62,3 +63,10 @@ abstract class TickEvent(val type: Type, era: Era): AresEvent("tick-" + type.nam
 class ChatEvent(val message: String): AresEvent("chat")
 
 class ToggleEvent(val module: Module, val enabled: Boolean)
+
+open class PacketEvent(val type: Type, val packet: Packet<*>): AresEvent("packet-${type.name}") {
+	enum class Type { RECEIVE, SEND }
+
+	class Receive(packet: Packet<*>): PacketEvent(Type.RECEIVE, packet)
+	class Send(packet: Packet<*>): PacketEvent(Type.SEND, packet)
+}

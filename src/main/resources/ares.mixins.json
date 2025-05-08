@@ -7,18 +7,24 @@
     "accessors.AccessMath$Vec3d",
     "accessors.AccessMinecraftClient",
     "accessors.AccessRenderTickCounter",
+    "mixins.MixinAbstractClientPlayerEntity",
+    "mixins.MixinArmorFeatureRenderer",
+    "mixins.MixinBackgroundRenderer",
     "mixins.MixinCamera",
+    "mixins.MixinChatScreen",
+    "mixins.MixinClientConnection",
     "mixins.MixinClientPlayerEntity",
     "mixins.MixinClientWorld",
     "mixins.MixinEntity",
     "mixins.MixinGameRenderer",
     "mixins.MixinInGameHud",
+    "mixins.MixinInGameOverlayRenderer",
     "mixins.MixinKeyboard",
     "mixins.MixinLightmapTextureManager",
     "mixins.MixinMinecraftClient",
     "mixins.MixinMouse",
-    "mixins.MixinWorldRenderer",
-    "mixins.MixinChatScreen"
+    "mixins.MixinWeatherRendering",
+    "mixins.MixinWorldRenderer"
   ],
   "injectors": {
     "defaultRequire": 1
