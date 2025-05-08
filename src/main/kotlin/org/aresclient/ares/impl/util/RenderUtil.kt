@@ -59,14 +59,14 @@ object RenderUtil {
             }
 
             Renderer.getBuffers().triangle.vertices(
-                minX, minY, minZ, color.red, color.green, color.blue, color.alpha,
-                maxX, minY, minZ, colorX.red, colorX.green, colorX.blue, colorX.alpha,
-                maxX, minY, maxZ, colorXZ.red, colorXZ.green, colorXZ.blue, colorXZ.alpha,
-                minX, minY, maxZ, colorZ.red, colorZ.green, colorZ.blue, colorZ.alpha,
-                minX, maxY, minZ, colorY.red, colorY.green, colorY.blue, colorY.alpha,
-                maxX, maxY, minZ, colorXY.red, colorXY.green, colorXY.blue, colorXY.alpha,
+                minX, minY, minZ, color   .red, color   .green, color   .blue, color   .alpha,
+                maxX, minY, minZ, colorX  .red, colorX  .green, colorX  .blue, colorX  .alpha,
+                maxX, minY, maxZ, colorXZ .red, colorXZ .green, colorXZ .blue, colorXZ .alpha,
+                minX, minY, maxZ, colorZ  .red, colorZ  .green, colorZ  .blue, colorZ  .alpha,
+                minX, maxY, minZ, colorY  .red, colorY  .green, colorY  .blue, colorY  .alpha,
+                maxX, maxY, minZ, colorXY .red, colorXY .green, colorXY .blue, colorXY .alpha,
                 maxX, maxY, maxZ, colorXYZ.red, colorXYZ.green, colorXYZ.blue, colorXYZ.alpha,
-                minX, maxY, maxZ, colorYZ.red, colorYZ.green, colorYZ.blue, colorYZ.alpha,
+                minX, maxY, maxZ, colorYZ .red, colorYZ .green, colorYZ .blue, colorYZ .alpha,
             )
         }
 
@@ -107,6 +107,8 @@ object RenderUtil {
         fun quad(x1: Double, y1: Double, z1: Double, x2: Double, y2: Double, z2: Double, x3: Double, y3: Double, z3: Double, x4: Double, y4: Double, z4: Double, color1: Color, color2: Color, color3: Color, color4: Color, w1: Float, w2: Float, w3: Float, w4: Float) = quad(x1.toFloat(), y1.toFloat(), z1.toFloat(), x2.toFloat(), y2.toFloat(), z2.toFloat(), x3.toFloat(), y3.toFloat(), z3.toFloat(), x4.toFloat(), y4.toFloat(), z4.toFloat(), color1, color2, color3, color4, w1, w2, w3, w4)
         fun quad(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, x3: Float, y3: Float, z3: Float, x4: Float, y4: Float, z4: Float, color: Color, w: Float) = quad(x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4, color, color, color, color, w, w, w, w)
         fun quad(x1: Double, y1: Double, z1: Double, x2: Double, y2: Double, z2: Double, x3: Double, y3: Double, z3: Double, x4: Double, y4: Double, z4: Double, color: Color, w: Float) = quad(x1.toFloat(), y1.toFloat(), z1.toFloat(), x2.toFloat(), y2.toFloat(), z2.toFloat(), x3.toFloat(), y3.toFloat(), z3.toFloat(), x4.toFloat(), y4.toFloat(), z4.toFloat(), color, color, color, color, w, w, w, w)
+        fun quad(pos1: Vec3d, pos2: Vec3d, pos3: Vec3d, pos4: Vec3d, color: Color, w: Float) = quad(pos1.x.toFloat(), pos1.y.toFloat(), pos1.z.toFloat(), pos2.x.toFloat(), pos2.y.toFloat(), pos2.z.toFloat(), pos3.x.toFloat(), pos3.y.toFloat(), pos3.z.toFloat(), pos4.x.toFloat(), pos4.y.toFloat(), pos4.z.toFloat(), color, color, color, color, w, w, w, w)
+        fun quad(pos1: Vec3d, pos2: Vec3d, pos3: Vec3d, pos4: Vec3d, color1: Color, color2: Color, color3: Color, color4: Color, w: Float) = quad(pos1.x.toFloat(), pos1.y.toFloat(), pos1.z.toFloat(), pos2.x.toFloat(), pos2.y.toFloat(), pos2.z.toFloat(), pos3.x.toFloat(), pos3.y.toFloat(), pos3.z.toFloat(), pos4.x.toFloat(), pos4.y.toFloat(), pos4.z.toFloat(), color1, color2, color3, color4, w, w, w, w)
         fun quadVertical(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, color1: Color, color2: Color, w1: Float, w2: Float) = quad(x1, y1, z1, x1, y2, z1, x2, y2, z2, x2, y1, z2, color1, color2, color2, color1, w1, w2, w2, w1)
         fun quadVertical(x1: Double, y1: Double, z1: Double, x2: Double, y2: Double, z2: Double, color1: Color, color2: Color, w1: Float, w2: Float) = quad(x1.toFloat(), y1.toFloat(), z1.toFloat(), x1.toFloat(), y2.toFloat(), z1.toFloat(), x2.toFloat(), y2.toFloat(), z2.toFloat(), x2.toFloat(), y1.toFloat(), z2.toFloat(), color1, color2, color2, color1, w1, w2, w2, w1)
         fun quadVertical(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, color: Color, w: Float) = quad(x1, y1, z1, x1, y2, z1, x2, y2, z2, x2, y1, z2, color, color, color, color, w, w, w, w)
@@ -133,42 +135,30 @@ object RenderUtil {
                     5, 7
                 )
             } else {
-                if(!excludedSides.contains(Direction.WEST) && !excludedSides.contains(
-                        Direction.NORTH)) Renderer.getBuffers().lines.indicesOffset(0, 4)
-                if(!excludedSides.contains(Direction.WEST) && !excludedSides.contains(
-                        Direction.SOUTH)) Renderer.getBuffers().lines.indicesOffset(1, 5)
-                if(!excludedSides.contains(Direction.EAST) && !excludedSides.contains(
-                        Direction.NORTH)) Renderer.getBuffers().lines.indicesOffset(2, 6)
-                if(!excludedSides.contains(Direction.EAST) && !excludedSides.contains(
-                        Direction.SOUTH)) Renderer.getBuffers().lines.indicesOffset(3, 7)
+                if(!excludedSides.contains(Direction.WEST)  && !excludedSides.contains(Direction.NORTH)) Renderer.getBuffers().lines.indicesOffset(0, 4)
+                if(!excludedSides.contains(Direction.WEST)  && !excludedSides.contains(Direction.SOUTH)) Renderer.getBuffers().lines.indicesOffset(1, 5)
+                if(!excludedSides.contains(Direction.EAST)  && !excludedSides.contains(Direction.NORTH)) Renderer.getBuffers().lines.indicesOffset(2, 6)
+                if(!excludedSides.contains(Direction.EAST)  && !excludedSides.contains(Direction.SOUTH)) Renderer.getBuffers().lines.indicesOffset(3, 7)
                 // bottom
-                if(!excludedSides.contains(Direction.WEST) && !excludedSides.contains(
-                        Direction.DOWN)) Renderer.getBuffers().lines.indicesOffset(0, 1)
-                if(!excludedSides.contains(Direction.EAST) && !excludedSides.contains(
-                        Direction.DOWN)) Renderer.getBuffers().lines.indicesOffset(2, 3)
-                if(!excludedSides.contains(Direction.NORTH) && !excludedSides.contains(
-                        Direction.DOWN)) Renderer.getBuffers().lines.indicesOffset(0, 2)
-                if(!excludedSides.contains(Direction.SOUTH) && !excludedSides.contains(
-                        Direction.DOWN)) Renderer.getBuffers().lines.indicesOffset(1, 3)
+                if(!excludedSides.contains(Direction.WEST)  && !excludedSides.contains(Direction.DOWN))  Renderer.getBuffers().lines.indicesOffset(0, 1)
+                if(!excludedSides.contains(Direction.EAST)  && !excludedSides.contains(Direction.DOWN))  Renderer.getBuffers().lines.indicesOffset(2, 3)
+                if(!excludedSides.contains(Direction.NORTH) && !excludedSides.contains(Direction.DOWN))  Renderer.getBuffers().lines.indicesOffset(0, 2)
+                if(!excludedSides.contains(Direction.SOUTH) && !excludedSides.contains(Direction.DOWN))  Renderer.getBuffers().lines.indicesOffset(1, 3)
                 // top
-                if(!excludedSides.contains(Direction.WEST) && !excludedSides.contains(
-                        Direction.UP)) Renderer.getBuffers().lines.indicesOffset(4, 5)
-                if(!excludedSides.contains(Direction.EAST) && !excludedSides.contains(
-                        Direction.UP)) Renderer.getBuffers().lines.indicesOffset(6, 7)
-                if(!excludedSides.contains(Direction.NORTH) && !excludedSides.contains(
-                        Direction.UP)) Renderer.getBuffers().lines.indicesOffset(4, 6)
-                if(!excludedSides.contains(Direction.SOUTH) && !excludedSides.contains(
-                        Direction.UP)) Renderer.getBuffers().lines.indicesOffset(5, 7)
+                if(!excludedSides.contains(Direction.WEST)  && !excludedSides.contains(Direction.UP))    Renderer.getBuffers().lines.indicesOffset(4, 5)
+                if(!excludedSides.contains(Direction.EAST)  && !excludedSides.contains(Direction.UP))    Renderer.getBuffers().lines.indicesOffset(6, 7)
+                if(!excludedSides.contains(Direction.NORTH) && !excludedSides.contains(Direction.UP))    Renderer.getBuffers().lines.indicesOffset(4, 6)
+                if(!excludedSides.contains(Direction.SOUTH) && !excludedSides.contains(Direction.UP))    Renderer.getBuffers().lines.indicesOffset(5, 7)
             }
 
             Renderer.getBuffers().lines.vertices(
-                minX, minY, minZ, width, color.red, color.green, color.blue, color.alpha,
-                minX, minY, maxZ, width, colorZ.red, colorZ.green, colorZ.blue, colorZ.alpha,
-                maxX, minY, minZ, width, colorX.red, colorX.green, colorX.blue, colorX.alpha,
-                maxX, minY, maxZ, width, colorXZ.red, colorXZ.green, colorXZ.blue, colorXZ.alpha,
-                minX, maxY, minZ, width, colorY.red, colorY.green, colorY.blue, colorY.alpha,
-                minX, maxY, maxZ, width, colorYZ.red, colorYZ.green, colorYZ.blue, colorYZ.alpha,
-                maxX, maxY, minZ, width, colorXY.red, colorXY.green, colorXY.blue, colorXY.alpha,
+                minX, minY, minZ, width, color   .red, color   .green, color   .blue, color   .alpha,
+                minX, minY, maxZ, width, colorZ  .red, colorZ  .green, colorZ  .blue, colorZ  .alpha,
+                maxX, minY, minZ, width, colorX  .red, colorX  .green, colorX  .blue, colorX  .alpha,
+                maxX, minY, maxZ, width, colorXZ .red, colorXZ .green, colorXZ .blue, colorXZ .alpha,
+                minX, maxY, minZ, width, colorY  .red, colorY  .green, colorY  .blue, colorY  .alpha,
+                minX, maxY, maxZ, width, colorYZ .red, colorYZ .green, colorYZ .blue, colorYZ .alpha,
+                maxX, maxY, minZ, width, colorXY .red, colorXY .green, colorXY .blue, colorXY .alpha,
                 maxX, maxY, maxZ, width, colorXYZ.red, colorXYZ.green, colorXYZ.blue, colorXYZ.alpha
             )
         }

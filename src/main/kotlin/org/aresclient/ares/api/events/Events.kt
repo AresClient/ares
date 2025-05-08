@@ -2,6 +2,7 @@ package org.aresclient.ares.api.events
 
 import net.minecraft.entity.MovementType
 import net.minecraft.network.packet.Packet
+import net.minecraft.text.Text
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
 
@@ -70,3 +71,5 @@ open class PacketEvent(val type: Type, val packet: Packet<*>): AresEvent("packet
 	class Receive(packet: Packet<*>): PacketEvent(Type.RECEIVE, packet)
 	class Send(packet: Packet<*>): PacketEvent(Type.SEND, packet)
 }
+
+class RenderEntityLabelEvent(val text: Text): AresEvent("render-entity-label")

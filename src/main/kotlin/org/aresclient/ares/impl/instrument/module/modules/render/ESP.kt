@@ -14,10 +14,8 @@ import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
-import org.aresclient.ares.api.setting.settings.grouped.GroupMember
-import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
 import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.api.util.StringUtils.formatToPretty
+import org.aresclient.ares.impl.instrument.module.components.render.esp.Chamlike
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
@@ -28,17 +26,21 @@ import kotlin.jvm.optionals.getOrNull
 
 // TODO: FIX DEPTH ON OUTLINE ESP
 object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through walls") {
-    enum class Mode { OUTLINE, BOX }
+    enum class Mode { OUTLINE, BOX, CHAMLIKE }
 
-    private class EntityGroup(members: Set<Any> = emptySet()): Group<Any>(members) {
+    init {
+        Chamlike
+    }
+
+    class EntityGroup(members: Set<Any> = emptySet()): Group<Any>(members) {
         companion object {
-            fun create(title: String, members: Collection<Any>, mode: Mode, color: Color, rainbow: Boolean = false, enabled: Boolean = true): EntityGroup {
+            fun create(title: String, members: Collection<Any>, mode: Mode, target: EntityUtil.Target, enabled: Boolean = false): EntityGroup {
                 return EntityGroup(HashSet(members)).also {
                     it.title.value = title
                     it.mode.value = mode
-                    it.lineColor.value = color
-                    it.fillColor.value = color.deriveAlpha(0.2f)
-                    it.fillColor.isRainbow = rainbow
+                    it.lineColor.value = target.defaultColor
+                    it.fillColor.value = target.defaultColor.deriveAlpha(0.2f)
+                    it.fillColor.isRainbow = target.defaultRainbow
                     it.enabled.value = enabled
                 }
             }
@@ -50,13 +52,13 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
     }
 
     private val entities = settings.addGrouped("Entities", arrayListOf(
-        EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), Mode.OUTLINE, Color.CYAN, rainbow = true),
-        EntityGroup.create("Players", EntityUtil.EntityTypes.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, Mode.OUTLINE, Color.BLUE),
-        EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, Mode.OUTLINE, EntityUtil.TargetType.HOSTILE.defaultColor),
-        EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, Mode.OUTLINE, EntityUtil.TargetType.PASSIVE.defaultColor),
-        EntityGroup.create("Misc", EntityUtil.EntityTypes.miscellaneous.filter { it != EntityType.END_CRYSTAL && it != EntityType.ITEM }, Mode.OUTLINE, EntityUtil.TargetType.OTHER.defaultColor, enabled = false),
-        EntityGroup.create("Crystals", listOf(EntityType.END_CRYSTAL), Mode.OUTLINE, EntityUtil.TargetType.END_CRYSTAL.defaultColor),
-        EntityGroup.create("Items", listOf(EntityType.ITEM), Mode.OUTLINE, EntityUtil.TargetType.ITEM.defaultColor, enabled = false)
+        EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), Mode.OUTLINE, PlayerThreat.FRIEND, enabled = true),
+        EntityGroup.create("Players", EntityUtil.EntityTypes.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, Mode.OUTLINE, PlayerThreat.HOSTILE, enabled = true),
+        EntityGroup.create("Crystals", listOf(EntityType.END_CRYSTAL), Mode.CHAMLIKE, EntityUtil.TargetType.END_CRYSTAL, enabled = true),
+        EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, Mode.OUTLINE, EntityUtil.TargetType.HOSTILE),
+        EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, Mode.OUTLINE, EntityUtil.TargetType.PASSIVE),
+        EntityGroup.create("Items", listOf(EntityType.ITEM), Mode.OUTLINE, EntityUtil.TargetType.ITEM, enabled = true),
+        EntityGroup.create("Misc", EntityUtil.EntityTypes.miscellaneous.filter { it != EntityType.END_CRYSTAL && it != EntityType.ITEM }, Mode.OUTLINE, EntityUtil.TargetType.OTHER)
     ), EntityUtil.EntityTypes.possibles, { EntityGroup() })
 
     private val entitiesCache = hashMapOf<Any, EntityGroup?>()
@@ -91,7 +93,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
     fun shouldRenderOutline(entity: Entity) = shouldRenderOutline() && getEntityGroup(entity)?.let { it.enabled.value && it.mode.value == Mode.OUTLINE } == true
 
-    private fun getEntityGroup(entity: Entity): EntityGroup? {
+    fun getEntityGroup(entity: Entity): EntityGroup? {
         val type = if(entity is PlayerEntity) entity.playerThreat else entity.type as Any
         return entitiesCache.getOrPut(type) { entities.find(type).getOrNull() }
     }

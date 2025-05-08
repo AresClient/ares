@@ -5,6 +5,7 @@ import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.ItemEntity
 import net.minecraft.entity.SpawnGroup.*
+import net.minecraft.entity.decoration.EndCrystalEntity
 import net.minecraft.entity.mob.Monster
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.player.PlayerEntity
@@ -38,14 +39,11 @@ object EntityUtil: Wrapper {
 		val defaultRainbow: Boolean
 	}
 
-	enum class PlayerThreat(color: Color?): Target {
-		FRIEND(null),
+	enum class PlayerThreat(override val defaultColor: Color, override val defaultRainbow: Boolean = false): Target {
+		FRIEND(Color.CYAN, true),
 		TEAM(Color.GREEN),
 		HOSTILE(Color.RED),
-		BOT(Color.BLACK);
-
-		override val defaultColor: Color = color ?: Color.CYAN
-		override val defaultRainbow: Boolean = color == null
+		BOT(Color.BLACK)
 	}
 
 	object EntityTypes {
@@ -87,21 +85,19 @@ object EntityUtil: Wrapper {
 
 	fun Entity.isBot(): Boolean = this is PlayerEntity && isInvisibleTo(MC.player) && !isOnGround && !collidesWith(MC.player)
 
-	enum class TargetType(color: Color): Target {
+	enum class TargetType(override val defaultColor: Color, override val defaultRainbow: Boolean = false): Target {
 		SELF(Color.WHITE),
 		PASSIVE(Color.YELLOW),
 		HOSTILE(Color.BLUE),
 		ITEM(Color.WHITE),
 		END_CRYSTAL(Color.MAGENTA),
 		OTHER(Color.GRAY);
-
-		override val defaultColor: Color = color
-		override val defaultRainbow: Boolean = false
 	}
 
 	val Entity.targetType: Target get() {
 		if(this == SELF) return TargetType.SELF
 		return when(this) {
+			is EndCrystalEntity -> TargetType.END_CRYSTAL
 			is ItemEntity -> TargetType.ITEM
 			is PassiveEntity -> TargetType.PASSIVE
 			is Monster -> TargetType.HOSTILE
@@ -111,9 +107,9 @@ object EntityUtil: Wrapper {
 	}
 
 	val PlayerEntity.playerThreat: PlayerThreat get() {
-		return if(scoreboardTeam != null && scoreboardTeam == SELF.scoreboardTeam) PlayerThreat.TEAM
-		else if(isFriend()) PlayerThreat.FRIEND
+		return if(isFriend()) PlayerThreat.FRIEND
 		else if(isBot()) PlayerThreat.BOT
+		else if(scoreboardTeam != null && scoreboardTeam == SELF.scoreboardTeam) PlayerThreat.TEAM
 		else PlayerThreat.HOSTILE
 	}
 
