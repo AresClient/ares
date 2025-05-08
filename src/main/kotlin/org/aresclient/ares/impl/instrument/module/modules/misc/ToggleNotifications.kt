@@ -7,10 +7,12 @@ import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.TextColor
 import org.aresclient.ares.impl.util.ChatUtil
 
-object MsgOnToggle: Module(Category.MISC, "MsgOnToggle", "Sends a chat message when a module is toggled") {
+object ToggleNotifications: Module(Category.MISC, "Toggle Notifications", "Sends a chat message when a module is toggled", Defaults().setEnabled(true)) {
     @field:EventHandler
     private val toggleListener = EventListener<ToggleEvent> { event ->
         if(event.module == ClickGUI) return@EventListener
         ChatUtil.print("${if(event.enabled) "${TextColor.GREEN}Enabled" else "${TextColor.RED}Disabled"} ${TextColor.BLUE}${event.module.name}")
     }
+
+    //TODO: HUD Element which works independently from the chat
 }

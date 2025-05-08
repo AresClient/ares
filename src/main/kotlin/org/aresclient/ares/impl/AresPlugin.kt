@@ -4,7 +4,7 @@ import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.impl.instrument.commands.*
 import org.aresclient.ares.impl.instrument.global.*
 import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
-import org.aresclient.ares.impl.instrument.module.modules.misc.MsgOnToggle
+import org.aresclient.ares.impl.instrument.module.modules.misc.ToggleNotifications
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.instrument.module.modules.movement.SafeWalk
 import org.aresclient.ares.impl.instrument.module.modules.movement.Speed
@@ -26,7 +26,7 @@ object AresPlugin: Plugin(
 	),
 	modules = listOf(
 		ClickGUI,
-		MsgOnToggle,
+		ToggleNotifications,
 		TitleScreen,
 
 		SafeWalk,
