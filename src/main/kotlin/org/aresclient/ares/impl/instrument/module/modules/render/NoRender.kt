@@ -9,44 +9,44 @@ import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
 import org.aresclient.ares.api.events.PacketEvent
 import org.aresclient.ares.api.instruments.Module
 
-object NoRender: Module(Category.RENDER, "NoRender", "Prevent certain overlays and particles from rendering") {
-    private val fire = settings.addBoolean("NoFire", true)
-    private val water = settings.addBoolean("NoWater", true)
-    private val wall = settings.addBoolean("NoWall", true)
-    private val darkness = settings.addBoolean("NoDarkness", true)
-    private val blindness = settings.addBoolean("NoBlindness", true)
-    private val nausea = settings.addBoolean("NoNausea", true)
-    private val fog = settings.addBoolean("NoFog", true)
-    private val weather = settings.addBoolean("NoWeather", false)
-    private val hurtShake = settings.addBoolean("NoHurtShake", false)
-    private val fovChange = settings.addBoolean("NoFovChange", false)
-    private val explosions = settings.addBoolean("NoExplosions", false)
-    private val particles = settings.addBoolean("NoParticles", false)
-    private val armorMap = settings.addMap("NoArmorRender")
+object NoRender: Module(Category.RENDER, "No Render", "Prevent certain overlays and particles from rendering") {
+    private val fire = settings.addBoolean("Fire", true)
+    private val water = settings.addBoolean("Water", true)
+    private val wall = settings.addBoolean("Wall", true)
+    private val darkness = settings.addBoolean("Darkness", true)
+    private val blindness = settings.addBoolean("Blindness", true)
+    private val nausea = settings.addBoolean("Nausea", true)
+    private val fog = settings.addBoolean("Fog", true)
+    private val weather = settings.addBoolean("Weather", false)
+    private val hurtShake = settings.addBoolean("Hurt Shake", false)
+    private val changeFov = settings.addBoolean("Change FOV", false)
+    private val explosions = settings.addBoolean("Explosions", false)
+    private val particles = settings.addBoolean("Particles", false)
+    private val armorMap = settings.addMap("Armor")
     private val armor = armorMap.addBoolean("Enabled", false)
     private val head = armorMap.addBoolean("Head", true)
     private val chest = armorMap.addBoolean("Chest", true)
     private val legs = armorMap.addBoolean("Legs", true)
     private val feet = armorMap.addBoolean("Feet", true)
 
-    // see MixinInGameOverlayRenderer
+    /** @see org.aresclient.ares.mixin.mixins.MixinInGameOverlayRenderer */
     fun shouldBlockFireOverlay() = isEnabled() && fire.value
     fun shouldBlockWaterOverlay() = isEnabled() && water.value
     fun shouldBlockWallOverlay() = isEnabled() && wall.value
 
-    // see MixinBackgroundRenderer
+    /** @see org.aresclient.ares.mixin.mixins.MixinBackgroundRenderer */
     fun shouldBlockFog() = isEnabled() && fog.value
 
-    // see MixinWeatherRendering
+    /** @see org.aresclient.ares.mixin.mixins.MixinWeatherRendering */
     fun shouldBlockWeather() = isEnabled() && weather.value
 
-    // see MixinGameRenderer
+    /** @see org.aresclient.ares.mixin.mixins.MixinGameRenderer */
     fun shouldBlockHurtShake() = isEnabled() && hurtShake.value
 
-    // see MixinAbstractClientPlayerEntity
-    fun shouldBlockFovChange() = isEnabled() && fovChange.value
+    /** @see org.aresclient.ares.mixin.mixins.MixinAbstractClientPlayerEntity */
+    fun shouldBlockFovChange() = isEnabled() && changeFov.value
 
-    // see MixinArmorFeatureRenderer
+    /** @see org.aresclient.ares.mixin.mixins.MixinArmorFeatureRenderer */
     fun shouldBlockArmorHead() = isEnabled() && armor.value && head.value
     fun shouldBlockArmorChest() = isEnabled() && armor.value && chest.value
     fun shouldBlockArmorLegs() = isEnabled() && armor.value && legs.value
