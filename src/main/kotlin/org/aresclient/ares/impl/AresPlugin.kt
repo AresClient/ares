@@ -55,6 +55,7 @@ object AresPlugin: Plugin(
 		ToggleCommand,
 		PrefixCommand,
 		FriendCommand,
-		ClearCommand
+		ClearCommand,
+		FakePlayerCommand
 	)
 )

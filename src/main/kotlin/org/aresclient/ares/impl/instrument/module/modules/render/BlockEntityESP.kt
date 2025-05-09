@@ -37,7 +37,7 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
                                                             BlockEntityType.HOPPER, BlockEntityType.SMOKER), Color(0.65f, 0.65f, 0.65f, 1f))
     ), WorldUtil.BlockEntityTypes.possibles, { BlockEntityGroup() })
 
-    private val blockEntitiesCache = hashMapOf<Any, BlockEntityGroup?>()
+    private val blockEntitiesCache = hashMapOf<BlockEntityType<*>, BlockEntityGroup?>()
 
     override fun onTick() {
         blockEntitiesCache.clear()

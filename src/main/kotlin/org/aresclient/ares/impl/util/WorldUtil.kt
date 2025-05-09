@@ -1,15 +1,23 @@
 package org.aresclient.ares.impl.util
 
+import net.minecraft.block.Block
+import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.registry.Registries
-import net.minecraft.util.Language
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.setting.settings.grouped.GroupMember
 import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
 import org.aresclient.ares.api.setting.settings.grouped.IGroupMember
+import org.aresclient.ares.api.util.StringUtils.formatToPretty
 
 object WorldUtil: Wrapper {
+    object BlockTypes {
+        val possibles: Set<IGroupMember<Block>> = Registries.BLOCK.map {
+            GroupMember(Registries.BLOCK.getId(it).toString(), it.name.string, it)
+        }.toSet()
+    }
+
     object BlockEntityTypes {
         val storage = HashSet<BlockEntityType<*>>()
         val miscellaneous = HashSet<BlockEntityType<*>>()
@@ -33,9 +41,10 @@ object WorldUtil: Wrapper {
             )
         }
 
-        private fun HashSet<BlockEntityType<*>>.toGroupMembers() = map { type ->
-            val id = BlockEntityType.getId(type).toString()
-            GroupMember(id, Language.getInstance().get(id), type)
+        private fun HashSet<BlockEntityType<*>>.toGroupMembers() = mapNotNull { type ->
+            val id = BlockEntityType.getId(type) ?: return@mapNotNull null
+            val block = Registries.BLOCK.get(id)
+            GroupMember(id.toString(), if(block != Blocks.AIR) block.name.string else id.toShortTranslationKey().formatToPretty(), type)
         }
     }
 
