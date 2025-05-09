@@ -48,7 +48,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
         val mode: EnumSetting<Mode> = addEnum("Mode", Mode.OUTLINE)
         val lineColor: ColorSetting = addColor("Line Color", Color.WHITE)
-        val fillColor: ColorSetting = addColor("Fill Color", Color.WHITE).setVisibility { mode.value != Mode.OUTLINE } as ColorSetting
+        val fillColor: ColorSetting = addColor("Fill Color", Color.WHITE.deriveAlpha(0.2f)).setVisibility { mode.value != Mode.OUTLINE } as ColorSetting
     }
 
     private val entities = settings.addGrouped("Entities", arrayListOf(
@@ -70,6 +70,8 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
     }
 
     override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {
+        if(entities.none { it.enabled.value && it.mode.value == Mode.BOX }) return
+
         WORLD.entities?.forEach { entity ->
             if(entity == SELF) return@forEach
 

@@ -2,6 +2,8 @@ package org.aresclient.ares.impl.instrument.module.modules.render
 
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
+import net.minecraft.entity.effect.StatusEffects
+import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket
 import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
 import org.aresclient.ares.api.events.PacketEvent
@@ -11,6 +13,9 @@ object NoRender: Module(Category.RENDER, "NoRender", "Prevent certain overlays a
     private val fire = settings.addBoolean("NoFire", true)
     private val water = settings.addBoolean("NoWater", true)
     private val wall = settings.addBoolean("NoWall", true)
+    private val darkness = settings.addBoolean("NoDarkness", true)
+    private val blindness = settings.addBoolean("NoBlindness", true)
+    private val nausea = settings.addBoolean("NoNausea", true)
     private val fog = settings.addBoolean("NoFog", true)
     private val weather = settings.addBoolean("NoWeather", false)
     private val hurtShake = settings.addBoolean("NoHurtShake", false)
@@ -41,6 +46,7 @@ object NoRender: Module(Category.RENDER, "NoRender", "Prevent certain overlays a
     // see MixinAbstractClientPlayerEntity
     fun shouldBlockFovChange() = isEnabled() && fovChange.value
 
+    // see MixinArmorFeatureRenderer
     fun shouldBlockArmorHead() = isEnabled() && armor.value && head.value
     fun shouldBlockArmorChest() = isEnabled() && armor.value && chest.value
     fun shouldBlockArmorLegs() = isEnabled() && armor.value && legs.value
@@ -50,5 +56,10 @@ object NoRender: Module(Category.RENDER, "NoRender", "Prevent certain overlays a
     private val packetReceiveListener = EventListener<PacketEvent.Receive> {
         if(it.packet is ExplosionS2CPacket && explosions.value) it.isCancelled = true
         if(it.packet is ParticleS2CPacket && particles.value) it.isCancelled = true
+        if(it.packet is EntityStatusEffectS2CPacket) {
+            if(it.packet.effectId == StatusEffects.DARKNESS && darkness.value) it.isCancelled = true
+            if(it.packet.effectId == StatusEffects.BLINDNESS && blindness.value) it.isCancelled = true
+            if(it.packet.effectId == StatusEffects.NAUSEA && nausea.value) it.isCancelled = true
+        }
     }
 }

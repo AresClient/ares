@@ -11,6 +11,9 @@ open class Plugin(val name: String, val description: String, val version: String
 				  val authors: Array<String>, val globals: List<Global> = emptyList(), val modules: List<Module> = emptyList(),
 				  val commands: List<Command> = emptyList()): Wrapper {
 	open fun init() {
+		modules.forEach {
+			it.category.modules.add(it)
+		}
 	}
 
 	open fun tickClient() {

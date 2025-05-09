@@ -83,10 +83,6 @@ abstract class Module(val category: Category, name: String, description: String,
 
 	private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
 
-	init {
-	    category.modules.add(this)
-	}
-
 	/* ---------------------------------------------------------------------- */
 
 	fun isEnabled(): Boolean = enabled.value

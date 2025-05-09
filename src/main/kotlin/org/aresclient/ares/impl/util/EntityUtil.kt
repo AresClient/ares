@@ -47,37 +47,33 @@ object EntityUtil: Wrapper {
 	}
 
 	object EntityTypes {
-		val player: Set<PlayerThreat>
-		val monster: Set<EntityType<*>>
-		val animal: Set<EntityType<*>>
-		val miscellaneous: Set<EntityType<*>>
+		val player = PlayerThreat.entries.toSet()
+		val monster = HashSet<EntityType<*>>()
+		val animal = HashSet<EntityType<*>>()
+		val miscellaneous = HashSet<EntityType<*>>()
 
 		val possibles: Set<IGroupMember<Any>>
 
 		init {
-			val monsterTemp = HashSet<EntityType<*>>()
-			val animalTemp = HashSet<EntityType<*>>()
-			val miscellaneousTemp = HashSet<EntityType<*>>()
-
 			Registries.ENTITY_TYPE.forEach {
-				when (it.spawnGroup) {
-					MONSTER -> monsterTemp.add(it)
-					CREATURE, WATER_CREATURE, UNDERGROUND_WATER_CREATURE, AXOLOTLS, AMBIENT, WATER_AMBIENT -> animalTemp.add(it)
-					MISC -> if (it != EntityType.PLAYER) miscellaneousTemp.add(it)
+				when(it.spawnGroup) {
+					MONSTER -> monster.add(it)
+					CREATURE, WATER_CREATURE, UNDERGROUND_WATER_CREATURE, AXOLOTLS, AMBIENT, WATER_AMBIENT -> animal.add(it)
+					MISC -> if(it != EntityType.PLAYER) miscellaneous.add(it)
+					else -> Unit
 				}
 			}
 
-			player = PlayerThreat.entries.toSet()
-			monster = monsterTemp.toSet()
-			animal = animalTemp.toSet()
-			miscellaneous = miscellaneousTemp.toSet()
-
 			possibles = setOf(
 				GroupMembers("Players", player.map { GroupMember("ares:player_${it.name.lowercase()}", it.name.formatToPretty(), it) }),
-				GroupMembers("Monsters", monster.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
-				GroupMembers("Animals", animal.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
-				GroupMembers("Miscellaneous", miscellaneous.map { GroupMember(EntityType.getId(it).toString(), it.name.string, it) }),
+				GroupMembers("Monsters", monster.toGroupMembers()),
+				GroupMembers("Animals", animal.toGroupMembers()),
+				GroupMembers("Miscellaneous", miscellaneous.toGroupMembers()),
 			)
+		}
+
+		private fun HashSet<EntityType<*>>.toGroupMembers(): List<GroupMember<Any>> = map { type ->
+			GroupMember(EntityType.getId(type).toString(), type.name.string, type)
 		}
 	}
 
