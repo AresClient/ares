@@ -5,6 +5,8 @@ import net.minecraft.block.Blocks
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.registry.Registries
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.setting.settings.grouped.GroupMember
 import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
@@ -61,5 +63,14 @@ object WorldUtil: Wrapper {
         }
 
         return blockEntities
+    }
+
+    val BlockPos.boundingBox: Box? get() {
+        try {
+            assert(MC.world != null)
+            return WORLD.getBlockState(this).getOutlineShape(WORLD, this).boundingBox.offset(this)
+        } catch (e: Exception) {
+            return null
+        }
     }
 }
