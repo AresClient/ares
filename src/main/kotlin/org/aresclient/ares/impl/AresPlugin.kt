@@ -11,51 +11,53 @@ import org.aresclient.ares.impl.instrument.module.modules.movement.Speed
 import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
 import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
 import org.aresclient.ares.impl.instrument.module.modules.player.Freecam
+import org.aresclient.ares.impl.instrument.module.modules.player.PortalGUIs
 import org.aresclient.ares.impl.instrument.module.modules.render.*
 
 object AresPlugin: Plugin(
-	"Ares",
-	"The main Ares utility mod plugin",
-	"3.0.0-SNAPSHOT",
-	"1.21.5",
-	arrayOf("Tigermouthbear", "Makrennel"),
-	globals = listOf(
-		Camera,
-		Interaction,
-		Rotation
-	),
-	modules = listOf(
-		ClickGUI,
-		ToggleNotifications,
-		TitleScreen,
+    "Ares",
+    "The main Ares utility mod plugin",
+    "3.0.0-SNAPSHOT",
+    "1.21.5",
+    arrayOf("Tigermouthbear", "Makrennel"),
+    globals = listOf(
+        Camera,
+        Interaction,
+        Rotation
+    ),
+    modules = listOf(
+        ClickGUI,
+        ToggleNotifications,
+        TitleScreen,
 
-		SafeWalk,
-		Speed,
+        SafeWalk,
+        Speed,
 
-		AutoCrystal,
+        AutoCrystal,
 
-		AntiAFK,
-		Freecam,
+        AntiAFK,
+        Freecam,
+        PortalGUIs,
 
-		BlockEntityESP,
-		ESP,
-		Fullbright,
-		NoRender,
-		TestModule,
-		Tracers
-	),
-	commands = listOf(
-		EchoCommand,
-		HelpCommand,
-		SaveCommand,
-		LoadCommand,
-		SetCommand,
-		ResetCommand,
-		GetCommand,
-		ToggleCommand,
-		PrefixCommand,
-		FriendCommand,
-		ClearCommand,
-		FakePlayerCommand
-	)
+        BlockEntityESP,
+        ESP,
+        Fullbright,
+        NoRender,
+        TestModule,
+        Tracers
+    ),
+    commands = listOf(
+        EchoCommand,
+        HelpCommand,
+        SaveCommand,
+        LoadCommand,
+        SetCommand,
+        ResetCommand,
+        GetCommand,
+        ToggleCommand,
+        PrefixCommand,
+        FriendCommand,
+        ClearCommand,
+        FakePlayerCommand
+    )
 )

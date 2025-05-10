@@ -10,6 +10,7 @@ import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.Era;
 import org.aresclient.ares.api.events.PlayerEvent;
 import org.aresclient.ares.api.events.TickEvent;
+import org.aresclient.ares.impl.instrument.module.modules.player.PortalGUIs;
 import org.aresclient.ares.impl.util.MathUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -38,5 +39,10 @@ public class MixinClientPlayerEntity extends AbstractClientPlayerEntity implemen
         if (!event.isCancelled()) return;
         ci.cancel();
         super.move(type, event.getMovement());
+    }
+
+    @Inject(method = "tickNausea", at = @At("HEAD"))
+    private void tickNausea(CallbackInfo ci) {
+        if(PortalGUIs.INSTANCE.isEnabled() && portalManager != null) portalManager.setInPortal(false);
     }
 }

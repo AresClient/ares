@@ -5,7 +5,6 @@ import dev.tigr.simpleevents.listener.EventListener
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket
-import net.minecraft.network.packet.s2c.play.ParticleS2CPacket
 import org.aresclient.ares.api.events.PacketEvent
 import org.aresclient.ares.api.instruments.Module
 
@@ -13,9 +12,11 @@ object NoRender: Module(Category.RENDER, "No Render", "Prevent certain overlays 
     private val fire = settings.addBoolean("Fire", true)
     private val water = settings.addBoolean("Water", true)
     private val wall = settings.addBoolean("Wall", true)
+    private val portal = settings.addBoolean("Portal", false)
+    private val nausea = settings.addBoolean("Nausea", true)
+    private val snow = settings.addBoolean("Powder Snow", true)
     private val darkness = settings.addBoolean("Darkness", true)
     private val blindness = settings.addBoolean("Blindness", true)
-    private val nausea = settings.addBoolean("Nausea", true)
     private val fog = settings.addBoolean("Fog", true)
     private val weather = settings.addBoolean("Weather", false)
     private val hurtShake = settings.addBoolean("Hurt Shake", false)
@@ -33,6 +34,12 @@ object NoRender: Module(Category.RENDER, "No Render", "Prevent certain overlays 
     fun shouldBlockFireOverlay() = isEnabled() && fire.value
     fun shouldBlockWaterOverlay() = isEnabled() && water.value
     fun shouldBlockWallOverlay() = isEnabled() && wall.value
+
+    /** @see org.aresclient.ares.mixin.mixins.MixinInGameHud */
+    /** @see org.aresclient.ares.mixin.mixins.MixinGameRenderer */
+    fun shouldBlockPortalOverlay() = isEnabled() && portal.value
+    fun shouldBlockNausea() = isEnabled() && nausea.value
+    fun shouldBlockPowderSnowOverlay() = isEnabled() && snow.value
 
     /** @see org.aresclient.ares.mixin.mixins.MixinBackgroundRenderer */
     fun shouldBlockFog() = isEnabled() && fog.value
@@ -52,14 +59,15 @@ object NoRender: Module(Category.RENDER, "No Render", "Prevent certain overlays 
     fun shouldBlockArmorLegs() = isEnabled() && armor.value && legs.value
     fun shouldBlockArmorFeet() = isEnabled() && armor.value && feet.value
 
+    /** @see org.aresclient.ares.mixin.mixins.MixinWorldRenderer */
+    fun shouldBlockParticles() = isEnabled() && particles.value
+
     @field:EventHandler
     private val packetReceiveListener = EventListener<PacketEvent.Receive> {
         if(it.packet is ExplosionS2CPacket && explosions.value) it.isCancelled = true
-        if(it.packet is ParticleS2CPacket && particles.value) it.isCancelled = true
         if(it.packet is EntityStatusEffectS2CPacket) {
             if(it.packet.effectId == StatusEffects.DARKNESS && darkness.value) it.isCancelled = true
             if(it.packet.effectId == StatusEffects.BLINDNESS && blindness.value) it.isCancelled = true
-            if(it.packet.effectId == StatusEffects.NAUSEA && nausea.value) it.isCancelled = true
         }
     }
 }

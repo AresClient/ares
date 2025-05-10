@@ -1,11 +1,14 @@
 package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.gl.Framebuffer;
+import net.minecraft.client.particle.Particle;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.Handle;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.particle.ParticleEffect;
 import org.aresclient.ares.impl.instrument.module.modules.render.ESP;
+import org.aresclient.ares.impl.instrument.module.modules.render.NoRender;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -72,4 +75,9 @@ public abstract class MixinWorldRenderer {
     }
 
     // end outline ESP implementation
+
+    @Inject(method = "spawnParticle(Lnet/minecraft/particle/ParticleEffect;ZZDDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("HEAD"), cancellable = true)
+    public void spawnParticle(ParticleEffect parameters, boolean force, boolean canSpawnOnMinimal, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfoReturnable<Particle> cir) {
+        if(NoRender.INSTANCE.shouldBlockParticles()) cir.setReturnValue(null);
+    }
 }
