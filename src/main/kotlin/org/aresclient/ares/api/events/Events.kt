@@ -1,9 +1,13 @@
 package org.aresclient.ares.api.events
 
+import net.minecraft.block.BlockState
+import net.minecraft.block.entity.BlockEntity
 import net.minecraft.entity.MovementType
 import net.minecraft.network.packet.Packet
 import net.minecraft.text.Text
+import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.world.chunk.WorldChunk
 import org.aresclient.ares.api.instruments.Module
 
 abstract class CameraEvent(val delta: Float, type: String): AresEvent("camera-$type") {
@@ -65,11 +69,20 @@ class ChatEvent(val message: String): AresEvent("chat")
 
 class ToggleEvent(val module: Module, val enabled: Boolean)
 
-open class PacketEvent(val type: Type, val packet: Packet<*>): AresEvent("packet-${type.name}") {
+open class PacketEvent(val type: Type, val packet: Packet<*>, era: Era): AresEvent("packet-${type.name}", era) {
 	enum class Type { RECEIVE, SEND }
 
-	class Receive(packet: Packet<*>): PacketEvent(Type.RECEIVE, packet)
-	class Send(packet: Packet<*>): PacketEvent(Type.SEND, packet)
+	class Receive(packet: Packet<*>, era: Era): PacketEvent(Type.RECEIVE, packet, era)
+	class Send(packet: Packet<*>, era: Era): PacketEvent(Type.SEND, packet, era)
 }
 
 class RenderEntityLabelEvent(val text: Text): AresEvent("render-entity-label")
+
+class BlockStateUpdateEvent(val pos: BlockPos, val newState: BlockState?, val oldState: BlockState?): AresEvent("block-state-update")
+
+class LoadChunkEvent(val chunk: WorldChunk): AresEvent("load-chunk")
+
+open class BlockEntityEvent(name: String, val blockEntity: BlockEntity?): AresEvent("load-block-entity") {
+	class Add(blockEntity: BlockEntity?): BlockEntityEvent("add", blockEntity)
+	class Remove(blockEntity: BlockEntity?): BlockEntityEvent("remove", blockEntity)
+}

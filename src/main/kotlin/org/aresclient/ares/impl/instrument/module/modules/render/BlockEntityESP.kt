@@ -12,11 +12,10 @@ import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
 import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.impl.util.Comparators
+import org.aresclient.ares.impl.util.ChunkProcessor
 import org.aresclient.ares.impl.util.RenderUtil
 import org.aresclient.ares.impl.util.WorldUtil
 import org.aresclient.ares.impl.util.WorldUtil.boundingBox
-import java.util.HashSet
 import kotlin.jvm.optionals.getOrNull
 
 object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines of block entities through walls") {
@@ -47,16 +46,20 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
 
     private val blockEntitiesCache = hashMapOf<BlockEntityType<*>, BlockEntityGroup?>()
 
-    private var tileMap = mutableMapOf<BlockPos, BlockEntity>()
+    private val chunkProcessor = ChunkProcessor(this)
+
+    override fun onEnable() {
+        chunkProcessor.begin()
+    }
+
+    override fun onDisable() {
+        chunkProcessor.end()
+    }
 
     override fun onTick() {
         if (MC.NULL) return
 
         blockEntitiesCache.clear()
-
-        tileMap.clear()
-        WorldUtil.getBlockEntities().forEach { tileMap[it.pos] = it }
-        tileMap = tileMap.toSortedMap(Comparators.BlockDistance)
     }
 
     private fun getBlockEntityGroup(blockEntity: BlockEntity): BlockEntityGroup? {
@@ -67,26 +70,23 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
         if(blockEntities.none { it.enabled.value }) return
 
         val offset = CAMERA.pos.negate()
-        tileMap.forEach { (blockPos, blockEntity) ->
+        chunkProcessor.getBlockEntities().forEach { blockEntity ->
             val group = getBlockEntityGroup(blockEntity) ?: return@forEach
-            if(!group.enabled.value) {
-                tileMap.remove(blockPos)
-                return@forEach
-            }
+            if(!group.enabled.value) return@forEach
 
             var box: Box?
             val ignoreDirections = arrayOfNulls<Direction>(6)
 
             // TODO: Lump with greedy meshing?
             if (group.lump.value) {
-                box = Box(blockPos).offset(offset)
+                box = Box(blockEntity.pos).offset(offset)
                 for (direction in Direction.entries) {
                     ignoreDirections[direction.index] = null
-                    if (blockPos.offset(direction).shouldLump(group)) {
+                    if (blockEntity.pos.offset(direction).shouldLump(group)) {
                         ignoreDirections[direction.index] = direction
                     }
                 }
-            } else box = blockPos.boundingBox?.offset(offset) ?: Box(blockPos).offset(offset)
+            } else box = blockEntity.pos.boundingBox?.offset(offset) ?: Box(blockEntity.pos).offset(offset)
 
             if (blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE) {
                 val stretch = ChestBlock.getFacing(blockEntity.cachedState)

@@ -2,11 +2,11 @@ package org.aresclient.ares.impl.util
 
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
-import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.registry.Registries
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
+import net.minecraft.world.World
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.setting.settings.grouped.GroupMember
 import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
@@ -50,21 +50,6 @@ object WorldUtil: Wrapper {
         }
     }
 
-    fun getBlockEntities(): List<BlockEntity> {
-        val blockEntities = mutableListOf<BlockEntity>()
-        val chunkPos = MC.player!!.chunkPos
-        val viewDistance = MC.options.viewDistance.value
-        for(x in -viewDistance..viewDistance) {
-            for(z in -viewDistance..viewDistance) {
-                MC.world!!.chunkManager.getWorldChunk(chunkPos.x + x, chunkPos.z + z)?.let {
-                    blockEntities.addAll(it.blockEntities.values)
-                }
-            }
-        }
-
-        return blockEntities
-    }
-
     val BlockPos.boundingBox: Box? get() {
         try {
             assert(MC.world != null)
@@ -72,5 +57,12 @@ object WorldUtil: Wrapper {
         } catch (e: Exception) {
             return null
         }
+    }
+
+    fun getDimension() = when (WORLD.registryKey.value.path) {
+        "overworld" -> World.OVERWORLD
+        "the_nether" -> World.NETHER
+        "the_end" -> World.END
+        else -> null
     }
 }

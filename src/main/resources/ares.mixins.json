@@ -12,6 +12,7 @@
     "mixins.MixinBackgroundRenderer",
     "mixins.MixinCamera",
     "mixins.MixinChatScreen",
+    "mixins.MixinClientChunkManager",
     "mixins.MixinClientConnection",
     "mixins.MixinClientPlayerEntity",
     "mixins.MixinClientWorld",
@@ -27,6 +28,7 @@
     "mixins.MixinMouse",
     "mixins.MixinPlayerEntity",
     "mixins.MixinWeatherRendering",
+    "mixins.MixinWorldChunk",
     "mixins.MixinWorldRenderer"
   ],
   "injectors": {

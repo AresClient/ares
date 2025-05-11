@@ -5,6 +5,7 @@ import dev.tigr.simpleevents.listener.EventListener
 import net.minecraft.entity.effect.StatusEffects
 import net.minecraft.network.packet.s2c.play.EntityStatusEffectS2CPacket
 import net.minecraft.network.packet.s2c.play.ExplosionS2CPacket
+import org.aresclient.ares.api.events.Era
 import org.aresclient.ares.api.events.PacketEvent
 import org.aresclient.ares.api.instruments.Module
 
@@ -36,10 +37,13 @@ object NoRender: Module(Category.RENDER, "No Render", "Prevent certain overlays 
     fun shouldBlockWallOverlay() = isEnabled() && wall.value
 
     /** @see org.aresclient.ares.mixin.mixins.MixinInGameHud */
-    /** @see org.aresclient.ares.mixin.mixins.MixinGameRenderer */
     fun shouldBlockPortalOverlay() = isEnabled() && portal.value
-    fun shouldBlockNausea() = isEnabled() && nausea.value
     fun shouldBlockPowderSnowOverlay() = isEnabled() && snow.value
+    /**
+     * @see org.aresclient.ares.mixin.mixins.MixinInGameHud.renderNauseaOverlay
+     * @see org.aresclient.ares.mixin.mixins.MixinGameRenderer.renderWorld
+     */
+    fun shouldBlockNausea() = isEnabled() && nausea.value
 
     /** @see org.aresclient.ares.mixin.mixins.MixinBackgroundRenderer */
     fun shouldBlockFog() = isEnabled() && fog.value
@@ -64,6 +68,8 @@ object NoRender: Module(Category.RENDER, "No Render", "Prevent certain overlays 
 
     @field:EventHandler
     private val packetReceiveListener = EventListener<PacketEvent.Receive> {
+        if (it.era != Era.BEFORE) return@EventListener
+
         if(it.packet is ExplosionS2CPacket && explosions.value) it.isCancelled = true
         if(it.packet is EntityStatusEffectS2CPacket) {
             if(it.packet.effectId == StatusEffects.DARKNESS && darkness.value) it.isCancelled = true
