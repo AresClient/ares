@@ -7,6 +7,7 @@
     "accessors.AccessMath$Vec3d",
     "accessors.AccessMinecraftClient",
     "accessors.AccessRenderTickCounter",
+    "accessors.AccessWorldRenderer",
     "mixins.MixinAbstractClientPlayerEntity",
     "mixins.MixinArmorFeatureRenderer",
     "mixins.MixinBackgroundRenderer",

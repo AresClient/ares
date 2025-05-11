@@ -4,6 +4,7 @@ import net.minecraft.block.ChestBlock
 import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.block.enums.ChestType
+import net.minecraft.client.render.Frustum
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
@@ -16,6 +17,7 @@ import org.aresclient.ares.impl.util.ChunkProcessor
 import org.aresclient.ares.impl.util.RenderUtil
 import org.aresclient.ares.impl.util.WorldUtil
 import org.aresclient.ares.impl.util.WorldUtil.boundingBox
+import org.aresclient.ares.mixin.accessors.AccessWorldRenderer
 import kotlin.jvm.optionals.getOrNull
 
 object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines of block entities through walls") {
@@ -37,7 +39,7 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
     }
 
     private val blockEntities = settings.addGrouped("BlockEntities", arrayListOf(
-        BlockEntityGroup.create("Chests", setOf(BlockEntityType.CHEST, BlockEntityType.TRAPPED_CHEST, BlockEntityType.BARREL), Color(0f, 0f, 0.89f, 1f)),
+        BlockEntityGroup.create("Chests", setOf(BlockEntityType.CHEST, BlockEntityType.TRAPPED_CHEST, BlockEntityType.BARREL), Color(0.87f, 0.65f, 0.25f, 1f)),
         BlockEntityGroup.create("Ender Chests", setOf(BlockEntityType.ENDER_CHEST), Color(0.7f, 0f, 0.7f, 1f)),
         BlockEntityGroup.create("Shulker Boxes", setOf(BlockEntityType.SHULKER_BOX), Color(1f, 0.45f, 0.55f, 1f)),
         BlockEntityGroup.create("Other Storage", setOf(BlockEntityType.FURNACE, BlockEntityType.BLAST_FURNACE, BlockEntityType.DISPENSER, BlockEntityType.DROPPER,
@@ -57,8 +59,7 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
     }
 
     override fun onTick() {
-        if (MC.NULL) return
-
+        if(MC.NULL) return
         blockEntitiesCache.clear()
     }
 
@@ -70,25 +71,26 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
         if(blockEntities.none { it.enabled.value }) return
 
         val offset = CAMERA.pos.negate()
+        val frustum = Frustum(MC.worldRenderer.capturedFrustum ?: (MC.worldRenderer as AccessWorldRenderer).frustum)
         chunkProcessor.getBlockEntities().forEach { blockEntity ->
             val group = getBlockEntityGroup(blockEntity) ?: return@forEach
-            if(!group.enabled.value) return@forEach
+            if(!group.enabled.value || blockEntity.shouldCull(frustum)) return@forEach
 
             var box: Box?
             val ignoreDirections = arrayOfNulls<Direction>(6)
 
             // TODO: Lump with greedy meshing?
-            if (group.lump.value) {
+            if(group.lump.value) {
                 box = Box(blockEntity.pos).offset(offset)
-                for (direction in Direction.entries) {
+                for(direction in Direction.entries) {
                     ignoreDirections[direction.index] = null
-                    if (blockEntity.pos.offset(direction).shouldLump(group)) {
+                    if(blockEntity.pos.offset(direction).shouldLump(group)) {
                         ignoreDirections[direction.index] = direction
                     }
                 }
             } else box = blockEntity.pos.boundingBox?.offset(offset) ?: Box(blockEntity.pos).offset(offset)
 
-            if (blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE) {
+            if(blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE) {
                 val stretch = ChestBlock.getFacing(blockEntity.cachedState)
                 box = box!!.doubleChest(stretch)
             }
@@ -99,6 +101,8 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
             RenderUtil.Fill.box(box, group.fillColor.value, *ignoreDirections)
         }
     }
+
+    private fun BlockEntity.shouldCull(frustum: Frustum) = pos.boundingBox?.let { !frustum.isVisible(it.expand(0.5)) } ?: true
 
     private fun BlockPos.shouldLump(group: BlockEntityGroup): Boolean {
         val blockEntity = WORLD.getBlockEntity(this) ?: return false

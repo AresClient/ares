@@ -83,7 +83,7 @@ object EntityUtil: Wrapper {
 
 	enum class TargetType(override val defaultColor: Color, override val defaultRainbow: Boolean = false): Target {
 		SELF(Color.WHITE),
-		PASSIVE(Color.YELLOW),
+		PASSIVE(Color.GREEN),
 		HOSTILE(Color.BLUE),
 		ITEM(Color.WHITE),
 		END_CRYSTAL(Color.MAGENTA),

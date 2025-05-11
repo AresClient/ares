@@ -3,10 +3,15 @@ package org.aresclient.ares.impl.instrument.module.modules.render
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.gl.SimpleFramebuffer
+import net.minecraft.client.render.Frustum
 import net.minecraft.client.render.OutlineVertexConsumerProvider
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
+import net.minecraft.entity.LightningEntity
+import net.minecraft.entity.boss.dragon.EnderDragonEntity
+import net.minecraft.entity.decoration.DisplayEntity
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.entity.projectile.FishingBobberEntity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
 import org.aresclient.ares.api.instruments.Module
@@ -21,6 +26,7 @@ import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
 import org.aresclient.ares.impl.util.RenderPipelines
 import org.aresclient.ares.impl.util.RenderUtil
+import org.aresclient.ares.mixin.accessors.AccessWorldRenderer
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -72,13 +78,15 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
     override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {
         if(entities.none { it.enabled.value && it.mode.value == Mode.BOX }) return
 
+        val frustum = Frustum(MC.worldRenderer.capturedFrustum ?: (MC.worldRenderer as AccessWorldRenderer).frustum)
         WORLD.entities?.forEach { entity ->
             if(entity == SELF) return@forEach
 
             val group = getEntityGroup(entity) ?: return@forEach
-            if(!group.enabled.value || group.mode.value != Mode.BOX) return@forEach
+            if(!group.enabled.value || group.mode.value != Mode.BOX || entity.shouldCull(frustum)) return@forEach
 
             val box = entity.getInterpolatedBoundingBox(delta)
+
             RenderUtil.Lines.box(box, group.lineColor.value, 2f)
             RenderUtil.Fill.box(box, group.fillColor.value)
         }
@@ -98,6 +106,14 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
     fun getEntityGroup(entity: Entity): EntityGroup? {
         val type = if(entity is PlayerEntity) entity.playerThreat else entity.type as Any
         return entitiesCache.getOrPut(type) { entities.find(type).getOrNull() }
+    }
+
+    private fun <T: Entity> T.shouldCull(frustum: Frustum): Boolean {
+        if(this is DisplayEntity && !shouldRender()) return true
+        return when(this) {
+            is EnderDragonEntity, is FishingBobberEntity, is LightningEntity -> false
+            else -> !frustum.isVisible(boundingBox.expand(0.5))
+        }
     }
 
     private fun Entity.getInterpolatedBoundingBox(delta: Float): Box {
