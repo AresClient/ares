@@ -60,7 +60,7 @@ class Ares: ModInitializer, Wrapper {
 		else if(event is TickEvent.Client) PLUGINS.forEach { plugin ->
 			plugin.tickClient()
 		}
-		else if(event is TickEvent.Motion)PLUGINS.forEach { plugin ->
+		else if(event is TickEvent.Motion) PLUGINS.forEach { plugin ->
 			plugin.tickMotion()
 		}
 	}

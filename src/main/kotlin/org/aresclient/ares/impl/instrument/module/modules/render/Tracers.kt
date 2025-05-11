@@ -59,14 +59,14 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
     override fun onRenderWorld2d(delta: Float, renderer: Renderer.State, projection: Matrix4f) {
         val center = Vector2f(MC.window.framebufferWidth.toFloat(), MC.window.framebufferHeight.toFloat()).div(2f)
 
-        MC.world?.entities?.forEach { entity ->
+        WORLD.entities?.forEach { entity ->
             if(entity == SELF) return@forEach
 
             val group = getEntityGroup(entity) ?: return@forEach
             if(!group.enabled.value) return@forEach
 
             val pos = entity.getLerpedRenderPos(delta)
-            val color = if(group.distance.value) Color.fromDistance(MC.player!!.distanceTo(entity)) else group.color.value
+            val color = if(group.distance.value) Color.fromDistance(SELF.distanceTo(entity)) else group.color.value
 
             renderer.tryDrawTracer(projection, center, pos, pos.add(0.0, entity.height.toDouble(), 0.0), 1f, color)
         }
@@ -79,7 +79,7 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
         return Vector2f((pos.x + 1f) * MC.window.framebufferWidth.toFloat() * 0.5f, MC.window.framebufferHeight.toFloat() - (pos.y + 1f) * MC.window.framebufferHeight.toFloat() * 0.5f)
     }
 
-    private fun Entity.getLerpedRenderPos(delta: Float): Vec3d = getLerpedPos(delta).subtract(MC.gameRenderer.camera.pos)
+    private fun Entity.getLerpedRenderPos(delta: Float): Vec3d = getLerpedPos(delta).subtract(CAMERA.pos)
 
     private fun Renderer.State.tryDrawTracer(projection: Matrix4f, center: Vector2f, one: Vec3d, two: Vec3d, width: Float, color: Color) {
         drawTracer(center, one.toScreenPos(projection) ?: return, two.toScreenPos(projection) ?: return, width, color)
