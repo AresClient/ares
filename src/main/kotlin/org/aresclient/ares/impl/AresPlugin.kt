@@ -40,6 +40,7 @@ object AresPlugin: Plugin(
         PortalGUIs,
 
         BlockEntityESP,
+        DiamondSearchExample,
         ESP,
         Fullbright,
         NoRender,
