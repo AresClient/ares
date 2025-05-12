@@ -27,13 +27,13 @@ object DiamondSearchExample: Module(Category.RENDER, "Diamond Search Ex", "Simpl
     }
 
     override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {
-        // Even though we're working with a copy there seems to be a clash if the original is changing...
-        if (chunkProcessor.pauseForBlockMapUpdate) return
+        // Blocks in the chunk processor are not thread-safe
+        if(chunkProcessor.isWriteLocked) return
 
         val blockPos = BlockPos.Mutable()
         val offset = CAMERA.pos.negate()
-        for (block in chunkProcessor.getBlocks()) {
-            val box = Box(blockPos.set(block.key)).offset(offset)
+        chunkProcessor.forBlock { longPos, blockState ->
+            val box = Box(blockPos.set(longPos)).offset(offset)
             RenderUtil.Fill.box(box, Color.RED.deriveAlpha(0.2f))
             RenderUtil.Lines.box(box, Color.RED, 2f)
         }
