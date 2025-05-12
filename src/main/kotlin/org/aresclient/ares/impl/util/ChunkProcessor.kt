@@ -8,6 +8,7 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.network.packet.s2c.play.UnloadChunkS2CPacket
 import net.minecraft.registry.RegistryKey
 import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.ChunkPos
 import net.minecraft.util.math.ChunkSectionPos
 import net.minecraft.world.World
 import net.minecraft.world.chunk.ChunkSection
@@ -101,7 +102,7 @@ class ChunkProcessor<I: Instrument>(master: I): Component<I>(master), Wrapper {
             is UnloadChunkS2CPacket -> WORLD.chunkManager.getWorldChunk(packet.pos.x, packet.pos.z)?.let {
                 chunks.remove(it)
                 if(requiresBlockEntities) blockEntities.removeAll(it.blockEntities.values)
-                if(requiresBlocks) removeChunkBlocks(it)
+                if(requiresBlocks) removeChunkBlocks(it.pos)
             }
         }
     }
@@ -176,15 +177,15 @@ class ChunkProcessor<I: Instrument>(master: I): Component<I>(master), Wrapper {
         }
     }
 
-    private fun removeChunkBlocks(chunk: WorldChunk) {
+    private fun removeChunkBlocks(chunkPos: ChunkPos) {
         lock.writeLock().lock()
         try {
             var chunkX: Int
             var chunkZ: Int
-            for(longPos in blocks.keys) {
+            for(longPos in blocks.keys.toLongArray()) {
                 chunkX = BlockPos.unpackLongX(longPos) shr 4
                 chunkZ = BlockPos.unpackLongZ(longPos) shr 4
-                if(chunk.pos.x == chunkX && chunk.pos.z == chunkZ) {
+                if(chunkPos.x == chunkX && chunkPos.z == chunkZ) {
                     blocks.remove(longPos)
                 }
             }
