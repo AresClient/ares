@@ -86,3 +86,5 @@ open class BlockEntityEvent(name: String, val blockEntity: BlockEntity?): AresEv
 	class Add(blockEntity: BlockEntity?): BlockEntityEvent("add", blockEntity)
 	class Remove(blockEntity: BlockEntity?): BlockEntityEvent("remove", blockEntity)
 }
+
+class KeyboardInputEvent(era: Era): AresEvent("keyboard-input-tick", era)

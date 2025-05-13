@@ -12,6 +12,7 @@ import org.aresclient.ares.api.events.TickEvent
 import org.aresclient.ares.api.instruments.Global
 import org.aresclient.ares.api.instruments.Prioritizer
 import org.aresclient.ares.impl.util.MathUtil.duplicate
+import org.aresclient.ares.impl.util.MathUtil.normalizeAngle
 import org.aresclient.ares.impl.util.MathUtil.set
 
 interface CameraAdjustor: Prioritizer {
@@ -74,5 +75,11 @@ object Camera: Global.PriorityHandler<CameraAdjustor>("Camera", "Manages camera 
 		val player = MC.player ?: return false
 		return (current.shouldRenderCharacter || MC.gameRenderer.camera.isThirdPerson)
 				&& !player.boundingBox.intersects(cameraPosition, cameraPosition)
+	}
+
+	fun getYawDifference(): Float {
+		val cameraYaw = CAMERA.yaw.normalizeAngle()
+		val bodyYaw = SELF.yaw.normalizeAngle()
+		return (bodyYaw - cameraYaw).normalizeAngle()
 	}
 }
