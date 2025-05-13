@@ -6,7 +6,6 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
@@ -61,9 +60,9 @@ open class ScreenElement(title: String): Element() {
                     matrixStack.model().translate(mouseX.toFloat(), mouseY.toFloat(), 0f)
 
                     val padding = 2f
-                    val fontRenderer = RenderHelper.getFontRenderer(10f)
-                    val width = tooltip!!.maxOf { fontRenderer.getStringWidth(it) } + padding * 2
-                    val height = tooltip!!.size * fontRenderer.charHeight + padding * 2
+                    val fontRenderer = theme.font.value.getRenderer()
+                    val width = tooltip!!.maxOf { fontRenderer.getStringWidth(it, 10f) } + padding * 2
+                    val height = tooltip!!.size * fontRenderer.getCharHeight(10f) + padding * 2
 
                     state.buffers.triangle.draw(matrixStack) {
                         vertices(
@@ -91,8 +90,8 @@ open class ScreenElement(title: String): Element() {
                     fontRenderer.bindTexture()
                     state.buffers.triangleTexColor.draw(matrixStack) {
                         for((i, line) in tooltip!!.withIndex()) {
-                            fontRenderer.drawString(this, line,
-                                padding, padding - height + i * fontRenderer.charHeight, theme.lightground.value)
+                            fontRenderer.drawString(this, line, 10f,
+                                padding, padding - height + i * fontRenderer.getCharHeight(10f), theme.lightground.value)
                         }
                     }
 

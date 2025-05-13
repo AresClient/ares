@@ -57,12 +57,8 @@ class Ares: ModInitializer, Wrapper {
 	@field:EventHandler
 	val tickEventListener = EventListener<TickEvent> { event ->
 		if(event.era != Era.BEFORE) return@EventListener
-		else if(event is TickEvent.Client) PLUGINS.forEach { plugin ->
-			plugin.tickClient()
-		}
-		else if(event is TickEvent.Motion) PLUGINS.forEach { plugin ->
-			plugin.tickMotion()
-		}
+		else if(event is TickEvent.Client) PLUGINS.forEach(Plugin::tickClient)
+		else if(event is TickEvent.Motion) PLUGINS.forEach(Plugin::tickMotion)
 	}
 
 	@field:EventHandler

@@ -2,12 +2,14 @@ package org.aresclient.ares.impl.util
 
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.setting.settings.ColorSetting
+import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.util.Color
 
-data class Theme(val primary: ColorSetting, val secondary: ColorSetting, val background: ColorSetting, val lightground: ColorSetting) {
+data class Theme(val font: EnumSetting<Fonts>, val primary: ColorSetting, val secondary: ColorSetting, val background: ColorSetting, val lightground: ColorSetting) {
     companion object {
         private val SETTING = Ares.SETTINGS.addMap("Theme")
         private val THEME = Theme(
+            SETTING.addEnum("Font", Fonts.ARIAL),
             SETTING.addColor("Primary",
                 Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)
             ),

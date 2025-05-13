@@ -1,14 +1,13 @@
 package org.aresclient.ares.impl.gui.game.setting.settings
 
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
 import org.aresclient.ares.api.gui.StaticElement
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.game.setting.DropdownSettingContainer
-import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
@@ -28,7 +27,7 @@ class ColorElement(setting: ColorSetting, scale: Float):
         private val selector = ColorSelector(this, scale)
         private val rgb = RGBColorSelectElement(this, scale).setVisible { !setting.isRainbow }
         private val rnbw = RNBWColorSelectElement(this, scale).setVisible { setting.isRainbow }
-        val fontRenderer = RenderHelper.getFontRenderer(scale * 0.87f)
+        internal val fontSize = scale * 0.87f
 
         init {
             pushChild(selector)
@@ -161,8 +160,9 @@ class ColorElement(setting: ColorSetting, scale: Float):
                     )
                 }
 
-                val textWidth = selector.element.fontRenderer.getStringWidth(name)
-                selector.element.fontRenderer.drawString(matrixStack, name, width / 2f - textWidth / 2f, height / 2f - selector.element.fontRenderer.charHeight / 2f, theme.lightground.value)
+                val fontRenderer = theme.font.value.getRenderer()
+                val textWidth = fontRenderer.getStringWidth(name, selector.element.fontSize)
+                fontRenderer.drawString(matrixStack, name, selector.element.fontSize, width / 2f - textWidth / 2f, height / 2f - fontRenderer.getCharHeight(selector.element.fontSize) / 2f, theme.lightground.value)
             }
 
             override fun getX() = (if(rainbow) 1f else 0f) * getWidth()
@@ -212,15 +212,16 @@ class ColorElement(setting: ColorSetting, scale: Float):
                 )
             }
 
-            val textY = getHeight() / 2f - element.fontRenderer.charHeight / 2f
-            element.fontRenderer.drawString(
-                matrixStack, name, 3f, textY,
+            val fontRenderer = theme.font.value.getRenderer()
+            val textY = getHeight() / 2f - fontRenderer.getCharHeight(element.fontSize) / 2f
+            fontRenderer.drawString(
+                matrixStack, name, element.fontSize, 3f, textY,
                 theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
             )
 
             val text = (value * 255).toInt().toString()
-            element.fontRenderer.drawString(
-                matrixStack, text, getWidth() - element.fontRenderer.getStringWidth(text) - 2f, textY,
+            fontRenderer.drawString(
+                matrixStack, text, element.fontSize, getWidth() - fontRenderer.getStringWidth(text, element.fontSize) - 2f, textY,
                 theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
             )
 

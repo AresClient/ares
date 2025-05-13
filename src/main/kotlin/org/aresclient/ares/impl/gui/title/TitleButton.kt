@@ -1,8 +1,7 @@
 package org.aresclient.ares.impl.gui.title
 
-import org.aresclient.ares.api.render.*
 import org.aresclient.ares.api.gui.Button
-import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.api.render.*
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.awt.Font
@@ -12,7 +11,6 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
     private companion object {
         private const val WIDTH = 150f
         private const val HEIGHT = 22f
-        private val FONT_RENDERER = RenderHelper.getFontRenderer(14f, Font.BOLD)
 
         private val SHADOW = Buffer
             .createStatic(Shader.ROUNDED, VertexFormat.POSITION_UV_COLOR, 4, 6)
@@ -28,8 +26,6 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
             )
             .uniform(Shader.ROUNDED.uniformF2("size").set(WIDTH, HEIGHT))
     }
-
-    private val textX = WIDTH / 2 - FONT_RENDERER.getStringWidth(text) / 2f
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int) {
         if(!holding) SHADOW.draw(matrixStack)
@@ -77,8 +73,10 @@ class TitleButton(private val text: String, x: Float, y: Float, action: (Button)
             }
         }
 
-        FONT_RENDERER.drawString(
-            matrixStack, text, textX, 3f,
+        val fontRenderer = theme.font.value.getRenderer(Font.BOLD)
+        val textX = WIDTH / 2 - fontRenderer.getStringWidth(text, 14f) / 2f
+        fontRenderer.drawString(
+            matrixStack, text, 14f, textX, 3f,
             theme.lightground.value.red, theme.lightground.value.green, theme.lightground.value.blue, theme.lightground.value.alpha
         )
     }

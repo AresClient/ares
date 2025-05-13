@@ -10,7 +10,6 @@ import net.minecraft.client.render.Camera;
 import net.minecraft.client.texture.GlTexture;
 import net.minecraft.client.util.Window;
 import org.aresclient.ares.api.JWrapper;
-import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 
 // written by Tigermouthbear years ago

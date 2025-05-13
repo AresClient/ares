@@ -2,6 +2,7 @@ package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.math.MatrixStack;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.RenderEvent;
@@ -18,6 +19,11 @@ public abstract class MixinGameRenderer implements JWrapper {
     @Inject(method = "renderHand", at = @At("HEAD"))
     public void renderWorld(Camera camera, float tickProgress, Matrix4f positionMatrix, CallbackInfo ci) {
         EVENTS.post(new RenderEvent.World(tickProgress));
+    }
+
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;pop()V"))
+    public void render(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
+        EVENTS.post(new RenderEvent.Hud(tickCounter.getFixedDeltaTicks()));
     }
 
     @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Ljava/lang/Double;floatValue()F"))

@@ -7,12 +7,11 @@ import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
 abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicElement(height = { scale }) {
-    val fontRenderer = RenderHelper.getFontRenderer(scale * 13f / 18f)
+    val fontSize = scale * 13f / 18f
 
     abstract fun getText(): String
 
@@ -50,9 +49,10 @@ abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicE
             )
         }
 
+        val fontRenderer = theme.font.value.getRenderer()
         val color = getTextColor(theme)
         fontRenderer.drawString(
-            matrixStack, getText(), start, 1f,
+            matrixStack, getText(), fontSize, start, 1f,
             color.red, color.green, color.blue, color.alpha
         )
 
@@ -60,7 +60,7 @@ abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicE
         if(secondaryText != null) {
             val secondaryTextColor = getSecondaryTextColor(theme)
             fontRenderer.drawString(
-                matrixStack, secondaryText, getWidth() - fontRenderer.getStringWidth(secondaryText) - 2, 1f,
+                matrixStack, secondaryText, fontSize, getWidth() - fontRenderer.getStringWidth(secondaryText, fontSize) - 2, 1f,
                 secondaryTextColor.red, secondaryTextColor.green, secondaryTextColor.blue, secondaryTextColor.alpha
             )
         }

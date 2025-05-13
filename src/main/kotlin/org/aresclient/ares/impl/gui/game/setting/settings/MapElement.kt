@@ -1,7 +1,7 @@
 package org.aresclient.ares.impl.gui.game.setting.settings
 
-import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.setting.MapSetting
+import org.aresclient.ares.api.setting.Setting
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.game.setting.DropdownSettingContainer

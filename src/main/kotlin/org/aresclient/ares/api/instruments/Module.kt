@@ -4,9 +4,9 @@ import org.aresclient.ares.Ares
 import org.aresclient.ares.api.events.ToggleEvent
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
-import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.setting.settings.BooleanSetting
+import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.joml.Matrix4f
 import java.util.*
 

@@ -1,5 +1,9 @@
 package org.aresclient.ares.impl.gui.title
 
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
+import net.minecraft.client.gui.screen.option.OptionsScreen
+import net.minecraft.client.gui.screen.world.SelectWorldScreen
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.gui.ScreenElement
 import org.aresclient.ares.api.gui.StaticElement
@@ -10,7 +14,6 @@ import org.aresclient.ares.api.render.Texture
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.AresSkybox
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
-import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
@@ -25,19 +28,19 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
 
         private val BUTTONS = listOf(
             TitleButton("Singleplayer", 143f, 0f) {
-                RenderHelper.openSelectWorldScreen()
+                MC.setScreen(SelectWorldScreen(MC.currentScreen))
             },
             TitleButton("Multiplayer", 143f, 26f) {
-                RenderHelper.openMultiplayerScreen()
+                MC.setScreen(MultiplayerScreen(MC.currentScreen))
             },
             TitleButton("Realms", 143f, 52f) {
-                RenderHelper.openRealmsMainScreen()
+                MC.setScreen(RealmsMainScreen(MC.currentScreen))
             },
             TitleButton("Accounts", 143f, 78f) {
                 // TODO: CREATE ACCOUNTS GUI?
             },
             TitleButton("Options", 143f, 104f) {
-                RenderHelper.openOptionsScreen()
+                MC.setScreen(OptionsScreen(MC.currentScreen, MC.options))
             }
         )
 
@@ -46,7 +49,7 @@ class AresTitleScreen: ScreenElement("Ares Title Screen") {
             5f, 5f, 30f, 30f
         ) {
             TitleScreen.setEnabled(false)
-            RenderHelper.openTitleScreen()
+            MC.setScreen(net.minecraft.client.gui.screen.TitleScreen())
         }
 
         private val EXIT_BUTTON = IconButton(

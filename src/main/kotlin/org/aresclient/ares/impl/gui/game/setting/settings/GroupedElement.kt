@@ -12,7 +12,6 @@ import org.aresclient.ares.api.setting.settings.grouped.*
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.game.setting.*
 import org.aresclient.ares.impl.gui.game.window.WindowContent
-import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
@@ -49,7 +48,7 @@ class GroupedElement<T, V: Group<T>>(private val content: SettingsWindowContent,
     }
 
     open class ActionButton(private val text: String, action: (Button) -> Unit, scale: Float): DynamicElement(height = { scale }) {
-        private val fontRenderer = RenderHelper.getFontRenderer(scale * 13f/18f)
+        private val fontSize = scale * 13f/18f
 
         init {
             pushChild(RowButton(this, action))
@@ -76,8 +75,9 @@ class GroupedElement<T, V: Group<T>>(private val content: SettingsWindowContent,
             }
 
             val color = theme.lightground.value
-            val x = getWidth() * 0.5 - fontRenderer.getStringWidth(text) * 0.5
-            fontRenderer.drawString(matrixStack, text, x.toFloat(), 1f, color.red, color.green, color.blue, color.alpha)
+            val fontRenderer = theme.font.value.getRenderer()
+            val x = getWidth() * 0.5 - fontRenderer.getStringWidth(text, fontSize) * 0.5
+            fontRenderer.drawString(matrixStack, text, fontSize, x.toFloat(), 1f, color.red, color.green, color.blue, color.alpha)
         }
     }
 

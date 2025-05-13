@@ -1,13 +1,14 @@
 package org.aresclient.ares.impl.gui.game.setting
 
-import org.aresclient.ares.api.gui.*
-import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.gui.DynamicElementGroup
 import org.aresclient.ares.api.setting.MapSetting
-import org.aresclient.ares.api.setting.settings.*
+import org.aresclient.ares.api.setting.Setting
+import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
 import org.aresclient.ares.api.setting.settings.grouped.GroupedSetting
 import org.aresclient.ares.api.setting.settings.list.MapListSetting
-import org.aresclient.ares.impl.gui.game.setting.settings.*
+import org.aresclient.ares.impl.gui.game.setting.settings.ColorElement
+import org.aresclient.ares.impl.gui.game.setting.settings.GroupedElement
 
 class RowSettingGroup(
     private val setting: Setting<*>, columns: Int, private val content: SettingsWindowContent, private val settingHeight: Float = 18f,
@@ -24,7 +25,7 @@ class RowSettingGroup(
             Setting.Type.MAP -> {
                 val isGroup = setting is Group<*>
                 (setting as MapSetting).value.forEach { (name, child) ->
-                    if(/*name.first() != '.' && */ name != "Enabled" && (name != "Members" || !isGroup))
+                    if(name.first() != '.' && name != "Enabled" && (name != "Members" || !isGroup))
                         pushChild(content.createSettingElement(child, settingHeight))
                 }
                 if(isGroup) pushChild(GroupedElement.EditMembersElement(content, setting as Group<*>, settingHeight))

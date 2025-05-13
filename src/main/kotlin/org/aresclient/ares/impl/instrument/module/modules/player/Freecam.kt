@@ -14,9 +14,9 @@ import org.aresclient.ares.impl.util.MathUtil._x
 import org.aresclient.ares.impl.util.MathUtil._y
 import org.aresclient.ares.impl.util.MathUtil._z
 import org.aresclient.ares.impl.util.MathUtil.duplicate
-import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
 import org.aresclient.ares.impl.util.MathUtil.set
+import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 
 object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character"), CameraAdjustor {
 

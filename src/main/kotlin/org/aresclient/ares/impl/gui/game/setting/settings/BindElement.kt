@@ -2,12 +2,10 @@ package org.aresclient.ares.impl.gui.game.setting.settings
 
 import dev.tigr.simpleevents.listener.EventListener
 import org.aresclient.ares.api.events.InputEvent
-import org.aresclient.ares.impl.gui.game.setting.RowSettingElement
 import org.aresclient.ares.api.setting.settings.BindSetting
-import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.api.util.Keys
 import org.aresclient.ares.api.util.StringUtils.formatToPretty
-import org.aresclient.ares.impl.util.Theme
+import org.aresclient.ares.impl.gui.game.setting.RowSettingElement
 import java.util.concurrent.atomic.AtomicBoolean
 
 class BindElement(setting: BindSetting, height: Float): RowSettingElement<BindSetting, Int>(setting, height) {

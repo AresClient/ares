@@ -4,23 +4,24 @@ import dev.tigr.simpleevents.listener.EventListener
 import dev.tigr.simpleevents.listener.Priority
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.events.InputEvent
-import org.aresclient.ares.impl.util.RenderHelper
-import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.FontRenderer
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.util.Keys
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private val minLines: Int, vertPadFactor: Float = 0.2f, horizPadFactor: Float = 0.5f):
-    StaticElement(x, y, width, 0f) {
+// this is so scuffed, should probably be rewritten
+open class TextBox(x: Float, y: Float, width: Float, private val fontSize: Float, private val minLines: Int,
+                   private val vertPadFactor: Float = 0.2f, private val horizPadFactor: Float = 0.5f): StaticElement(x, y, width, 0f) {
 
-    private val fontRenderer = RenderHelper.getFontRenderer(fontSize)
-    private val vertPadding = fontRenderer.charHeight * vertPadFactor
-    private val horzPadding = fontRenderer.charHeight * horizPadFactor
+    private val vertPadding: Float
+        get() = getFontRenderer().getCharHeight(fontSize) * vertPadFactor
+    private val horzPadding: Float
+        get() = getFontRenderer().getCharHeight(fontSize) * horizPadFactor
 
     private var text = ""
     private var lines = minLines
@@ -36,7 +37,9 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
         Ares.EVENT_MANAGER.register(inputEventListener)
     }
 
-    override fun getHeight(): Float = (fontRenderer.charHeight + vertPadding) * lines + vertPadding
+    private fun getFontRenderer() = Theme.current().font.value.getRenderer()
+
+    override fun getHeight(): Float = (getFontRenderer().getCharHeight(fontSize) + vertPadding) * lines + vertPadding
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val width = getWidth()
@@ -89,9 +92,10 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
             val rx = getRenderX()
             val ry = getRenderY()
 
+            val fontRenderer = getFontRenderer()
             runText(unused) { c, cx, cy ->
-                val cw = fontRenderer.getCharWidth(c)
-                if(mouseY >= cy + ry && mouseY <= cy + ry + fontRenderer.charHeight && mouseX >= cx + rx && mouseX <= cx + rx + cw) {
+                val cw = fontRenderer.getCharWidth(c, fontSize)
+                if(mouseY >= cy + ry && mouseY <= cy + ry + fontRenderer.getCharHeight(fontSize) && mouseX >= cx + rx && mouseX <= cx + rx + cw) {
                     cursor = if(mouseX < cx + rx + cw / 2f) i else i + 1
                     return@runText true
                 }
@@ -131,8 +135,9 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
         val rgba = floatArrayOf(r, g, b, a)
 
         if(text.isNotEmpty()) {
+            val fontRenderer = getFontRenderer()
             val lines = runText(rgba) { c, cx, cy ->
-                val cw = fontRenderer.drawChar(buffers.triangleTexColor, c, cx, cy, rgba[0], rgba[1], rgba[2], rgba[3])
+                val cw = fontRenderer.drawChar(buffers.triangleTexColor, c, fontSize, cx, cy, rgba[0], rgba[1], rgba[2], rgba[3])
 
                 // TODO: CURSOR NOT DRAWN ON INVISIBLE CHARS
                 if(focused) {
@@ -165,13 +170,13 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
         if(System.currentTimeMillis() % 1060 >= 530) return
         buffers.lines.vertices(
             cx, cy, 0f, 1f, 1f, 1f, 1f, 1f,
-            cx, cy + fontRenderer.charHeight, 0f, 1f, 1f, 1f, 1f, 1f
+            cx, cy + getFontRenderer().getCharHeight(fontSize), 0f, 1f, 1f, 1f, 1f, 1f
         )
         buffers.lines.indices(0, 1)
     }
 
     private fun runText(rgba: FloatArray, callback: (Char, Float, Float) -> Boolean): Int =
-        fontRenderer.runSplitString(text, horzPadding, vertPadding, getWidth() - (horzPadding), vertPadding, rgba, callback)
+        getFontRenderer().runSplitString(text, horzPadding, vertPadding, getWidth() - (horzPadding), vertPadding, rgba, callback)
 
     fun getText(): String = text
     fun setText(value: String) {
@@ -202,20 +207,20 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
 
             if(!first) {
                 if(callback(' ', currX, currY)) return lines
-                currX += getCharWidth(' ')
+                currX += getCharWidth(' ', fontSize)
             } else first = false
 
-            val partWidth: Float = getStringWidth(part)
+            val partWidth: Float = getStringWidth(part, fontSize)
             if(partWidth > wrapWidth) {
                 var i = 0
                 while(i < part.length) {
                     val c = part[i]
                     if(c.code == 167 && i + 1 < part.length) color(part[++i], rgba)
                     else {
-                        val cWidth: Float = getCharWidth(c)
+                        val cWidth: Float = getCharWidth(c, fontSize)
                         if(cWidth + currX > wrapWidth) {
                             currX = x
-                            currY += padding + charHeight
+                            currY += padding + getCharHeight(fontSize)
                             lines++
                         }
 
@@ -227,7 +232,7 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
             } else {
                 if(currX + partWidth > wrapWidth) {
                     currX = x
-                    currY += padding + charHeight
+                    currY += padding + getCharHeight(fontSize)
                     lines++
                 }
 
@@ -237,7 +242,7 @@ open class TextBox(x: Float, y: Float, width: Float, fontSize: Float, private va
                     if(c.code == 167 && i + 1 < part.length) color(part[++i], rgba)
                     else {
                         if(callback(c, currX, currY)) return lines
-                        currX += getCharWidth(c)
+                        currX += getCharWidth(c, fontSize)
                     }
                     i++
                 }

@@ -3,7 +3,6 @@ package org.aresclient.ares.impl.gui.game.setting.settings.number
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.number.NumberSetting
-import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.gui.game.setting.RowSettingElement
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme

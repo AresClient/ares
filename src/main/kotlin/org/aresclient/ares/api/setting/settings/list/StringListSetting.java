@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
-import java.util.*;
+import java.util.List;
 
 public class StringListSetting extends AbstractListSetting<String> {
     public StringListSetting(List<String> value) {

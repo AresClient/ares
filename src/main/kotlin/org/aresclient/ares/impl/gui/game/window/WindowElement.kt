@@ -15,7 +15,6 @@ import kotlin.math.min
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-private val FONT_RENDERER = RenderHelper.getFontRenderer(14f)
 private const val TOP_SIZE = 18f
 
 class WindowElement(internal val settings: MapSetting, private val windowManager: WindowManager): DynamicElement() {
@@ -155,10 +154,11 @@ class WindowElement(internal val settings: MapSetting, private val windowManager
         }
 
         window?.getTitle()?.let {
-            FONT_RENDERER.drawString(
-                matrixStack, it,
+            val fontRenderer = theme.font.value.getRenderer()
+            fontRenderer.drawString(
+                matrixStack, it, 14f,
                 ((backButton.getX() - icon.getX() - icon.getWidth()) / 2f
-                        + icon.getX() + icon.getWidth()) - FONT_RENDERER.getStringWidth(it) / 2f,
+                        + icon.getX() + icon.getWidth()) - fontRenderer.getStringWidth(it, 14f) / 2f,
                 1f, theme.lightground.value
             )
         }

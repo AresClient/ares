@@ -1,6 +1,6 @@
 package org.aresclient.ares.impl.gui.game.setting.settings.number
 
-import org.aresclient.ares.api.setting.settings.number.*
+import org.aresclient.ares.api.setting.settings.number.LongSetting
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min

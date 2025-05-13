@@ -8,8 +8,11 @@ import org.aresclient.ares.api.setting.settings.grouped.GroupedSetting;
 import org.aresclient.ares.api.setting.settings.list.AbstractListSetting;
 import org.aresclient.ares.api.setting.settings.list.MapListSetting;
 
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 

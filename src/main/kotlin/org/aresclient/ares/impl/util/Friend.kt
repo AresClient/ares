@@ -1,7 +1,7 @@
 package org.aresclient.ares.impl.util
 
 import com.mojang.authlib.GameProfile
-import java.util.UUID
+import java.util.*
 
 class Friend(val uuid: UUID, var name: String) {
     constructor(profile: GameProfile): this(profile.id, profile.name)

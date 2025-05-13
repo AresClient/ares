@@ -1,13 +1,12 @@
 package org.aresclient.ares.impl.gui.game.setting.settings
 
-import org.aresclient.ares.api.render.MatrixStack
-import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.DynamicElement
+import org.aresclient.ares.api.render.MatrixStack
+import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.util.StringUtils.formatToPretty
 import org.aresclient.ares.impl.gui.game.setting.DropdownSettingContainer
-import org.aresclient.ares.impl.util.RenderHelper
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 
@@ -28,7 +27,7 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropdownSe
     override fun getSecondaryText() = text
 
     class DropDown<T: Enum<*>>(val setting: EnumSetting<T>, scale: Float): DynamicElement() {
-        val fontRenderer = RenderHelper.getFontRenderer(scale * 0.87f)
+        val fontSize = scale * 0.87f
 
         init {
             val enums = setting.value.javaClass.enumConstants
@@ -46,7 +45,6 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropdownSe
         dropDown.setting.value = value
     }, Clipping.SCISSOR) {
         private val text = value.name.formatToPretty()
-        private val offset = dropDown.fontRenderer.getStringWidth(text) + 2
 
         override fun getWidth() = getParent()?.getWidth() ?: 0f
 
@@ -77,7 +75,9 @@ class EnumElement<T: Enum<*>>(setting: EnumSetting<T>, scale: Float): DropdownSe
                 indices(0, 1)
             }
 
-            dropDown.fontRenderer.drawString(matrixStack, text, width - offset, 0f, theme.lightground.value)
+            val fontRenderer = theme.font.value.getRenderer()
+            val offset = fontRenderer.getStringWidth(text, dropDown.fontSize) + 2
+            fontRenderer.drawString(matrixStack, text, dropDown.fontSize, width - offset, 0f, theme.lightground.value)
         }
     }
 }

@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: other language support
 public class FontRenderer {
     private static final Buffer BUFFER = Buffer.createDynamic(Shader.POSITION_TEXTURE_COLOR, VertexFormat.POSITION_UV_COLOR);
 
@@ -15,14 +16,14 @@ public class FontRenderer {
     private final int[] colorCodes = new int[32];
     private final Texture texture;
     private final int width, height;
-    private final float charHeight, fontSize;
+    private final float charHeight, quality;
 
-    public FontRenderer(Font font, float size, int style) {
-        this(font.deriveFont(style), size);
+    public FontRenderer(Font font, int style, float quality) {
+        this(font.deriveFont(style), quality);
     }
 
-    public FontRenderer(Font font, float size) {
-        this.fontSize = size;
+    public FontRenderer(Font font, float quality) {
+        this.quality = quality;
 
         // generate color codes
         for(int i = 0; i < 32; ++i) {
@@ -48,7 +49,7 @@ public class FontRenderer {
 
         AffineTransform affineTransform = new AffineTransform();
         FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);
-        font = font.deriveFont(size * 2);
+        font = font.deriveFont(quality);
 
         // calculate max character and image width and height
         float charWidth = 0;
@@ -96,20 +97,20 @@ public class FontRenderer {
         texture = new Texture(image);
     }
 
-    public float drawChar(MatrixStack matrixStack, char c, float x, float y, float r, float g, float b, float a) {
-        float w = drawChar(BUFFER, c, x, y, r, g, b, a);
+    public float drawChar(MatrixStack matrixStack, char c, float size, float x, float y, float r, float g, float b, float a) {
+        float w = drawChar(BUFFER, c, size, x, y, r, g, b, a);
         texture.bind();
         BUFFER.draw(matrixStack);
         BUFFER.reset();
         return w;
     }
 
-    public float drawChar(Buffer buffer, char c, float x, float y, float r, float g, float b, float a) {
+    public float drawChar(Buffer buffer, char c, float size, float x, float y, float r, float g, float b, float a) {
         Glyph glyph = glyphMap.get(c);
         if(glyph == null) return 0;
 
-        float w = glyph.width / 2f;
-        float h = glyph.height / 2f;
+        float w = glyph.width / quality * size;
+        float h = glyph.height / quality * size;
         float tx = glyph.x / width;
         float ty = glyph.y / height;
         float tw = glyph.width / width;
@@ -129,30 +130,30 @@ public class FontRenderer {
         return w;
     }
 
-    public void drawString(MatrixStack matrixStack, String text, float x, float y, float r, float g, float b, float a) {
-        drawString(BUFFER, text, x, y, r, g, b, a);
+    public void drawString(MatrixStack matrixStack, String text, float size, float x, float y, float r, float g, float b, float a) {
+        drawString(BUFFER, text, size, x, y, r, g, b, a);
         texture.bind();
         BUFFER.draw(matrixStack);
         BUFFER.reset();
     }
 
-    public void drawString(MatrixStack matrixStack, String text, float x, float y, org.aresclient.ares.api.util.Color color) {
-        drawString(matrixStack, text, x, y, color.getRed(), color.getBlue(), color.getGreen(), color.getAlpha());
+    public void drawString(MatrixStack matrixStack, String text, float size, float x, float y, org.aresclient.ares.api.util.Color color) {
+        drawString(matrixStack, text, size, x, y, color.getRed(), color.getBlue(), color.getGreen(), color.getAlpha());
     }
 
-    public void drawString(Buffer buffer, String text, float x, float y, float r, float g, float b, float a) {
-        drawColoredString(buffer, text, x, y, new float[] { r, g, b, a });
+    public void drawString(Buffer buffer, String text, float size, float x, float y, float r, float g, float b, float a) {
+        drawColoredString(buffer, text, size, x, y, new float[] { r, g, b, a });
     }
 
-    public void drawString(Buffer buffer, String text, float x, float y, org.aresclient.ares.api.util.Color color) {
-        drawString(buffer, text, x, y, color.getRed(), color.getBlue(), color.getGreen(), color.getAlpha());
+    public void drawString(Buffer buffer, String text, float size, float x, float y, org.aresclient.ares.api.util.Color color) {
+        drawString(buffer, text, size, x, y, color.getRed(), color.getBlue(), color.getGreen(), color.getAlpha());
     }
 
-    private void drawColoredString(Buffer buffer, String text, float x, float y, float[] rgba) {
+    private void drawColoredString(Buffer buffer, String text, float size, float x, float y, float[] rgba) {
         for(int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if(c == 167 && i + 1 < text.length()) color(text.charAt(++i), rgba);
-            else x += drawChar(buffer, c, x, y, rgba[0], rgba[1], rgba[2], rgba[3]);
+            else x += drawChar(buffer, c, size, x, y, rgba[0], rgba[1], rgba[2], rgba[3]);
         }
     }
 
@@ -165,26 +166,22 @@ public class FontRenderer {
         rgba[2] = (float) (color & 255) / 255.0F;
     }
 
-    public float getFontSize() {
-        return fontSize;
+    public float getCharHeight(float size) {
+        return charHeight / quality * size;
     }
 
-    public float getCharHeight() {
-        return charHeight / 2f;
-    }
-
-    public float getCharWidth(char c) {
+    public float getCharWidth(char c, float size) {
         Glyph glyph = glyphMap.get(c);
         if(glyph == null) return 0;
-        return glyph.width / 2f;
+        return glyph.width / quality * size;
     }
 
-    public float getStringWidth(String text) {
+    public float getStringWidth(String text, float size) {
         float width = 0;
         for(int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if(c == 167 && i + 1 < text.length()) i++;
-            else width += getCharWidth(c);
+            else width += getCharWidth(c, size);
         }
 
         return width;

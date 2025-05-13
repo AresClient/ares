@@ -3,14 +3,14 @@ package org.aresclient.ares.impl.gui.game
 import org.aresclient.ares.api.gui.Button
 import org.aresclient.ares.api.gui.StaticElement
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.impl.util.RenderHelper
-import org.aresclient.ares.impl.util.RenderHelper.draw
-import org.aresclient.ares.impl.util.Theme
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.impl.gui.game.setting.SettingsWindowContent
 import org.aresclient.ares.impl.gui.game.window.WindowContent
 import org.aresclient.ares.impl.gui.game.window.WindowManager
+import org.aresclient.ares.impl.util.RenderHelper
+import org.aresclient.ares.impl.util.RenderHelper.draw
+import org.aresclient.ares.impl.util.Theme
 
 class NavigationBar(private val windowManager: WindowManager, private val scale: Float): StaticElement() {
     val padding = scale / 6f
