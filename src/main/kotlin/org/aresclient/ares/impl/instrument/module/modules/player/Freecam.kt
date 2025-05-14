@@ -2,6 +2,8 @@ package org.aresclient.ares.impl.instrument.module.modules.player
 
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
+import net.minecraft.client.option.Perspective
+import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.events.InputEvent
@@ -24,6 +26,8 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 		.setMin(0.0)
 		.setPrecision(1)
 
+	private val scroll = settings.addBoolean("Scroll", true, "Allow speed to be adjusted using scroll wheel")
+
 	// ════════════════════════════════════════════════════════════════════════ //
 
 	override fun priority(): Int = 100
@@ -32,6 +36,8 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 	override val shouldRenderCharacter: Boolean = true
 
 	// ════════════════════════════════════════════════════════════════════════ //
+
+	private var prevPerspective: Perspective? = null
 
 	private var forward = false
 	private var backward = false
@@ -43,19 +49,61 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 	// ════════════════════════════════════════════════════════════════════════ //
 
 	override fun onEnable() {
-		MC.gameRenderer.camera.let {
+		if (MC.NULL) {
+			setEnabled(false)
+			return
+		}
+
+		CAMERA.let {
 			cameraPosition.set(it.pos)
 			cameraRotation.set(it.yaw, it.pitch)
 		}
+
+		with(MC.options) {
+			prevPerspective = perspective
+
+			forward = forwardKey.isPressed
+			backward = backKey.isPressed
+			leftward = leftKey.isPressed
+			rightward = rightKey.isPressed
+			upward = jumpKey.isPressed
+			downward = sneakKey.isPressed
+
+			perspective = Perspective.FIRST_PERSON
+			forwardKey.isPressed = false
+			backKey.isPressed = false
+			leftKey.isPressed = false
+			rightKey.isPressed = false
+			sneakKey.isPressed = false
+			jumpKey.isPressed = false
+		}
+
 		Camera.begin(this)
 	}
 
 	override fun onDisable() {
 		Camera.end(this)
+
+		if(prevPerspective != null) {
+			MC.options.perspective = prevPerspective!!
+			prevPerspective = null
+		}
+
+		with(MC.options) {
+			forwardKey.isPressed = forward
+			backKey.isPressed = backward
+			leftKey.isPressed = leftward
+			rightKey.isPressed = rightward
+			jumpKey.isPressed = upward
+			sneakKey.isPressed = downward
+		}
 	}
 
 	override fun onTick() {
-		if (MC.world == null || MC.player == null) return
+		if (MC.NULL) {
+			setEnabled(false)
+			return
+		}
 
 		var speed = speed.value
 		if (!MC.options.sprintKey.isPressed) speed *= 0.5
@@ -98,9 +146,16 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 		} else if (opt.sneakKey.matchesKey(event.key, 0)) {
 			opt.sneakKey.isPressed = false
 			downward = event is Pressed
-		} else return@EventListener
+		} else if (!opt.togglePerspectiveKey.matchesKey(event.key, 0)) return@EventListener
 
 		event.isCancelled = true
+	}
+
+	@field:EventHandler private val mouseListener = EventListener<InputEvent.Mouse.Scrolled> { event ->
+		if(scroll.value) {
+			speed.value = MathHelper.clamp(speed.value + event.vertical / 2.0, 0.2, 80.0)
+			event.isCancelled = true
+		}
 	}
 
 	// ════════════════════════════════════════════════════════════════════════ //

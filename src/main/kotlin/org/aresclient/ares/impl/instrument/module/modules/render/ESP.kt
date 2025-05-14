@@ -45,6 +45,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
                     it.title.value = title
                     it.mode.value = mode
                     it.lineColor.value = target.defaultColor
+                    it.lineColor.isRainbow = target.defaultRainbow
                     it.fillColor.value = target.defaultColor.deriveAlpha(0.2f)
                     it.fillColor.isRainbow = target.defaultRainbow
                     it.enabled.value = enabled

@@ -10,6 +10,7 @@ import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
 import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.impl.instrument.module.modules.player.Freecam
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
@@ -21,28 +22,25 @@ import kotlin.jvm.optionals.getOrNull
 object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entities in render distance") {
     private class EntityGroup(members: Set<Any> = emptySet()): Group<Any>(members) {
         companion object {
-            fun create(title: String, members: Collection<Any>, distance: Boolean = false, color: Color = Color.WHITE, rainbow: Boolean = false, enabled: Boolean = true): EntityGroup {
+            fun create(title: String, members: Collection<Any>, target: EntityUtil.Target, distance: Boolean = false, freecam: Boolean = false, enabled: Boolean = true): EntityGroup {
                 return EntityGroup(HashSet(members)).also {
                     it.title.value = title
                     it.distance.value = distance
-                    it.color.value = color
-                    it.color.isRainbow = rainbow
+                    it.color.value = target.defaultColor
+                    it.color.isRainbow = target.defaultRainbow
+                    it.freecam.value = freecam
                     it.enabled.value = enabled
                 }
-            }
-
-
-            fun create(title: String, members: Collection<Any>, target: EntityUtil.Target, enabled: Boolean = true): EntityGroup {
-                return create(title, members, color = target.defaultColor, rainbow = target.defaultRainbow, enabled = enabled)
             }
         }
 
         val distance: BooleanSetting = addBoolean("Distance", false)
         val color: ColorSetting = addColor("Color", Color.WHITE).setVisibility { !distance.value } as ColorSetting
+        val freecam: BooleanSetting = addBoolean("Freecam Only", false)
     }
 
     private val entities = settings.addGrouped("Entities", arrayListOf(
-        EntityGroup.create("Self", listOf(PlayerThreat.SELF), PlayerThreat.SELF),
+        EntityGroup.create("Self", listOf(PlayerThreat.SELF), PlayerThreat.SELF, freecam = true),
         EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), PlayerThreat.FRIEND),
         EntityGroup.create("Players", listOf(PlayerThreat.HOSTILE), PlayerThreat.HOSTILE),
         EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, EntityUtil.TargetType.HOSTILE, enabled = false),
@@ -67,7 +65,7 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
 
         WORLD.entities?.forEach { entity ->
             val group = getEntityGroup(entity) ?: return@forEach
-            if(!group.enabled.value) return@forEach
+            if(!group.enabled.value || (group.freecam.value && !Freecam.isEnabled())) return@forEach
 
             val pos = entity.getLerpedRenderPos(delta)
             val color = if(group.distance.value) Color.fromDistance(SELF.distanceTo(entity)) else group.color.value

@@ -28,8 +28,11 @@ public class MapSetting extends Setting<Map<String, Setting<?>>> {
     @Override
     public void read(JsonElement jsonElement) {
         jsonObject = jsonElement.getAsJsonObject();
-        for(Map.Entry<String, Setting<?>> entry: getValue().entrySet())
-            entry.getValue().read(jsonObject.get(entry.getKey()));
+        for(Map.Entry<String, Setting<?>> entry: getValue().entrySet()) {
+            JsonElement child = jsonObject.get(entry.getKey());
+            if(child == null) continue;
+            entry.getValue().read(child);
+        }
     }
 
     @Override

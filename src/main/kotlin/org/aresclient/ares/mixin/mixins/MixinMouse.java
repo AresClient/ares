@@ -36,10 +36,10 @@ public class MixinMouse implements JWrapper {
         }
     }
 
-    @Inject(method = "onMouseScroll", at = @At("HEAD"))
+    @Inject(method = "onMouseScroll", at = @At("HEAD"), cancellable = true)
     public void onMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
-            EVENTS.post(new InputEvent.Mouse.Scrolled(vertical));
+            if(EVENTS.post(new InputEvent.Mouse.Scrolled(vertical)).isCancelled()) ci.cancel();
         }
     }
 
