@@ -21,16 +21,14 @@ abstract class RowElement(scale: Float, private val start: Float = 3f): DynamicE
 
     open fun getSecondaryTextColor(theme: Theme): Color = theme.lightground.value
 
-    open fun getTooltip(): String? = null
+    open fun getTooltip(mouseX: Int, mouseY: Int): String? = null
 
     open fun shouldRenderTooltip(mouseX: Int, mouseY: Int): Boolean {
         return isMouseOver(mouseX, mouseY)
     }
 
     override fun draw(theme: Theme, buffers: Renderer.Buffers, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
-        val tooltip = getTooltip()
-        if(tooltip != null && isMouseOver(mouseX, mouseY))
-            (getRootParent() as? ScreenElement)?.setTooltip(tooltip)
+        getTooltip(mouseX, mouseY)?.let { (getRootParent() as? ScreenElement)?.setTooltip(it) }
 
         // outline
         val width = getWidth()

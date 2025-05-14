@@ -7,7 +7,7 @@ import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
-abstract class DropdownContainer(private val scale: Float): RowElement(scale, scale) {
+abstract class DropdownContainer(protected val scale: Float): RowElement(scale, scale) {
     companion object {
         private const val DROPDOWN_PADDING = 1f
     }

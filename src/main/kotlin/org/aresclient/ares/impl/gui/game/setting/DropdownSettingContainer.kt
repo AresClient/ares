@@ -20,6 +20,12 @@ open class DropdownSettingContainer<T: Setting<V>, V>(val setting: T, scale: Flo
 
     override fun getText(): String = setting.name ?: "<null>"
 
+    override fun getTooltip(mouseX: Int, mouseY: Int): String? {
+        if(!isMouseOver(mouseX, mouseY) || mouseY > getRenderY() + scale) return null
+        return if(setting.description?.isEmpty() != false) null
+        else setting.description.joinToString("\n")
+    }
+
     open fun change() {
     }
 
