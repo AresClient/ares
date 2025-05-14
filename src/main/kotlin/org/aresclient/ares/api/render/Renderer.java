@@ -215,7 +215,10 @@ public class Renderer implements JWrapper {
         glEnableDisable(GL11.GL_BLEND, state.blend);
         glEnableDisable(GL11.GL_CULL_FACE, state.cull);
 
-        GlStateManager._bindTexture(0);
+        for (int j = 0; j < 12; j++) {
+            GlStateManager._activeTexture(GlConst.GL_TEXTURE0 + j);
+            GlStateManager._bindTexture(0);
+        }
         GlStateManager._glBindFramebuffer(GlConst.GL_FRAMEBUFFER, 0);
     }
 
