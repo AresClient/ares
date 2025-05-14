@@ -29,7 +29,9 @@ public abstract class Group<T> extends MapSetting {
         membersCache.clear();
         members.stream()
                 .map(it -> getGroupedParent().getPossibleMemberById(it))
-                .forEach(it -> membersCache.add(it.getValue()));
+                .forEach(it -> {
+                    if(it != null) membersCache.add(it.getValue());
+                });
     }
 
     @Override
@@ -37,7 +39,9 @@ public abstract class Group<T> extends MapSetting {
         members.clear();
         membersCache.stream()
                 .map(it -> getGroupedParent().getPossibleMemberByValue(it))
-                .forEach(it -> members.add(it.getId()));
+                .forEach(it -> {
+                    if(it != null) members.add(it.getId());
+                });
         return super.write();
     }
 

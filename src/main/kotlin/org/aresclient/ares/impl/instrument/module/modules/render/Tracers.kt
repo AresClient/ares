@@ -30,6 +30,11 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
                     it.enabled.value = enabled
                 }
             }
+
+
+            fun create(title: String, members: Collection<Any>, target: EntityUtil.Target, enabled: Boolean = true): EntityGroup {
+                return create(title, members, color = target.defaultColor, rainbow = target.defaultRainbow, enabled = enabled)
+            }
         }
 
         val distance: BooleanSetting = addBoolean("Distance", false)
@@ -37,12 +42,13 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
     }
 
     private val entities = settings.addGrouped("Entities", arrayListOf(
-        EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), rainbow = true),
-        EntityGroup.create("Players", EntityUtil.EntityTypes.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, color = Color.BLUE),
-        EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, color = EntityUtil.TargetType.HOSTILE.defaultColor, enabled = false),
-        EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, color = EntityUtil.TargetType.PASSIVE.defaultColor, enabled = false),
-        EntityGroup.create("Misc", EntityUtil.EntityTypes.miscellaneous.filter { it != EntityType.ITEM }, color = EntityUtil.TargetType.OTHER.defaultColor, enabled = false),
-        EntityGroup.create("Items", listOf(EntityType.ITEM), color = EntityUtil.TargetType.ITEM.defaultColor, enabled = false)
+        EntityGroup.create("Self", listOf(PlayerThreat.SELF), PlayerThreat.SELF),
+        EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), PlayerThreat.FRIEND),
+        EntityGroup.create("Players", listOf(PlayerThreat.HOSTILE), PlayerThreat.HOSTILE),
+        EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, EntityUtil.TargetType.HOSTILE, enabled = false),
+        EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, EntityUtil.TargetType.PASSIVE, enabled = false),
+        EntityGroup.create("Misc", EntityUtil.EntityTypes.miscellaneous.filter { it != EntityType.ITEM }, EntityUtil.TargetType.OTHER, enabled = false),
+        EntityGroup.create("Items", listOf(EntityType.ITEM), EntityUtil.TargetType.ITEM, enabled = false)
     ), EntityUtil.EntityTypes.possibles, { EntityGroup() })
 
     private val entitiesCache = hashMapOf<Any, EntityGroup?>()
@@ -60,8 +66,6 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
         val center = Vector2f(MC.window.framebufferWidth.toFloat(), MC.window.framebufferHeight.toFloat()).div(2f)
 
         WORLD.entities?.forEach { entity ->
-            if(entity == SELF) return@forEach
-
             val group = getEntityGroup(entity) ?: return@forEach
             if(!group.enabled.value) return@forEach
 

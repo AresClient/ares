@@ -59,7 +59,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
     private val entities = settings.addGrouped("Entities", arrayListOf(
         EntityGroup.create("Friends", listOf(PlayerThreat.FRIEND), Mode.OUTLINE, PlayerThreat.FRIEND, enabled = true),
-        EntityGroup.create("Players", EntityUtil.EntityTypes.player.filter { it != PlayerThreat.FRIEND && it != PlayerThreat.BOT }, Mode.OUTLINE, PlayerThreat.HOSTILE, enabled = true),
+        EntityGroup.create("Players", listOf(PlayerThreat.HOSTILE), Mode.OUTLINE, PlayerThreat.HOSTILE, enabled = true),
         EntityGroup.create("Crystals", listOf(EntityType.END_CRYSTAL), Mode.CHAMLIKE, EntityUtil.TargetType.END_CRYSTAL, enabled = true),
         EntityGroup.create("Monsters", EntityUtil.EntityTypes.monster, Mode.OUTLINE, EntityUtil.TargetType.HOSTILE),
         EntityGroup.create("Animals", EntityUtil.EntityTypes.animal, Mode.OUTLINE, EntityUtil.TargetType.PASSIVE),

@@ -40,8 +40,8 @@ object EntityUtil: Wrapper {
 	}
 
 	enum class PlayerThreat(override val defaultColor: Color, override val defaultRainbow: Boolean = false): Target {
+		SELF(Color.WHITE),
 		FRIEND(Color.CYAN, true),
-		TEAM(Color.GREEN),
 		HOSTILE(Color.RED),
 		BOT(Color.BLACK)
 	}
@@ -82,7 +82,6 @@ object EntityUtil: Wrapper {
 	fun Entity.isBot(): Boolean = this is PlayerEntity && isInvisibleTo(MC.player) && !isOnGround && !collidesWith(MC.player)
 
 	enum class TargetType(override val defaultColor: Color, override val defaultRainbow: Boolean = false): Target {
-		SELF(Color.WHITE),
 		PASSIVE(Color.GREEN),
 		HOSTILE(Color.BLUE),
 		ITEM(Color.WHITE),
@@ -91,7 +90,6 @@ object EntityUtil: Wrapper {
 	}
 
 	val Entity.targetType: Target get() {
-		if(this == SELF) return TargetType.SELF
 		return when(this) {
 			is EndCrystalEntity -> TargetType.END_CRYSTAL
 			is ItemEntity -> TargetType.ITEM
@@ -103,9 +101,9 @@ object EntityUtil: Wrapper {
 	}
 
 	val PlayerEntity.playerThreat: PlayerThreat get() {
-		return if(isFriend()) PlayerThreat.FRIEND
+		return if(this == SELF) PlayerThreat.SELF
+		else if(isFriend()) PlayerThreat.FRIEND
 		else if(isBot()) PlayerThreat.BOT
-		else if(scoreboardTeam != null && scoreboardTeam == SELF.scoreboardTeam) PlayerThreat.TEAM
 		else PlayerThreat.HOSTILE
 	}
 

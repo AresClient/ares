@@ -20,7 +20,7 @@ object TargetSettings: Component.Settings<AutoCrystal>(AutoCrystal, "Target") {
     }
 
     val entities = settings.addGrouped("Entities", arrayListOf(
-        EntityGroup.create("Players", setOf(PlayerThreat.HOSTILE, PlayerThreat.TEAM), enabled = true),
+        EntityGroup.create("Players", setOf(PlayerThreat.HOSTILE), enabled = true),
         EntityGroup.create("Friends", setOf(PlayerThreat.FRIEND)),
         EntityGroup.create("Monsters", EntityTypes.monster),
         EntityGroup.create("Animals", EntityTypes.animal),
