@@ -12,18 +12,25 @@ import org.aresclient.ares.impl.util.RenderUtil
 
 object DiamondSearchExample: Module(Category.RENDER, "Diamond Search Ex", "Simple diamond search module for an example of how the chunk processor works.") {
 
+    private var processing = false
     private val chunkProcessor = ChunkProcessor(this)
         .requireBlocks()
         .addConditions(this::findDiamonds)
 
     private fun findDiamonds(state: BlockState): Boolean = state.block == Blocks.DIAMOND_ORE || state.block == Blocks.DEEPSLATE_DIAMOND_ORE
 
-    override fun onEnable() {
-        chunkProcessor.begin()
+    override fun onTick() {
+        if(MC.NULL) return
+
+        if(!processing) {
+            chunkProcessor.begin()
+            processing = true
+        }
     }
 
     override fun onDisable() {
         chunkProcessor.end()
+        processing = false
     }
 
     override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {

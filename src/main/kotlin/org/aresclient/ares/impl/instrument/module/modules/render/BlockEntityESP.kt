@@ -48,19 +48,22 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
 
     private val blockEntitiesCache = hashMapOf<BlockEntityType<*>, BlockEntityGroup?>()
 
+    private var processing = false
     private val chunkProcessor = ChunkProcessor(this).requireBlockEntities()
 
-    override fun onEnable() {
-        chunkProcessor.begin()
+    override fun onTick() {
+        if(MC.NULL) return
+
+        blockEntitiesCache.clear()
+        if(!processing) {
+            chunkProcessor.begin()
+            processing = true
+        }
     }
 
     override fun onDisable() {
         chunkProcessor.end()
-    }
-
-    override fun onTick() {
-        if(MC.NULL) return
-        blockEntitiesCache.clear()
+        processing = false
     }
 
     private fun getBlockEntityGroup(blockEntity: BlockEntity): BlockEntityGroup? {
