@@ -67,8 +67,9 @@ public abstract class Setting<T> {
 		return GSON.toJson(write());
 	}
 
-	protected void onChange() {
+	public void onChange() {
 		for(Consumer<T> listener: listeners) listener.accept(value);
+		if(parent != null) parent.onChange();
 	}
 
 	public Setting<?> getParent() {

@@ -105,7 +105,7 @@ abstract class Module(val category: Category, name: String, description: String,
 	fun toggle() = setEnabled(!isEnabled())
 	fun isListening() = isEnabled() || defaults.alwaysListening
 
-	override fun registerEvents() = if (isListening()) super.registerEvents() else Unit
+	override fun registerEvents() = if(isListening()) super.registerEvents() else Unit
 	override fun unregisterEvents() = if(!isListening()) super.unregisterEvents() else Unit
 
 	/* ---------------------------------------------------------------------- */
@@ -138,6 +138,6 @@ abstract class Module(val category: Category, name: String, description: String,
 	protected open fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {}
 	protected open fun onRenderWorld2d(delta: Float, renderer: Renderer.State, projection: Matrix4f) {}
 
-	protected open fun onEnable() {}
-	protected open fun onDisable() {}
+	open fun onEnable() {}
+	open fun onDisable() {}
 }

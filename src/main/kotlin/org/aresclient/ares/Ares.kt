@@ -11,6 +11,7 @@ import org.aresclient.ares.api.events.*
 import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
+import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
@@ -42,6 +43,7 @@ class Ares: ModInitializer, Wrapper {
 
 			plugin.globals.forEach(Instrument::registerEvents)
 			plugin.modules.forEach(Instrument::registerEvents)
+			plugin.modules.filter(Module::isEnabled).forEach(Module::onEnable)
 
 			plugin.init()
 			PLUGINS.add(plugin)

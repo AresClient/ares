@@ -41,8 +41,9 @@ public abstract class AbstractListSetting<T> extends Setting<List<T>> implements
     }
 
     @Override
-    protected void onChange() {
+    public void onChange() {
         for(Consumer<List<T>> listener: getListeners()) listener.accept(this);
+        if(getParent() != null) getParent().onChange();
     }
 
     @Override
