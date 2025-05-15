@@ -20,7 +20,7 @@ import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
 import org.aresclient.ares.impl.util.MathUtil.set
 import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 
-object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character"), CameraAdjustor {
+object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character", Defaults().setExternalToggleList(true)), CameraAdjustor {
 
 	private val speed = settings.addDouble("Speed", 1.0, "The speed at which the camera moves.")
 		.setMin(0.0)

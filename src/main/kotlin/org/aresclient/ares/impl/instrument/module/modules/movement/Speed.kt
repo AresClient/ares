@@ -14,7 +14,7 @@ import org.aresclient.ares.mixin.accessors.AccessRenderTickCounter
 import kotlin.math.hypot
 import kotlin.math.max
 
-object Speed: Module(Category.MOVEMENT, "Speed", "") {
+object Speed: Module(Category.MOVEMENT, "Speed", "Modifies the movement speed of the player.", Defaults().setExternalToggleList(true)) {
 
 	init {
 		Strafe

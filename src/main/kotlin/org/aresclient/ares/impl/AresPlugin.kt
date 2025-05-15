@@ -6,6 +6,8 @@ import org.aresclient.ares.impl.instrument.global.Camera
 import org.aresclient.ares.impl.instrument.global.Interaction
 import org.aresclient.ares.impl.instrument.global.Rotation
 import org.aresclient.ares.impl.instrument.module.modules.hud.Coordinates
+import org.aresclient.ares.impl.instrument.module.modules.hud.ModuleList
+import org.aresclient.ares.impl.instrument.module.modules.hud.ToggleList
 import org.aresclient.ares.impl.instrument.module.modules.hud.Watermark
 import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
@@ -32,6 +34,8 @@ object AresPlugin: Plugin(
     ),
     modules = listOf(
         Coordinates,
+        ModuleList,
+        ToggleList,
         Watermark,
 
         ClickGUI,

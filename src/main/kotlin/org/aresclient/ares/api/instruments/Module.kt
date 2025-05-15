@@ -4,6 +4,7 @@ import org.aresclient.ares.Ares
 import org.aresclient.ares.api.events.ToggleEvent
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
+import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.EnumSetting
@@ -49,10 +50,26 @@ abstract class Module(val category: Category, name: String, description: String,
 		internal var toggleOn = ToggleOn.PRESS
 		internal var alwaysListening = false
 
+		internal var externalModuleList = true
+		internal var externalToggleList = false
+
 		fun setEnabled(value: Boolean): Defaults { enabled = value; return this }
 		fun setBind(value: Int): Defaults { bind = value; return this }
 		fun setToggleOn(value: ToggleOn): Defaults { toggleOn = value; return this }
 		fun setAlwaysListening(value: Boolean): Defaults { alwaysListening = value; return this }
+
+		fun setExternalModuleList(value: Boolean): Defaults { externalModuleList = value; return this }
+		fun setExternalToggleList(value: Boolean): Defaults { externalToggleList = value; return this }
+	}
+
+	class ExternalCommons(private val parent: Module, defaults: Defaults): MapSetting() {
+		private val externals = parent.settings.addMap("External Commons")
+
+		private val moduleList = externals.addBoolean("Module List", defaults.externalModuleList);
+		private val toggleList = externals.addBoolean("Toggle List", defaults.externalToggleList);
+
+		val showOnModuleList: Boolean get() = parent.isEnabled() && moduleList.value
+		val showOnToggleList: Boolean get() = toggleList.value
 	}
 
 	/* ---------------------------------------------------------------------- */
@@ -82,6 +99,8 @@ abstract class Module(val category: Category, name: String, description: String,
 		}
 
 	private val toggleOn: EnumSetting<ToggleOn> = settings.addEnum("Toggle On", defaults.toggleOn)
+
+	internal val externalCommons = ExternalCommons(this, defaults)
 
 	/* ---------------------------------------------------------------------- */
 
