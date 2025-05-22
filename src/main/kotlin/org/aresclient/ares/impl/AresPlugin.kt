@@ -47,6 +47,7 @@ object AresPlugin: Plugin(
         AntiAFK,
         FastPlace,
         Freecam,
+        MultiTask,
         PortalGUIs,
         Sync,
 

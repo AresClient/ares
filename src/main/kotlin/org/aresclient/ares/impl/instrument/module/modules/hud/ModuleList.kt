@@ -35,8 +35,8 @@ object ModuleList: HudModule("Module List", "Shows modules that are currently en
         longestOffset = getFontRenderer().getStringWidth(longest, size.value)
 
         shownModules = when(sort.value) {
-            Sort.SHORT_TO_LONG -> shownModules.sortedBy { it.length }.toMutableSet() // For whatever reason `toSortedSet` causes some strings to disappear when comparing length
-            Sort.LONG_TO_SHORT -> shownModules.sortedBy { it.length }.reversed().toMutableSet()
+            Sort.SHORT_TO_LONG -> shownModules.sortedBy { getFontRenderer().getStringWidth(it, size.value) }.toMutableSet() // For whatever reason `toSortedSet` causes some strings to disappear when comparing length
+            Sort.LONG_TO_SHORT -> shownModules.sortedBy { getFontRenderer().getStringWidth(it, size.value) }.reversed().toMutableSet()
             Sort.ALPHABETICAL  -> shownModules.toSortedSet()
         }
     }

@@ -6,12 +6,7 @@ import org.aresclient.ares.impl.util.Theme
 import java.awt.Font
 
 abstract class HudModule(name: String, description: String, defaults: Defaults = Defaults(),
-                         position: Pair<Double, Double> = 0.0 to 0.0): Module(Category.HUD, name, description, defaults) {
-    init {
-        // kinda a hack, but we don't want any hud modules to show on module list because you can already see them
-        defaults.setExternalModuleList(false)
-    }
-
+                         position: Pair<Double, Double> = 0.0 to 0.0): Module(Category.HUD, name, description, defaults.setExternalModuleList(false)) {
     private val x = settings.addDouble("X", position.first).setMin(0.0).setMax(1.0)
     private val y = settings.addDouble("Y", position.second).setMin(0.0).setMax(1.0)
 

@@ -3,18 +3,22 @@ package org.aresclient.ares.mixin.mixins;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.Era;
 import org.aresclient.ares.api.events.ScreenOpenedEvent;
 import org.aresclient.ares.api.events.ShutdownEvent;
 import org.aresclient.ares.api.events.TickEvent;
+import org.aresclient.ares.impl.instrument.module.modules.player.MultiTask;
 import org.aresclient.ares.impl.util.RenderPipelines;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(MinecraftClient.class)
@@ -54,5 +58,17 @@ public class MixinMinecraftClient implements JWrapper {
     @Inject(method = "stop", at = @At("HEAD"))
     public void preStop(CallbackInfo ci) {
         EVENTS.post(new ShutdownEvent());
+    }
+
+    @Redirect(method = "handleBlockBreaking", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
+    public boolean isUsingItem(ClientPlayerEntity clientPlayerEntity) {
+        if(MultiTask.INSTANCE.isEnabled()) return false;
+        else return clientPlayerEntity.isUsingItem();
+    }
+
+    @Redirect(method = "doItemUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;isBreakingBlock()Z"))
+    public boolean isBreakingBlock(ClientPlayerInteractionManager clientPlayerInteractionManager) {
+        if(MultiTask.INSTANCE.isEnabled()) return false;
+        else return clientPlayerInteractionManager.isBreakingBlock();
     }
 }
