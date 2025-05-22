@@ -1,6 +1,8 @@
 package org.aresclient.ares.impl.instrument.module.modules.hud
 
+import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.render.TextColor
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.AresPlugin
 
@@ -26,7 +28,7 @@ object ModuleList: HudModule("Module List", "Shows modules that are currently en
         for(module in AresPlugin.modules) {
             if(!module.externalCommons.showOnModuleList) continue
 
-            shownModules.add(module.name)
+            shownModules.add(module.getModuleListText())
             if(module.name.length > longest.length) longest = module.name
         }
 
@@ -42,8 +44,7 @@ object ModuleList: HudModule("Module List", "Shows modules that are currently en
     override fun onRenderHud(delta: Float, renderer: Renderer.State) {
         if(shownModules.isEmpty()) return
 
-        var i = 0
-        for(shown in shownModules) {
+        for((i, shown) in shownModules.withIndex()) {
             val xOffset = longestOffset - getFontRenderer().getStringWidth(shown, size.value)
             getFontRenderer().drawString(
                 renderer.matrixStack, shown, size.value,
@@ -51,7 +52,6 @@ object ModuleList: HudModule("Module List", "Shows modules that are currently en
                 getY() + i * lineHeight,
                 Color.WHITE
             )
-            ++i
         }
     }
 
@@ -61,4 +61,8 @@ object ModuleList: HudModule("Module List", "Shows modules that are currently en
 
     override fun getHeight(): Float = lineHeight * shownModules.size
 
+    private fun Module.getModuleListText(): String {
+        val info = getInfo() ?: return name
+        return "$name ${TextColor.GRAY}[$info]"
+    }
 }

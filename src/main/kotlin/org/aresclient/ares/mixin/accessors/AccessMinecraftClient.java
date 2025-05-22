@@ -8,4 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(MinecraftClient.class)
 public interface AccessMinecraftClient {
 	@Accessor("renderTickCounter") RenderTickCounter.Dynamic getRenderTickCounter();
+
+	@Accessor("itemUseCooldown")
+	void setItemUseCooldown(int value);
 }

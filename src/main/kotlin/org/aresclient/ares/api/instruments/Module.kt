@@ -159,4 +159,6 @@ abstract class Module(val category: Category, name: String, description: String,
 
 	open fun onEnable() {}
 	open fun onDisable() {}
+
+	open fun getInfo(): String? = null
 }

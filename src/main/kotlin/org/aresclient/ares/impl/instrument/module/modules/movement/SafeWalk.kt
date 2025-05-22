@@ -56,4 +56,6 @@ object SafeWalk: Module(Category.MOVEMENT, "SafeWalk", "Keeps you from walking o
         val state = WORLD.getBlockState(under)
         return state.isAir || (!state.isFullCube(WORLD, under) && !state.isIn(BlockTags.SLABS) && !state.isIn(BlockTags.STAIRS))
     }
+
+    override fun getInfo() = mode.value.name
 }

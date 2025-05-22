@@ -15,10 +15,7 @@ import org.aresclient.ares.impl.instrument.module.modules.misc.ToggleNotificatio
 import org.aresclient.ares.impl.instrument.module.modules.movement.SafeWalk
 import org.aresclient.ares.impl.instrument.module.modules.movement.Speed
 import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
-import org.aresclient.ares.impl.instrument.module.modules.player.AntiAFK
-import org.aresclient.ares.impl.instrument.module.modules.player.Freecam
-import org.aresclient.ares.impl.instrument.module.modules.player.PortalGUIs
-import org.aresclient.ares.impl.instrument.module.modules.player.Sync
+import org.aresclient.ares.impl.instrument.module.modules.player.*
 import org.aresclient.ares.impl.instrument.module.modules.render.*
 
 object AresPlugin: Plugin(
@@ -48,6 +45,7 @@ object AresPlugin: Plugin(
         AutoCrystal,
 
         AntiAFK,
+        FastPlace,
         Freecam,
         PortalGUIs,
         Sync,

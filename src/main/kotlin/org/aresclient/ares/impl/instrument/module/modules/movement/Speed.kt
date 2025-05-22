@@ -64,4 +64,6 @@ object Speed: Module(Category.MOVEMENT, "Speed", "Modifies the movement speed of
 		movement._z = SELF.velocity.z
 		isCancelled = true
 	}
+
+	override fun getInfo() = mode.value.name
 }

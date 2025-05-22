@@ -7,7 +7,7 @@ import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.impl.gui.title.AresTitleScreen
 
 object TitleScreen: Module(Category.MISC, "TitleScreen", "Replace the default Minecraft title screen with an Ares themed title screen",
-    Defaults().setEnabled(true)) {
+    Defaults().setEnabled(true).setExternalModuleList(false)) {
     private val screen by lazy { AresTitleScreen() }
 
     @field:EventHandler
