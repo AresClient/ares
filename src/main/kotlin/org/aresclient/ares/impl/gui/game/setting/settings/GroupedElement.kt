@@ -60,12 +60,13 @@ class GroupedElement<T, V: Group<T>>(private val content: SettingsWindowContent,
             // outline
             val width = getWidth()
             val height = getHeight()
+            val lineColor = theme.primary.value
             buffers.lines.draw(matrixStack) {
                 vertices(
-                    0f, height, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                    width, height, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                    0f, 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha,
-                    width, 0f, 0f, 2f, theme.primary.value.red, theme.primary.value.green, theme.primary.value.blue, theme.primary.value.alpha
+                    0f, height, 0f, 2f, lineColor.red, lineColor.green, lineColor.blue, lineColor.alpha,
+                    width, height, 0f, 2f, lineColor.red, lineColor.green, lineColor.blue, lineColor.alpha,
+                    0f, 0f, 0f, 2f, lineColor.red, lineColor.green, lineColor.blue, lineColor.alpha,
+                    width, 0f, 0f, 2f, lineColor.red, lineColor.green, lineColor.blue, lineColor.alpha
                 )
                 indices(
                     0, 1,

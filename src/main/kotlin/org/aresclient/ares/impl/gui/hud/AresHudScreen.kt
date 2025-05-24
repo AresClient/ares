@@ -8,7 +8,7 @@ import org.aresclient.ares.api.util.Color
 
 class AresHudScreen: Screen(Text.of("Ares HUD Editor")), Wrapper {
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-        context.drawText(MC.textRenderer, "<insert hud editor here>", 0, 0, Color.WHITE.rgb, false)
+        context.drawText(MC.textRenderer, "<insert hud editor here>", 0, 0, Color.WHITE.rgba, false)
     }
 
     override fun shouldPause(): Boolean = false

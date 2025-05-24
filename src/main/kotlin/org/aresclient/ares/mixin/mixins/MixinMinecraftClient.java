@@ -5,14 +5,16 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.texture.TextureManager;
 import net.minecraft.resource.ReloadableResourceManagerImpl;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.Era;
 import org.aresclient.ares.api.events.ScreenOpenedEvent;
 import org.aresclient.ares.api.events.ShutdownEvent;
 import org.aresclient.ares.api.events.TickEvent;
+import org.aresclient.ares.api.nrender.Textures;
 import org.aresclient.ares.impl.instrument.module.modules.player.MultiTask;
-import org.aresclient.ares.impl.util.RenderPipelines;
+import org.aresclient.ares.api.nrender.RenderPipelines;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(MinecraftClient.class)
 public class MixinMinecraftClient implements JWrapper {
     @Shadow @Final private ReloadableResourceManagerImpl resourceManager;
+    @Shadow @Final private TextureManager textureManager;
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void preTick(CallbackInfo ci) {
@@ -53,6 +56,11 @@ public class MixinMinecraftClient implements JWrapper {
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;reload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/resource/ResourceReload;", shift = At.Shift.BEFORE))
     public void reloadResources(CallbackInfo ci) {
         resourceManager.registerReloader(new RenderPipelines.PipelineReloader());
+    }
+
+    @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;registerTextures(Lnet/minecraft/client/texture/TextureManager;)V"))
+    public void registerTextures(CallbackInfo ci) {
+        Textures.INSTANCE.register(textureManager);
     }
 
     @Inject(method = "stop", at = @At("HEAD"))

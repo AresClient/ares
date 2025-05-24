@@ -56,15 +56,6 @@ public class Renderer implements JWrapper {
             this.uniforms = uniforms;
         }
 
-        public void draw() {
-            triangle.draw();
-            triangleTex.draw();
-            triangleTexColor.draw();
-            ellipse.draw();
-            rounded.draw();
-            lines.draw();
-        }
-
         public Buffer getTriangle() {
             return triangle;
         }

@@ -1,5 +1,7 @@
 package org.aresclient.ares.api.util;
 
+import net.minecraft.util.math.ColorHelper;
+
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -20,7 +22,7 @@ public class Color {
 	private final float b;
 	private final float a;
 
-	public Color(int rgb) {
+	private Color(int rgb) {
 		this((float) (rgb >> 16) / 255.0F, (float) (rgb >> 8 & 255) / 255.0F, (float) (rgb & 255) / 255.0F, 1);
 	}
 
@@ -108,11 +110,8 @@ public class Color {
 		return new Color(r, g, b, value);
 	}
 
-	public int getRGB() {
-		return (((int) (getAlpha() * 255 + 0.5) & 0xFF) << 24) |
-				(((int) (getRed() * 255 + 0.5) & 0xFF) << 16) |
-				(((int) (getGreen() * 255 + 0.5) & 0xFF) << 8) |
-				(((int) (getBlue() * 255 + 0.5) & 0xFF));
+	public int getRGBA() {
+		return ColorHelper.fromFloats(a, r, g, b);
 	}
 
 	public static Color rainbow() {

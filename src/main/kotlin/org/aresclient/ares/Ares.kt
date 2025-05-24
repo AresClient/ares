@@ -3,6 +3,7 @@ package org.aresclient.ares
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.TitleScreen
 import org.aresclient.ares.api.Plugin
@@ -12,6 +13,7 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module
+import org.aresclient.ares.api.nrender.Textures
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
@@ -23,6 +25,7 @@ import java.io.File
 
 class Ares: ModInitializer, Wrapper {
 	companion object {
+		@JvmStatic val MODID = "ares"
 		val LOGGER = LoggerFactory.getLogger("Ares")
 		@JvmStatic val EVENT_MANAGER = AresEventManager()
 

@@ -24,7 +24,7 @@ import org.aresclient.ares.impl.instrument.module.components.render.esp.Chamlike
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
-import org.aresclient.ares.impl.util.RenderPipelines
+import org.aresclient.ares.api.nrender.RenderPipelines
 import org.aresclient.ares.impl.util.RenderUtil
 import org.aresclient.ares.mixin.accessors.AccessWorldRenderer
 import java.util.*

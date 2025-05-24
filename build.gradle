@@ -1,110 +1,114 @@
 plugins {
-	id 'fabric-loom' version '1.10-SNAPSHOT'
-	id 'maven-publish'
-	id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
+    id 'fabric-loom' version '1.10-SNAPSHOT'
+    id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version "$kotlinVersion"
 }
 
 version = project.mod_version
 group = project.maven_group
 
 base {
-	archivesName = project.archives_base_name
+    archivesName = project.archives_base_name
 }
 
 sourceSets {
-	main {
-		java.srcDirs('src/main/kotlin')
-	}
+    main {
+        java.srcDirs('src/main/kotlin')
+    }
 }
 
 repositories {
-	maven {
-		name = "tigr.dev"
-		url = "https://maven.tigr.dev"
-	}
-	mavenCentral()
+    maven {
+        name = "tigr.dev"
+        url = "https://maven.tigr.dev"
+    }
+    mavenCentral()
 }
 
 configurations {
-	embeddedLibs
+    embeddedLibs
 }
 
 dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-	implementation "dev.tigr:simpleevents:1.3"
-	implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-	implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-	implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
-	implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion"
-	implementation "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$serializationVersion"
-	implementation "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion"
-	implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
+    implementation "dev.tigr:simpleevents:1.3"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
 
-	embeddedLibs "dev.tigr:simpleevents:1.3"
-	embeddedLibs "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-	embeddedLibs "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
-	embeddedLibs "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
-	embeddedLibs "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion"
-	embeddedLibs "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$serializationVersion"
-	embeddedLibs "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion"
-	embeddedLibs "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
+    embeddedLibs "dev.tigr:simpleevents:1.3"
+    embeddedLibs "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    embeddedLibs "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
+    embeddedLibs "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion"
+    embeddedLibs "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:$coroutinesVersion"
+    embeddedLibs "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:$serializationVersion"
+    embeddedLibs "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion"
+    embeddedLibs "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
 }
 
 processResources {
-	inputs.property "version", project.version
+    inputs.property "version", project.version
 
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
-	}
+    filesMatching("fabric.mod.json") {
+        expand "version": inputs.properties.version
+    }
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+    it.options.release = 21
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/ares.accesswidener")
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+    // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+    // if it is present.
+    // If you remove this line, sources will not be generated.
+    withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 jar {
-	inputs.property "archivesName", project.base.archivesName
+    inputs.property "archivesName", project.base.archivesName
 
-	from("COPYING") {
-		rename { "${it}_${inputs.properties.archivesName}"}
-	}
+    from("COPYING") {
+        rename { "${it}_${inputs.properties.archivesName}"}
+    }
 
-	from {
-		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-		configurations.embeddedLibs.collect {
-			it.isDirectory() ? it : zipTree(it)
-		}
-	}
+    from {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        configurations.embeddedLibs.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }
 
 // configure the maven publication
 publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
+    publications {
+        create("mavenJava", MavenPublication) {
+            artifactId = project.archives_base_name
+            from components.java
+        }
+    }
 
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+        // Notice: This block does NOT have the same function as the block in the top level.
+        // The repositories here will be used for publishing your artifact, not for
+        // retrieving dependencies.
+    }
 }
