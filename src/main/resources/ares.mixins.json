@@ -3,8 +3,6 @@
   "package": "org.aresclient.ares.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "accessors.AccessBufferBuilder",
-    "accessors.AccessDrawContext",
     "accessors.AccessMath$Vec2f",
     "accessors.AccessMath$Vec3d",
     "accessors.AccessMinecraftClient",

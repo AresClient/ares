@@ -4,10 +4,9 @@ import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import org.aresclient.ares.api.gui.AresScreen
-import org.aresclient.ares.api.nrender.Drawer
+import org.aresclient.ares.api.nrender.HudDrawer
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -34,9 +33,8 @@ open class NScreenElement(title: String): NElement() {
         override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             renderBackground(context, mouseX, mouseY, delta)
 
-            val drawer = Drawer(context)
-            this@NScreenElement.render(Theme.current(), drawer, MatrixStack(), mouseX, mouseY, delta)
-            drawer.draw()
+            this@NScreenElement.render(Theme.current(), context.matrices, mouseX, mouseY, delta)
+            HudDrawer.draw()
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int): Boolean {

@@ -5,10 +5,11 @@ import net.minecraft.client.gui.screen.option.OptionsScreen
 import net.minecraft.client.gui.screen.world.SelectWorldScreen
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.text.Text
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.ngui.NScreenElement
 import org.aresclient.ares.api.ngui.NStaticElement
-import org.aresclient.ares.api.nrender.Drawer
+import org.aresclient.ares.api.nrender.HudDrawer
 import org.aresclient.ares.api.nrender.Textures
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.util.Theme
@@ -18,19 +19,20 @@ class AresTitleScreen: NScreenElement("Ares Title Screen") {
         private val PANE = NStaticElement()
 
         private val BUTTONS = listOf(
-            TitleButton("Singleplayer", 143f, 0f) {
+            TitleButton(Text.translatable("menu.singleplayer"), 143f, 0f) {
                 MC.setScreen(SelectWorldScreen(MC.currentScreen))
             },
-            TitleButton("Multiplayer", 143f, 26f) {
+            TitleButton(Text.translatable("menu.multiplayer"), 143f, 26f) {
                 MC.setScreen(MultiplayerScreen(MC.currentScreen))
             },
-            TitleButton("Realms", 143f, 52f) {
+            TitleButton(Text.translatable("menu.online"), 143f, 52f) {
                 MC.setScreen(RealmsMainScreen(MC.currentScreen))
             },
-            TitleButton("Accounts", 143f, 78f) {
+            TitleButton(Text.of("Accounts"), 143f, 78f) {
+                // TODO: make translation
                 // TODO: CREATE ACCOUNTS GUI?
             },
-            TitleButton("Options", 143f, 104f) {
+            TitleButton(Text.translatable("menu.options"), 143f, 104f) {
                 MC.setScreen(OptionsScreen(MC.currentScreen, MC.options))
             }
         )
@@ -60,12 +62,12 @@ class AresTitleScreen: NScreenElement("Ares Title Screen") {
         EXIT_BUTTON.setX(getWidth() - 35f)
     }
 
-    override fun draw(theme: Theme, drawer: Drawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun draw(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val x = PANE.getX()
         val y = PANE.getY()
-        drawer.drawTexture(Textures.logo_bg, x, y, 126f, 126f, theme.secondary.value)
-        drawer.drawTexture(Textures.logo_fg, x, y, 126f, 126f, theme.primary.value)
+        HudDrawer.drawTexture(Textures.logo_bg, matrixStack, x, y, 126f, 126f, theme.secondary.value)
+        HudDrawer.drawTexture(Textures.logo_fg, matrixStack, x, y, 126f, 126f, theme.primary.value)
 
-        super.draw(theme, drawer, matrixStack, mouseX, mouseY, delta)
+        super.draw(theme, matrixStack, mouseX, mouseY, delta)
     }
 }

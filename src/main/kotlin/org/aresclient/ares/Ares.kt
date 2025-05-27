@@ -3,7 +3,6 @@ package org.aresclient.ares
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.TitleScreen
 import org.aresclient.ares.api.Plugin
@@ -13,7 +12,7 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.Textures
+import org.aresclient.ares.api.nrender.WorldDrawer
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
@@ -88,6 +87,9 @@ class Ares: ModInitializer, Wrapper {
 			state2d.draw()
 
 			Renderer.end(state3d)
+
+			// TODO: replace above
+			WorldDrawer.draw(state3d.matrixStack.projection())
 		}
 	}
 

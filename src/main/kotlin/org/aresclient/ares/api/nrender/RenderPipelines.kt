@@ -16,28 +16,51 @@ import kotlin.jvm.optionals.getOrNull
 object RenderPipelines {
     private val pipelines = mutableListOf<RenderPipeline>()
 
-    private val defaults = RenderPipeline.builder()
-        .withBlend(BlendFunction.TRANSLUCENT)
-        .withCull(false)
-        .withUniform("ProjMat", UniformType.MATRIX4X4)
-        .withUniform("ModelViewMat", UniformType.MATRIX4X4)
-        .buildSnippet()
+    init {
+        Hud
+        World
+    }
 
-    private val pos_tex_color = RenderPipeline.builder(defaults)
-        .withVertexShader(identifier("nshaders/vert/position_texture_color.vert"))
-        .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
-        .buildSnippet()
+    object Hud {
+        private val defaults = RenderPipeline.builder()
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withCull(false)
+            .withUniform("ProjMat", UniformType.MATRIX4X4)
+            .withUniform("ModelViewMat", UniformType.MATRIX4X4)
+            .buildSnippet()
 
-    val texture: RenderPipeline = RenderPipeline.builder(pos_tex_color)
-        .withLocation(identifier("pipeline/texture"))
-        .withFragmentShader(identifier("nshaders/frag/texture.frag"))
-        .withSampler("Sampler0")
-        .add()
+        val quad_texture: RenderPipeline = RenderPipeline.builder(defaults)
+            .withLocation(identifier("pipeline/hud/quad_texture"))
+            .withVertexShader(identifier("nshaders/vert/hud/pos_tex_color.vert"))
+            .withFragmentShader(identifier("nshaders/frag/texture.frag"))
+            .withSampler("Sampler0")
+            .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
+            .add()
 
-    val ellipse: RenderPipeline = RenderPipeline.builder(pos_tex_color)
-        .withLocation(identifier("pipeline/ellipse"))
-        .withFragmentShader(identifier("nshaders/frag/ellipse.frag"))
-        .add()
+        val quad_ellipse: RenderPipeline = RenderPipeline.builder(defaults)
+            .withLocation(identifier("pipeline/hud/quad_ellipse"))
+            .withVertexShader(identifier("nshaders/vert/hud/pos_tex_color.vert"))
+            .withFragmentShader(identifier("nshaders/frag/ellipse.frag"))
+            .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
+            .add()
+    }
+
+    object World {
+        private val defaults = RenderPipeline.builder()
+            .withBlend(BlendFunction.TRANSLUCENT)
+            .withCull(false)
+            .withUniform("ProjMatWorld", UniformType.MATRIX4X4)
+            .withDepthWrite(false)
+            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+            .buildSnippet()
+
+        val triangle_color = RenderPipeline.builder(defaults)
+            .withLocation(identifier("pipeline/world/triangle_color"))
+            .withVertexShader(identifier("nshaders/vert/world/pos_color.vert"))
+            .withFragmentShader(identifier("nshaders/frag/color.frag"))
+            .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLES)
+            .add()
+    }
 
     val outline: RenderPipeline = RenderPipeline.builder()
         .withLocation(identifier("pipeline/outline"))
