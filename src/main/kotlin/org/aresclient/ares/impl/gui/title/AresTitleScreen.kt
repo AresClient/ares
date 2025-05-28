@@ -11,6 +11,7 @@ import org.aresclient.ares.api.ngui.NScreenElement
 import org.aresclient.ares.api.ngui.NStaticElement
 import org.aresclient.ares.api.nrender.HudDrawer
 import org.aresclient.ares.api.nrender.Textures
+import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.util.Theme
 

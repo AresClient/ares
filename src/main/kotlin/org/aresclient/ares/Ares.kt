@@ -5,6 +5,7 @@ import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.TitleScreen
+import net.minecraft.util.Identifier
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.events.*
@@ -24,9 +25,13 @@ import java.io.File
 
 class Ares: ModInitializer, Wrapper {
 	companion object {
-		@JvmStatic val MODID = "ares"
 		val LOGGER = LoggerFactory.getLogger("Ares")
-		@JvmStatic val EVENT_MANAGER = AresEventManager()
+
+		@JvmStatic
+		val MODID = "ares"
+
+		@JvmStatic
+		val EVENT_MANAGER = AresEventManager()
 
 		val PLUGINS = ArrayList<Plugin>()
 
@@ -56,6 +61,9 @@ class Ares: ModInitializer, Wrapper {
 				System.currentTimeMillis() - start
 			)
 		}
+
+		@JvmStatic
+		fun identifier(path: String): Identifier = Identifier.of(MODID, path)
 	}
 
 	@field:EventHandler

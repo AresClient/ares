@@ -9,7 +9,6 @@ import net.minecraft.client.gl.UniformType
 import net.minecraft.client.render.VertexFormats
 import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.SynchronousResourceReloader
-import net.minecraft.util.Identifier
 import org.aresclient.ares.Ares
 import kotlin.jvm.optionals.getOrNull
 
@@ -30,18 +29,25 @@ object RenderPipelines {
             .buildSnippet()
 
         val quad_texture: RenderPipeline = RenderPipeline.builder(defaults)
-            .withLocation(identifier("pipeline/hud/quad_texture"))
-            .withVertexShader(identifier("nshaders/vert/hud/pos_tex_color.vert"))
-            .withFragmentShader(identifier("nshaders/frag/texture.frag"))
+            .withLocation(Ares.identifier("pipeline/hud/quad_texture"))
+            .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_tex_color.vert"))
+            .withFragmentShader(Ares.identifier("nshaders/frag/texture.frag"))
             .withSampler("Sampler0")
             .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
             .add()
 
         val quad_ellipse: RenderPipeline = RenderPipeline.builder(defaults)
-            .withLocation(identifier("pipeline/hud/quad_ellipse"))
-            .withVertexShader(identifier("nshaders/vert/hud/pos_tex_color.vert"))
-            .withFragmentShader(identifier("nshaders/frag/ellipse.frag"))
+            .withLocation(Ares.identifier("pipeline/hud/quad_ellipse"))
+            .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_tex_color.vert"))
+            .withFragmentShader(Ares.identifier("nshaders/frag/ellipse.frag"))
             .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
+            .add()
+
+        val quad_rounded: RenderPipeline = RenderPipeline.builder(defaults)
+            .withLocation(Ares.identifier("pipeline/hud/quad_rounded"))
+            .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_color_norm.vert"))
+            .withFragmentShader(Ares.identifier("nshaders/frag/rounded.frag"))
+            .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL, VertexFormat.DrawMode.QUADS)
             .add()
     }
 
@@ -55,17 +61,17 @@ object RenderPipelines {
             .buildSnippet()
 
         val triangle_color = RenderPipeline.builder(defaults)
-            .withLocation(identifier("pipeline/world/triangle_color"))
-            .withVertexShader(identifier("nshaders/vert/world/pos_color.vert"))
-            .withFragmentShader(identifier("nshaders/frag/color.frag"))
+            .withLocation(Ares.identifier("pipeline/world/triangle_color"))
+            .withVertexShader(Ares.identifier("nshaders/vert/world/pos_color.vert"))
+            .withFragmentShader(Ares.identifier("nshaders/frag/color.frag"))
             .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLES)
             .add()
     }
 
     val outline: RenderPipeline = RenderPipeline.builder()
-        .withLocation(identifier("pipeline/outline"))
-        .withVertexShader(identifier("shaders/vert/outline.vert"))
-        .withFragmentShader(identifier("shaders/frag/outline.frag"))
+        .withLocation(Ares.identifier("pipeline/outline"))
+        .withVertexShader(Ares.identifier("shaders/vert/outline.vert"))
+        .withFragmentShader(Ares.identifier("shaders/frag/outline.frag"))
         .withSampler("theTexture")
         .withBlend(BlendFunction.TRANSLUCENT)
         .withDepthWrite(false)
@@ -76,10 +82,6 @@ object RenderPipelines {
         .withUniform("lineWeight", UniformType.FLOAT)
         .withCull(false)
         .add()
-
-    private fun identifier(path: String): Identifier {
-        return Identifier.of(Ares.MODID, path)
-    }
 
     private fun RenderPipeline.Builder.add(): RenderPipeline {
         val pipeline = build()

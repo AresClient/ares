@@ -12,6 +12,7 @@ class TitleButton(private val text: Text, x: Float, y: Float, action: (NButton) 
     private companion object {
         private const val WIDTH = 150f
         private const val HEIGHT = 22f
+        private const val ROUNDNESS = 0.4f
         private val SHADOW = Color(0f, 0f, 0f, 0.4f)
     }
 
@@ -20,16 +21,16 @@ class TitleButton(private val text: Text, x: Float, y: Float, action: (NButton) 
         if(holding) matrixStack.translate(0f, 1f, 0f)
 
         // draw shadow
-        if(!holding) HudDrawer.drawRect(matrixStack, 1f, 1f, WIDTH, HEIGHT, SHADOW)
+        if(!holding) HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, WIDTH, HEIGHT, ROUNDNESS, SHADOW)
 
         // draw bordered rectangle
-        HudDrawer.drawRect(matrixStack, 0f, 0f, WIDTH, HEIGHT, theme.primary.value)
-        HudDrawer.drawRect(matrixStack, 1f, 1f, WIDTH - 2f, HEIGHT - 2f, theme.secondary.value)
+        HudDrawer.drawRoundedRect(matrixStack, 0f, 0f, WIDTH, HEIGHT, ROUNDNESS, theme.primary.value)
+        HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, WIDTH - 2f, HEIGHT - 2f, ROUNDNESS, theme.secondary.value)
 
         // hover animation
         if(hovering || holding) {
             val factor = min((System.currentTimeMillis() - hoverSince) / 200f, 1f)
-            HudDrawer.drawRect(matrixStack, 1f, 1f, (WIDTH - 2) * factor, HEIGHT - 2, theme.primary.value)
+            HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, (WIDTH - 2) * factor, HEIGHT - 2, ROUNDNESS, theme.primary.value)
         }
 
         // text

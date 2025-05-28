@@ -21,6 +21,8 @@ object RenderLayers {
         }
 
         val quad_ellipse: RenderLayer.MultiPhase = RenderLayer.of("quad_ellipse", 1536, RenderPipelines.Hud.quad_ellipse, RenderLayer.MultiPhaseParameters.builder().build(false))
+
+        val quad_rounded: RenderLayer.MultiPhase = RenderLayer.of("quad_rounded", 1536, RenderPipelines.Hud.quad_rounded, RenderLayer.MultiPhaseParameters.builder().build(false))
     }
 
     object World {

@@ -12,8 +12,12 @@ object Textures {
     val minecraft = add("icons/minecraft.png")
     val exit = add("icons/exit.png")
 
+    init {
+        textures.addAll((0..5).map { Ares.identifier("textures/panorama/panorama_$it.jpg") })
+    }
+
     private fun add(path: String): Identifier {
-        val identifier = Identifier.of(Ares.MODID, "textures/$path")
+        val identifier = Ares.identifier("textures/$path")
         textures.add(identifier)
         return identifier
     }

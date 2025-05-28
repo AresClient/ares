@@ -28,7 +28,7 @@ class IconButton(private val texture: Identifier, x: Float, y: Float, width: Flo
         if(!holding) HudDrawer.drawCircle(matrixStack, 1f, 1f, size, SHADOW)
 
         // draw bordered circle
-        HudDrawer.drawCircle(matrixStack, size, theme.primary.value)
+        HudDrawer.drawCircle(matrixStack, 0f, 0f, size, theme.primary.value)
         HudDrawer.drawCircle(matrixStack, offset, offset, size - 2 * offset, theme.secondary.value)
 
         // hover animation

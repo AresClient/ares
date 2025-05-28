@@ -40,22 +40,6 @@ object HudDrawer: Wrapper {
         buffer.vertex(matrix4f, x + width, y,          0f).color(color)
     }
 
-    fun drawTexture(texture: Identifier, matrixStack: MatrixStack, size: Float) {
-        drawTexture(texture, matrixStack, size, size)
-    }
-
-    fun drawTexture(texture: Identifier, matrixStack: MatrixStack, size: Float, color: Color) {
-        drawTexture(texture, matrixStack, size, size, color)
-    }
-
-    fun drawTexture(texture: Identifier, matrixStack: MatrixStack, width: Float, height: Float) {
-        drawTexture(texture, matrixStack, width, height, Color.WHITE)
-    }
-
-    fun drawTexture(texture: Identifier, matrixStack: MatrixStack, width: Float, height: Float, color: Color) {
-        drawTexture(texture, matrixStack, 0f, 0f, width, height, 0f, 0f, 1f, 1f, color)
-    }
-
     fun drawTexture(texture: Identifier, matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float) {
         drawTexture(texture, matrixStack, x, y, width, height, 0f, 0f, 1f, 1f)
     }
@@ -77,14 +61,6 @@ object HudDrawer: Wrapper {
         buffer.vertex(matrix4f, x + width, y,          0f).texture(u2, v1).color(color)
     }
 
-    fun drawCircle(matrixStack: MatrixStack, size: Float, color: Color) {
-        drawCircle(matrixStack, 0f, 0f, size, color)
-    }
-
-    fun drawEllipse(matrixStack: MatrixStack, width: Float, height: Float, color: Color) {
-        drawEllipse(matrixStack, 0f, 0f, width, height, color)
-    }
-
     fun drawCircle(matrixStack: MatrixStack, x: Float, y: Float, size: Float, color: Color) {
         drawEllipse(matrixStack, x, y, size, size, color)
     }
@@ -96,6 +72,54 @@ object HudDrawer: Wrapper {
         buffer.vertex(matrix4f, x,         y + height, 0f).texture(-1f, 1f).color(color)
         buffer.vertex(matrix4f, x + width, y + height, 0f).texture(1f, 1f).color(color)
         buffer.vertex(matrix4f, x + width, y,          0f).texture(1f, -1f).color(color)
+    }
+
+    fun drawRoundedRect(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, roundness: Float, color: Color) {
+        if(width == height) drawRoundedSquare(matrixStack, x, y, width, roundness, color)
+        else if(width > height) {
+            val offset = height / 2
+            drawRoundedVerticalHalf(matrixStack, x, y, offset, height, roundness, color, 0)
+            drawRect(matrixStack, x + offset, y, width - height, height, color)
+            drawRoundedVerticalHalf(matrixStack, x + width - offset, y, offset, height, roundness, color, 1)
+        } else { // height > width
+            val offset = width / 2
+            drawRoundedHorizontalHalf(matrixStack, x, y, width, offset, roundness, color, 0)
+            drawRect(matrixStack, x, y + offset, width, height - width, color)
+            drawRoundedHorizontalHalf(matrixStack, x, y + height - offset, width, offset, roundness, color, 1)
+        }
+    }
+
+    // side = 0 = left, side = 1 = right
+    private fun drawRoundedVerticalHalf(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, roundness: Float, color: Color, side: Int) {
+        val matrix4f = matrixStack.peek().positionMatrix
+        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_rounded)
+        val begin = (-1 + side).toFloat()
+        val end = side.toFloat()
+        buffer.vertex(matrix4f, x,         y,          0f).color(color).normal(begin, -1f, roundness)
+        buffer.vertex(matrix4f, x,         y + height,   0f).color(color).normal(begin, 1f, roundness)
+        buffer.vertex(matrix4f, x + width, y + height,   0f).color(color).normal(end, 1f, roundness)
+        buffer.vertex(matrix4f, x + width, y,          0f).color(color).normal(end, -1f, roundness)
+    }
+
+    // side = 0 = top, side = 1 = bottom
+    private fun drawRoundedHorizontalHalf(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, roundness: Float, color: Color, side: Int) {
+        val matrix4f = matrixStack.peek().positionMatrix
+        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_rounded)
+        val begin = (-1 + side).toFloat()
+        val end = side.toFloat()
+        buffer.vertex(matrix4f, x,         y,          0f).color(color).normal(-1f, begin, roundness)
+        buffer.vertex(matrix4f, x,         y + height,   0f).color(color).normal(-1f, end, roundness)
+        buffer.vertex(matrix4f, x + width, y + height,   0f).color(color).normal(1f, end, roundness)
+        buffer.vertex(matrix4f, x + width, y,          0f).color(color).normal(1f, begin, roundness)
+    }
+
+    fun drawRoundedSquare(matrixStack: MatrixStack, x: Float, y: Float, size: Float, roundness: Float, color: Color) {
+        val matrix4f = matrixStack.peek().positionMatrix
+        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_rounded)
+        buffer.vertex(matrix4f, x,         y,          0f).color(color).normal(-1f, -1f, roundness)
+        buffer.vertex(matrix4f, x,         y + size, 0f).color(color).normal(-1f, 1f, roundness)
+        buffer.vertex(matrix4f, x + size, y + size, 0f).color(color).normal(1f, 1f, roundness)
+        buffer.vertex(matrix4f, x + size, y,          0f).color(color).normal(1f, -1f, roundness)
     }
 
     fun draw() {
