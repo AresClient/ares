@@ -4,7 +4,7 @@ import net.minecraft.client.texture.TextureManager
 import net.minecraft.util.Identifier
 import org.aresclient.ares.Ares
 
-object Textures {
+object AresTextures {
     private val textures = mutableListOf<Identifier>()
 
     val logo_bg = add("icons/ares_bg.png")

@@ -21,6 +21,7 @@
     "mixins.MixinClientWorld",
     "mixins.MixinEntity",
     "mixins.MixinEntityRenderer",
+    "mixins.MixinFontStorage",
     "mixins.MixinGameRenderer",
     "mixins.MixinInGameHud",
     "mixins.MixinInGameOverlayRenderer",

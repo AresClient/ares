@@ -12,9 +12,9 @@ import org.aresclient.ares.api.events.Era;
 import org.aresclient.ares.api.events.ScreenOpenedEvent;
 import org.aresclient.ares.api.events.ShutdownEvent;
 import org.aresclient.ares.api.events.TickEvent;
-import org.aresclient.ares.api.nrender.Textures;
+import org.aresclient.ares.api.nrender.AresTextures;
 import org.aresclient.ares.impl.instrument.module.modules.player.MultiTask;
-import org.aresclient.ares.api.nrender.RenderPipelines;
+import org.aresclient.ares.api.nrender.AresRenderPipelines;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -55,12 +55,12 @@ public class MixinMinecraftClient implements JWrapper {
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;reload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/resource/ResourceReload;", shift = At.Shift.BEFORE))
     public void reloadResources(CallbackInfo ci) {
-        resourceManager.registerReloader(new RenderPipelines.PipelineReloader());
+        resourceManager.registerReloader(new AresRenderPipelines.PipelineReloader());
     }
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;registerTextures(Lnet/minecraft/client/texture/TextureManager;)V"))
     public void registerTextures(CallbackInfo ci) {
-        Textures.INSTANCE.register(textureManager);
+        AresTextures.INSTANCE.register(textureManager);
     }
 
     @Inject(method = "stop", at = @At("HEAD"))

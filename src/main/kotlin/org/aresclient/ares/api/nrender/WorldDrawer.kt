@@ -10,7 +10,7 @@ object WorldDrawer {
     private val buffers = WorldBufferProvider()
 
     object Fill {
-        private val buffer = buffers.getBuffer(RenderLayers.World.triangle_color)
+        private val buffer = buffers.getBuffer(AresRenderLayers.World.TRIANGLE_COLOR)
 
         fun box(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float, color: Color, vararg excludedSides: Direction) = with(buffer) {
             vertices {

@@ -12,7 +12,7 @@ import net.minecraft.resource.SynchronousResourceReloader
 import org.aresclient.ares.Ares
 import kotlin.jvm.optionals.getOrNull
 
-object RenderPipelines {
+object AresRenderPipelines {
     private val pipelines = mutableListOf<RenderPipeline>()
 
     init {
@@ -28,7 +28,7 @@ object RenderPipelines {
             .withUniform("ModelViewMat", UniformType.MATRIX4X4)
             .buildSnippet()
 
-        val quad_texture: RenderPipeline = RenderPipeline.builder(defaults)
+        val QUAD_TEXTURE: RenderPipeline = RenderPipeline.builder(defaults)
             .withLocation(Ares.identifier("pipeline/hud/quad_texture"))
             .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_tex_color.vert"))
             .withFragmentShader(Ares.identifier("nshaders/frag/texture.frag"))
@@ -36,14 +36,14 @@ object RenderPipelines {
             .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
             .add()
 
-        val quad_ellipse: RenderPipeline = RenderPipeline.builder(defaults)
+        val QUAD_ELLIPSE: RenderPipeline = RenderPipeline.builder(defaults)
             .withLocation(Ares.identifier("pipeline/hud/quad_ellipse"))
             .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_tex_color.vert"))
             .withFragmentShader(Ares.identifier("nshaders/frag/ellipse.frag"))
             .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
             .add()
 
-        val quad_rounded: RenderPipeline = RenderPipeline.builder(defaults)
+        val QUAD_ROUNDED: RenderPipeline = RenderPipeline.builder(defaults)
             .withLocation(Ares.identifier("pipeline/hud/quad_rounded"))
             .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_color_norm.vert"))
             .withFragmentShader(Ares.identifier("nshaders/frag/rounded.frag"))
@@ -60,7 +60,7 @@ object RenderPipelines {
             .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
             .buildSnippet()
 
-        val triangle_color = RenderPipeline.builder(defaults)
+        val TRIANGLE_COLOR = RenderPipeline.builder(defaults)
             .withLocation(Ares.identifier("pipeline/world/triangle_color"))
             .withVertexShader(Ares.identifier("nshaders/vert/world/pos_color.vert"))
             .withFragmentShader(Ares.identifier("nshaders/frag/color.frag"))
@@ -68,7 +68,7 @@ object RenderPipelines {
             .add()
     }
 
-    val outline: RenderPipeline = RenderPipeline.builder()
+    val OUTLINE: RenderPipeline = RenderPipeline.builder()
         .withLocation(Ares.identifier("pipeline/outline"))
         .withVertexShader(Ares.identifier("shaders/vert/outline.vert"))
         .withFragmentShader(Ares.identifier("shaders/frag/outline.frag"))
@@ -93,7 +93,7 @@ object RenderPipelines {
         override fun reload(manager: ResourceManager) {
             for(pipeline in pipelines) {
                 RenderSystem.getDevice().precompilePipeline(pipeline) { id, _ ->
-                    (if(id.namespace == Ares.MODID) RenderPipelines::class.java.getResourceAsStream("/assets/ares/${id.path}")
+                    (if(id.namespace == Ares.MODID) AresRenderPipelines::class.java.getResourceAsStream("/assets/ares/${id.path}")
                     else manager.getResource(id).getOrNull()?.inputStream)?.reader()?.readLines()?.joinToString("\n")
                 }
             }

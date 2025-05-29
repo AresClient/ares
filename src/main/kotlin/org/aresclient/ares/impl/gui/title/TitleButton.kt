@@ -33,10 +33,7 @@ class TitleButton(private val text: Text, x: Float, y: Float, action: (NButton) 
             HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, (WIDTH - 2) * factor, HEIGHT - 2, ROUNDNESS, theme.primary.value)
         }
 
-        // text
-        val textX = WIDTH / 2 - MC.textRenderer.getWidth(text) / 2f
-        val textY = HEIGHT / 2 - MC.textRenderer.fontHeight / 2f
-        HudDrawer.drawText(text, matrixStack, textX, textY, theme.lightground.value, true)
+        HudDrawer.drawTextCentered(theme.nfont.value, text, matrixStack, WIDTH / 2f, HEIGHT / 2f, theme.lightground.value, shadow = true)
 
         matrixStack.pop()
     }

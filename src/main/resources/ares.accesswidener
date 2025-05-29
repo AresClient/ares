@@ -4,12 +4,8 @@ accessible class net/minecraft/client/render/RenderLayer$MultiPhaseParameters
 accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;ILcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;)Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 accessible method net/minecraft/client/render/RenderLayer of (Ljava/lang/String;IZZLcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;)Lnet/minecraft/client/render/RenderLayer$MultiPhase;
 accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder build (Z)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
-accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder build (Lnet/minecraft/client/render/RenderLayer$OutlineMode;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters;
-accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder lineWidth (Lnet/minecraft/client/render/RenderPhase$LineWidth;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
-accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder texturing (Lnet/minecraft/client/render/RenderPhase$Texturing;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
-accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder target (Lnet/minecraft/client/render/RenderPhase$Target;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
-accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder layering (Lnet/minecraft/client/render/RenderPhase$Layering;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
-accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder overlay (Lnet/minecraft/client/render/RenderPhase$Overlay;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
 accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder lightmap (Lnet/minecraft/client/render/RenderPhase$Lightmap;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
 accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder texture (Lnet/minecraft/client/render/RenderPhase$TextureBase;)Lnet/minecraft/client/render/RenderLayer$MultiPhaseParameters$Builder;
 accessible class net/minecraft/client/render/RenderPhase$Texture
+accessible class net/minecraft/client/render/RenderPhase$Lightmap
+accessible field net/minecraft/client/render/RenderPhase ENABLE_LIGHTMAP Lnet/minecraft/client/render/RenderPhase$Lightmap;

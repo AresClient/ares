@@ -6,12 +6,12 @@ import net.minecraft.client.gui.screen.world.SelectWorldScreen
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.ngui.NScreenElement
 import org.aresclient.ares.api.ngui.NStaticElement
 import org.aresclient.ares.api.nrender.HudDrawer
-import org.aresclient.ares.api.nrender.Textures
-import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.api.nrender.AresTextures
 import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
 import org.aresclient.ares.impl.util.Theme
 
@@ -29,8 +29,7 @@ class AresTitleScreen: NScreenElement("Ares Title Screen") {
             TitleButton(Text.translatable("menu.online"), 143f, 52f) {
                 MC.setScreen(RealmsMainScreen(MC.currentScreen))
             },
-            TitleButton(Text.of("Accounts"), 143f, 78f) {
-                // TODO: make translation
+            TitleButton(Text.translatable("ares.text.account_manager"), 143f, 78f) {
                 // TODO: CREATE ACCOUNTS GUI?
             },
             TitleButton(Text.translatable("menu.options"), 143f, 104f) {
@@ -38,12 +37,12 @@ class AresTitleScreen: NScreenElement("Ares Title Screen") {
             }
         )
 
-        private val MINECRAFT_BUTTON = IconButton(Textures.minecraft, 5f, 5f, 30f, 30f) {
+        private val MINECRAFT_BUTTON = IconButton(AresTextures.minecraft, 5f, 5f, 30f, 30f) {
             TitleScreen.setEnabled(false)
             MC.setScreen(net.minecraft.client.gui.screen.TitleScreen())
         }
 
-        private val EXIT_BUTTON = IconButton(Textures.exit, 0f, 5f, 30f, 30f) {
+        private val EXIT_BUTTON = IconButton(AresTextures.exit, 0f, 5f, 30f, 30f) {
             MC.scheduleStop()
         }
     }
@@ -66,8 +65,8 @@ class AresTitleScreen: NScreenElement("Ares Title Screen") {
     override fun draw(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val x = PANE.getX()
         val y = PANE.getY()
-        HudDrawer.drawTexture(Textures.logo_bg, matrixStack, x, y, 126f, 126f, theme.secondary.value)
-        HudDrawer.drawTexture(Textures.logo_fg, matrixStack, x, y, 126f, 126f, theme.primary.value)
+        HudDrawer.drawTexture(AresTextures.logo_bg, matrixStack, x, y, 126f, 126f, theme.secondary.value)
+        HudDrawer.drawTexture(AresTextures.logo_fg, matrixStack, x, y, 126f, 126f, theme.primary.value)
 
         super.draw(theme, matrixStack, mouseX, mouseY, delta)
     }

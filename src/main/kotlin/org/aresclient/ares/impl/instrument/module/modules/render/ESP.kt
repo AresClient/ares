@@ -23,7 +23,7 @@ import org.aresclient.ares.impl.instrument.module.components.render.esp.Chamlike
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
-import org.aresclient.ares.api.nrender.RenderPipelines
+import org.aresclient.ares.api.nrender.AresRenderPipelines
 import org.aresclient.ares.api.nrender.WorldDrawer
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.mixin.accessors.AccessWorldRenderer
@@ -144,7 +144,7 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
             val gpuBuffer2 = RenderSystem.getQuadVertexBuffer()
             RenderSystem.getDevice().createCommandEncoder().createRenderPass(MC.framebuffer.colorAttachment, OptionalInt.empty())
             .use { renderPass ->
-                renderPass.setPipeline(RenderPipelines.outline)
+                renderPass.setPipeline(AresRenderPipelines.OUTLINE)
                 renderPass.setVertexBuffer(0, gpuBuffer2)
                 renderPass.setIndexBuffer(gpuBuffer, shapeIndexBuffer.indexType)
                 renderPass.bindSampler("theTexture", framebuffer.colorAttachment)

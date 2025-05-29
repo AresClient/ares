@@ -8,27 +8,31 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.util.Color
+import org.aresclient.ares.impl.util.NFont
 
 object HudDrawer: Wrapper {
     private val vertexConsumers = MC.bufferBuilders.entityVertexConsumers
 
-    fun drawTextWithShadow(text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color): Int {
-        return drawText(text, matrixStack, x, y, color.rgba, false)
+    fun drawTextCentered(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = false): Int {
+        val cx = x - font.getWidth(text, size) / 2f
+        val cy = y - font.getHeight(size) / 2f
+        return drawText(font, text, matrixStack, cx, cy, color, size, shadow)
     }
 
-    fun drawText(text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color): Int {
-        return drawText(text, matrixStack, x, y, color.rgba, false)
+    fun drawText(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = false): Int {
+        return drawText(font, text, matrixStack, x, y, color.rgba, size, shadow)
     }
 
-    fun drawText(text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, shadow: Boolean): Int {
-        return drawText(text, matrixStack, x, y, color.rgba, shadow)
-    }
-
-    private fun drawText(text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Int, shadow: Boolean): Int {
-        return MC.textRenderer.draw(
-            text, x, y, color, shadow, matrixStack.peek().positionMatrix,
-            vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, 15728880
+    private fun drawText(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Int, size: Float, shadow: Boolean): Int {
+        val scale = font.getScale(size)
+        matrixStack.push()
+        matrixStack.scale(scale, scale, 1f)
+        val i = font.textRenderer.draw(
+            text, x / scale, y / scale, color, shadow, matrixStack.peek().positionMatrix,
+            vertexConsumers, TextRenderer.TextLayerType.NORMAL, Color.BLACK.rgba, 15728880
         )
+        matrixStack.pop()
+        return i
     }
 
     fun drawRect(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, color: Color) {
@@ -54,7 +58,7 @@ object HudDrawer: Wrapper {
 
     fun drawTexture(texture: Identifier, matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, u1: Float, v1: Float, u2: Float, v2: Float, color: Color) {
         val matrix4f = matrixStack.peek().positionMatrix
-        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_texture.apply(texture))
+        val buffer = vertexConsumers.getBuffer(AresRenderLayers.Hud.QUAD_TEXTURE.apply(texture))
         buffer.vertex(matrix4f, x,         y,          0f).texture(u1, v1).color(color)
         buffer.vertex(matrix4f, x,         y + height, 0f).texture(u1, v2).color(color)
         buffer.vertex(matrix4f, x + width, y + height, 0f).texture(u2, v2).color(color)
@@ -67,7 +71,7 @@ object HudDrawer: Wrapper {
 
     fun drawEllipse(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, color: Color) {
         val matrix4f = matrixStack.peek().positionMatrix
-        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_ellipse)
+        val buffer = vertexConsumers.getBuffer(AresRenderLayers.Hud.QUAD_ELLIPSE)
         buffer.vertex(matrix4f, x,         y,          0f).texture(-1f, -1f).color(color)
         buffer.vertex(matrix4f, x,         y + height, 0f).texture(-1f, 1f).color(color)
         buffer.vertex(matrix4f, x + width, y + height, 0f).texture(1f, 1f).color(color)
@@ -92,7 +96,7 @@ object HudDrawer: Wrapper {
     // side = 0 = left, side = 1 = right
     private fun drawRoundedVerticalHalf(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, roundness: Float, color: Color, side: Int) {
         val matrix4f = matrixStack.peek().positionMatrix
-        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_rounded)
+        val buffer = vertexConsumers.getBuffer(AresRenderLayers.Hud.QUAD_ROUNDED)
         val begin = (-1 + side).toFloat()
         val end = side.toFloat()
         buffer.vertex(matrix4f, x,         y,          0f).color(color).normal(begin, -1f, roundness)
@@ -104,7 +108,7 @@ object HudDrawer: Wrapper {
     // side = 0 = top, side = 1 = bottom
     private fun drawRoundedHorizontalHalf(matrixStack: MatrixStack, x: Float, y: Float, width: Float, height: Float, roundness: Float, color: Color, side: Int) {
         val matrix4f = matrixStack.peek().positionMatrix
-        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_rounded)
+        val buffer = vertexConsumers.getBuffer(AresRenderLayers.Hud.QUAD_ROUNDED)
         val begin = (-1 + side).toFloat()
         val end = side.toFloat()
         buffer.vertex(matrix4f, x,         y,          0f).color(color).normal(-1f, begin, roundness)
@@ -115,7 +119,7 @@ object HudDrawer: Wrapper {
 
     fun drawRoundedSquare(matrixStack: MatrixStack, x: Float, y: Float, size: Float, roundness: Float, color: Color) {
         val matrix4f = matrixStack.peek().positionMatrix
-        val buffer = vertexConsumers.getBuffer(RenderLayers.Hud.quad_rounded)
+        val buffer = vertexConsumers.getBuffer(AresRenderLayers.Hud.QUAD_ROUNDED)
         buffer.vertex(matrix4f, x,         y,          0f).color(color).normal(-1f, -1f, roundness)
         buffer.vertex(matrix4f, x,         y + size, 0f).color(color).normal(-1f, 1f, roundness)
         buffer.vertex(matrix4f, x + size, y + size, 0f).color(color).normal(1f, 1f, roundness)

@@ -5,11 +5,13 @@ import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.util.Color
 
-data class Theme(val font: EnumSetting<Fonts>, val primary: ColorSetting, val secondary: ColorSetting, val background: ColorSetting, val lightground: ColorSetting) {
+// TODO: replace font with nfont after new renderer is completely implemented
+data class Theme(val font: EnumSetting<Fonts>, val nfont: EnumSetting<NFont>, val primary: ColorSetting, val secondary: ColorSetting, val background: ColorSetting, val lightground: ColorSetting) {
     companion object {
         private val SETTING = Ares.SETTINGS.addMap("Theme")
         private val THEME = Theme(
             SETTING.addEnum("Font", Fonts.ARIAL),
+            SETTING.addEnum("NFont", NFont.ARIAL),
             SETTING.addColor("Primary",
                 Color(0.37254903f, 0.019607844f, 0.019607844f, 1f)
             ),
