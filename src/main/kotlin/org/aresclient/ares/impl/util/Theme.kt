@@ -1,6 +1,7 @@
 package org.aresclient.ares.impl.util
 
 import org.aresclient.ares.Ares
+import org.aresclient.ares.api.nrender.hud.NFont
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.util.Color

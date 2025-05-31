@@ -4,12 +4,22 @@ import com.mojang.blaze3d.vertex.VertexFormat
 import com.mojang.blaze3d.vertex.VertexFormat.DrawMode
 import com.mojang.blaze3d.vertex.VertexFormatElement
 import org.aresclient.ares.api.util.Color
+import org.joml.Vector3f
+import org.joml.Vector4f
 import org.lwjgl.BufferUtils
 import java.nio.ByteBuffer
 
 open class Buffer(size: Int) {
     private var buffer = BufferUtils.createByteBuffer(size)
     private var count = 0
+
+    fun pos(pos: Vector4f): Buffer {
+        return floats(pos.x, pos.y, pos.z, pos.w)
+    }
+
+    fun pos(pos: Vector3f): Buffer {
+        return floats(pos.x, pos.y, pos.z)
+    }
 
     fun floats(vararg floats: Float): Buffer {
         buffer = expandBuffer(floats.size * VertexFormatElement.Type.FLOAT.size())

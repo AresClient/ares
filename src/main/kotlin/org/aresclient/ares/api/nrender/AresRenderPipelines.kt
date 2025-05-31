@@ -5,6 +5,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
+import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.gl.UniformType
 import net.minecraft.client.render.VertexFormats
 import net.minecraft.resource.ResourceManager
@@ -15,58 +16,58 @@ import kotlin.jvm.optionals.getOrNull
 object AresRenderPipelines {
     private val pipelines = mutableListOf<RenderPipeline>()
 
-    init {
-        Hud
-        World
-    }
+    private val defaults = RenderPipeline.builder()
+        .withBlend(BlendFunction.TRANSLUCENT)
+        .withCull(false)
+        .withUniform("ProjMat", UniformType.MATRIX4X4)
+        .withUniform("ModelViewMat", UniformType.MATRIX4X4)
+        .buildSnippet()
 
-    object Hud {
-        private val defaults = RenderPipeline.builder()
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .withUniform("ProjMat", UniformType.MATRIX4X4)
-            .withUniform("ModelViewMat", UniformType.MATRIX4X4)
-            .buildSnippet()
+    val QUAD_TEXTURE: RenderPipeline = RenderPipeline.builder(defaults)
+        .withLocation(Ares.identifier("pipeline/quad_texture"))
+        .withVertexShader(Ares.identifier("nshaders/vert/pos_uv_color.vert"))
+        .withFragmentShader(Ares.identifier("nshaders/frag/texture.frag"))
+        .withSampler("Sampler0")
+        .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
+        .add()
 
-        val QUAD_TEXTURE: RenderPipeline = RenderPipeline.builder(defaults)
-            .withLocation(Ares.identifier("pipeline/hud/quad_texture"))
-            .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_tex_color.vert"))
-            .withFragmentShader(Ares.identifier("nshaders/frag/texture.frag"))
-            .withSampler("Sampler0")
-            .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
-            .add()
+    val QUAD_ELLIPSE: RenderPipeline = RenderPipeline.builder(defaults)
+        .withLocation(Ares.identifier("pipeline/quad_ellipse"))
+        .withVertexShader(Ares.identifier("nshaders/vert/pos_uv_color.vert"))
+        .withFragmentShader(Ares.identifier("nshaders/frag/ellipse.frag"))
+        .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
+        .add()
 
-        val QUAD_ELLIPSE: RenderPipeline = RenderPipeline.builder(defaults)
-            .withLocation(Ares.identifier("pipeline/hud/quad_ellipse"))
-            .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_tex_color.vert"))
-            .withFragmentShader(Ares.identifier("nshaders/frag/ellipse.frag"))
-            .withVertexFormat(VertexFormats.POSITION_TEXTURE_COLOR, VertexFormat.DrawMode.QUADS)
-            .add()
+    val QUAD_ROUNDED: RenderPipeline = RenderPipeline.builder(defaults)
+        .withLocation(Ares.identifier("pipeline/quad_rounded"))
+        .withVertexShader(Ares.identifier("nshaders/vert/pos_color_norm.vert"))
+        .withFragmentShader(Ares.identifier("nshaders/frag/rounded.frag"))
+        .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL, VertexFormat.DrawMode.QUADS)
+        .add()
 
-        val QUAD_ROUNDED: RenderPipeline = RenderPipeline.builder(defaults)
-            .withLocation(Ares.identifier("pipeline/hud/quad_rounded"))
-            .withVertexShader(Ares.identifier("nshaders/vert/hud/pos_color_norm.vert"))
-            .withFragmentShader(Ares.identifier("nshaders/frag/rounded.frag"))
-            .withVertexFormat(VertexFormats.POSITION_COLOR_NORMAL, VertexFormat.DrawMode.QUADS)
-            .add()
-    }
+    val QUAD_NO_DEPTH: RenderPipeline = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+        .withLocation(Ares.identifier("pipeline/quad_no_depth"))
+        .withDepthWrite(false)
+        .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+        .withCull(false)
+        .add()
 
-    object World {
-        private val defaults = RenderPipeline.builder()
-            .withBlend(BlendFunction.TRANSLUCENT)
-            .withCull(false)
-            .withUniform("ProjMatWorld", UniformType.MATRIX4X4)
-            .withDepthWrite(false)
-            .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
-            .buildSnippet()
+    private val lines_defaults: RenderPipeline.Snippet = RenderPipeline.builder(defaults)
+        .withVertexShader(Ares.identifier("nshaders/vert/lines.vert"))
+        .withFragmentShader(Ares.identifier("nshaders/frag/lines.frag"))
+        .withUniform("AARadius", UniformType.FLOAT)
+        .withVertexFormat(AresVertexFormats.LINES, VertexFormat.DrawMode.TRIANGLES)
+        .buildSnippet()
 
-        val TRIANGLE_COLOR = RenderPipeline.builder(defaults)
-            .withLocation(Ares.identifier("pipeline/world/triangle_color"))
-            .withVertexShader(Ares.identifier("nshaders/vert/world/pos_color.vert"))
-            .withFragmentShader(Ares.identifier("nshaders/frag/color.frag"))
-            .withVertexFormat(VertexFormats.POSITION_COLOR, VertexFormat.DrawMode.TRIANGLES)
-            .add()
-    }
+    val LINES: RenderPipeline = RenderPipeline.builder(lines_defaults)
+        .withLocation(Ares.identifier("pipeline/lines"))
+        .add()
+
+    val LINES_NO_DEPTH: RenderPipeline = RenderPipeline.builder(lines_defaults)
+        .withLocation(Ares.identifier("pipeline/lines_no_depth"))
+        .withDepthWrite(false)
+        .withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST)
+        .add()
 
     val OUTLINE: RenderPipeline = RenderPipeline.builder()
         .withLocation(Ares.identifier("pipeline/outline"))

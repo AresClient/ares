@@ -1,5 +1,7 @@
 package org.aresclient.ares
 
+import com.mojang.blaze3d.systems.ProjectionType
+import com.mojang.blaze3d.systems.RenderSystem
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
@@ -13,7 +15,7 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.WorldDrawer
+import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
@@ -83,6 +85,9 @@ class Ares: ModInitializer, Wrapper {
 			Renderer.end(state)
 		} else if(event is RenderEvent.World) {
 			val state3d = Renderer.begin3d()
+			RenderSystem.getProjectionMatrix() // TODO: KEEP THIS FOR WORLD DRAWER
+				.rotate(toRadians(wrapDegrees(CAMERA.pitch)), 1f, 0f, 0f)
+				.rotate(toRadians(wrapDegrees(CAMERA.yaw + 180f)), 0f, 1f, 0f);
 			PLUGINS.forEach { plugin ->
 				plugin.renderWorld3d(event.tickDelta, state3d)
 			}
@@ -97,8 +102,20 @@ class Ares: ModInitializer, Wrapper {
 			Renderer.end(state3d)
 
 			// TODO: replace above
-			WorldDrawer.draw(state3d.matrixStack.projection())
+
+			WorldDrawer.draw()
 		}
+	}
+
+	private fun wrapDegrees(degrees: Float): Float {
+		var wrapped = degrees % 360f
+		if(wrapped >= 180f) wrapped -= 360f
+		if(wrapped < -180f) wrapped += 360f
+		return wrapped
+	}
+
+	private fun toRadians(ang: Float): Float {
+		return ang / 180f * 3.1415927f
 	}
 
 	@field:EventHandler

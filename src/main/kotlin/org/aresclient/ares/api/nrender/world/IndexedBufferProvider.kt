@@ -3,23 +3,22 @@ package org.aresclient.ares.api.nrender.world
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.render.RenderLayer
-import org.joml.Matrix4f
 import java.util.*
 
-class WorldBufferProvider {
+class IndexedBufferProvider {
     private val buffers: MutableMap<RenderLayer, IndexedBuffer> = hashMapOf()
 
     fun getBuffer(renderLayer: RenderLayer): IndexedBuffer {
         return buffers.getOrPut(renderLayer) { IndexedBuffer(renderLayer.drawMode, renderLayer.vertexFormat) }
     }
 
-    fun draw(projection: Matrix4f) {
+    fun draw() {
         buffers.entries.forEach { (layer, buffer) ->
-            draw(layer, buffer, projection)
+            draw(layer, buffer)
         }
     }
 
-    private fun draw(layer: RenderLayer, buffer: IndexedBuffer, projection: Matrix4f) {
+    private fun draw(layer: RenderLayer, buffer: IndexedBuffer) {
         val vertexBuffer = buffer.getVertexBuffer()
         val indexBuffer = buffer.getIndexBuffer()
 
@@ -30,8 +29,6 @@ class WorldBufferProvider {
             )
             .use { pass ->
                 pass.setPipeline(layer.pipeline)
-
-                pass.setUniform("ProjMatWorld", projection)
 
                 if(RenderSystem.SCISSOR_STATE.isEnabled)
                     pass.enableScissor(RenderSystem.SCISSOR_STATE)

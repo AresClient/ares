@@ -1,4 +1,4 @@
-package org.aresclient.ares.impl.util
+package org.aresclient.ares.api.nrender.hud
 
 import net.minecraft.client.font.Font
 import net.minecraft.client.font.FontFilterType
@@ -7,7 +7,6 @@ import net.minecraft.client.font.TrueTypeFontLoader
 import net.minecraft.text.Text
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.Wrapper
-import org.aresclient.ares.api.nrender.CustomFontStorage
 
 enum class NFont(path: String?, val size: Float): Wrapper {
     MINECRAFT(null, 11f),

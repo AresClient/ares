@@ -13,22 +13,23 @@ class IndexedBuffer(drawMode: DrawMode, private val vertexFormat: VertexFormat) 
     private val indices = Buffer.Index(drawMode, INITIAL_BUFFER_SIZE)
     private val vertices = Buffer.Vertex(vertexFormat, INITIAL_BUFFER_SIZE)
 
-    private fun indices(vararg ints: Int) {
+    fun indices(vararg ints: Int) {
+        count += ints.size
         indices.ints(*ints)
     }
 
     fun quad(i0: Int, i1: Int, i2: Int, i3: Int) {
-        count += 2
-        return indices(i0, i1, i2, i2, i3, i0)
+        indices(i0, i1, i2, i2, i3, i0)
     }
 
     fun triangle(i0: Int, i1: Int, i2: Int) {
-        count += 1
-        return indices(i0, i1, i2)
+        indices(i0, i1, i2)
     }
 
-    fun vertices(use: Buffer.() -> Unit) {
-        vertices.apply(use)
+    fun begin() = vertices
+
+    fun use(use: IndexedBuffer.() -> Unit) {
+        apply(use)
     }
 
     fun getVertexBuffer(): GpuBuffer {
@@ -44,7 +45,7 @@ class IndexedBuffer(drawMode: DrawMode, private val vertexFormat: VertexFormat) 
     }
 
     fun reset() {
-        // TODO: count = 0
+        count = 0
         indices.reset()
         vertices.reset()
     }

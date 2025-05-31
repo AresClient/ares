@@ -33,6 +33,7 @@
     "mixins.MixinMouse",
     "mixins.MixinPlayerEntity",
     "mixins.MixinWeatherRendering",
+    "mixins.MixinWindow",
     "mixins.MixinWorldChunk",
     "mixins.MixinWorldRenderer"
   ],

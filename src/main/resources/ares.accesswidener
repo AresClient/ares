@@ -9,3 +9,4 @@ accessible method net/minecraft/client/render/RenderLayer$MultiPhaseParameters$B
 accessible class net/minecraft/client/render/RenderPhase$Texture
 accessible class net/minecraft/client/render/RenderPhase$Lightmap
 accessible field net/minecraft/client/render/RenderPhase ENABLE_LIGHTMAP Lnet/minecraft/client/render/RenderPhase$Lightmap;
+accessible field net/minecraft/client/gl/RenderPipelines GUI_SNIPPET Lcom/mojang/blaze3d/pipeline/RenderPipeline$Snippet;

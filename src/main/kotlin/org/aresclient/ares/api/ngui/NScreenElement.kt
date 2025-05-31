@@ -6,7 +6,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
 import org.aresclient.ares.api.gui.AresScreen
-import org.aresclient.ares.api.nrender.HudDrawer
+import org.aresclient.ares.api.nrender.hud.HudDrawer
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 

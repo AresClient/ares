@@ -3,7 +3,7 @@ package org.aresclient.ares.mixin.mixins;
 import net.minecraft.client.font.FontStorage;
 import net.minecraft.client.font.TextRenderLayerSet;
 import net.minecraft.util.Identifier;
-import org.aresclient.ares.api.nrender.CustomFontStorage;
+import org.aresclient.ares.api.nrender.hud.CustomFontStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
