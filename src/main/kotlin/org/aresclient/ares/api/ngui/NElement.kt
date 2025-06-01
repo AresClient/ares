@@ -4,7 +4,6 @@ import net.minecraft.client.util.math.MatrixStack
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
-import kotlin.collections.ArrayList
 
 abstract class NElement: Wrapper {
     private var dirty = true
@@ -84,7 +83,7 @@ abstract class NElement: Wrapper {
 
     fun render(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         matrixStack.push()
-        matrixStack.translate(getX(), getY(), 0f)
+        matrixStack.translate(getX(), getY(), 1f)
         draw(theme, matrixStack, mouseX, mouseY, delta)
         matrixStack.pop()
     }

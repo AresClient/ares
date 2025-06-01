@@ -2,17 +2,17 @@ package org.aresclient.ares.api.nrender.hud
 
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.RenderLayer
-import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.nrender.AresRenderLayers
+import org.aresclient.ares.api.nrender.Drawer
+import org.aresclient.ares.api.nrender.LineDrawer
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 
-object HudDrawer: Wrapper {
-    private val vertexConsumers = MC.bufferBuilders.entityVertexConsumers
+object HudDrawer: Drawer() {
+    private val linesBuffer = indexedBuffers.getBuffer(AresRenderLayers.LINES)
 
     fun drawTextCentered(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = false): Int {
         val cx = x - font.getWidth(text, size) / 2f
@@ -127,9 +127,10 @@ object HudDrawer: Wrapper {
         buffer.vertex(matrix4f, x + size, y,          0f).color(color).normal(1f, -1f, roundness)
     }
 
-    fun draw() {
-        vertexConsumers.draw()
+    fun drawLine(matrixStack: MatrixStack, x1: Float, y1: Float, x2: Float, y2: Float, color: Color, width: Float) {
+        val matrix4f = matrixStack.peek().positionMatrix
+        val pos1 = matrix4f.transformPosition(x1, y1, 0f, Vector3f())
+        val pos2 = matrix4f.transformPosition(x2, y2, 0f, Vector3f())
+        LineDrawer.draw2dLine(linesBuffer, pos1.x, pos1.y, pos2.x, pos2.y, 0f, color, color, width, width)
     }
-
-    private fun VertexConsumer.color(color: Color): VertexConsumer = color(color.red, color.green, color.blue, color.alpha)
 }

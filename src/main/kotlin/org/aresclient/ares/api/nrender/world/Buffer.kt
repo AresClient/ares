@@ -13,14 +13,6 @@ open class Buffer(size: Int) {
     private var buffer = BufferUtils.createByteBuffer(size)
     private var count = 0
 
-    fun pos(pos: Vector4f): Buffer {
-        return floats(pos.x, pos.y, pos.z, pos.w)
-    }
-
-    fun pos(pos: Vector3f): Buffer {
-        return floats(pos.x, pos.y, pos.z)
-    }
-
     fun floats(vararg floats: Float): Buffer {
         buffer = expandBuffer(floats.size * VertexFormatElement.Type.FLOAT.size())
         for(vertex in floats) buffer.putFloat(vertex)
@@ -43,6 +35,14 @@ open class Buffer(size: Int) {
         buffer = expandBuffer(bytes.size * VertexFormatElement.Type.BYTE.size())
         buffer.put(bytes)
         return this
+    }
+
+    fun pos(pos: Vector4f): Buffer {
+        return floats(pos.x, pos.y, pos.z, pos.w)
+    }
+
+    fun pos(pos: Vector3f): Buffer {
+        return floats(pos.x, pos.y, pos.z)
     }
 
     fun color(color: Color): Buffer {

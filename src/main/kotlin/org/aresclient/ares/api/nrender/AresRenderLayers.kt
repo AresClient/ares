@@ -3,11 +3,9 @@ package org.aresclient.ares.api.nrender
 import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.client.render.RenderPhase
-import net.minecraft.client.render.RenderPhase.LineWidth
 import net.minecraft.util.Identifier
 import net.minecraft.util.TriState
 import net.minecraft.util.Util
-import java.util.*
 import java.util.function.Function
 
 object AresRenderLayers {

@@ -15,6 +15,9 @@ import net.minecraft.entity.projectile.FishingBobberEntity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
 import org.aresclient.ares.api.instruments.Module
+import org.aresclient.ares.api.nrender.AresRenderPipelines
+import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.EnumSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
@@ -23,10 +26,6 @@ import org.aresclient.ares.impl.instrument.module.components.render.esp.Chamlike
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat
-import org.aresclient.ares.api.nrender.AresRenderPipelines
-import org.aresclient.ares.api.nrender.world.WorldDrawer
-import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.impl.util.RenderUtil
 import org.aresclient.ares.mixin.accessors.AccessWorldRenderer
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
@@ -89,8 +88,8 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
             val box = entity.getInterpolatedBoundingBox(delta)
 
-            WorldDrawer.Fill.box(box, group.fillColor.value)
-            WorldDrawer.Lines.box(box, group.lineColor.value, 2f)
+            WorldDrawer.fillBox(box, group.fillColor.value)
+            WorldDrawer.outlineBox(box, group.lineColor.value, 2f)
         }
     }
 

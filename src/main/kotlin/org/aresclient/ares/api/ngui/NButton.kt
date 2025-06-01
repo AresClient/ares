@@ -8,7 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
 
 abstract class NButton(x: Float, y: Float, width: Float, height: Float, private var action: (NButton) -> Unit = {}): NStaticElement(x, y, width, height) {
-    // TODO: CLIPPING
+    // TODO: click circle clipping?
     protected var hovering = false
     protected var hoverSince = 0L
 
@@ -42,6 +42,7 @@ abstract class NButton(x: Float, y: Float, width: Float, height: Float, private 
     private fun drawClickCircle(matrixStack: MatrixStack, x: Float, y: Float, scale: Float) {
         matrixStack.push()
         matrixStack.loadIdentity() // probably not optimal
+        matrixStack.translate(0f, 0f, 100f)
         HudDrawer.drawEllipse(matrixStack, x - scale, y - scale, scale * 2, scale * 2, Color.WHITE.deriveAlpha(0.3f))
         matrixStack.pop()
     }
