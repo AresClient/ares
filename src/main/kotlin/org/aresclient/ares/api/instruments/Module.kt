@@ -1,14 +1,13 @@
 package org.aresclient.ares.api.instruments
 
+import net.minecraft.client.util.math.MatrixStack
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.events.ToggleEvent
-import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.render.Texture
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.EnumSetting
-import org.joml.Matrix4f
 import java.util.*
 
 abstract class Module(val category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
@@ -137,25 +136,20 @@ abstract class Module(val category: Category, name: String, description: String,
 		if(isListening()) onMotion()
 	}
 
-	fun renderHud(delta: Float, renderer: Renderer.State) {
-		if(isListening()) onRenderHud(delta, renderer)
+	fun renderHud(matrixStack: MatrixStack, delta: Float) {
+		if(isListening()) onRenderHud(matrixStack, delta)
 	}
 
-	fun renderWorld3d(delta: Float, state: Renderer.State) {
-		if(isListening()) onRenderWorld3d(delta, state)
-	}
-
-	fun renderWorld2d(delta: Float, state: Renderer.State, projection: Matrix4f) {
-		if(isListening()) onRenderWorld2d(delta, state, projection)
+	fun renderWorld(matrixStack: MatrixStack, delta: Float) {
+		if(isListening()) onRenderWorld(matrixStack, delta)
 	}
 
 	/* ---------------------------------------------------------------------- */
 
 	protected open fun onTick() {}
 	protected open fun onMotion() {}
-	protected open fun onRenderHud(delta: Float, renderer: Renderer.State) {}
-	protected open fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {}
-	protected open fun onRenderWorld2d(delta: Float, renderer: Renderer.State, projection: Matrix4f) {}
+	protected open fun onRenderHud(matrixStack: MatrixStack, delta: Float) {}
+	protected open fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {}
 
 	open fun onEnable() {}
 	open fun onDisable() {}

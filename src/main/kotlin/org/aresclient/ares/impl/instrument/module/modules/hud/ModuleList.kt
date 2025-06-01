@@ -1,68 +1,66 @@
 package org.aresclient.ares.impl.instrument.module.modules.hud
 
+import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.text.Text
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.render.TextColor
+import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.TextColor
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.AresPlugin
+import org.joml.Vector2d
 
-object ModuleList: HudModule("Module List", "Shows modules that are currently enabled in a list.", position = Pair(1.0, 1.0), defaults = Defaults().setEnabled(true)) {
-
+object ModuleList: HudModule("Module List", "Shows modules that are currently enabled in a list.", position = Vector2d(1.0, 0.0), defaults = Defaults().setEnabled(true)) {
     enum class Sort { SHORT_TO_LONG, LONG_TO_SHORT, ALPHABETICAL }
 
     enum class Alignment { LEFT, RIGHT }
 
-    private val size = settings.addFloat("Size", 24f).setMin(5f).setMax(50f)
-    private val sort = settings.addEnum("Sort", Sort.SHORT_TO_LONG)
+    private val sort = settings.addEnum("Sort", Sort.LONG_TO_SHORT)
     private val align = settings.addEnum("Align", Alignment.RIGHT)
 
-    private var shownModules = mutableSetOf<String>()
+    private var shownModules = mutableListOf<ModuleInfo>()
 
-    private var longestOffset = 0f
+    private var longestWidth = 0f
 
     override fun onTick() {
         shownModules.clear()
-
-        var longest = ""
+        longestWidth = 0f
 
         for(module in AresPlugin.modules) {
             if(!module.externalCommons.showOnModuleList) continue
 
-            shownModules.add(module.getModuleListText())
-            if(module.name.length > longest.length) longest = module.name
+            val text = module.getModuleListText()
+            val width = getStringWidth(text)
+            shownModules.add(ModuleInfo(text, width))
+            if(width > longestWidth) longestWidth = width
         }
 
-        longestOffset = getFontRenderer().getStringWidth(longest, size.value)
 
-        shownModules = when(sort.value) {
-            Sort.SHORT_TO_LONG -> shownModules.sortedBy { getFontRenderer().getStringWidth(it, size.value) }.toMutableSet() // For whatever reason `toSortedSet` causes some strings to disappear when comparing length
-            Sort.LONG_TO_SHORT -> shownModules.sortedBy { getFontRenderer().getStringWidth(it, size.value) }.reversed().toMutableSet()
-            Sort.ALPHABETICAL  -> shownModules.toSortedSet()
-        }
+        if(sort.value == Sort.SHORT_TO_LONG || sort.value == Sort.LONG_TO_SHORT) shownModules.sortWith(compareBy { it.width })
+        if(sort.value == Sort.LONG_TO_SHORT) shownModules.reverse()
+        if(sort.value == Sort.ALPHABETICAL) shownModules.sortWith(compareBy { it.text.literalString })
     }
 
-    override fun onRenderHud(delta: Float, renderer: Renderer.State) {
+    override fun onRenderHud(matrixStack: MatrixStack, delta: Float) {
         if(shownModules.isEmpty()) return
 
-        for((i, shown) in shownModules.withIndex()) {
-            val xOffset = longestOffset - getFontRenderer().getStringWidth(shown, size.value)
-            getFontRenderer().drawString(
-                renderer.matrixStack, shown, size.value,
-                getX() + if(align.value == Alignment.RIGHT) xOffset else 0f,
-                getY() + i * lineHeight,
-                Color.WHITE
-            )
+        for((i, info) in shownModules.withIndex()) {
+            val xOffset = if(align.value == Alignment.RIGHT) longestWidth - info.width else 0f
+            HudDrawer.drawText(getFont(), info.text, matrixStack, getX() + 1f + xOffset, getY() + 1f + i * getLineHeight(), Color.WHITE, size = getSize())
         }
     }
 
-    private val lineHeight: Float get() = getFontRenderer().getCharHeight(size.value) + 2f
+    private fun getLineHeight() = getFont().getHeight(getSize()) + 2f
 
-    override fun getWidth(): Float = longestOffset
+    private fun getStringWidth(text: Text) = getFont().getWidth(text, getSize())
 
-    override fun getHeight(): Float = lineHeight * shownModules.size
+    override fun getWidth() = longestWidth + 2f
 
-    private fun Module.getModuleListText(): String {
-        val info = getInfo() ?: return name
-        return "$name ${TextColor.GRAY}[$info]"
+    override fun getHeight() = getLineHeight() * shownModules.size
+
+    private fun Module.getModuleListText(): Text {
+        val info = getInfo() ?: return Text.literal(name)
+        return Text.literal("$name ${TextColor.GRAY}[$info]")
     }
+
+    private data class ModuleInfo(val text: Text, val width: Float)
 }

@@ -17,10 +17,10 @@ import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.events.RenderEntityLabelEvent
 import org.aresclient.ares.api.events.RenderEvent
 import org.aresclient.ares.api.instruments.Component
+import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.impl.instrument.module.modules.render.ESP
 import org.aresclient.ares.impl.util.MathUtil.duplicate
 import org.aresclient.ares.impl.util.MathUtil.set
-import org.aresclient.ares.impl.util.RenderUtil
 
 object Chamlike: Component<ESP>(ESP), Wrapper {
 	/** @see org.aresclient.ares.mixin.mixins.MixinItemRenderer.onRenderItem */
@@ -75,8 +75,8 @@ object Chamlike: Component<ESP>(ESP), Wrapper {
 			vertices[i].set(x.offsetX(), y.offsetY(), z.offsetZ())
 			if (++i != 4) return this
 
-			RenderUtil.Fill.quad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.fillColor.value)
-			RenderUtil.Lines.quad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.lineColor.value, 1f)
+			WorldDrawer.fillQuad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.fillColor.value)
+			WorldDrawer.outlineQuad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.lineColor.value, 1f)
 
 			i = 0
 			return this

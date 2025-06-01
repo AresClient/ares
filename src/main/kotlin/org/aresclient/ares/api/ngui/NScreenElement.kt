@@ -32,7 +32,6 @@ open class NScreenElement(title: String): NElement() {
 
         override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             renderBackground(context, mouseX, mouseY, delta)
-
             this@NScreenElement.render(Theme.current(), context.matrices, mouseX, mouseY, delta)
             HudDrawer.draw()
         }

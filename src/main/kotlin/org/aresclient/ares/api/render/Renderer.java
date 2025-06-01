@@ -276,6 +276,5 @@ public class Renderer implements JWrapper {
         Buffer.clear();
         Shader.clear();
         Texture.clear();
-        SkyBox.clear();
     }
 }

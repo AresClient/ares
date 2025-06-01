@@ -1,69 +1,70 @@
 package org.aresclient.ares.impl.instrument.module.modules.hud
 
-import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.render.TextColor
+import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.text.MutableText
+import net.minecraft.text.PlainTextContent
+import net.minecraft.text.Text
+import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.TextColor
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.AresPlugin
+import org.joml.Vector2d
 
-object ToggleList: HudModule("Toggle List", "Shows whether specific modules are enabled or disabled.", position = Pair(0.5, 0.8), defaults = Defaults().setEnabled(true)) {
-
+object ToggleList: HudModule("Toggle List", "Shows whether specific modules are enabled or disabled.", position = Vector2d(0.5, 0.8), defaults = Defaults().setEnabled(true)) {
     enum class Sort { SHORT_TO_LONG, LONG_TO_SHORT, ALPHABETICAL }
 
-    private val size = settings.addFloat("Size", 24f).setMin(5f).setMax(50f)
     private val delimiter = settings.addString("Delimiter", " : ")
     private val sort = settings.addEnum("Sort", Sort.SHORT_TO_LONG)
 
-    private var shownModules = mutableMapOf<String, Boolean>()
-    private var longest: String = ""
-
-    private var delimeterOffset = 0f
+    private var shownModules = arrayListOf<ModuleInfo>()
+    private var longestOffset = 0f
+    private var delimiterOffset = 0f
 
     override fun onTick() {
         shownModules.clear()
-        longest = ""
+        longestOffset = 0f
 
         for(module in AresPlugin.modules) {
             if(!module.externalCommons.showOnToggleList) continue
 
-            shownModules[module.name] = module.isEnabled()
-            if(module.name.length > longest.length) longest = module.name
+            val text = Text.literal(module.name)
+            val width = getStringWidth(text)
+            val info = ModuleInfo(text, width, module.isEnabled())
+            shownModules.add(info)
+            if(width > longestOffset) longestOffset = width
         }
 
-        delimeterOffset = getLeftWidth(longest)
+        delimiterOffset = getStringWidth(Text.literal(delimiter.value)) / 2
+        longestOffset += delimiterOffset
 
-
-        shownModules = when(sort.value) {
-            Sort.SHORT_TO_LONG -> shownModules.toList().sortedWith(compareBy { it.first.length }).toMap().toMutableMap() // same problem as in ModuleList
-            Sort.LONG_TO_SHORT -> shownModules.toList().sortedWith(compareBy { it.first.length }).reversed().toMap().toMutableMap()
-            Sort.ALPHABETICAL  -> shownModules.toSortedMap()
-        }
+        if(sort.value == Sort.SHORT_TO_LONG || sort.value == Sort.LONG_TO_SHORT) shownModules.sortWith(compareBy { it.nameWidth })
+        if(sort.value == Sort.LONG_TO_SHORT) shownModules.reverse()
+        if(sort.value == Sort.ALPHABETICAL) shownModules.sortWith(compareBy { it.name.literalString })
     }
 
-    override fun onRenderHud(delta: Float, renderer: Renderer.State) {
+    override fun onRenderHud(matrixStack: MatrixStack, delta: Float) {
         if(shownModules.isEmpty()) return
 
-        var i = 0
-        for(shown in shownModules) {
-            val xOffset = delimeterOffset - getLeftWidth(shown.key)
-            getFontRenderer().drawString(
-                renderer.matrixStack, shown.asText(), size.value,
-                getX() + xOffset, getY() + i * lineHeight,
-                Color.WHITE
-            )
-            ++i
+        for((i, info) in shownModules.withIndex()) {
+            val xOffset = longestOffset - info.nameWidth
+            HudDrawer.drawText(getFont(), info.text, matrixStack, getX() + 1f + xOffset, getY() + 1f + i * getLineHeight(), Color.WHITE, size = getSize())
         }
     }
 
-    private val lineHeight: Float get() = getFontRenderer().getCharHeight(size.value) + 2f
+    private fun getLineHeight() = getFont().getHeight(getSize()) + 2f
 
-    private fun getStringWidth(string: String) = getFontRenderer().getStringWidth(string, size.value)
+    private fun getStringWidth(text: Text) = getFont().getWidth(text, getSize())
 
-    private fun getLeftWidth(string: String) = getStringWidth(string) + (getStringWidth(delimiter.value) / 2)
+    override fun getWidth() = longestOffset * 2f + 2f
 
-    private fun Map.Entry<String, Boolean>.asText(): String = "${key}${delimiter.value}" + if(value) "${TextColor.GREEN}Enabled" else "${TextColor.RED}Disabled"
+    override fun getHeight() = getLineHeight() * shownModules.size + 2f
 
-    override fun getWidth(): Float = getLeftWidth(longest) * 2 // Centres on the delimiter
-
-    override fun getHeight(): Float = lineHeight * shownModules.size
-
+    private data class ModuleInfo(val name: Text, val nameWidth: Float, val enabled: Boolean) {
+        val text: Text = MutableText.of(PlainTextContent.EMPTY).also {
+            it.append(name)
+            it.append(delimiter.value)
+            if(enabled) it.append("${TextColor.GREEN}Enabled")
+            else it.append("${TextColor.RED}Disabled")
+        }
+    }
 }

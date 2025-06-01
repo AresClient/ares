@@ -7,20 +7,21 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.aresclient.ares.api.nrender.AresRenderLayers
 import org.aresclient.ares.api.nrender.Drawer
-import org.aresclient.ares.api.nrender.LineDrawer
+import org.aresclient.ares.api.nrender.Lines
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 
 object HudDrawer: Drawer() {
-    private val linesBuffer = indexedBuffers.getBuffer(AresRenderLayers.LINES)
+    private val lineBuffer = indexedBuffers.getBuffer(AresRenderLayers.LINES)
+    private val lines = mutableListOf<Lines.Line2d>()
 
-    fun drawTextCentered(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = false): Int {
+    fun drawTextCentered(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
         val cx = x - font.getWidth(text, size) / 2f
         val cy = y - font.getHeight(size) / 2f
         return drawText(font, text, matrixStack, cx, cy, color, size, shadow)
     }
 
-    fun drawText(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = false): Int {
+    fun drawText(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
         return drawText(font, text, matrixStack, x, y, color.rgba, size, shadow)
     }
 
@@ -30,7 +31,7 @@ object HudDrawer: Drawer() {
         matrixStack.scale(scale, scale, 1f)
         val i = font.textRenderer.draw(
             text, x / scale, y / scale, color, shadow, matrixStack.peek().positionMatrix,
-            vertexConsumers, TextRenderer.TextLayerType.NORMAL, Color.BLACK.rgba, 15728880
+            vertexConsumers, TextRenderer.TextLayerType.NORMAL, 0, 15728880
         )
         matrixStack.pop()
         return i
@@ -131,6 +132,12 @@ object HudDrawer: Drawer() {
         val matrix4f = matrixStack.peek().positionMatrix
         val pos1 = matrix4f.transformPosition(x1, y1, 0f, Vector3f())
         val pos2 = matrix4f.transformPosition(x2, y2, 0f, Vector3f())
-        LineDrawer.draw2dLine(linesBuffer, pos1.x, pos1.y, pos2.x, pos2.y, 0f, color, color, width, width)
+        lines.add(Lines.Line2d(pos1.x, pos1.y, pos2.x, pos2.y, 0f, color, color, width, width))
+    }
+
+    override fun draw() {
+        Lines.draw(lines, lineBuffer)
+        lines.clear()
+        super.draw()
     }
 }

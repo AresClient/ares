@@ -6,7 +6,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import org.aresclient.ares.api.instruments.Command
-import org.aresclient.ares.api.render.TextColor
+import org.aresclient.ares.api.nrender.TextColor
 import org.aresclient.ares.impl.util.FriendUtil
 
 object FriendCommand: Command("friend", "f") {

@@ -18,7 +18,7 @@ enum class NFont(path: String?, val size: Float): Wrapper {
         else {
             val id = Ares.identifier(path)
             val storage = CustomFontStorage(MC.textureManager, Ares.identifier("fs_${path}"))
-            storage.setFonts(mutableListOf(Font.FontFilterPair(TrueTypeFontLoader(id, size, 1f, TrueTypeFontLoader.Shift(0f, size / 5f), "").build().orThrow().load(MC.resourceManager), FontFilterType.FilterMap.NO_FILTER)), setOf())
+            storage.setFonts(mutableListOf(Font.FontFilterPair(TrueTypeFontLoader(id, size, 1f, TrueTypeFontLoader.Shift(0f, size / 2f), "").build().orThrow().load(MC.resourceManager), FontFilterType.FilterMap.NO_FILTER)), setOf())
             TextRenderer({ storage }, false)
         }
     }
@@ -26,7 +26,7 @@ enum class NFont(path: String?, val size: Float): Wrapper {
     fun getScale(factor: Float): Float = factor / size
 
     fun getHeight(size: Float): Float {
-        return textRenderer.fontHeight * getScale(size)
+        return textRenderer.fontHeight.toFloat() * size / 11f
     }
 
     fun getWidth(text: Text, size: Float): Float {

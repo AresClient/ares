@@ -1,22 +1,29 @@
 package org.aresclient.ares.impl.instrument.module.modules.hud
 
-import org.aresclient.ares.api.render.Renderer
+import net.minecraft.client.util.math.MatrixStack
+import net.minecraft.text.Text
+import org.aresclient.ares.api.nrender.hud.HudDrawer
 import org.aresclient.ares.api.util.Color
+import org.joml.Vector2d
 
 abstract class TextHudModule(name: String, description: String, defaults: Defaults = Defaults(),
-                             position: Pair<Double, Double> = 0.0 to 0.0): HudModule(name, description, defaults, position) {
-    private val size = settings.addFloat("Size", 24f).setMin(5f).setMax(50f)
-    private var text: String? = null
+                             position: Vector2d = Vector2d(0.0, 0.0)): HudModule(name, description, defaults, position) {
+    private var text: Text? = null
 
-    abstract fun getText(): String?
+    abstract fun getText(): Text?
 
-    override fun getWidth() = getFontRenderer().getStringWidth(text ?: "", size.value) + 2f
+    override fun getWidth(): Float {
+        if(text == null) return 0f
+        return getFont().getWidth(text!!, getSize()) + 2f
+    }
 
-    override fun getHeight() = getFontRenderer().getCharHeight(size.value) + 2f
+    override fun getHeight(): Float {
+        return getFont().getHeight(getSize()) + 2f
+    }
 
-    override fun onRenderHud(delta: Float, renderer: Renderer.State) {
+    override fun onRenderHud(matrixStack: MatrixStack, delta: Float) {
         if(text == null) text = getText() ?: return
-        getFontRenderer().drawString(renderer.matrixStack, text!!, size.value, getX() + 1, getY() + 1, Color.WHITE)
+        HudDrawer.drawText(getFont(), text!!, matrixStack, getX() + 1f, getY() + 1f, Color.WHITE, size = getSize())
     }
 
     protected fun update() {

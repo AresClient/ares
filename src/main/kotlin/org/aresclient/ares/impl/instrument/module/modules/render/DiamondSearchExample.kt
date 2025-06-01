@@ -2,13 +2,13 @@ package org.aresclient.ares.impl.instrument.module.modules.render
 
 import net.minecraft.block.BlockState
 import net.minecraft.block.Blocks
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.util.ChunkProcessor
-import org.aresclient.ares.impl.util.RenderUtil
 
 object DiamondSearchExample: Module(Category.RENDER, "Diamond Search Ex", "Simple diamond search module for an example of how the chunk processor works.") {
 
@@ -33,7 +33,7 @@ object DiamondSearchExample: Module(Category.RENDER, "Diamond Search Ex", "Simpl
         processing = false
     }
 
-    override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {
+    override fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {
         // Blocks in the chunk processor are not thread-safe
         if(chunkProcessor.isWriteLocked) return
 
@@ -41,8 +41,8 @@ object DiamondSearchExample: Module(Category.RENDER, "Diamond Search Ex", "Simpl
         val offset = CAMERA.pos.negate()
         chunkProcessor.forBlock { longPos, blockState ->
             val box = Box(blockPos.set(longPos)).offset(offset)
-            RenderUtil.Fill.box(box, Color.RED.deriveAlpha(0.2f))
-            RenderUtil.Lines.box(box, Color.RED, 2f)
+            WorldDrawer.fillBox(box, Color.RED.deriveAlpha(0.2f))
+            WorldDrawer.outlineBox(box, Color.RED, 2f)
         }
     }
 }

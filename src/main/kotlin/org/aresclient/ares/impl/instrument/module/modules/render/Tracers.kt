@@ -1,11 +1,13 @@
 package org.aresclient.ares.impl.instrument.module.modules.render
 
+import com.mojang.blaze3d.systems.RenderSystem
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.nrender.hud.HudDrawer
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
@@ -50,6 +52,7 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
     ), EntityUtil.EntityTypes.possibles, { EntityGroup() })
 
     private val entitiesCache = hashMapOf<Any, EntityGroup?>()
+    private val mvp = Matrix4f()
 
     override fun onTick() {
         entitiesCache.clear()
@@ -60,8 +63,9 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
         return entitiesCache.getOrPut(type) { entities.find(type).getOrNull() }
     }
 
-    override fun onRenderWorld2d(delta: Float, renderer: Renderer.State, projection: Matrix4f) {
-        val center = Vector2f(MC.window.framebufferWidth.toFloat(), MC.window.framebufferHeight.toFloat()).div(2f)
+    override fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {
+        val center = Vector2f(MC.window.scaledWidth.toFloat(), MC.window.scaledHeight.toFloat()).div(2f)
+        RenderSystem.getModelViewMatrix().mul(RenderSystem.getProjectionMatrix(), mvp)
 
         WORLD.entities?.forEach { entity ->
             val group = getEntityGroup(entity) ?: return@forEach
@@ -70,29 +74,25 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
             val pos = entity.getLerpedRenderPos(delta)
             val color = if(group.distance.value) Color.fromDistance(SELF.distanceTo(entity)) else group.color.value
 
-            renderer.tryDrawTracer(projection, center, pos, pos.add(0.0, entity.height.toDouble(), 0.0), 1f, color)
+            tryDrawTracer(matrixStack, center, pos, pos.add(0.0, entity.height.toDouble(), 0.0), 1f, color)
         }
     }
 
-    private fun Vec3d.toScreenPos(projection: Matrix4f): Vector2f? {
-        val pos = Vector4f(this.x.toFloat(), this.y.toFloat(), this.z.toFloat(), 1f).mul(projection)
+    private fun Vec3d.toScreenPos(): Vector2f? {
+        val pos = Vector4f(this.x.toFloat(), this.y.toFloat(), this.z.toFloat(), 1f).mul(mvp)
         if(pos.w <= 0f) return null
         pos.div(pos.w)
-        return Vector2f((pos.x + 1f) * MC.window.framebufferWidth.toFloat() * 0.5f, MC.window.framebufferHeight.toFloat() - (pos.y + 1f) * MC.window.framebufferHeight.toFloat() * 0.5f)
+        return Vector2f((pos.x + 1f) * MC.window.scaledWidth.toFloat() * 0.5f, MC.window.scaledHeight.toFloat() - (pos.y + 1f) * MC.window.scaledHeight.toFloat() * 0.5f)
     }
 
     private fun Entity.getLerpedRenderPos(delta: Float): Vec3d = getLerpedPos(delta).subtract(CAMERA.pos)
 
-    private fun Renderer.State.tryDrawTracer(projection: Matrix4f, center: Vector2f, one: Vec3d, two: Vec3d, width: Float, color: Color) {
-        drawTracer(center, one.toScreenPos(projection) ?: return, two.toScreenPos(projection) ?: return, width, color)
+    private fun tryDrawTracer(matrixStack: MatrixStack, center: Vector2f, one: Vec3d, two: Vec3d, width: Float, color: Color) {
+        drawTracer(matrixStack, center, one.toScreenPos() ?: return, two.toScreenPos() ?: return, width, color)
     }
 
-    private fun Renderer.State.drawTracer(center: Vector2f, one: Vector2f, two: Vector2f, width: Float, color: Color) {
-        buffers.lines.indicesOffset(0, 1, 1, 2)
-        buffers.lines.vertices(
-            center.x, center.y, 1f, width, color.red, color.green, color.blue, color.alpha,
-            one.x, one.y, 1f, width, color.red, color.green, color.blue, color.alpha,
-            two.x, two.y, 1f, width, color.red, color.green, color.blue, color.alpha,
-        )
+    private fun drawTracer(matrixStack: MatrixStack, center: Vector2f, one: Vector2f, two: Vector2f, width: Float, color: Color) {
+        HudDrawer.drawLine(matrixStack, center.x, center.y, one.x, one.y, color, width)
+        HudDrawer.drawLine(matrixStack, one.x, one.y, two.x, two.y, color, width)
     }
 }

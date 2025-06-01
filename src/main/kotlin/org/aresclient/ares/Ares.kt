@@ -6,6 +6,7 @@ import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
 import net.minecraft.client.gui.screen.ChatScreen
 import net.minecraft.client.gui.screen.TitleScreen
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.api.Wrapper
@@ -14,6 +15,7 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module
+import org.aresclient.ares.api.nrender.hud.HudDrawer
 import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.MapSetting
@@ -68,40 +70,30 @@ class Ares: ModInitializer, Wrapper {
 	}
 
 	@field:EventHandler
-	val tickEventListener = EventListener<TickEvent> { event ->
+	private val tickEventListener = EventListener<TickEvent> { event ->
 		if(event.era != Era.BEFORE) return@EventListener
 		else if(event is TickEvent.Client) PLUGINS.forEach(Plugin::tickClient)
 		else if(event is TickEvent.Motion) PLUGINS.forEach(Plugin::tickMotion)
 	}
 
+	private val matrixStack = MatrixStack()
+
 	@field:EventHandler
-	val renderEventListener = EventListener<RenderEvent> { event ->
+	private val renderEventListener = EventListener<RenderEvent> { event ->
 		if(event is RenderEvent.Hud) {
-			val state = Renderer.begin2d()
 			PLUGINS.forEach { plugin ->
-				plugin.renderHud(event.tickDelta, state)
+				plugin.renderHud(matrixStack, event.tickDelta)
 			}
-			Renderer.end(state)
+
+			HudDrawer.draw()
 		} else if(event is RenderEvent.World) {
-			val state3d = Renderer.begin3d()
-			RenderSystem.getProjectionMatrix() // TODO: KEEP THIS FOR WORLD DRAWER
+			RenderSystem.getProjectionMatrix()
 				.rotate(toRadians(wrapDegrees(CAMERA.pitch)), 1f, 0f, 0f)
 				.rotate(toRadians(wrapDegrees(CAMERA.yaw + 180f)), 0f, 1f, 0f);
+
 			PLUGINS.forEach { plugin ->
-				plugin.renderWorld3d(event.tickDelta, state3d)
+				plugin.renderWorld(matrixStack, event.tickDelta)
 			}
-			state3d.draw()
-
-			val state2d = Renderer.begin2d()
-			PLUGINS.forEach { plugin ->
-				plugin.renderWorld2d(event.tickDelta, state2d, state3d.matrixStack.projection())
-			}
-			state2d.draw()
-
-			Renderer.end(state3d)
-
-			// TODO: replace above
-
 			WorldDrawer.draw()
 		}
 	}
@@ -118,7 +110,7 @@ class Ares: ModInitializer, Wrapper {
 	}
 
 	@field:EventHandler
-	val inputEventListener = EventListener<InputEvent> { event ->
+	private val inputEventListener = EventListener<InputEvent> { event ->
 		if(event.textboxFocused || MC.currentScreen !is TitleScreen && MC.currentScreen !is AresScreen && MC.currentScreen != null)
 			return@EventListener
 
@@ -136,7 +128,7 @@ class Ares: ModInitializer, Wrapper {
 	}
 
 	@field:EventHandler
-	val chatListener = EventListener<ChatEvent> { event ->
+	private val chatListener = EventListener<ChatEvent> { event ->
 		if(event.message.startsWith(COMMAND_PREFIX.value)) {
 			Command.execute(ChatUtil, event.message.substring(COMMAND_PREFIX.value.length))
 			MC.inGameHud.chatHud.addToMessageHistory(event.message)
@@ -145,13 +137,13 @@ class Ares: ModInitializer, Wrapper {
 	}
 
 	@field:EventHandler
-	val charTypedListener = EventListener<CharTypedEvent> { event ->
+	private val charTypedListener = EventListener<CharTypedEvent> { event ->
 		if(MC.currentScreen == null && !MC.NULL && COMMAND_PREFIX.value.length == 1 && event.codePoint.toChar() == COMMAND_PREFIX.value[0])
 			MC.setScreen(ChatScreen(""))
 	}
 
 	@field:EventHandler
-	val shutdownListener = EventListener<ShutdownEvent> {
+	private val shutdownListener = EventListener<ShutdownEvent> {
 		FriendUtil.save()
 		SETTINGS_FILE.parentFile.mkdirs()
 		SETTINGS.write(SETTINGS_FILE)

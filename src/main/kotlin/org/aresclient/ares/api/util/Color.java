@@ -34,7 +34,7 @@ public class Color {
 	}
 
 	public static Color fromDistance(float distance) {
-		float fraction = distance > 50 ? 1 : distance / 50;
+		float fraction = distance > 100 ? 1 : distance / 100;
 		return fraction > 0.5d ? new Color(1 - (fraction - 0.5f) * 2, 1, 0, 1) : new Color(1, fraction * 2, 0, 1);
 	}
 

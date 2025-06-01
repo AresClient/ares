@@ -1,6 +1,6 @@
-package org.aresclient.ares.api.render;
+package org.aresclient.ares.api.nrender
 
-public enum TextColor {
+enum class TextColor(key: Char) {
     BLACK('0'),
     DARK_BLUE('1'),
     DARK_GREEN('2'),
@@ -18,14 +18,9 @@ public enum TextColor {
     YELLOW('e'),
     WHITE('f');
 
-    private final String string;
+    private val string = "\u00a7" + key
 
-    TextColor(char key) {
-        this.string = "\u00a7" + key;
-    }
-
-    @Override
-    public String toString() {
-        return string;
+    override fun toString(): String {
+        return string
     }
 }

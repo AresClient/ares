@@ -3,6 +3,8 @@ package org.aresclient.ares.api.nrender
 import com.mojang.blaze3d.pipeline.BlendFunction
 import com.mojang.blaze3d.pipeline.RenderPipeline
 import com.mojang.blaze3d.platform.DepthTestFunction
+import com.mojang.blaze3d.platform.DestFactor
+import com.mojang.blaze3d.platform.SourceFactor
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.gl.RenderPipelines
@@ -17,7 +19,7 @@ object AresRenderPipelines {
     private val pipelines = mutableListOf<RenderPipeline>()
 
     private val defaults = RenderPipeline.builder()
-        .withBlend(BlendFunction.TRANSLUCENT)
+        .withBlend(BlendFunction(SourceFactor.SRC_ALPHA, DestFactor.ONE_MINUS_SRC_ALPHA))
         .withCull(false)
         .withUniform("ProjMat", UniformType.MATRIX4X4)
         .withUniform("ModelViewMat", UniformType.MATRIX4X4)

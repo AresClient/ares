@@ -5,16 +5,16 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.block.enums.ChestType
 import net.minecraft.client.render.Frustum
+import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.render.Renderer
+import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.util.ChunkProcessor
-import org.aresclient.ares.impl.util.RenderUtil
 import org.aresclient.ares.impl.util.WorldUtil
 import org.aresclient.ares.impl.util.WorldUtil.boundingBox
 import org.aresclient.ares.mixin.accessors.AccessWorldRenderer
@@ -70,7 +70,8 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
         return blockEntitiesCache.getOrPut(blockEntity.type) { blockEntities.find(blockEntity.type).getOrNull() }
     }
 
-    override fun onRenderWorld3d(delta: Float, renderer: Renderer.State) {
+    // TODO: there is a bug that block entities in the world when you spawn have greater alpha value (they seem to be rendered twice for some reason?)
+    override fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {
         if(blockEntities.none { it.enabled.value }) return
 
         val offset = CAMERA.pos.negate()
@@ -79,29 +80,23 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
             val group = getBlockEntityGroup(blockEntity) ?: return@forEach
             if(!group.enabled.value || blockEntity.shouldCull(frustum)) return@forEach
 
-            var box: Box?
-            val ignoreDirections = arrayOfNulls<Direction>(6)
+            var box: Box
+            val directions: Array<Boolean>
 
             // TODO: Lump with greedy meshing?
             if(group.lump.value) {
                 box = Box(blockEntity.pos).offset(offset)
-                for(direction in Direction.entries) {
-                    ignoreDirections[direction.index] = null
-                    if(blockEntity.pos.offset(direction).shouldLump(group)) {
-                        ignoreDirections[direction.index] = direction
-                    }
-                }
-            } else box = blockEntity.pos.boundingBox?.offset(offset) ?: Box(blockEntity.pos).offset(offset)
-
-            if(blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE) {
-                val stretch = ChestBlock.getFacing(blockEntity.cachedState)
-                box = box!!.doubleChest(stretch)
+                directions = Direction.entries.map { !blockEntity.pos.offset(it).shouldLump(group) }.toTypedArray()
+            } else {
+                box = blockEntity.pos.boundingBox?.offset(offset) ?: Box(blockEntity.pos).offset(offset)
+                directions = arrayOf(true, true, true, true, true, true)
             }
 
-            box ?: return@forEach
+            if(blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE)
+                box = box.doubleChest(ChestBlock.getFacing(blockEntity.cachedState)) ?: return@forEach
 
-            RenderUtil.Lines.box(box, group.lineColor.value, 2f, *ignoreDirections)
-            RenderUtil.Fill.box(box, group.fillColor.value, *ignoreDirections)
+            WorldDrawer.fillBox(box, group.fillColor.value, directions)
+            WorldDrawer.outlineBox(box, group.lineColor.value, 2f, directions)
         }
     }
 

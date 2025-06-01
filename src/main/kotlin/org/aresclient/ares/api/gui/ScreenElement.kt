@@ -39,7 +39,9 @@ open class ScreenElement(title: String): Element() {
             super.close()
         }
 
-        override fun render(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            renderBackground(context, mouseX, mouseY, delta)
+
             tooltip = null
 
             if(mouseX == prevMouseX && mouseY == prevMouseY) mouseTime += delta
