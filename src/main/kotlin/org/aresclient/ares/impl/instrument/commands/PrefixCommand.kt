@@ -11,7 +11,7 @@ object PrefixCommand: Command("prefix") {
     override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
         return then(argument<IContext, String?>("prefix", string()).executes {
             val prefix = getString(it, "prefix")
-            Ares.COMMAND_PREFIX.value = prefix
+            Ares.getCommandPrefixSetting().value = prefix
             it.source.print("Set command prefix to $prefix")
             1
         })

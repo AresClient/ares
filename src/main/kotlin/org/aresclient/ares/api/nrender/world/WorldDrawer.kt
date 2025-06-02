@@ -1,5 +1,6 @@
 package org.aresclient.ares.api.nrender.world
 
+import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
@@ -9,11 +10,21 @@ import org.aresclient.ares.api.nrender.Lines
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 
-object WorldDrawer: Drawer() {
-    private val allDirections = arrayOf(true, true, true, true, true,  true)
+class WorldDrawer: Drawer() {
+    companion object {
+        val ALL_DIRECTIONS = booleanArrayOf(true, true, true, true, true, true)
+    }
+
     private val quadBuffer = indexedBuffers.getBuffer(AresRenderLayers.QUAD_NO_DEPTH)
     private val linesBuffer = indexedBuffers.getBuffer(AresRenderLayers.LINES_NO_DEPTH)
-    private val lines = mutableListOf<Lines.Line3d>()
+
+    override fun begin() {
+        RenderSystem.getProjectionMatrix()
+            .rotate(toRadians(wrapDegrees(CAMERA.pitch)), 1f, 0f, 0f)
+            .rotate(toRadians(wrapDegrees(CAMERA.yaw + 180f)), 0f, 1f, 0f)
+
+        Lines.begin()
+    }
 
     fun fillQuad(pos1: Vec3d, pos2: Vec3d, pos3: Vec3d, pos4: Vec3d, color: Color) {
         fillQuad(pos1.x.toFloat(), pos1.y.toFloat(), pos1.z.toFloat(), pos2.x.toFloat(), pos2.y.toFloat(), pos2.z.toFloat(), pos3.x.toFloat(), pos3.y.toFloat(), pos3.z.toFloat(), pos4.x.toFloat(), pos4.y.toFloat(), pos4.z.toFloat(), color)
@@ -36,7 +47,7 @@ object WorldDrawer: Drawer() {
         )
     }
 
-    fun fillBox(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float, color: Color, directions: Array<Boolean> = allDirections) = quadBuffer.use {
+    fun fillBox(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float, color: Color, directions: BooleanArray = ALL_DIRECTIONS) = quadBuffer.use {
         val i = begin().floats(minX, minY, minZ).color(color).next()
         val ix = begin().floats(maxX, minY, minZ).color(color).next()
         val ixz = begin().floats(maxX, minY, maxZ).color(color).next()
@@ -54,10 +65,10 @@ object WorldDrawer: Drawer() {
         if(directions[Direction.EAST.ordinal]) quad(ix, ixy, ixyz, ixz)
     }
 
-    fun fillBox(box: Box, color: Color, directions: Array<Boolean> = allDirections) = fillBox(box.minX.toFloat(), box.minY.toFloat(), box.minZ.toFloat(), box.maxX.toFloat(), box.maxY.toFloat(), box.maxZ.toFloat(), color, directions)
+    fun fillBox(box: Box, color: Color, directions: BooleanArray = ALL_DIRECTIONS) = fillBox(box.minX.toFloat(), box.minY.toFloat(), box.minZ.toFloat(), box.maxX.toFloat(), box.maxY.toFloat(), box.maxZ.toFloat(), color, directions)
 
     fun drawLine(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, color1: Color, color2: Color, w1: Float, w2: Float) {
-       lines.add(Lines.Line3d(x1, y1, z1, x2, y2, z2, color1, color2, w1, w2))
+       Lines.draw3dLine(linesBuffer, x1, y1, z1, x2, y2, z2, color1, color2, w1, w2)
     }
 
     fun drawLine(x1: Float, y1: Float, z1: Float, x2: Float, y2: Float, z2: Float, color: Color, width: Float) {
@@ -84,7 +95,7 @@ object WorldDrawer: Drawer() {
         drawLine(x4, y4, z4, x1, y1, z1, color4, color1, w4, w1)
     }
 
-    fun outlineBox(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float, color: Color, width: Float, directions: Array<Boolean> = allDirections) {
+    fun outlineBox(minX: Float, minY: Float, minZ: Float, maxX: Float, maxY: Float, maxZ: Float, color: Color, width: Float, directions: BooleanArray = ALL_DIRECTIONS) {
         // bottom quad
         if(directions[Direction.DOWN.ordinal] && directions[Direction.NORTH.ordinal]) drawLine(minX, minY, minZ, maxX, minY, minZ, color, width)
         if(directions[Direction.DOWN.ordinal] && directions[Direction.EAST.ordinal])  drawLine(maxX, minY, maxZ, maxX, minY, minZ, color, width)
@@ -104,13 +115,18 @@ object WorldDrawer: Drawer() {
         if(directions[Direction.SOUTH.ordinal] && directions[Direction.WEST.ordinal]) drawLine(minX, minY, maxZ, minX, maxY, maxZ, color, width)
     }
 
-    fun outlineBox(box: Box, color: Color, width: Float, directions: Array<Boolean> = allDirections) {
+    fun outlineBox(box: Box, color: Color, width: Float, directions: BooleanArray = ALL_DIRECTIONS) {
         outlineBox(box.minX.toFloat(), box.minY.toFloat(), box.minZ.toFloat(), box.maxX.toFloat(), box.maxY.toFloat(), box.maxZ.toFloat(), color, width, directions)
     }
 
-    override fun draw() {
-        Lines.draw(lines, linesBuffer)
-        lines.clear()
-        super.draw()
+    private fun wrapDegrees(degrees: Float): Float {
+        var wrapped = degrees % 360f
+        if(wrapped >= 180f) wrapped -= 360f
+        if(wrapped < -180f) wrapped += 360f
+        return wrapped
+    }
+
+    private fun toRadians(ang: Float): Float {
+        return ang / 180f * 3.1415927f
     }
 }

@@ -17,7 +17,7 @@ class IconButton(private val texture: Identifier, x: Float, y: Float, width: Flo
         private val SHADOW = Color(0f, 0f, 0f, 0.4f)
     }
 
-    override fun drawButton(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun drawButton(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         matrixStack.push()
         if(holding) matrixStack.translate(0f, 1f, 0f)
 
@@ -25,22 +25,22 @@ class IconButton(private val texture: Identifier, x: Float, y: Float, width: Flo
         var offset = BORDER * size
 
         // draw shadow
-        if(!holding) HudDrawer.drawCircle(matrixStack, 1f, 1f, size, SHADOW)
+        if(!holding) drawer.drawCircle(matrixStack, 1f, 1f, size, SHADOW)
 
         // draw bordered circle
-        HudDrawer.drawCircle(matrixStack, 0f, 0f, size, theme.primary.value)
-        HudDrawer.drawCircle(matrixStack, offset, offset, size - 2 * offset, theme.secondary.value)
+        drawer.drawCircle(matrixStack, 0f, 0f, size, theme.primary.value)
+        drawer.drawCircle(matrixStack, offset, offset, size - 2 * offset, theme.secondary.value)
 
         // hover animation
         if(hovering || holding) {
             val factor = min((System.currentTimeMillis() - hoverSince) / 200f, 1f)
             offset = BORDER + 0.5f * size * (1 - factor)
-            HudDrawer.drawCircle(matrixStack, offset, offset, size - 2 * offset, theme.primary.value)
+            drawer.drawCircle(matrixStack, offset, offset, size - 2 * offset, theme.primary.value)
         }
 
         // draw icon
         offset = BOUNDS * size
-        HudDrawer.drawTexture(texture, matrixStack, offset, offset, size - 2 * offset, size - 2 * offset)
+        drawer.drawTexture(texture, matrixStack, offset, offset, size - 2 * offset, size - 2 * offset)
 
         matrixStack.pop()
     }

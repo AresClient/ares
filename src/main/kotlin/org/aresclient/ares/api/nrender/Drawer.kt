@@ -13,7 +13,10 @@ open class Drawer: Wrapper {
 
     protected fun VertexConsumer.color(color: Color): VertexConsumer = color(color.red, color.green, color.blue, color.alpha)
 
-    open fun draw() {
+    open fun begin() {
+    }
+
+    fun draw() {
         vertexConsumers.draw()
         indexedBuffers.draw()
     }

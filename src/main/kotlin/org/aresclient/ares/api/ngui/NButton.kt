@@ -17,9 +17,9 @@ abstract class NButton(x: Float, y: Float, width: Float, height: Float, private 
     private var holdY = 0f
     private var holdSince = 0L
 
-    protected abstract fun drawButton(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float)
+    protected abstract fun drawButton(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float)
 
-    override fun draw(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun draw(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         if(isMouseOver(mouseX, mouseY)) {
             if(!hovering) {
                 hovering = true
@@ -27,23 +27,23 @@ abstract class NButton(x: Float, y: Float, width: Float, height: Float, private 
             }
         } else hovering = false
 
-        drawButton(theme, matrixStack, mouseX, mouseY, delta)
+        drawButton(theme, drawer, matrixStack, mouseX, mouseY, delta)
 
         // draw click circle if holding
         if(holding) {
             val time = System.currentTimeMillis() - holdSince
             val scale = min(time / 20f, 2f) + 1f
-            drawClickCircle(matrixStack, holdX, holdY, scale * 2f)
+            drawClickCircle(drawer, matrixStack, holdX, holdY, scale * 2f)
         }
 
-        super.draw(theme, matrixStack, mouseX, mouseY, delta)
+        super.draw(theme, drawer, matrixStack, mouseX, mouseY, delta)
     }
 
-    private fun drawClickCircle(matrixStack: MatrixStack, x: Float, y: Float, scale: Float) {
+    private fun drawClickCircle(drawer: HudDrawer, matrixStack: MatrixStack, x: Float, y: Float, scale: Float) {
         matrixStack.push()
         matrixStack.loadIdentity() // probably not optimal
         matrixStack.translate(0f, 0f, 100f)
-        HudDrawer.drawEllipse(matrixStack, x - scale, y - scale, scale * 2, scale * 2, Color.WHITE.deriveAlpha(0.3f))
+        drawer.drawEllipse(matrixStack, x - scale, y - scale, scale * 2, scale * 2, Color.WHITE.deriveAlpha(0.3f))
         matrixStack.pop()
     }
 

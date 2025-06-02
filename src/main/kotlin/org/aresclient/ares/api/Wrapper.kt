@@ -16,7 +16,7 @@ interface Wrapper {
 
 	val profiler: Profiler get() = Profilers.get()
 
-	val EVENTS: AresEventManager get() = Ares.EVENT_MANAGER
+	val EVENTS: AresEventManager get() = Ares.getEventManager()
 
 	val MC: MinecraftClient get() = MinecraftClient.getInstance()
 
@@ -28,7 +28,7 @@ interface Wrapper {
 
 	val CAMERA: Camera get() = MC.gameRenderer.camera
 
-	val LOGGER: Logger get() = Ares.LOGGER
+	val LOGGER: Logger get() = Ares.getLogger()
 
 	val EXECUTOR: ExecutorService get() = Executors.newCachedThreadPool()
 

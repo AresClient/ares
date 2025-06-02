@@ -11,9 +11,12 @@ import org.aresclient.ares.api.nrender.Lines
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 
-object HudDrawer: Drawer() {
+class HudDrawer: Drawer() {
     private val lineBuffer = indexedBuffers.getBuffer(AresRenderLayers.LINES)
-    private val lines = mutableListOf<Lines.Line2d>()
+
+    override fun begin() {
+        Lines.begin()
+    }
 
     fun drawTextCentered(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
         val cx = x - font.getWidth(text, size) / 2f
@@ -132,12 +135,6 @@ object HudDrawer: Drawer() {
         val matrix4f = matrixStack.peek().positionMatrix
         val pos1 = matrix4f.transformPosition(x1, y1, 0f, Vector3f())
         val pos2 = matrix4f.transformPosition(x2, y2, 0f, Vector3f())
-        lines.add(Lines.Line2d(pos1.x, pos1.y, pos2.x, pos2.y, 0f, color, color, width, width))
-    }
-
-    override fun draw() {
-        Lines.draw(lines, lineBuffer)
-        lines.clear()
-        super.draw()
+        Lines.draw2dLine(lineBuffer, pos1.x, pos1.y, pos2.x, pos2.y, 0f, color, color, width, width)
     }
 }

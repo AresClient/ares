@@ -34,7 +34,7 @@ open class TextBox(x: Float, y: Float, width: Float, private val fontSize: Float
     }
 
     init {
-        Ares.EVENT_MANAGER.register(inputEventListener)
+        Ares.getEventManager().register(inputEventListener)
     }
 
     private fun getFontRenderer() = Theme.current().font.value.getRenderer()

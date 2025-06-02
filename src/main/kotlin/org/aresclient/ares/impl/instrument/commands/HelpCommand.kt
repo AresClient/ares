@@ -11,7 +11,7 @@ object HelpCommand: Command("help", "h", "?") {
     override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
         return then(argument<IContext, String>("command", string()).executes {
             val name = getString(it, "command")
-            val command = Ares.PLUGINS
+            val command = Ares.getPlugins()
                 .flatMap { plugin -> plugin.commands }
                 .find { command -> command.name == name || command.aliases.contains(name) }
             if(command == null) {
@@ -24,7 +24,7 @@ object HelpCommand: Command("help", "h", "?") {
             }
             1
         }).executes {
-            Ares.PLUGINS.forEach { plugin ->
+            Ares.getPlugins().forEach { plugin ->
                 it.source.print("${plugin.name} Commands:")
                 plugin.commands.forEach { command ->
                     val usages = command.getUsages(it.source)

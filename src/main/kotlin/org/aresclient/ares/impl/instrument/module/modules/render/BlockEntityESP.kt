@@ -5,7 +5,6 @@ import net.minecraft.block.entity.BlockEntity
 import net.minecraft.block.entity.BlockEntityType
 import net.minecraft.block.enums.ChestType
 import net.minecraft.client.render.Frustum
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
@@ -71,7 +70,7 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
     }
 
     // TODO: there is a bug that block entities in the world when you spawn have greater alpha value (they seem to be rendered twice for some reason?)
-    override fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {
+    override fun onRenderWorld(drawer: WorldDrawer, delta: Float) {
         if(blockEntities.none { it.enabled.value }) return
 
         val offset = CAMERA.pos.negate()
@@ -81,22 +80,23 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
             if(!group.enabled.value || blockEntity.shouldCull(frustum)) return@forEach
 
             var box: Box
-            val directions: Array<Boolean>
+            val directions = WorldDrawer.ALL_DIRECTIONS
 
             // TODO: Lump with greedy meshing?
             if(group.lump.value) {
                 box = Box(blockEntity.pos).offset(offset)
-                directions = Direction.entries.map { !blockEntity.pos.offset(it).shouldLump(group) }.toTypedArray()
+                Direction.entries.forEach {
+                    directions[it.ordinal] = !blockEntity.pos.offset(it).shouldLump(group)
+                }
             } else {
                 box = blockEntity.pos.boundingBox?.offset(offset) ?: Box(blockEntity.pos).offset(offset)
-                directions = arrayOf(true, true, true, true, true, true)
             }
 
             if(blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE)
                 box = box.doubleChest(ChestBlock.getFacing(blockEntity.cachedState)) ?: return@forEach
 
-            WorldDrawer.fillBox(box, group.fillColor.value, directions)
-            WorldDrawer.outlineBox(box, group.lineColor.value, 2f, directions)
+            drawer.fillBox(box, group.fillColor.value, directions)
+            drawer.outlineBox(box, group.lineColor.value, 2f, directions)
         }
     }
 

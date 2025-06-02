@@ -9,7 +9,7 @@ import org.aresclient.ares.api.util.Color
 // TODO: replace font with nfont after new renderer is completely implemented
 data class Theme(val font: EnumSetting<Fonts>, val nfont: EnumSetting<NFont>, val primary: ColorSetting, val secondary: ColorSetting, val background: ColorSetting, val lightground: ColorSetting) {
     companion object {
-        private val SETTING = Ares.SETTINGS.addMap("Theme")
+        private val SETTING = Ares.getSettings().addMap("Theme")
         private val THEME = Theme(
             SETTING.addEnum("Font", Fonts.ARIAL),
             SETTING.addEnum("NFont", NFont.ARIAL),

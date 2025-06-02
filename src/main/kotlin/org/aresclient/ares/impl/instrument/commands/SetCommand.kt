@@ -12,7 +12,7 @@ object SetCommand: Command("set") {
         return then(argument<IContext, String?>("setting", string()).then(argument<IContext, String?>("value", string()).executes {
             val path = getString(it, "setting")
             val value = getString(it, "value")
-            Ares.SETTINGS.find(path)?.let { setting ->
+            Ares.getSettings().find(path)?.let { setting ->
                 try {
                     setting.read(value)
                     it.source.print("Successfully set ${setting.path} to $value")

@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.gl.SimpleFramebuffer
 import net.minecraft.client.render.Frustum
 import net.minecraft.client.render.OutlineVertexConsumerProvider
-import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityType
 import net.minecraft.entity.LightningEntity
@@ -76,7 +75,8 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
         shouldRenderOutlineCache = null
     }
 
-    override fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {
+    override fun onRenderWorld(drawer: WorldDrawer, delta: Float) {
+        Chamlike.onRenderWorld(drawer, delta)
         if(entities.none { it.enabled.value && it.mode.value == Mode.BOX }) return
 
         val frustum = Frustum(MC.worldRenderer.capturedFrustum ?: (MC.worldRenderer as AccessWorldRenderer).frustum)
@@ -88,8 +88,8 @@ object ESP: Module(Category.RENDER, "ESP", "See outlines of entities through wal
 
             val box = entity.getInterpolatedBoundingBox(delta)
 
-            WorldDrawer.fillBox(box, group.fillColor.value)
-            WorldDrawer.outlineBox(box, group.lineColor.value, 2f)
+            drawer.fillBox(box, group.fillColor.value)
+            drawer.outlineBox(box, group.lineColor.value, 2f)
         }
     }
 

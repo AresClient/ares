@@ -16,24 +16,24 @@ class TitleButton(private val text: Text, x: Float, y: Float, action: (NButton) 
         private val SHADOW = Color(0f, 0f, 0f, 0.4f)
     }
 
-    override fun drawButton(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun drawButton(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         matrixStack.push()
         if(holding) matrixStack.translate(0f, 1f, 0f)
 
         // draw shadow
-        if(!holding) HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, WIDTH, HEIGHT, ROUNDNESS, SHADOW)
+        if(!holding) drawer.drawRoundedRect(matrixStack, 1f, 1f, WIDTH, HEIGHT, ROUNDNESS, SHADOW)
 
         // draw bordered rectangle
-        HudDrawer.drawRoundedRect(matrixStack, 0f, 0f, WIDTH, HEIGHT, ROUNDNESS, theme.primary.value)
-        HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, WIDTH - 2f, HEIGHT - 2f, ROUNDNESS, theme.secondary.value)
+        drawer.drawRoundedRect(matrixStack, 0f, 0f, WIDTH, HEIGHT, ROUNDNESS, theme.primary.value)
+        drawer.drawRoundedRect(matrixStack, 1f, 1f, WIDTH - 2f, HEIGHT - 2f, ROUNDNESS, theme.secondary.value)
 
         // hover animation
         if(hovering || holding) {
             val factor = min((System.currentTimeMillis() - hoverSince) / 200f, 1f)
-            HudDrawer.drawRoundedRect(matrixStack, 1f, 1f, (WIDTH - 2) * factor, HEIGHT - 2, ROUNDNESS, theme.primary.value)
+            drawer.drawRoundedRect(matrixStack, 1f, 1f, (WIDTH - 2) * factor, HEIGHT - 2, ROUNDNESS, theme.primary.value)
         }
 
-        HudDrawer.drawTextCentered(theme.nfont.value, text, matrixStack, WIDTH / 2f, HEIGHT / 2f, theme.lightground.value)
+        drawer.drawTextCentered(theme.nfont.value, text, matrixStack, WIDTH / 2f, HEIGHT / 2f, theme.lightground.value)
 
         matrixStack.pop()
     }

@@ -20,7 +20,7 @@ import org.aresclient.ares.impl.gui.game.window.WindowContent
 
 class SettingsWindowContent(settings: MapSetting): WindowContent(settings) {
     private val name = settings.addString("setting", "")
-    private val setting = Ares.SETTINGS.find(name.value)
+    private val setting = Ares.getSettings().find(name.value)
     private val group = RowSettingGroup(setting, 1, this, width = this::getWidth)
     private var icon = DEFAULT_ICON
 

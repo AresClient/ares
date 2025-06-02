@@ -11,7 +11,7 @@ abstract class Global(name:String, description:String
 ): Instrument(name, description, SETTINGS) {
 
 	companion object {
-		private val SETTINGS = Ares.SETTINGS.addMap("Globals")
+		private val SETTINGS = Ares.getSettings().addMap("Globals")
 	}
 
 	abstract class PriorityHandler<K: Prioritizer>(name: String, description: String): Global(name, description) {

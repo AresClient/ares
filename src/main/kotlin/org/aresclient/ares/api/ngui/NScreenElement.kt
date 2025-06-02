@@ -5,8 +5,8 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
+import org.aresclient.ares.Ares
 import org.aresclient.ares.api.gui.AresScreen
-import org.aresclient.ares.api.nrender.hud.HudDrawer
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -32,8 +32,11 @@ open class NScreenElement(title: String): NElement() {
 
         override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             renderBackground(context, mouseX, mouseY, delta)
-            this@NScreenElement.render(Theme.current(), context.matrices, mouseX, mouseY, delta)
-            HudDrawer.draw()
+
+            val drawer = Ares.getHudDrawer()
+            drawer.begin()
+            this@NScreenElement.render(Theme.current(), drawer, context.matrices, mouseX, mouseY, delta)
+            drawer.draw()
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, mouseButton: Int): Boolean {

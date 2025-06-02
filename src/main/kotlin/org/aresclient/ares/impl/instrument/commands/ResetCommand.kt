@@ -11,13 +11,13 @@ object ResetCommand: Command("reset", ) {
     override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
         return then(argument<IContext, String?>("setting", string()).executes {
             val path = getString(it, "setting")
-            Ares.SETTINGS.find(path)?.let { setting ->
+            Ares.getSettings().find(path)?.let { setting ->
                 setting.setDefault()
                 it.source.print("Successfully reset setting $path")
             } ?: it.source.error("Failed to find setting with name $path")
             1
         }).executes {
-            Ares.SETTINGS.setDefault()
+            Ares.getSettings().setDefault()
             it.source.print("Successfully reset all settings")
             1
         }

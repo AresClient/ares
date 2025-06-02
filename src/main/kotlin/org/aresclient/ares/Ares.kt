@@ -1,6 +1,5 @@
 package org.aresclient.ares
 
-import com.mojang.blaze3d.systems.RenderSystem
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import net.fabricmc.api.ModInitializer
@@ -28,45 +27,36 @@ import java.io.File
 
 class Ares: ModInitializer, Wrapper {
 	companion object {
-		val LOGGER = LoggerFactory.getLogger("Ares")
-
-		@JvmStatic
-		val MODID = "ares"
-
-		@JvmStatic
-		val EVENT_MANAGER = AresEventManager()
-
-		val PLUGINS = ArrayList<Plugin>()
-
-		val SETTINGS_FILE = File("ares/config/settings.json")
-		val SETTINGS = MapSetting().also {
+		private const val MOD_ID = "ares"
+		private const val MOD_NAME = "Ares"
+		private val LOGGER = LoggerFactory.getLogger(MOD_NAME)
+		private val EVENT_MANAGER = AresEventManager()
+		private val PLUGINS = ArrayList<Plugin>()
+		private val SETTINGS_FILE = File("ares/config/settings.json")
+		private val SETTINGS = MapSetting().also {
 			try {
 				it.read(SETTINGS_FILE)
 			} catch (_: Exception) {
 			}
 		}
+		private val COMMAND_PREFIX_SETTING = SETTINGS.addString("CmdPrefix", "-")
+		private val HUD_DRAWER = HudDrawer()
+		private val HUD_MATRIX_STACK = MatrixStack()
+		private val WORLD_DRAWER = WorldDrawer()
 
-		val COMMAND_PREFIX = SETTINGS.addString("CmdPrefix", "-")
-
-		fun load(plugin: Plugin) {
-			val start = System.currentTimeMillis()
-
-			plugin.globals.forEach(Instrument::registerEvents)
-			plugin.modules.forEach(Instrument::registerEvents)
-			plugin.modules.filter(Module::isEnabled).forEach(Module::onEnable)
-
-			plugin.init()
-			PLUGINS.add(plugin)
-
-			LOGGER.info(
-				"Loaded plugin {} with {} globals, {} modules and {} commands in {} milliseconds.",
-				plugin.name, plugin.globals.size, plugin.modules.size, plugin.commands.size,
-				System.currentTimeMillis() - start
-			)
-		}
+		@JvmStatic fun getModId() = MOD_ID
+		@JvmStatic fun getModName() = MOD_NAME
+		@JvmStatic fun getLogger() = LOGGER
+		@JvmStatic fun getEventManager() = EVENT_MANAGER
+		@JvmStatic fun getPlugins() = PLUGINS
+		@JvmStatic fun getSettingsFile() = SETTINGS_FILE
+		@JvmStatic fun getSettings() = SETTINGS
+		@JvmStatic fun getCommandPrefixSetting() = COMMAND_PREFIX_SETTING
+		@JvmStatic fun getHudDrawer() = HUD_DRAWER
+		@JvmStatic fun getWorldDrawer() = WORLD_DRAWER
 
 		@JvmStatic
-		fun identifier(path: String): Identifier = Identifier.of(MODID, path)
+		fun identifier(path: String): Identifier = Identifier.of(MOD_ID, path)
 	}
 
 	@field:EventHandler
@@ -76,37 +66,21 @@ class Ares: ModInitializer, Wrapper {
 		else if(event is TickEvent.Motion) PLUGINS.forEach(Plugin::tickMotion)
 	}
 
-	private val matrixStack = MatrixStack()
-
 	@field:EventHandler
 	private val renderEventListener = EventListener<RenderEvent> { event ->
 		if(event is RenderEvent.Hud) {
+			HUD_DRAWER.begin()
 			PLUGINS.forEach { plugin ->
-				plugin.renderHud(matrixStack, event.tickDelta)
+				plugin.renderHud(HUD_DRAWER, HUD_MATRIX_STACK, event.tickDelta)
 			}
-
-			HudDrawer.draw()
+			HUD_DRAWER.draw()
 		} else if(event is RenderEvent.World) {
-			RenderSystem.getProjectionMatrix()
-				.rotate(toRadians(wrapDegrees(CAMERA.pitch)), 1f, 0f, 0f)
-				.rotate(toRadians(wrapDegrees(CAMERA.yaw + 180f)), 0f, 1f, 0f);
-
+			WORLD_DRAWER.begin()
 			PLUGINS.forEach { plugin ->
-				plugin.renderWorld(matrixStack, event.tickDelta)
+				plugin.renderWorld(WORLD_DRAWER, event.tickDelta)
 			}
-			WorldDrawer.draw()
+			WORLD_DRAWER.draw()
 		}
-	}
-
-	private fun wrapDegrees(degrees: Float): Float {
-		var wrapped = degrees % 360f
-		if(wrapped >= 180f) wrapped -= 360f
-		if(wrapped < -180f) wrapped += 360f
-		return wrapped
-	}
-
-	private fun toRadians(ang: Float): Float {
-		return ang / 180f * 3.1415927f
 	}
 
 	@field:EventHandler
@@ -129,8 +103,8 @@ class Ares: ModInitializer, Wrapper {
 
 	@field:EventHandler
 	private val chatListener = EventListener<ChatEvent> { event ->
-		if(event.message.startsWith(COMMAND_PREFIX.value)) {
-			Command.execute(ChatUtil, event.message.substring(COMMAND_PREFIX.value.length))
+		if(event.message.startsWith(COMMAND_PREFIX_SETTING.value)) {
+			Command.execute(ChatUtil, event.message.substring(COMMAND_PREFIX_SETTING.value.length))
 			MC.inGameHud.chatHud.addToMessageHistory(event.message)
 			event.isCancelled = true
 		}
@@ -138,7 +112,7 @@ class Ares: ModInitializer, Wrapper {
 
 	@field:EventHandler
 	private val charTypedListener = EventListener<CharTypedEvent> { event ->
-		if(MC.currentScreen == null && !MC.NULL && COMMAND_PREFIX.value.length == 1 && event.codePoint.toChar() == COMMAND_PREFIX.value[0])
+		if(MC.currentScreen == null && !MC.NULL && COMMAND_PREFIX_SETTING.value.length == 1 && event.codePoint.toChar() == COMMAND_PREFIX_SETTING.value[0])
 			MC.setScreen(ChatScreen(""))
 	}
 
@@ -155,11 +129,28 @@ class Ares: ModInitializer, Wrapper {
 
 		EVENT_MANAGER.register(this)
 
-		FriendUtil
-		load(AresPlugin)
-		// TODO: Dynamic Plugin Loading?
+		FriendUtil // TODO: make a global variable
+
+		loadPlugin(AresPlugin)
+		// TODO: Dynamic Plugin Loading
 
 		LOGGER.info("Ares loaded {} plugins in {} milliseconds.", PLUGINS.size, System.currentTimeMillis() - start)
 	}
-}
 
+	private fun loadPlugin(plugin: Plugin) {
+		val start = System.currentTimeMillis()
+
+		plugin.globals.forEach(Instrument::registerEvents)
+		plugin.modules.forEach(Instrument::registerEvents)
+		plugin.modules.filter(Module::isEnabled).forEach(Module::onEnable)
+
+		plugin.init()
+		PLUGINS.add(plugin)
+
+		Companion.LOGGER.info(
+			"Loaded plugin {} with {} globals, {} modules and {} commands in {} milliseconds.",
+			plugin.name, plugin.globals.size, plugin.modules.size, plugin.commands.size,
+			System.currentTimeMillis() - start
+		)
+	}
+}

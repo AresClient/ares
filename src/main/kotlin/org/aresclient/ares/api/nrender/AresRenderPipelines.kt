@@ -96,7 +96,7 @@ object AresRenderPipelines {
         override fun reload(manager: ResourceManager) {
             for(pipeline in pipelines) {
                 RenderSystem.getDevice().precompilePipeline(pipeline) { id, _ ->
-                    (if(id.namespace == Ares.MODID) AresRenderPipelines::class.java.getResourceAsStream("/assets/ares/${id.path}")
+                    (if(id.namespace == Ares.getModId()) AresRenderPipelines::class.java.getResourceAsStream("/assets/ares/${id.path}")
                     else manager.getResource(id).getOrNull()?.inputStream)?.reader()?.readLines()?.joinToString("\n")
                 }
             }

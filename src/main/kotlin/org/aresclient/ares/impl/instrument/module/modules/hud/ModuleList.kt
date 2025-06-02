@@ -40,12 +40,12 @@ object ModuleList: HudModule("Module List", "Shows modules that are currently en
         if(sort.value == Sort.ALPHABETICAL) shownModules.sortWith(compareBy { it.text.literalString })
     }
 
-    override fun onRenderHud(matrixStack: MatrixStack, delta: Float) {
+    override fun onRenderHud(drawer: HudDrawer, matrixStack: MatrixStack, delta: Float) {
         if(shownModules.isEmpty()) return
 
         for((i, info) in shownModules.withIndex()) {
             val xOffset = if(align.value == Alignment.RIGHT) longestWidth - info.width else 0f
-            HudDrawer.drawText(getFont(), info.text, matrixStack, getX() + 1f + xOffset, getY() + 1f + i * getLineHeight(), Color.WHITE, size = getSize())
+            drawer.drawText(getFont(), info.text, matrixStack, getX() + 1f + xOffset, getY() + 1f + i * getLineHeight(), Color.WHITE, size = getSize())
         }
     }
 

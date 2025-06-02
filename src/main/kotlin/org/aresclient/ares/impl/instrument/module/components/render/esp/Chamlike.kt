@@ -15,7 +15,6 @@ import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.events.RenderEntityLabelEvent
-import org.aresclient.ares.api.events.RenderEvent
 import org.aresclient.ares.api.instruments.Component
 import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.impl.instrument.module.modules.render.ESP
@@ -32,8 +31,11 @@ object Chamlike: Component<ESP>(ESP), Wrapper {
 	private var z = 0.0
 
 	private lateinit var entityGroup: ESP.EntityGroup
+	private lateinit var worldDrawer: WorldDrawer
 	private val matrixStack = MatrixStack()
-	@field:EventHandler private val renderWorldEvent = EventListener<RenderEvent.World> { event ->
+
+	fun onRenderWorld(drawer: WorldDrawer, tickDelta: Float) {
+		worldDrawer = drawer
 		active = true
 
 		for (entity in WORLD.entities) {
@@ -45,12 +47,12 @@ object Chamlike: Component<ESP>(ESP), Wrapper {
 			if (!entityGroup.enabled.value || entityGroup.mode.value != ESP.Mode.CHAMLIKE) continue
 
 			val entityRenderer = MC.entityRenderDispatcher.getRenderer(entity) as EntityRenderer<Entity, EntityRenderState>
-			val entityState = entityRenderer.getAndUpdateRenderState(entity, event.tickDelta)
+			val entityState = entityRenderer.getAndUpdateRenderState(entity, tickDelta)
 			val position = entityRenderer.getPositionOffset(entityState)
 
-			x = MathHelper.lerp(event.tickDelta.toDouble(), entity.lastRenderX, entity.x) + position.x
-			y = MathHelper.lerp(event.tickDelta.toDouble(), entity.lastRenderY, entity.y) + position.y
-			z = MathHelper.lerp(event.tickDelta.toDouble(), entity.lastRenderZ, entity.z) + position.z
+			x = MathHelper.lerp(tickDelta.toDouble(), entity.lastRenderX, entity.x) + position.x
+			y = MathHelper.lerp(tickDelta.toDouble(), entity.lastRenderY, entity.y) + position.y
+			z = MathHelper.lerp(tickDelta.toDouble(), entity.lastRenderZ, entity.z) + position.z
 
 			entityRenderer.render(entityState, matrixStack, ChamlikeVertexProvider, 0)
 		}
@@ -73,10 +75,10 @@ object Chamlike: Component<ESP>(ESP), Wrapper {
 
 		override fun vertex(x: Float, y: Float, z: Float): VertexConsumer {
 			vertices[i].set(x.offsetX(), y.offsetY(), z.offsetZ())
-			if (++i != 4) return this
+			if(++i != 4) return this
 
-			WorldDrawer.fillQuad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.fillColor.value)
-			WorldDrawer.outlineQuad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.lineColor.value, 1f)
+			worldDrawer.fillQuad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.fillColor.value)
+			worldDrawer.outlineQuad(vertices[0], vertices[1], vertices[2], vertices[3], entityGroup.lineColor.value, 1f)
 
 			i = 0
 			return this

@@ -21,9 +21,9 @@ abstract class TextHudModule(name: String, description: String, defaults: Defaul
         return getFont().getHeight(getSize()) + 2f
     }
 
-    override fun onRenderHud(matrixStack: MatrixStack, delta: Float) {
+    override fun onRenderHud(drawer: HudDrawer, matrixStack: MatrixStack, delta: Float) {
         if(text == null) text = getText() ?: return
-        HudDrawer.drawText(getFont(), text!!, matrixStack, getX() + 1f, getY() + 1f, Color.WHITE, size = getSize())
+        drawer.drawText(getFont(), text!!, matrixStack, getX() + 1f, getY() + 1f, Color.WHITE, size = getSize())
     }
 
     protected fun update() {

@@ -11,7 +11,7 @@ object GetCommand: Command("get") {
     override fun LiteralArgumentBuilder<IContext>.builder(): LiteralArgumentBuilder<IContext?> {
         return then(argument<IContext, String?>("setting", string()).executes {
             val path = getString(it, "setting")
-            Ares.SETTINGS.find(path)?.let { setting ->
+            Ares.getSettings().find(path)?.let { setting ->
                 it.source.print(setting.writeToString())
             } ?: it.source.error("Failed to find setting with name $path")
             1

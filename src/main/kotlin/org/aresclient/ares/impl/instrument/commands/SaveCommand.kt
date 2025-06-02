@@ -24,7 +24,7 @@ object SaveCommand: Command("save") {
         file.parentFile.mkdirs()
 
         try {
-            Ares.SETTINGS.write(file)
+            Ares.getSettings().write(file)
         } catch(e: Exception) {
             context.error("Failed to save config file")
             return

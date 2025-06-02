@@ -24,7 +24,7 @@ object LoadCommand: Command("load") {
         }
 
         try {
-            Ares.SETTINGS.read(file)
+            Ares.getSettings().read(file)
         } catch(e: Exception) {
             context.error("Failed to read config file")
             return

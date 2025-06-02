@@ -96,7 +96,7 @@ class GroupedElement<T, V: Group<T>>(private val content: SettingsWindowContent,
 
     class EditMembersContent<T>(settings: MapSetting): WindowContent(settings) {
         private val name = settings.addString("setting", "") // name of Group<T>
-        private val setting = Ares.SETTINGS.find(name.value) as? Group<T>
+        private val setting = Ares.getSettings().find(name.value) as? Group<T>
         private val group = setting?.groupedParent?.possibleMembers?.let { PossibleMembersRowGroup(setting, it, 18f, this::getWidth) }
 
         init {

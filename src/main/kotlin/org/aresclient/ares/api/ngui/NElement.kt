@@ -2,6 +2,7 @@ package org.aresclient.ares.api.ngui
 
 import net.minecraft.client.util.math.MatrixStack
 import org.aresclient.ares.api.Wrapper
+import org.aresclient.ares.api.nrender.hud.HudDrawer
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -74,17 +75,17 @@ abstract class NElement: Wrapper {
             && mouseY >= getRenderY()
             && mouseY <= getRenderY() + getHeight()
 
-    open fun draw(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    open fun draw(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         if(!dirty) return
         getChildren().forEach {
-            if(it.isVisible()) it.render(theme, matrixStack, mouseX, mouseY, delta)
+            if(it.isVisible()) it.render(theme, drawer, matrixStack, mouseX, mouseY, delta)
         }
     }
 
-    fun render(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    fun render(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         matrixStack.push()
         matrixStack.translate(getX(), getY(), 1f)
-        draw(theme, matrixStack, mouseX, mouseY, delta)
+        draw(theme, drawer, matrixStack, mouseX, mouseY, delta)
         matrixStack.pop()
     }
 

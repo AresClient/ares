@@ -61,12 +61,12 @@ class AresTitleScreen: NScreenElement("Ares Title Screen") {
         EXIT_BUTTON.setX(getWidth() - 35f)
     }
 
-    override fun draw(theme: Theme, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun draw(theme: Theme, drawer: HudDrawer, matrixStack: MatrixStack, mouseX: Int, mouseY: Int, delta: Float) {
         val x = PANE.getX()
         val y = PANE.getY()
-        HudDrawer.drawTexture(AresTextures.logo_bg, matrixStack, x, y, 126f, 126f, theme.secondary.value)
-        HudDrawer.drawTexture(AresTextures.logo_fg, matrixStack, x, y, 126f, 126f, theme.primary.value)
+        drawer.drawTexture(AresTextures.logo_bg, matrixStack, x, y, 126f, 126f, theme.secondary.value)
+        drawer.drawTexture(AresTextures.logo_fg, matrixStack, x, y, 126f, 126f, theme.primary.value)
 
-        super.draw(theme, matrixStack, mouseX, mouseY, delta)
+        super.draw(theme, drawer, matrixStack, mouseX, mouseY, delta)
     }
 }

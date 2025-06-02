@@ -8,6 +8,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
 import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
@@ -52,6 +53,7 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
     ), EntityUtil.EntityTypes.possibles, { EntityGroup() })
 
     private val entitiesCache = hashMapOf<Any, EntityGroup?>()
+    private val tracers = arrayListOf<Tracer>()
     private val mvp = Matrix4f()
 
     override fun onTick() {
@@ -63,7 +65,14 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
         return entitiesCache.getOrPut(type) { entities.find(type).getOrNull() }
     }
 
-    override fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {
+    override fun onRenderHud(drawer: HudDrawer, matrixStack: MatrixStack, delta: Float) {
+        tracers.forEach {
+            drawer.drawLine(matrixStack, it.x1, it.y1, it.x2, it.y2, it.color, it.width)
+        }
+        tracers.clear()
+    }
+
+    override fun onRenderWorld(drawer: WorldDrawer, delta: Float) {
         val center = Vector2f(MC.window.scaledWidth.toFloat(), MC.window.scaledHeight.toFloat()).div(2f)
         RenderSystem.getModelViewMatrix().mul(RenderSystem.getProjectionMatrix(), mvp)
 
@@ -74,7 +83,7 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
             val pos = entity.getLerpedRenderPos(delta)
             val color = if(group.distance.value) Color.fromDistance(SELF.distanceTo(entity)) else group.color.value
 
-            tryDrawTracer(matrixStack, center, pos, pos.add(0.0, entity.height.toDouble(), 0.0), 1f, color)
+            tryDrawTracer(center, pos, pos.add(0.0, entity.height.toDouble(), 0.0), 1f, color)
         }
     }
 
@@ -87,12 +96,14 @@ object Tracers: Module(Category.RENDER, "Tracers", "Render lines showing entitie
 
     private fun Entity.getLerpedRenderPos(delta: Float): Vec3d = getLerpedPos(delta).subtract(CAMERA.pos)
 
-    private fun tryDrawTracer(matrixStack: MatrixStack, center: Vector2f, one: Vec3d, two: Vec3d, width: Float, color: Color) {
-        drawTracer(matrixStack, center, one.toScreenPos() ?: return, two.toScreenPos() ?: return, width, color)
+    private fun tryDrawTracer(center: Vector2f, one: Vec3d, two: Vec3d, width: Float, color: Color) {
+        drawTracer(center, one.toScreenPos() ?: return, two.toScreenPos() ?: return, width, color)
     }
 
-    private fun drawTracer(matrixStack: MatrixStack, center: Vector2f, one: Vector2f, two: Vector2f, width: Float, color: Color) {
-        HudDrawer.drawLine(matrixStack, center.x, center.y, one.x, one.y, color, width)
-        HudDrawer.drawLine(matrixStack, one.x, one.y, two.x, two.y, color, width)
+    private fun drawTracer(center: Vector2f, one: Vector2f, two: Vector2f, width: Float, color: Color) {
+        tracers.add(Tracer(center.x, center.y, one.x, one.y, color, width))
+        tracers.add(Tracer(one.x, one.y, two.x, two.y, color, width))
     }
+
+    private data class Tracer(val x1: Float, val y1: Float, val x2: Float, val y2: Float, val color: Color, val width: Float)
 }

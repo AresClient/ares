@@ -3,6 +3,8 @@ package org.aresclient.ares.api.instruments
 import net.minecraft.client.util.math.MatrixStack
 import org.aresclient.ares.Ares
 import org.aresclient.ares.api.events.ToggleEvent
+import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.world.WorldDrawer
 import org.aresclient.ares.api.render.Texture
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting
@@ -13,7 +15,7 @@ import java.util.*
 abstract class Module(val category: Category, name: String, description: String, private val defaults: Defaults = Defaults()):
 	Instrument(name, description, category.settings) {
 	companion object {
-		internal val SETTINGS = Ares.SETTINGS.addMap("Modules")
+		internal val SETTINGS = Ares.getSettings().addMap("Modules")
 	}
 
 	/* ---------------------------------------------------------------------- */
@@ -136,20 +138,20 @@ abstract class Module(val category: Category, name: String, description: String,
 		if(isListening()) onMotion()
 	}
 
-	fun renderHud(matrixStack: MatrixStack, delta: Float) {
-		if(isListening()) onRenderHud(matrixStack, delta)
+	fun renderHud(drawer: HudDrawer, matrixStack: MatrixStack, delta: Float) {
+		if(isListening()) onRenderHud(drawer, matrixStack, delta)
 	}
 
-	fun renderWorld(matrixStack: MatrixStack, delta: Float) {
-		if(isListening()) onRenderWorld(matrixStack, delta)
+	fun renderWorld(drawer: WorldDrawer, delta: Float) {
+		if(isListening()) onRenderWorld(drawer, delta)
 	}
 
 	/* ---------------------------------------------------------------------- */
 
 	protected open fun onTick() {}
 	protected open fun onMotion() {}
-	protected open fun onRenderHud(matrixStack: MatrixStack, delta: Float) {}
-	protected open fun onRenderWorld(matrixStack: MatrixStack, delta: Float) {}
+	protected open fun onRenderHud(drawer: HudDrawer, matrixStack: MatrixStack, delta: Float) {}
+	protected open fun onRenderWorld(drawer: WorldDrawer, delta: Float) {}
 
 	open fun onEnable() {}
 	open fun onDisable() {}
