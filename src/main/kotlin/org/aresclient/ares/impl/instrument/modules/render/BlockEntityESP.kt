@@ -80,16 +80,18 @@ object BlockEntityESP: Module(Category.RENDER, "BlockEntityESP", "See outlines o
             if(!group.enabled.value || blockEntity.shouldCull(frustum)) return@forEach
 
             var box: Box
-            val directions = WorldDrawer.ALL_DIRECTIONS
+            val directions: BooleanArray
 
             // TODO: Lump with greedy meshing?
             if(group.lump.value) {
                 box = Box(blockEntity.pos).offset(offset)
+                directions = BooleanArray(6)
                 Direction.entries.forEach {
                     directions[it.ordinal] = !blockEntity.pos.offset(it).shouldLump(group)
                 }
             } else {
                 box = blockEntity.pos.boundingBox?.offset(offset) ?: Box(blockEntity.pos).offset(offset)
+                directions = WorldDrawer.ALL_DIRECTIONS
             }
 
             if(blockEntity.type == BlockEntityType.CHEST && !group.lump.value && blockEntity.cachedState.get(ChestBlock.CHEST_TYPE) != ChestType.SINGLE)
