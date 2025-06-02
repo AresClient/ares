@@ -20,7 +20,7 @@ public class MixinCamera implements JWrapper {
 
 	@Inject(method = "update", at = @At(value = "RETURN"))
 	private void onUpdateThirdPerson(BlockView area, Entity focusedEntity, boolean thirdPerson, boolean inverseView, float tickProgress, CallbackInfo ci) {
-		var b = org.aresclient.ares.impl.instrument.global.Camera.INSTANCE.shouldRenderCharacter();
+		var b = org.aresclient.ares.impl.instrument.globals.Camera.INSTANCE.shouldRenderCharacter();
 		if (b == null) return;
 		this.thirdPerson = b;
 	}

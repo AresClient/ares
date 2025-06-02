@@ -10,7 +10,7 @@ import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.Era;
 import org.aresclient.ares.api.events.PlayerEvent;
 import org.aresclient.ares.api.events.TickEvent;
-import org.aresclient.ares.impl.instrument.module.modules.player.PortalGUIs;
+import org.aresclient.ares.impl.instrument.modules.player.PortalGUIs;
 import org.aresclient.ares.impl.util.MathUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

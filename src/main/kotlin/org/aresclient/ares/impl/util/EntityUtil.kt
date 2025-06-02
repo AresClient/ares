@@ -17,7 +17,7 @@ import org.aresclient.ares.api.setting.settings.grouped.GroupMembers
 import org.aresclient.ares.api.setting.settings.grouped.IGroupMember
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.api.util.StringUtils.formatToPretty
-import org.aresclient.ares.impl.instrument.global.Rotation
+import org.aresclient.ares.impl.instrument.globals.Rotation
 import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 import org.joml.Vector2d
 

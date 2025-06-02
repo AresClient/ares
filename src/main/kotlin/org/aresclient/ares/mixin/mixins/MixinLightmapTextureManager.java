@@ -1,7 +1,7 @@
 package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.render.LightmapTextureManager;
-import org.aresclient.ares.impl.instrument.module.modules.render.Fullbright;
+import org.aresclient.ares.impl.instrument.modules.render.Fullbright;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;

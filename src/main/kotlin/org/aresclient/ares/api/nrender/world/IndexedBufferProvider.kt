@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat
 import net.minecraft.client.render.RenderLayer
 import java.util.*
-import kotlin.collections.LinkedHashMap
 
 class IndexedBufferProvider {
     private val buffers: SequencedMap<RenderLayer, IndexedBuffer> = LinkedHashMap<RenderLayer, IndexedBuffer>()

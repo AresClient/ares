@@ -7,7 +7,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.ParticlesMode;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import org.aresclient.ares.impl.instrument.module.modules.render.NoRender;
+import org.aresclient.ares.impl.instrument.modules.render.NoRender;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

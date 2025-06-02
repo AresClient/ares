@@ -1,7 +1,7 @@
 package org.aresclient.ares.mixin.mixins;
 
 import net.minecraft.client.gui.hud.InGameOverlayRenderer;
-import org.aresclient.ares.impl.instrument.module.modules.render.NoRender;
+import org.aresclient.ares.impl.instrument.modules.render.NoRender;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

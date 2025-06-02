@@ -5,7 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.entity.Entity;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.PlayerEvent;
-import org.aresclient.ares.impl.instrument.module.modules.render.ESP;
+import org.aresclient.ares.impl.instrument.modules.render.esp.OutlineESP;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -34,6 +34,6 @@ public class MixinEntity implements JWrapper {
 	// ESP outline mode rendering
 	@Inject(method = "shouldRender(D)Z", at = @At("HEAD"), cancellable = true)
 	public void shouldRender(double d, CallbackInfoReturnable<Boolean> cir) {
-		if(ESP.INSTANCE.shouldRenderOutline((Entity) ((Object) this))) cir.setReturnValue(true);
+		if(OutlineESP.INSTANCE.shouldRenderOutline((Entity) ((Object) this))) cir.setReturnValue(true);
 	}
 }

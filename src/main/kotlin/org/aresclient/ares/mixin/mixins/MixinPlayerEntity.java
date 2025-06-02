@@ -3,7 +3,7 @@ package org.aresclient.ares.mixin.mixins;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Box;
 import org.aresclient.ares.api.JWrapper;
-import org.aresclient.ares.impl.instrument.module.modules.movement.SafeWalk;
+import org.aresclient.ares.impl.instrument.modules.movement.SafeWalk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

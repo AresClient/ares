@@ -14,7 +14,7 @@ import org.aresclient.ares.api.events.ShutdownEvent;
 import org.aresclient.ares.api.events.TickEvent;
 import org.aresclient.ares.api.nrender.AresRenderPipelines;
 import org.aresclient.ares.api.nrender.AresTextures;
-import org.aresclient.ares.impl.instrument.module.modules.player.MultiTask;
+import org.aresclient.ares.impl.instrument.modules.player.MultiTask;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;

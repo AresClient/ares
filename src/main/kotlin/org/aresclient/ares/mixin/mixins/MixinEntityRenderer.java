@@ -16,6 +16,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinEntityRenderer implements JWrapper {
 	@Inject(method = "renderLabelIfPresent", at = @At("HEAD"), cancellable = true)
 	private <S extends EntityRenderState> void onRenderLabel(S state, Text text, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, CallbackInfo ci) {
-		if (EVENTS.post(new RenderEntityLabelEvent(text)).isCancelled()) ci.cancel();
+		if(EVENTS.post(new RenderEntityLabelEvent(text)).isCancelled()) ci.cancel();
 	}
 }

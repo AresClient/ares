@@ -7,8 +7,7 @@ import org.aresclient.ares.Ares
  * modules but do not themselves directly do anything, and also holds related utility
  * functions to the purpose of the Global
  */
-abstract class Global(name:String, description:String
-): Instrument(name, description, SETTINGS) {
+open class Global(val name: String, val description: String): Instrument(SETTINGS.addMap(name)) {
 
 	companion object {
 		private val SETTINGS = Ares.getSettings().addMap("Globals")
@@ -56,6 +55,7 @@ abstract class Global(name:String, description:String
 		}
 	}
 
+	override fun isListening() = true
 }
 
 interface Prioritizer {
@@ -63,4 +63,3 @@ interface Prioritizer {
 	fun interruptor(): Boolean = false
 	fun onInterrupt() {}
 }
-

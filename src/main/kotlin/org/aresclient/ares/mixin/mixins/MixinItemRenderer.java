@@ -6,7 +6,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedQuad;
 import net.minecraft.client.util.math.MatrixStack;
-import org.aresclient.ares.impl.instrument.module.components.render.esp.Chamlike;
+import org.aresclient.ares.impl.instrument.modules.render.esp.ChamlikeESP;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
@@ -33,7 +33,7 @@ public abstract class MixinItemRenderer {
 			)
 	)
 	private static void onRenderItem(MatrixStack matrices, VertexConsumer vertexConsumer, List<BakedQuad> quads, int[] tints, int light, int overlay, Operation<Void> original) {
-		if (!Chamlike.INSTANCE.getActive() || Chamlike.INSTANCE.isBlockItem()) {
+		if(!ChamlikeESP.INSTANCE.getActive() || ChamlikeESP.INSTANCE.isBlockItem()) {
 			original.call(matrices, vertexConsumer, quads, tints, light, overlay);
 			return;
 		}
@@ -43,7 +43,7 @@ public abstract class MixinItemRenderer {
 		ArrayList<BakedQuad> newList = new ArrayList<>();
 		int i = 0;
 
-		for (BakedQuad bakedQuad: quads) {
+		for(BakedQuad bakedQuad: quads) {
 			if (++i <= 2) continue;
 			newList.add(bakedQuad);
 		}

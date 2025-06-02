@@ -2,21 +2,22 @@ package org.aresclient.ares.impl
 
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.impl.instrument.commands.*
-import org.aresclient.ares.impl.instrument.global.Camera
-import org.aresclient.ares.impl.instrument.global.Interaction
-import org.aresclient.ares.impl.instrument.global.Rotation
-import org.aresclient.ares.impl.instrument.module.modules.hud.Coordinates
-import org.aresclient.ares.impl.instrument.module.modules.hud.ModuleList
-import org.aresclient.ares.impl.instrument.module.modules.hud.ToggleList
-import org.aresclient.ares.impl.instrument.module.modules.hud.Watermark
-import org.aresclient.ares.impl.instrument.module.modules.misc.ClickGUI
-import org.aresclient.ares.impl.instrument.module.modules.misc.TitleScreen
-import org.aresclient.ares.impl.instrument.module.modules.misc.ToggleNotifications
-import org.aresclient.ares.impl.instrument.module.modules.movement.SafeWalk
-import org.aresclient.ares.impl.instrument.module.modules.movement.Speed
-import org.aresclient.ares.impl.instrument.module.modules.offence.AutoCrystal
-import org.aresclient.ares.impl.instrument.module.modules.player.*
-import org.aresclient.ares.impl.instrument.module.modules.render.*
+import org.aresclient.ares.impl.instrument.globals.Camera
+import org.aresclient.ares.impl.instrument.globals.Interaction
+import org.aresclient.ares.impl.instrument.globals.Rotation
+import org.aresclient.ares.impl.instrument.modules.hud.Coordinates
+import org.aresclient.ares.impl.instrument.modules.hud.ModuleList
+import org.aresclient.ares.impl.instrument.modules.hud.ToggleList
+import org.aresclient.ares.impl.instrument.modules.hud.Watermark
+import org.aresclient.ares.impl.instrument.modules.misc.ClickGUI
+import org.aresclient.ares.impl.instrument.modules.misc.TitleScreen
+import org.aresclient.ares.impl.instrument.modules.misc.ToggleNotifications
+import org.aresclient.ares.impl.instrument.modules.movement.SafeWalk
+import org.aresclient.ares.impl.instrument.modules.movement.speed.Speed
+import org.aresclient.ares.impl.instrument.modules.offence.autocrystal.AutoCrystal
+import org.aresclient.ares.impl.instrument.modules.player.*
+import org.aresclient.ares.impl.instrument.modules.render.*
+import org.aresclient.ares.impl.instrument.modules.render.esp.ESP
 
 object AresPlugin: Plugin(
     "Ares",

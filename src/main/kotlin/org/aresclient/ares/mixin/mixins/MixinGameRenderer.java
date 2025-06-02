@@ -6,7 +6,7 @@ import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.client.util.math.MatrixStack;
 import org.aresclient.ares.api.JWrapper;
 import org.aresclient.ares.api.events.RenderEvent;
-import org.aresclient.ares.impl.instrument.module.modules.render.NoRender;
+import org.aresclient.ares.impl.instrument.modules.render.NoRender;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

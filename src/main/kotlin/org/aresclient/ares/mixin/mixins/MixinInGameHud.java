@@ -4,7 +4,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.util.Identifier;
 import org.aresclient.ares.api.JWrapper;
-import org.aresclient.ares.impl.instrument.module.modules.render.NoRender;
+import org.aresclient.ares.impl.instrument.modules.render.NoRender;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
