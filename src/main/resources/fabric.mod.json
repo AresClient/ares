@@ -30,5 +30,6 @@
 	},
 	"suggests": {
 		"baritone": "*"
-	}
+	},
+	"accessWidener": "ares.accesswidener"
 }
