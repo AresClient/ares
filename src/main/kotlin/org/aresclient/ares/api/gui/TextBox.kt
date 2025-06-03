@@ -7,9 +7,9 @@ import org.aresclient.ares.api.events.InputEvent
 import org.aresclient.ares.api.render.FontRenderer
 import org.aresclient.ares.api.render.MatrixStack
 import org.aresclient.ares.api.render.Renderer
-import org.aresclient.ares.api.util.Keys
 import org.aresclient.ares.impl.util.RenderHelper.draw
 import org.aresclient.ares.impl.util.Theme
+import org.lwjgl.glfw.GLFW
 import java.lang.Integer.max
 import java.lang.Integer.min
 import java.util.concurrent.atomic.AtomicBoolean
@@ -114,11 +114,11 @@ open class TextBox(x: Float, y: Float, width: Float, private val fontSize: Float
         if(!focused) return
 
         if(typedChar == null) when(keyCode) {
-            Keys.LEFT -> cursor = max(0, cursor - 1)
-            Keys.RIGHT -> cursor = min(text.length, cursor + 1)
-            Keys.BACKSPACE -> if(cursor > 0) text = text.removeRange(cursor - 1, cursor--)
-            Keys.ENTER -> append('\n')
-            Keys.ESCAPE -> focused = false
+            GLFW.GLFW_KEY_LEFT -> cursor = max(0, cursor - 1)
+            GLFW.GLFW_KEY_RIGHT -> cursor = min(text.length, cursor + 1)
+            GLFW.GLFW_KEY_BACKSPACE -> if(cursor > 0) text = text.removeRange(cursor - 1, cursor--)
+            GLFW.GLFW_KEY_ENTER -> append('\n')
+            GLFW.GLFW_KEY_ESCAPE -> focused = false
         } else append(typedChar)
     }
 
