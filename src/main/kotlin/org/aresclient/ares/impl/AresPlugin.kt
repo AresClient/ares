@@ -12,6 +12,7 @@ import org.aresclient.ares.impl.instrument.modules.hud.Watermark
 import org.aresclient.ares.impl.instrument.modules.misc.ClickGUI
 import org.aresclient.ares.impl.instrument.modules.misc.TitleScreen
 import org.aresclient.ares.impl.instrument.modules.misc.ToggleNotifications
+import org.aresclient.ares.impl.instrument.modules.movement.AutoWalk
 import org.aresclient.ares.impl.instrument.modules.movement.SafeWalk
 import org.aresclient.ares.impl.instrument.modules.movement.speed.Speed
 import org.aresclient.ares.impl.instrument.modules.offence.autocrystal.AutoCrystal
@@ -40,6 +41,7 @@ object AresPlugin: Plugin(
         ToggleNotifications,
         TitleScreen,
 
+        AutoWalk,
         SafeWalk,
         Speed,
 

@@ -44,6 +44,8 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:$serializationVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-cbor-jvm:$serializationVersion"
 
+    compileOnly "cabaletta:baritone-api-fabric:1.14.0"
+
     embeddedLibs "dev.tigr:simpleevents:1.3"
     embeddedLibs "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     embeddedLibs "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
