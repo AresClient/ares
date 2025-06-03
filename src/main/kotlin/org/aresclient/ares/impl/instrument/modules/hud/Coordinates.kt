@@ -23,8 +23,8 @@ object Coordinates: TextHudModule("Coordinates", "Displays the players coordinat
         val pos = CAMERA.blockPos.add(Direction.DOWN.vector)
         var text = "${TextColor.GRAY}XYZ ${TextColor.WHITE}${pos.toFormattedString()}"
         if(nether.value) text += when(WorldUtil.getDimension()) {
-            World.OVERWORLD -> " ${TextColor.GRAY}[Nether ${TextColor.WHITE}${pos.divide(8.0).toFormattedString()}${TextColor.GRAY}]"
-            World.NETHER -> " ${TextColor.GRAY}[Overworld ${TextColor.WHITE}${pos.multiply(8).toFormattedString()}${TextColor.GRAY}]"
+            World.OVERWORLD -> " ${TextColor.GRAY}[Nether ${TextColor.WHITE}${pos.divideXZ(8.0).toFormattedString()}${TextColor.GRAY}]"
+            World.NETHER -> " ${TextColor.GRAY}[Overworld ${TextColor.WHITE}${pos.multiplyXZ(8.0).toFormattedString()}${TextColor.GRAY}]"
             else -> ""
         }
         if(facing.value) text += " ${TextColor.GRAY}(Facing ${TextColor.WHITE}${SELF.horizontalFacing.toFormattedString()}${TextColor.GRAY})"
@@ -33,7 +33,8 @@ object Coordinates: TextHudModule("Coordinates", "Displays the players coordinat
 
     private fun BlockPos.toFormattedString() = "$x, $y, $z"
 
-    private fun BlockPos.divide(value: Double) = BlockPos((x / value).toInt(), (y / value).toInt(), (z / value).toInt())
+    private fun BlockPos.divideXZ(value: Double) = BlockPos((x / value).toInt(), y, (z / value).toInt())
+    private fun BlockPos.multiplyXZ(value: Double) = BlockPos((x * value).toInt(), y, (z * value).toInt())
 
     private fun Direction.toFormattedString() = when(this) {
         Direction.NORTH -> "-Z"
