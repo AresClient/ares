@@ -34,7 +34,7 @@ public abstract class MixinWorldRenderer {
     @Unique Handle<Framebuffer> prevFramebufferHandle;
 
     @Inject(method = "renderEntities", at = @At("HEAD"))
-    public void renderEntitiesPre(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci) {
+    private void renderEntitiesPre(MatrixStack matrices, VertexConsumerProvider.Immediate vertexConsumers, Camera camera, RenderTickCounter tickCounter, List<Entity> entities, CallbackInfo ci) {
         if(OutlineESP.INSTANCE.shouldRenderOutline()) {
             prevFramebuffer = entityOutlineFramebuffer;
             prevFramebufferHandle = framebufferSet.entityOutlineFramebuffer;
@@ -44,7 +44,7 @@ public abstract class MixinWorldRenderer {
     }
 
     @ModifyArgs(method = "renderEntity", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/entity/EntityRenderDispatcher;render(Lnet/minecraft/entity/Entity;DDDFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V"))
-    public void dispatchRenderEntity(Args args) {
+    private void dispatchRenderEntity(Args args) {
         Entity entity = args.get(0);
         if(OutlineESP.INSTANCE.shouldRenderOutline(entity)) {
             OutlineESP.INSTANCE.setColor(OutlineESP.INSTANCE.getLineColor(entity));
@@ -53,7 +53,7 @@ public abstract class MixinWorldRenderer {
     }
 
     @Inject(method = "renderEntities", at = @At("TAIL"))
-    public void renderEntitiesPost(CallbackInfo ci) {
+    private void renderEntitiesPost(CallbackInfo ci) {
         if(OutlineESP.INSTANCE.shouldRenderOutline()) {
             OutlineESP.INSTANCE.getVertexConsumerProvider().draw();
             entityOutlineFramebuffer = prevFramebuffer;
@@ -62,7 +62,7 @@ public abstract class MixinWorldRenderer {
     }
 
     @Inject(method = "drawEntityOutlinesFramebuffer", at = @At("HEAD"), cancellable = true)
-    public void drawEntityOutlineFramebuffer(CallbackInfo ci) {
+    private void drawEntityOutlineFramebuffer(CallbackInfo ci) {
         if(OutlineESP.INSTANCE.shouldRenderOutline()) {
             OutlineESP.INSTANCE.blit();
             ci.cancel();
@@ -70,14 +70,14 @@ public abstract class MixinWorldRenderer {
     }
 
     @Inject(method = "onResized", at = @At("TAIL"))
-    public void onResized(int width, int height, CallbackInfo ci) {
+    private void onResized(int width, int height, CallbackInfo ci) {
         OutlineESP.INSTANCE.getFramebuffer().resize(width, height);
     }
 
     // end outline ESP implementation
 
     @Inject(method = "spawnParticle(Lnet/minecraft/particle/ParticleEffect;ZZDDDDDD)Lnet/minecraft/client/particle/Particle;", at = @At("HEAD"), cancellable = true)
-    public void spawnParticle(ParticleEffect parameters, boolean force, boolean canSpawnOnMinimal, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfoReturnable<Particle> cir) {
+    private void spawnParticle(ParticleEffect parameters, boolean force, boolean canSpawnOnMinimal, double x, double y, double z, double velocityX, double velocityY, double velocityZ, CallbackInfoReturnable<Particle> cir) {
         if(NoRender.INSTANCE.shouldBlockParticles()) cir.setReturnValue(null);
     }
 }

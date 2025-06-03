@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ArmorFeatureRenderer.class)
 public class MixinArmorFeatureRenderer<S extends BipedEntityRenderState, M extends BipedEntityModel<S>, A extends BipedEntityModel<S>> {
     @Inject(method = "renderArmor", at = @At("HEAD"), cancellable = true)
-    public void renderArmor(MatrixStack matrices, VertexConsumerProvider vertexConsumers, ItemStack stack, EquipmentSlot slot, int light, A armorModel, CallbackInfo ci) {
+    private void renderArmor(MatrixStack matrices, VertexConsumerProvider vertexConsumers, ItemStack stack, EquipmentSlot slot, int light, A armorModel, CallbackInfo ci) {
         if((slot == EquipmentSlot.HEAD && NoRender.INSTANCE.shouldBlockArmorHead())
         || (slot == EquipmentSlot.CHEST && NoRender.INSTANCE.shouldBlockArmorChest())
         || (slot == EquipmentSlot.LEGS && NoRender.INSTANCE.shouldBlockArmorLegs())

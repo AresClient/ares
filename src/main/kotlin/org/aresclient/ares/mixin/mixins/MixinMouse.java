@@ -23,7 +23,7 @@ public class MixinMouse implements JWrapper {
     @Unique private static IntArraySet pressed = new IntArraySet();
 
     @Inject(method = "onMouseButton", at = @At("HEAD"))
-    public void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
+    private void onMouseButton(long window, int button, int action, int mods, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(action == 0) {
                 EVENTS.post(new InputEvent.Mouse.Released(button));
@@ -37,7 +37,7 @@ public class MixinMouse implements JWrapper {
     }
 
     @Inject(method = "onMouseScroll", at = @At("HEAD"), cancellable = true)
-    public void onMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
+    private void onMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
         if(window == MinecraftClient.getInstance().getWindow().getHandle()) {
             if(EVENTS.post(new InputEvent.Mouse.Scrolled(vertical)).isCancelled()) ci.cancel();
         }

@@ -12,12 +12,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ClientWorld.class)
 public abstract class MixinClientWorld implements JWrapper {
     @Inject(method = "tick", at = @At("HEAD"))
-    public void preTick(CallbackInfo ci) {
+    private void preTick(CallbackInfo ci) {
         EVENTS.post(new TickEvent.World(Era.BEFORE));
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
-    public void postTick(CallbackInfo ci) {
+    private void postTick(CallbackInfo ci) {
         EVENTS.post(new TickEvent.World(Era.AFTER));
     }
 }

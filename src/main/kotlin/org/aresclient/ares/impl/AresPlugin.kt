@@ -47,14 +47,15 @@ object AresPlugin: Plugin(
 
         AntiAFK,
         FastPlace,
-        Freecam,
         MultiTask,
         PortalGUIs,
         Sync,
 
         BlockEntityESP,
+        CameraClip,
         DiamondSearchExample,
         ESP,
+        Freecam,
         Fullbright,
         NoRender,
         Tracers

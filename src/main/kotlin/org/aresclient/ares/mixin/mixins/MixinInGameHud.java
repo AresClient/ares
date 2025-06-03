@@ -17,17 +17,17 @@ public class MixinInGameHud implements JWrapper {
     @Shadow @Final private static Identifier POWDER_SNOW_OUTLINE;
 
     @Inject(method = "renderPortalOverlay", at = @At("HEAD"), cancellable = true)
-    public void renderPortalOverlay(CallbackInfo ci) {
+    private void renderPortalOverlay(CallbackInfo ci) {
         if(NoRender.INSTANCE.shouldBlockPortalOverlay()) ci.cancel();
     }
 
     @Inject(method = "renderNauseaOverlay", at = @At("HEAD"), cancellable = true)
-    public void renderNauseaOverlay(CallbackInfo ci) {
+    private void renderNauseaOverlay(CallbackInfo ci) {
         if(NoRender.INSTANCE.shouldBlockNausea()) ci.cancel();
     }
 
     @Inject(method = "renderOverlay", at = @At("HEAD"), cancellable = true)
-    public void renderOverlay(DrawContext context, Identifier texture, float opacity, CallbackInfo ci) {
+    private void renderOverlay(DrawContext context, Identifier texture, float opacity, CallbackInfo ci) {
         if(texture == POWDER_SNOW_OUTLINE && NoRender.INSTANCE.shouldBlockPowderSnowOverlay()) ci.cancel();
     }
 }

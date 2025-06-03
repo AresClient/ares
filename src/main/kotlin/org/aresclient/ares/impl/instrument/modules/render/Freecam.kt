@@ -1,4 +1,4 @@
-package org.aresclient.ares.impl.instrument.modules.player
+package org.aresclient.ares.impl.instrument.modules.render
 
 import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
@@ -22,7 +22,7 @@ import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
 import org.aresclient.ares.impl.util.MathUtil.set
 import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 
-object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character", Defaults().setExternalToggleList(true)), CameraAdjustor {
+object Freecam: Module(Category.RENDER, "Freecam", "Allows the player to move the camera independently of the character", Defaults().setExternalToggleList(true)), CameraAdjustor {
 
 	private val speed = settings.addDouble("Speed", 1.0, "The speed at which the camera moves.")
 		.setMin(0.0)

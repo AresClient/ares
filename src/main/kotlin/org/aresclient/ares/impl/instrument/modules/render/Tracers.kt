@@ -13,7 +13,6 @@ import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group
 import org.aresclient.ares.api.util.Color
-import org.aresclient.ares.impl.instrument.modules.player.Freecam
 import org.aresclient.ares.impl.util.EntityUtil
 import org.aresclient.ares.impl.util.EntityUtil.PlayerThreat
 import org.aresclient.ares.impl.util.EntityUtil.playerThreat

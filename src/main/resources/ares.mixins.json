@@ -32,6 +32,7 @@
     "mixins.MixinLightmapTextureManager",
     "mixins.MixinMinecraftClient",
     "mixins.MixinMouse",
+    "mixins.MixinPerspective",
     "mixins.MixinPlayerEntity",
     "mixins.MixinWeatherRendering",
     "mixins.MixinWindow",

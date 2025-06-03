@@ -17,23 +17,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameRenderer.class)
 public abstract class MixinGameRenderer implements JWrapper {
     @Inject(method = "renderHand", at = @At("HEAD"))
-    public void renderWorld(Camera camera, float tickProgress, Matrix4f positionMatrix, CallbackInfo ci) {
+    private void renderWorld(Camera camera, float tickProgress, Matrix4f positionMatrix, CallbackInfo ci) {
         EVENTS.post(new RenderEvent.World(tickProgress));
     }
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/profiler/Profiler;pop()V"))
-    public void render(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
+    private void render(RenderTickCounter tickCounter, boolean tick, CallbackInfo ci) {
         EVENTS.post(new RenderEvent.Hud(tickCounter.getFixedDeltaTicks()));
     }
 
     @Redirect(method = "renderWorld", at = @At(value = "INVOKE", target = "Ljava/lang/Double;floatValue()F"))
-    public float renderWorld(Double instance) {
+    private float renderWorld(Double instance) {
         if(NoRender.INSTANCE.shouldBlockNausea()) return 0f;
         return instance.floatValue();
     }
 
     @Inject(method = "tiltViewWhenHurt", at = @At("HEAD"), cancellable = true)
-    public void tiltViewWhenHurt(MatrixStack matrices, float tickProgress, CallbackInfo ci) {
+    private void tiltViewWhenHurt(MatrixStack matrices, float tickProgress, CallbackInfo ci) {
         if(NoRender.INSTANCE.shouldBlockHurtShake()) ci.cancel();
     }
 }

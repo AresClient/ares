@@ -33,7 +33,7 @@ public class MixinEntity implements JWrapper {
 
 	// ESP outline mode rendering
 	@Inject(method = "shouldRender(D)Z", at = @At("HEAD"), cancellable = true)
-	public void shouldRender(double d, CallbackInfoReturnable<Boolean> cir) {
+	private void shouldRender(double d, CallbackInfoReturnable<Boolean> cir) {
 		if(OutlineESP.INSTANCE.shouldRenderOutline((Entity) ((Object) this))) cir.setReturnValue(true);
 	}
 }

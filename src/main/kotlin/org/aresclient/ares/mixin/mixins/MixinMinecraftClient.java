@@ -29,53 +29,53 @@ public class MixinMinecraftClient implements JWrapper {
     @Shadow @Final private TextureManager textureManager;
 
     @Inject(method = "tick", at = @At("HEAD"))
-    public void preTick(CallbackInfo ci) {
+    private void preTick(CallbackInfo ci) {
         EVENTS.post(new TickEvent.Client(Era.BEFORE));
     }
 
     @Inject(method = "tick", at = @At("RETURN"))
-    public void postTick(CallbackInfo ci) {
+    private void postTick(CallbackInfo ci) {
         EVENTS.post(new TickEvent.Client(Era.AFTER));
     }
 
     @Inject(method = "render", at = @At("HEAD"))
-    public void preGameLoop(boolean tick, CallbackInfo ci) {
+    private void preGameLoop(boolean tick, CallbackInfo ci) {
         EVENTS.post(new TickEvent.GameLoop(Era.BEFORE));
     }
 
     @Inject(method = "render", at = @At("RETURN"))
-    public void postGameLoop(boolean tick, CallbackInfo ci) {
+    private void postGameLoop(boolean tick, CallbackInfo ci) {
         EVENTS.post(new TickEvent.GameLoop(Era.AFTER));
     }
 
     @Inject(method = "setScreen", at = @At("RETURN"))
-    public void postSetScreen(Screen screen, CallbackInfo ci) {
+    private void postSetScreen(Screen screen, CallbackInfo ci) {
         EVENTS.post(new ScreenOpenedEvent(screen instanceof TitleScreen));
     }
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/resource/ReloadableResourceManagerImpl;reload(Ljava/util/concurrent/Executor;Ljava/util/concurrent/Executor;Ljava/util/concurrent/CompletableFuture;Ljava/util/List;)Lnet/minecraft/resource/ResourceReload;", shift = At.Shift.BEFORE))
-    public void reloadResources(CallbackInfo ci) {
+    private void reloadResources(CallbackInfo ci) {
         resourceManager.registerReloader(new AresRenderPipelines.PipelineReloader());
     }
 
     @Inject(method = "<init>", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/TitleScreen;registerTextures(Lnet/minecraft/client/texture/TextureManager;)V"))
-    public void registerTextures(CallbackInfo ci) {
+    private void registerTextures(CallbackInfo ci) {
         AresTextures.INSTANCE.register(textureManager);
     }
 
     @Inject(method = "stop", at = @At("HEAD"))
-    public void preStop(CallbackInfo ci) {
+    private void preStop(CallbackInfo ci) {
         EVENTS.post(new ShutdownEvent());
     }
 
     @Redirect(method = "handleBlockBreaking", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"))
-    public boolean isUsingItem(ClientPlayerEntity clientPlayerEntity) {
+    private boolean isUsingItem(ClientPlayerEntity clientPlayerEntity) {
         if(MultiTask.INSTANCE.isEnabled()) return false;
         else return clientPlayerEntity.isUsingItem();
     }
 
     @Redirect(method = "doItemUse", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerInteractionManager;isBreakingBlock()Z"))
-    public boolean isBreakingBlock(ClientPlayerInteractionManager clientPlayerInteractionManager) {
+    private boolean isBreakingBlock(ClientPlayerInteractionManager clientPlayerInteractionManager) {
         if(MultiTask.INSTANCE.isEnabled()) return false;
         else return clientPlayerInteractionManager.isBreakingBlock();
     }

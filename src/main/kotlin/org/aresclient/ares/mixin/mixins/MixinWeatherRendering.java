@@ -16,12 +16,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(WeatherRendering.class)
 public class MixinWeatherRendering {
     @Inject(method = "renderPrecipitation(Lnet/minecraft/world/World;Lnet/minecraft/client/render/VertexConsumerProvider;IFLnet/minecraft/util/math/Vec3d;)V", at = @At("HEAD"), cancellable = true)
-    public void renderPrecipitation(World world, VertexConsumerProvider vertexConsumers, int ticks, float tickProgress, Vec3d pos, CallbackInfo ci) {
+    private void renderPrecipitation(World world, VertexConsumerProvider vertexConsumers, int ticks, float tickProgress, Vec3d pos, CallbackInfo ci) {
         if(NoRender.INSTANCE.shouldBlockWeather()) ci.cancel();
     }
 
     @Inject(method = "addParticlesAndSound", at = @At("HEAD"), cancellable = true)
-    public void addParticlesAndSound(ClientWorld world, Camera camera, int ticks, ParticlesMode particlesMode, CallbackInfo ci) {
+    private void addParticlesAndSound(ClientWorld world, Camera camera, int ticks, ParticlesMode particlesMode, CallbackInfo ci) {
         if(NoRender.INSTANCE.shouldBlockWeather()) ci.cancel();
     }
 }
