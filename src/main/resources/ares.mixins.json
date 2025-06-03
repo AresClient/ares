@@ -14,6 +14,7 @@
     "mixins.MixinBlockItem",
     "mixins.MixinCamera",
     "mixins.MixinChatScreen",
+    "mixins.MixinChunkOcclusionDataBuilder",
     "mixins.MixinClientChunkManager",
     "mixins.MixinClientConnection",
     "mixins.MixinClientPlayerEntity",

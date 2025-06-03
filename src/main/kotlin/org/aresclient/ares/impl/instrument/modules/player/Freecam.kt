@@ -7,6 +7,7 @@ import net.minecraft.client.option.Perspective
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec2f
 import net.minecraft.util.math.Vec3d
+import org.aresclient.ares.api.events.BlockOcclusionEvent
 import org.aresclient.ares.api.events.InputEvent
 import org.aresclient.ares.api.events.InputEvent.Keyboard.Pressed
 import org.aresclient.ares.api.events.PlayerEvent
@@ -21,7 +22,6 @@ import org.aresclient.ares.impl.util.MathUtil.moveCameraWithCursor
 import org.aresclient.ares.impl.util.MathUtil.set
 import org.aresclient.ares.impl.util.MathUtil.toTransverseMovement
 
-// TODO: fix inputs being taken even when opening screen while in freecam
 object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move the camera independently of the character", Defaults().setExternalToggleList(true)), CameraAdjustor {
 
 	private val speed = settings.addDouble("Speed", 1.0, "The speed at which the camera moves.")
@@ -29,6 +29,8 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 		.setPrecision(1)
 
 	private val scroll = settings.addBoolean("Scroll", true, "Allow speed to be adjusted using scroll wheel")
+
+	private val reloadChunks = settings.addBoolean("Reload Chunks", true, "Helps to prevent block occlusion in caves")
 
 	// ════════════════════════════════════════════════════════════════════════ //
 
@@ -55,6 +57,8 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 			setEnabled(false)
 			return
 		}
+
+		if (reloadChunks.value) MC.worldRenderer.reload()
 
 		CAMERA.let {
 			cameraPosition.set(it.pos)
@@ -99,6 +103,8 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 			jumpKey.isPressed = upward
 			sneakKey.isPressed = downward
 		}
+
+		if (reloadChunks.value) MC.worldRenderer.reload()
 	}
 
 	override fun onTick() {
@@ -128,6 +134,10 @@ object Freecam: Module(Category.PLAYER, "Freecam", "Allows the player to move th
 		cameraPosition._x += transverseMovement.x
 		cameraPosition._y += if (upward) speed else if (downward) -speed else 0.0
 		cameraPosition._z += transverseMovement.y
+	}
+
+	@field:EventHandler private val blockOcclusionEvent = EventListener<BlockOcclusionEvent> { event ->
+		event.isCancelled = true
 	}
 
 	@field:EventHandler private val changeLookDirectionListener = EventListener<PlayerEvent.ChangeLookDirection> { event ->
