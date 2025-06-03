@@ -2,8 +2,8 @@ package org.aresclient.ares.api.instruments
 
 import net.minecraft.client.util.math.MatrixStack
 import org.aresclient.ares.api.Wrapper
-import org.aresclient.ares.api.nrender.hud.HudDrawer
-import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
+import org.aresclient.ares.api.nrender.drawer.WorldDrawer
 import org.aresclient.ares.api.setting.MapSetting
 
 abstract class Instrument(val settings: MapSetting): Wrapper {

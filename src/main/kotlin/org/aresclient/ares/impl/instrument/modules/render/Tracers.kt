@@ -7,8 +7,8 @@ import net.minecraft.entity.EntityType
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.hud.HudDrawer
-import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
+import org.aresclient.ares.api.nrender.drawer.WorldDrawer
 import org.aresclient.ares.api.setting.settings.BooleanSetting
 import org.aresclient.ares.api.setting.settings.ColorSetting
 import org.aresclient.ares.api.setting.settings.grouped.Group

@@ -1,4 +1,4 @@
-package org.aresclient.ares.api.nrender.hud
+package org.aresclient.ares.api.nrender.font
 
 import net.minecraft.client.font.FontStorage
 import net.minecraft.client.font.TextRenderLayerSet

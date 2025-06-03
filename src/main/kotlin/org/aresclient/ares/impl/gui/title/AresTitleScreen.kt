@@ -10,7 +10,7 @@ import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.ngui.NScreenElement
 import org.aresclient.ares.api.ngui.NStaticElement
 import org.aresclient.ares.api.nrender.AresTextures
-import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
 import org.aresclient.ares.impl.instrument.modules.misc.TitleScreen
 import org.aresclient.ares.impl.util.Theme
 

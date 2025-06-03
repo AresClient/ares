@@ -1,10 +1,10 @@
-package org.aresclient.ares.api.nrender
+package org.aresclient.ares.api.nrender.drawer
 
 import net.minecraft.client.render.VertexConsumer
 import net.minecraft.client.render.VertexConsumerProvider
 import net.minecraft.client.util.BufferAllocator
 import org.aresclient.ares.api.Wrapper
-import org.aresclient.ares.api.nrender.world.IndexedBufferProvider
+import org.aresclient.ares.api.nrender.buffer.IndexedBufferProvider
 import org.aresclient.ares.api.util.Color
 
 open class Drawer: Wrapper {

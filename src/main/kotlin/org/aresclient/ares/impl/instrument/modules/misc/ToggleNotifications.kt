@@ -4,7 +4,7 @@ import dev.tigr.simpleevents.listener.EventHandler
 import dev.tigr.simpleevents.listener.EventListener
 import org.aresclient.ares.api.events.ToggleEvent
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.TextColor
+import org.aresclient.ares.api.nrender.font.TextColor
 import org.aresclient.ares.impl.util.ChatUtil
 
 object ToggleNotifications: Module(Category.MISC, "Toggle Notifications", "Sends a chat message when a module is toggled", Defaults().setEnabled(true)) {

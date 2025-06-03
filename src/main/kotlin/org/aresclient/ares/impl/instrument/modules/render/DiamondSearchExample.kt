@@ -5,7 +5,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.nrender.drawer.WorldDrawer
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.util.ChunkProcessor
 

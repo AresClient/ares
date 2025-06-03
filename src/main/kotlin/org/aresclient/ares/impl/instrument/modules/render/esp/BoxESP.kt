@@ -3,7 +3,7 @@ package org.aresclient.ares.impl.instrument.modules.render.esp
 import net.minecraft.entity.Entity
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
-import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.nrender.drawer.WorldDrawer
 
 object BoxESP: ESP.RenderMode() {
     override fun draw(entity: Entity, group: ESP.EntityGroup, drawer: WorldDrawer, delta: Float) {

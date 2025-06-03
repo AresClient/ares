@@ -4,7 +4,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.world.World
-import org.aresclient.ares.api.nrender.TextColor
+import org.aresclient.ares.api.nrender.font.TextColor
 import org.aresclient.ares.impl.util.WorldUtil
 import org.joml.Vector2d
 

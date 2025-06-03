@@ -1,7 +1,7 @@
 package org.aresclient.ares.api.ngui
 
 import net.minecraft.client.util.math.MatrixStack
-import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.util.Theme
 import java.util.concurrent.atomic.AtomicBoolean

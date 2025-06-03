@@ -14,7 +14,7 @@ import net.minecraft.item.Item
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.events.RenderEntityLabelEvent
-import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.nrender.drawer.WorldDrawer
 import org.aresclient.ares.impl.util.MathUtil.duplicate
 import org.aresclient.ares.impl.util.MathUtil.set
 

@@ -14,8 +14,8 @@ import org.aresclient.ares.api.gui.AresScreen
 import org.aresclient.ares.api.instruments.Command
 import org.aresclient.ares.api.instruments.Instrument
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.hud.HudDrawer
-import org.aresclient.ares.api.nrender.world.WorldDrawer
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
+import org.aresclient.ares.api.nrender.drawer.WorldDrawer
 import org.aresclient.ares.api.render.Renderer
 import org.aresclient.ares.api.setting.MapSetting
 import org.aresclient.ares.api.setting.settings.BindSetting

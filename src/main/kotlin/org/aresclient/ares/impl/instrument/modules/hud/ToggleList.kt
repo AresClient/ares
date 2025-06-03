@@ -4,8 +4,8 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.MutableText
 import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
-import org.aresclient.ares.api.nrender.TextColor
-import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.font.TextColor
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.AresPlugin
 import org.joml.Vector2d

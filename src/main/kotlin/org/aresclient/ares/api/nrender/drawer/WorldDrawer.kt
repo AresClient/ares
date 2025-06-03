@@ -1,12 +1,10 @@
-package org.aresclient.ares.api.nrender.world
+package org.aresclient.ares.api.nrender.drawer
 
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import org.aresclient.ares.api.nrender.AresRenderLayers
-import org.aresclient.ares.api.nrender.Drawer
-import org.aresclient.ares.api.nrender.Lines
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 

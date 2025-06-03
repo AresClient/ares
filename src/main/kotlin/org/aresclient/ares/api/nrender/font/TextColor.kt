@@ -1,4 +1,4 @@
-package org.aresclient.ares.api.nrender
+package org.aresclient.ares.api.nrender.font
 
 enum class TextColor(key: Char) {
     BLACK('0'),

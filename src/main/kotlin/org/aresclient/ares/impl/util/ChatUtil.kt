@@ -3,7 +3,7 @@ package org.aresclient.ares.impl.util
 import net.minecraft.text.Text
 import org.aresclient.ares.api.Wrapper
 import org.aresclient.ares.api.instruments.Command
-import org.aresclient.ares.api.nrender.TextColor
+import org.aresclient.ares.api.nrender.font.TextColor
 
 object ChatUtil: Command.IContext, Wrapper {
     override fun print(message: String) {

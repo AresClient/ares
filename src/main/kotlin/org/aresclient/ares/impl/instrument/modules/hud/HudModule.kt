@@ -1,7 +1,7 @@
 package org.aresclient.ares.impl.instrument.modules.hud
 
 import org.aresclient.ares.api.instruments.Module
-import org.aresclient.ares.api.nrender.hud.NFont
+import org.aresclient.ares.api.nrender.font.CustomFont
 import org.aresclient.ares.impl.util.Theme
 import org.joml.Vector2d
 
@@ -33,5 +33,5 @@ abstract class HudModule(name: String, description: String, defaults: Defaults =
 
     protected fun getSize(): Float = size.value
 
-    protected fun getFont(): NFont = Theme.current().nfont.value
+    protected fun getFont(): CustomFont = Theme.current().nfont.value
 }

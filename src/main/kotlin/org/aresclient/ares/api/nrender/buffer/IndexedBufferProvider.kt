@@ -1,4 +1,4 @@
-package org.aresclient.ares.api.nrender.world
+package org.aresclient.ares.api.nrender.buffer
 
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.blaze3d.vertex.VertexFormat

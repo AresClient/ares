@@ -1,8 +1,8 @@
-package org.aresclient.ares.api.nrender
+package org.aresclient.ares.api.nrender.drawer
 
 import com.mojang.blaze3d.systems.RenderSystem
 import org.aresclient.ares.api.Wrapper
-import org.aresclient.ares.api.nrender.world.IndexedBuffer
+import org.aresclient.ares.api.nrender.buffer.IndexedBuffer
 import org.aresclient.ares.api.util.Color
 import org.joml.Matrix4f
 import org.joml.Vector2f

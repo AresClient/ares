@@ -3,7 +3,7 @@ package org.aresclient.ares.impl.gui.title
 import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.util.Identifier
 import org.aresclient.ares.api.ngui.NButton
-import org.aresclient.ares.api.nrender.hud.HudDrawer
+import org.aresclient.ares.api.nrender.drawer.HudDrawer
 import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.util.Theme
 import kotlin.math.min

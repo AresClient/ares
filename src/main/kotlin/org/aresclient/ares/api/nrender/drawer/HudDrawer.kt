@@ -1,4 +1,4 @@
-package org.aresclient.ares.api.nrender.hud
+package org.aresclient.ares.api.nrender.drawer
 
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.render.RenderLayer
@@ -6,8 +6,7 @@ import net.minecraft.client.util.math.MatrixStack
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.aresclient.ares.api.nrender.AresRenderLayers
-import org.aresclient.ares.api.nrender.Drawer
-import org.aresclient.ares.api.nrender.Lines
+import org.aresclient.ares.api.nrender.font.CustomFont
 import org.aresclient.ares.api.util.Color
 import org.joml.Vector3f
 
@@ -18,17 +17,17 @@ class HudDrawer: Drawer() {
         Lines.begin()
     }
 
-    fun drawTextCentered(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
+    fun drawTextCentered(font: CustomFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
         val cx = x - font.getWidth(text, size) / 2f
         val cy = y - font.getHeight(size) / 2f
         return drawText(font, text, matrixStack, cx, cy, color, size, shadow)
     }
 
-    fun drawText(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
+    fun drawText(font: CustomFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Color, size: Float = 11f, shadow: Boolean = true): Int {
         return drawText(font, text, matrixStack, x, y, color.rgba, size, shadow)
     }
 
-    private fun drawText(font: NFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Int, size: Float, shadow: Boolean): Int {
+    private fun drawText(font: CustomFont, text: Text, matrixStack: MatrixStack, x: Float, y: Float, color: Int, size: Float, shadow: Boolean): Int {
         val scale = font.getScale(size)
         matrixStack.push()
         matrixStack.scale(scale, scale, 1f)
