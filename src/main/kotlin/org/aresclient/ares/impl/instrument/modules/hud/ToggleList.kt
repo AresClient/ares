@@ -10,7 +10,7 @@ import org.aresclient.ares.api.util.Color
 import org.aresclient.ares.impl.AresPlugin
 import org.joml.Vector2d
 
-object ToggleList: HudModule("Toggle List", "Shows whether specific modules are enabled or disabled.", position = Vector2d(0.5, 0.8), defaults = Defaults().setEnabled(true)) {
+object ToggleList: HudModule("Toggle List", "Shows whether specific modules are enabled or disabled.", position = Vector2d(0.5, 0.8)) {
     enum class Sort { SHORT_TO_LONG, LONG_TO_SHORT, ALPHABETICAL }
 
     private val delimiter = settings.addString("Delimiter", " : ")
