@@ -28,6 +28,7 @@ object AntiAFK: Module(Category.PLAYER, "AntiAFK", "Prevents player from being k
     // ════════════════════════════════════════════════════════════════════════ //
 
     override fun onEnable() {
+        if(MC.NULL) return
         Rotation.begin(this)
     }
 
@@ -36,6 +37,8 @@ object AntiAFK: Module(Category.PLAYER, "AntiAFK", "Prevents player from being k
     }
 
     override fun onTick() {
+        if(!MC.NULL && !Rotation.isActive(this)) Rotation.begin(this)
+
         if(timer.hasSecondsPassed(3)) {
             a += 90
             timer.reset()
