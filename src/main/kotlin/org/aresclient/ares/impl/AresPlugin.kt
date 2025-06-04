@@ -1,5 +1,6 @@
 package org.aresclient.ares.impl
 
+import net.fabricmc.loader.api.FabricLoader
 import org.aresclient.ares.api.Plugin
 import org.aresclient.ares.impl.instrument.commands.*
 import org.aresclient.ares.impl.instrument.globals.Camera
@@ -32,7 +33,7 @@ object AresPlugin: Plugin(
         Interaction,
         Rotation
     ),
-    modules = listOf(
+    modules = listOfNotNull(
         Coordinates,
         ModuleList,
         ToggleList,
@@ -43,7 +44,7 @@ object AresPlugin: Plugin(
         TitleScreen,
 
         AutoWalk,
-        Baritone,
+        if(FabricLoader.getInstance().isModLoaded("baritone")) Baritone else null,
         SafeWalk,
         Speed,
 
